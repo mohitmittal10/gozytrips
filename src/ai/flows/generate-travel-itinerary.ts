@@ -72,7 +72,7 @@ export async function generateTravelItinerary(input: TravelItineraryInput): Prom
 
 const prompt = ai.definePrompt({
   name: 'travelItineraryPrompt',
-  model: googleAI.model('gemini-1.5-pro-latest'),
+  model: googleAI.model('gemini-2.5-flash'),
   input: {schema: TravelItineraryInputSchema},
   output: {schema: TravelItineraryOutputSchema},
   prompt: `
