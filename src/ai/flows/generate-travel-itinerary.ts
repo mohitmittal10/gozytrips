@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -78,10 +79,10 @@ const prompt = ai.definePrompt({
   CONSTRAINTS:
   - Trip duration: {{numberOfDays}} days
   - Daily active hours: {{startTime}} to {{endTime}}
-  - Maximum daily budget: ₹{{budget}}
-  - Maximum walking distance per day: {{walkingDistance}} km
-  - Must include: {{mustInclude}}
-  - Avoid: {{avoid}}
+  {{#if budget}}- Maximum daily budget: ₹{{budget}}{{/if}}
+  {{#if walkingDistance}}- Maximum walking distance per day: {{walkingDistance}} km{{/if}}
+  {{#if mustInclude}}- Must include: {{mustInclude}}{{/if}}
+  {{#if avoid}}- Avoid: {{avoid}}{{/if}}
 
   OPTIMIZATION GOALS:
   1. Group nearby attractions on the same day.

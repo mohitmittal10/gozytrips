@@ -32,8 +32,14 @@ const formSchema = z.object({
     numberOfDays: z.coerce.number().int().min(1, "Must be at least 1 day.").max(14, "Cannot exceed 14 days."),
     startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]( (AM|PM))?$/, "Invalid time format (e.g., 9:00 AM)."),
     endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]( (AM|PM))?$/, "Invalid time format (e.g., 10:00 PM)."),
-    budget: z.coerce.number().int().positive("Budget must be a positive number.").optional().or(z.literal('')),
-    walkingDistance: z.coerce.number().int().positive("Distance must be a positive number.").optional().or(z.literal('')),
+    budget: z.preprocess(
+      (val) => (val === "" ? undefined : val),
+      z.coerce.number().int().positive("Budget must be a positive number.").optional()
+    ),
+    walkingDistance: z.preprocess(
+      (val) => (val === "" ? undefined : val),
+      z.coerce.number().int().positive("Distance must be a positive number.").optional()
+    ),
     mustInclude: z.string().optional(),
     avoid: z.string().optional(),
 });
@@ -124,15 +130,7 @@ const AiArchitect = () => {
     setIsGenerating(true);
     setItinerary(null);
     try {
-      // Filter out empty optional values before sending to the API
-      const apiValues = {
-        ...values,
-        budget: values.budget || undefined,
-        walkingDistance: values.walkingDistance || undefined,
-        mustInclude: values.mustInclude || undefined,
-        avoid: values.avoid || undefined,
-      };
-      const result = await generateTravelItinerary(apiValues);
+      const result = await generateTravelItinerary(values);
       setItinerary(result);
     } catch (error) {
         console.error("Failed to generate itinerary:", error);
