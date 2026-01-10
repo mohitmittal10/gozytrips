@@ -55,9 +55,9 @@ const AiArchitect = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       destinations: "",
-      numberOfDays: undefined,
-      startTime: "",
-      endTime: "",
+      numberOfDays: 3,
+      startTime: "9:00 AM",
+      endTime: "10:00 PM",
       budget: undefined,
       walkingDistance: undefined,
       mustInclude: "",

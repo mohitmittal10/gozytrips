@@ -10,7 +10,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const TravelItineraryInputSchema = z.object({
   destinations: z.string().describe('A comma-separated list of primary travel destinations.'),
