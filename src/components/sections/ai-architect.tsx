@@ -33,7 +33,6 @@ const formSchema = z.object({
     walkingDistance: z.coerce.number().int().positive("Distance must be a positive number.").optional().or(z.literal('')),
     mustInclude: z.string().optional(),
     avoid: z.string().optional(),
-    accommodation: z.string().optional(),
 });
 
 const AiArchitect = () => {
@@ -53,7 +52,6 @@ const AiArchitect = () => {
       walkingDistance: 10,
       mustInclude: "Eiffel Tower, Louvre Museum",
       avoid: "Tourist traps",
-      accommodation: "Le Marais neighborhood",
     },
   });
 
@@ -66,7 +64,6 @@ const AiArchitect = () => {
         ...values,
         budget: values.budget || undefined,
         walkingDistance: values.walkingDistance || undefined,
-        accommodation: values.accommodation || undefined,
         mustInclude: values.mustInclude || undefined,
         avoid: values.avoid || undefined,
       };
@@ -172,19 +169,6 @@ const AiArchitect = () => {
                         <div className="grid md:grid-cols-2 gap-6">
                             <FormField
                             control={form.control}
-                            name="accommodation"
-                            render={({ field }) => (
-                                <FormItem>
-                                <FormLabel className="text-gray-300">Accommodation Location</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="e.g., Le Marais neighborhood (Optional)" {...field} className="ai-architect-input" />
-                                </FormControl>
-                                <FormMessage />
-                                </FormItem>
-                            )}
-                            />
-                            <FormField
-                            control={form.control}
                             name="budget"
                             render={({ field }) => (
                                 <FormItem>
@@ -196,8 +180,7 @@ const AiArchitect = () => {
                                 </FormItem>
                             )}
                             />
-                        </div>
-                         <FormField
+                            <FormField
                             control={form.control}
                             name="walkingDistance"
                             render={({ field }) => (
@@ -210,6 +193,7 @@ const AiArchitect = () => {
                                 </FormItem>
                             )}
                             />
+                        </div>
                         <div className="grid md:grid-cols-2 gap-6">
                             <FormField
                             control={form.control}

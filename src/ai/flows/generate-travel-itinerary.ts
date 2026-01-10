@@ -20,7 +20,6 @@ const TravelItineraryInputSchema = z.object({
   walkingDistance: z.coerce.number().int().positive().optional().describe('The maximum preferred walking distance per day in kilometers.'),
   mustInclude: z.string().optional().describe('A comma-separated list of must-see attractions or experiences.'),
   avoid: z.string().optional().describe('A comma-separated list of things to skip or avoid.'),
-  accommodation: z.string().optional().describe('The neighborhood or address of the accommodation.'),
 });
 export type TravelItineraryInput = z.infer<typeof TravelItineraryInputSchema>;
 
@@ -83,7 +82,6 @@ const prompt = ai.definePrompt({
   - Maximum walking distance per day: {{walkingDistance}} km
   - Must include: {{mustInclude}}
   - Avoid: {{avoid}}
-  - Accommodation location: {{accommodation}}
 
   OPTIMIZATION GOALS:
   1. Group nearby attractions on the same day.
