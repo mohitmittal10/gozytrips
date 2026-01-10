@@ -22,7 +22,7 @@ export default function RootLayout({
       </head>
       <body className={cn(
         "font-body antialiased min-h-screen bg-background",
-        "bg-gradient-to-b from-[#2E2E8B] via-background to-background"
+        "bg-gradient-to-br from-background via-secondary/10 to-background"
         )}>
         {children}
         <Toaster />

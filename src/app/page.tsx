@@ -2,7 +2,6 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import Hero from '@/components/sections/hero';
 import Packages from '@/components/sections/packages';
-import AiArchitect from '@/components/sections/ai-architect';
 import Gallery from '@/components/sections/gallery';
 import Testimonials from '@/components/sections/testimonials';
 import About from '@/components/sections/about';
@@ -16,7 +15,6 @@ export default function Home() {
         <Hero />
         <About />
         <Packages />
-        <AiArchitect />
         <Gallery />
         <Testimonials />
         <Contact />

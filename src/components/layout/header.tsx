@@ -20,23 +20,26 @@ const Header = () => {
   }, []);
 
   const navLinks = [
-    { name: "Home", href: "#home" },
-    { name: "About Us", href: "#about" },
-    { name: "Packages", href: "#packages" },
-    { name: "AI Architect", href: "#ai-architect" },
-    { name: "Gallery", href: "#gallery" },
-    { name: "Testimonials", href: "#testimonials" },
-    { name: "Contact Us", href: "#contact" },
+    { name: "Home", href: "/#home" },
+    { name: "About Us", href: "/#about" },
+    { name: "Packages", href: "/#packages" },
+    { name: "AI Architect", href: "/ai-architect" },
+    { name: "Gallery", href: "/#gallery" },
+    { name: "Testimonials", href: "/#testimonials" },
+    { name: "Contact Us", href: "/#contact" },
   ];
 
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-50 transition-all duration-300",
-        scrolled ? "py-2 glass-card border-b" : "py-4"
+        "fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full transition-all duration-300",
+        scrolled ? "max-w-6xl" : "max-w-full"
       )}
     >
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+      <div className={cn(
+        "container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300",
+        scrolled ? "py-2 glass-card rounded-lg border" : "py-4"
+        )}>
         <Logo />
         <nav className="hidden md:flex items-center space-x-6">
           {navLinks.map((link) => (

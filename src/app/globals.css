@@ -27,25 +27,25 @@
   }
 
   .dark {
-    --background: 240 50% 18%; /* Darker version of Desaturated Midnight Navy */
-    --foreground: 54 70% 90%;
-    --card: 240 50% 25%;
-    --card-foreground: 54 70% 90%;
-    --popover: 240 50% 12%;
-    --popover-foreground: 54 70% 90%;
-    --primary: 54 78% 74%; /* Soft Sand-Gold: #F0E68C */
-    --primary-foreground: 240 64% 15%; /* Darker Midnight Navy */
-    --secondary: 240 64% 27%; /* Midnight Navy: #191970 */
-    --secondary-foreground: 54 78% 74%;
-    --muted: 240 64% 27%;
-    --muted-foreground: 240 30% 65%;
-    --accent: 240 64% 32%;
-    --accent-foreground: 54 78% 74%;
-    --destructive: 0 63% 31%;
+    --background: 25 20% 12%; /* Deep Umber */
+    --foreground: 33 30% 85%; /* Light Sand */
+    --card: 25 20% 15%;
+    --card-foreground: 33 30% 85%;
+    --popover: 25 25% 10%;
+    --popover-foreground: 33 30% 85%;
+    --primary: 34 56% 64%; /* Sandy Beige: #D4A373 */
+    --primary-foreground: 25 74% 15%; /* Dark Terracotta */
+    --secondary: 25 74% 31%; /* Terracotta: #8B4513 */
+    --secondary-foreground: 33 56% 87%;
+    --muted: 25 74% 25%;
+    --muted-foreground: 33 30% 70%;
+    --accent: 33 56% 77%; /* Warm Cream: #E8C4A0 */
+    --accent-foreground: 25 74% 15%;
+    --destructive: 0 63% 40%;
     --destructive-foreground: 0 0% 98%;
-    --border: 54 78% 74%;
-    --input: 240 50% 25%;
-    --ring: 54 78% 74%;
+    --border: 34 56% 64%;
+    --input: 25 20% 18%;
+    --ring: 34 56% 64%;
   }
 }
 
@@ -64,6 +64,12 @@
 
 @layer utilities {
   .glass-card {
-    @apply bg-white/5 backdrop-blur-lg border border-white/10 saturate-150;
+    @apply bg-[rgba(212,163,115,0.05)] backdrop-blur-lg border border-[hsla(var(--primary)/0.2)] saturate-150;
+  }
+  .ai-architect-page .glass-card {
+    background-color: rgba(43, 34, 28, 0.4) !important;
+    backdrop-filter: blur(18px) !important;
+    border: 1px solid rgba(212, 163, 115, 0.2) !important;
   }
 }
+
