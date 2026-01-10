@@ -1,6 +1,3 @@
-
-'use server';
-
 /**
  * @fileOverview Initializes and exports the global Genkit 'ai' object.
  * This file centralizes the Genkit configuration for the application.
