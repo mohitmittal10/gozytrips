@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -30,27 +29,21 @@ const TravelItineraryOutputSchema = z.object({
     z.object({
       day: z.number().int().min(1),
       date: z.string().describe('The date for this day of the itinerary.'),
-      areaFocus: z.string().describe('The geographical area or neighborhood focus for the day.'),
-      morningRoute: z.string().describe('A summary of the morning route.'),
-      afternoonRoute: z.string().describe('A summary of the afternoon route.'),
-      eveningRoute: z.string().describe('A summary of the evening route.'),
       timeline: z.array(
         z.object({
           time: z.string().describe('The specific time for the activity (e.g., "08:00 AM").'),
           details: z.string().describe('A short description of the step (e.g., "Depart Hotel", "Walk 10 min to [Location]").'),
-          activity: z.object({
-            name: z.string().describe('The name of the activity.'),
-            rating: z.number().int().min(1).max(3).describe('Priority rating from 1 to 3 stars.'),
-            duration: z.string().describe('Recommended duration for the activity (e.g., "90 min").'),
-            cost: z.string().describe('Estimated cost of the activity (e.g., "₹2000").'),
-            bookingInfo: z.string().describe('Information on booking tickets (e.g., "Book online 2 weeks in advance").'),
-            energyLevel: z.enum(['Low', 'Medium', 'High']).describe('The physical energy level required.'),
-            instagramWorthy: z.boolean().describe('Is it a great photo opportunity?'),
-            kidFriendly: z.boolean().describe('Is it suitable for children?'),
-            weatherDependent: z.boolean().describe('Is the activity dependent on good weather?'),
-            whyNow: z.string().describe('Justification for visiting at this specific time (e.g., "Opens at 8 AM, crowds arrive by 10 AM").'),
-            proTip: z.string().describe('An insider tip for the activity.'),
-          }).optional(),
+          name: z.string().describe('The name of the activity.'),
+          rating: z.number().int().min(1).max(3).describe('Priority rating from 1 to 3 stars.'),
+          duration: z.string().describe('Recommended duration for the activity (e.g., "90 min").'),
+          cost: z.string().describe('Estimated cost of the activity (e.g., "₹2000").'),
+          bookingInfo: z.string().describe('Information on booking tickets (e.g., "Book online 2 weeks in advance").'),
+          energyLevel: z.enum(['Low', 'Medium', 'High']).describe('The physical energy level required.'),
+          instagramWorthy: z.boolean().describe('Is it a great photo opportunity?'),
+          kidFriendly: z.boolean().describe('Is it suitable for children?'),
+          weatherDependent: z.boolean().describe('Is the activity dependent on good weather?'),
+          whyNow: z.string().describe('Justification for visiting at this specific time (e.g., "Opens at 8 AM, crowds arrive by 10 AM").'),
+          proTip: z.string().describe('An insider tip for the activity.'),
         })
       ),
       dailyStats: z.object({
@@ -95,7 +88,7 @@ const prompt = ai.definePrompt({
   6. Schedule rest after high-intensity activities.
   7. Reserve energy-intensive activities for the morning.
 
-  Your response must be a valid JSON object that adheres to the output schema. For each day, provide a summary route, a detailed timeline, and daily stats. Each activity in the timeline must be fully detailed as per the schema.
+  Your response must be a valid JSON object that adheres to the output schema. For each day, provide a detailed timeline, and daily stats. Each activity in the timeline must be fully detailed as per the schema, including the cost with a '₹' symbol before the amount and 'instagramWorthy' and 'kidFriendly' as boolean values.
   `,
 });
 
