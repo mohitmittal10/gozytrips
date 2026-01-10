@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,15 +15,17 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { generateTravelItinerary } from "@/ai/flows/generate-travel-itinerary";
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
 import { useToast } from "@/hooks/use-toast";
 import ItineraryTimeline from "../itinerary-timeline";
-import { ChevronDown, Sparkles } from "lucide-react";
+import { ChevronDown, Sparkles, Download } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { cn } from "@/lib/utils";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 const formSchema = z.object({
     destinations: z.string().min(2, "At least one destination is required."),
@@ -40,6 +43,7 @@ const AiArchitect = () => {
   const [itinerary, setItinerary] = useState<TravelItineraryOutput | null>(null);
   const { toast } = useToast();
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
+  const itineraryRef = useRef<HTMLDivElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -79,6 +83,42 @@ const AiArchitect = () => {
       console.error("Failed to save itinerary to local storage", error);
     }
   }, [itinerary]);
+
+  const handleDownloadPdf = async () => {
+    const itineraryElement = itineraryRef.current;
+    if (!itineraryElement) return;
+
+    toast({
+      title: "Preparing PDF...",
+      description: "Your itinerary is being converted to a PDF. Please wait.",
+    });
+
+    try {
+        const canvas = await html2canvas(itineraryElement, {
+            scale: 2,
+            backgroundColor: null, // Use transparent background to show CSS gradient
+            useCORS: true, // For images from other origins
+        });
+        
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jsPDF({
+            orientation: "portrait",
+            unit: "px",
+            format: [canvas.width, canvas.height]
+        });
+        
+        pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
+        pdf.save("OdysseyLuxe_Itinerary.pdf");
+    } catch (error) {
+        console.error("Failed to generate PDF:", error);
+        toast({
+            variant: "destructive",
+            title: "PDF Generation Failed",
+            description: "Sorry, we couldn't download your itinerary. Please try again.",
+        });
+    }
+  };
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsGenerating(true);
@@ -262,8 +302,18 @@ const AiArchitect = () => {
       </div>
       
       {(isGenerating || itinerary) && (
-        <div className="mt-12">
-            <ItineraryTimeline itinerary={itinerary?.itinerary || []} isLoading={isGenerating} />
+        <div className="mt-12" >
+             <div className="flex justify-end mb-4">
+                {itinerary && !isGenerating && (
+                    <Button onClick={handleDownloadPdf}>
+                        <Download className="mr-2 h-4 w-4" />
+                        Download PDF
+                    </Button>
+                )}
+            </div>
+            <div ref={itineraryRef}>
+              <ItineraryTimeline itinerary={itinerary?.itinerary || []} isLoading={isGenerating} />
+            </div>
         </div>
       )}
     </section>
