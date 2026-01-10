@@ -19,8 +19,10 @@ import { generateTravelItinerary } from "@/ai/flows/generate-travel-itinerary";
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
 import { useToast } from "@/hooks/use-toast";
 import ItineraryTimeline from "../itinerary-timeline";
-import { Sparkles } from "lucide-react";
+import { ChevronDown, Sparkles } from "lucide-react";
 import { Textarea } from "../ui/textarea";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
     destinations: z.string().min(2, "At least one destination is required."),
@@ -38,6 +40,7 @@ const AiArchitect = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [itinerary, setItinerary] = useState<TravelItineraryOutput | null>(null);
   const { toast } = useToast();
+  const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,7 +49,7 @@ const AiArchitect = () => {
       numberOfDays: 3,
       startTime: "9:00 AM",
       endTime: "10:00 PM",
-      budget: 150,
+      budget: 10000,
       walkingDistance: 10,
       mustInclude: "Eiffel Tower, Louvre Museum",
       avoid: "Tourist traps",
@@ -91,7 +94,7 @@ const AiArchitect = () => {
       </div>
 
       <div className="max-w-5xl mx-auto">
-        <Card className="ai-architect-page-card bg-black/50 border-white/10 backdrop-blur-xl">
+        <Card className="ai-architect-page-card">
           <CardHeader>
             <CardTitle className="font-headline text-2xl flex items-center gap-2 text-white">
                 <Sparkles className="w-6 h-6 text-primary" />
@@ -100,8 +103,8 @@ const AiArchitect = () => {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                <div className="grid md:grid-cols-2 gap-6">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <div className="space-y-6">
                     <FormField
                       control={form.control}
                       name="destinations"
@@ -115,117 +118,128 @@ const AiArchitect = () => {
                         </FormItem>
                       )}
                     />
-                    <FormField
-                      control={form.control}
-                      name="accommodation"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-300">Accommodation Location</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., Le Marais neighborhood (Optional)" {...field} className="ai-architect-input" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                </div>
-                <div className="grid md:grid-cols-4 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="numberOfDays"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-300">Trip Duration (days)</FormLabel>
-                          <FormControl>
-                            <Input type="number" {...field} className="ai-architect-input" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="budget"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-300">Max Daily Budget ($)</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="Optional" {...field} className="ai-architect-input" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                     <FormField
-                      control={form.control}
-                      name="startTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-300">Daily Start Time</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., 9:00 AM" {...field} className="ai-architect-input" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="endTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-300">Daily End Time</FormLabel>
-                          <FormControl>
-                            <Input placeholder="e.g., 10:00 PM" {...field} className="ai-architect-input" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                </div>
-                 <div className="grid md:grid-cols-1 gap-6">
-                    <FormField
-                        control={form.control}
-                        name="walkingDistance"
-                        render={({ field }) => (
+                    <div className="grid md:grid-cols-3 gap-6">
+                        <FormField
+                          control={form.control}
+                          name="numberOfDays"
+                          render={({ field }) => (
                             <FormItem>
-                            <FormLabel className="text-gray-300">Max Walking Distance (km per day)</FormLabel>
-                            <FormControl>
-                                <Input type="number" placeholder="Optional" {...field} className="ai-architect-input" />
-                            </FormControl>
-                            <FormMessage />
+                              <FormLabel className="text-gray-300">Trip Duration (days)</FormLabel>
+                              <FormControl>
+                                <Input type="number" {...field} className="ai-architect-input" />
+                              </FormControl>
+                              <FormMessage />
                             </FormItem>
-                        )}
+                          )}
                         />
-                 </div>
-                <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="mustInclude"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-300">Must-Include Attractions (comma-separated)</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="e.g., Eiffel Tower, Louvre Museum (Optional)" {...field} className="ai-architect-input" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="avoid"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-300">Things to Avoid (comma-separated)</FormLabel>
-                          <FormControl>
-                            <Textarea placeholder="e.g., Overcrowded tourist traps (Optional)" {...field} className="ai-architect-input" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                         <FormField
+                          control={form.control}
+                          name="startTime"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-gray-300">Daily Start Time</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., 9:00 AM" {...field} className="ai-architect-input" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                        <FormField
+                          control={form.control}
+                          name="endTime"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel className="text-gray-300">Daily End Time</FormLabel>
+                              <FormControl>
+                                <Input placeholder="e.g., 10:00 PM" {...field} className="ai-architect-input" />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                    </div>
                 </div>
+                
+                <Collapsible open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen} className="space-y-4">
+                    <CollapsibleTrigger asChild>
+                        <div className="flex items-center gap-2 cursor-pointer text-sm text-primary hover:underline">
+                            <ChevronDown className={cn("w-4 h-4 transition-transform", isAdvancedOpen && "rotate-180")} />
+                            <span>Advanced Filters</span>
+                        </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-6 pt-4 animate-in fade-in-0 zoom-in-95">
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <FormField
+                            control={form.control}
+                            name="accommodation"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel className="text-gray-300">Accommodation Location</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="e.g., Le Marais neighborhood (Optional)" {...field} className="ai-architect-input" />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                            <FormField
+                            control={form.control}
+                            name="budget"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel className="text-gray-300">Max Daily Budget (INR)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" placeholder="Optional" {...field} className="ai-architect-input" />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                        </div>
+                         <FormField
+                            control={form.control}
+                            name="walkingDistance"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel className="text-gray-300">Max Walking Distance (km per day)</FormLabel>
+                                <FormControl>
+                                    <Input type="number" placeholder="Optional" {...field} className="ai-architect-input" />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                        <div className="grid md:grid-cols-2 gap-6">
+                            <FormField
+                            control={form.control}
+                            name="mustInclude"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel className="text-gray-300">Must-Include Attractions (comma-separated)</FormLabel>
+                                <FormControl>
+                                    <Textarea placeholder="e.g., Eiffel Tower, Louvre Museum (Optional)" {...field} className="ai-architect-input" />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                            <FormField
+                            control={form.control}
+                            name="avoid"
+                            render={({ field }) => (
+                                <FormItem>
+                                <FormLabel className="text-gray-300">Things to Avoid (comma-separated)</FormLabel>
+                                <FormControl>
+                                    <Textarea placeholder="e.g., Overcrowded tourist traps (Optional)" {...field} className="ai-architect-input" />
+                                </FormControl>
+                                <FormMessage />
+                                </FormItem>
+                            )}
+                            />
+                        </div>
+                    </CollapsibleContent>
+                </Collapsible>
 
                 <div className="text-center pt-4">
                   <Button type="submit" size="lg" disabled={isGenerating}>

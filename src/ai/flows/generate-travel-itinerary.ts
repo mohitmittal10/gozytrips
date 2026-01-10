@@ -16,7 +16,7 @@ const TravelItineraryInputSchema = z.object({
   numberOfDays: z.coerce.number().int().min(1).describe('The total duration of the trip in days.'),
   startTime: z.string().describe('The typical start time for daily activities (e.g., "9:00 AM").'),
   endTime: z.string().describe('The typical end time for daily activities (e.g., "10:00 PM").'),
-  budget: z.coerce.number().int().positive().optional().describe('The maximum budget per day in USD.'),
+  budget: z.coerce.number().int().positive().optional().describe('The maximum budget per day in INR.'),
   walkingDistance: z.coerce.number().int().positive().optional().describe('The maximum preferred walking distance per day in kilometers.'),
   mustInclude: z.string().optional().describe('A comma-separated list of must-see attractions or experiences.'),
   avoid: z.string().optional().describe('A comma-separated list of things to skip or avoid.'),
@@ -41,7 +41,7 @@ const TravelItineraryOutputSchema = z.object({
             name: z.string().describe('The name of the activity.'),
             rating: z.number().int().min(1).max(3).describe('Priority rating from 1 to 3 stars.'),
             duration: z.string().describe('Recommended duration for the activity (e.g., "90 min").'),
-            cost: z.string().describe('Estimated cost of the activity (e.g., "$20").'),
+            cost: z.string().describe('Estimated cost of the activity (e.g., "₹2000").'),
             bookingInfo: z.string().describe('Information on booking tickets (e.g., "Book online 2 weeks in advance").'),
             energyLevel: z.enum(['Low', 'Medium', 'High']).describe('The physical energy level required.'),
             instagramWorthy: z.boolean().describe('Is it a great photo opportunity?'),
@@ -79,7 +79,7 @@ const prompt = ai.definePrompt({
   CONSTRAINTS:
   - Trip duration: {{numberOfDays}} days
   - Daily active hours: {{startTime}} to {{endTime}}
-  - Maximum daily budget: \${{budget}}
+  - Maximum daily budget: ₹{{budget}}
   - Maximum walking distance per day: {{walkingDistance}} km
   - Must include: {{mustInclude}}
   - Avoid: {{avoid}}
