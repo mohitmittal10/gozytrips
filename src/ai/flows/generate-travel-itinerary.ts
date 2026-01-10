@@ -58,7 +58,7 @@ const TravelItineraryOutputSchema = z.object({
         walkingDistance: z.string().describe('Total walking distance in km.'),
         transitRides: z.number().int().describe('Number of transit rides taken.'),
         activeTime: z.string().describe('Total active hours.'),
-        restTime: z.string().describe('Total rest hours.'),
+        restTime: z_string().describe('Total rest hours.'),
       }),
     })
   ),
