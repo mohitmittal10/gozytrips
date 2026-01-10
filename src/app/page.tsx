@@ -6,6 +6,7 @@ import Gallery from '@/components/sections/gallery';
 import Testimonials from '@/components/sections/testimonials';
 import About from '@/components/sections/about';
 import Contact from '@/components/sections/contact';
+import AiArchitectCta from '@/components/sections/ai-architect-cta';
 
 export default function Home() {
   return (
@@ -15,6 +16,7 @@ export default function Home() {
         <Hero />
         <About />
         <Packages />
+        <AiArchitectCta />
         <Gallery />
         <Testimonials />
         <Contact />

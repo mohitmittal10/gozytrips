@@ -7,9 +7,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "./logo";
+import { usePathname } from "next/navigation";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,25 +22,27 @@ const Header = () => {
   }, []);
 
   const navLinks = [
-    { name: "Home", href: "/#home" },
-    { name: "About Us", href: "/#about" },
+    { name: "Home", href: "/" },
+    { name: "About", href: "/#about" },
     { name: "Packages", href: "/#packages" },
     { name: "AI Architect", href: "/ai-architect" },
     { name: "Gallery", href: "/#gallery" },
     { name: "Testimonials", href: "/#testimonials" },
-    { name: "Contact Us", href: "/#contact" },
+    { name: "Contact", href: "/#contact" },
   ];
+  
+  const isAiArchitectPage = pathname === '/ai-architect';
 
   return (
     <header
       className={cn(
         "fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full transition-all duration-300",
-        scrolled ? "max-w-6xl" : "max-w-full"
+        scrolled || isAiArchitectPage ? "max-w-5xl" : "max-w-full"
       )}
     >
       <div className={cn(
         "container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300",
-        scrolled ? "py-2 glass-card rounded-lg border" : "py-4"
+        scrolled || isAiArchitectPage ? "py-2 glass-main rounded-lg" : "py-4"
         )}>
         <Logo />
         <nav className="hidden md:flex items-center space-x-6">
@@ -60,7 +64,7 @@ const Header = () => {
                 <span className="sr-only">Open menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="bg-background/80 backdrop-blur-xl">
+            <SheetContent side="right" className="glass-main">
               <div className="flex flex-col h-full">
                 <div className="p-4">
                   <Logo />

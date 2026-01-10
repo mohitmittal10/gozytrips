@@ -5,12 +5,12 @@ import { Facebook, Instagram, Twitter } from "lucide-react";
 
 const Footer = () => {
   const navLinks = [
-    { name: "Home", href: "#home" },
-    { name: "About Us", href: "#about" },
-    { name: "Testimonials", href: "#testimonials" },
-    { name: "Contact Us", href: "#contact" },
-    { name: "Packages", href: "#packages" },
-    { name: "Gallery", href: "#gallery" },
+    { name: "Home", href: "/" },
+    { name: "About Us", href: "/#about" },
+    { name: "Testimonials", href: "/#testimonials" },
+    { name: "Contact Us", href: "/#contact" },
+    { name: "Packages", href: "/#packages" },
+    { name: "Gallery", href: "/#gallery" },
   ];
 
   const legalLinks = [
@@ -19,7 +19,7 @@ const Footer = () => {
   ];
 
   return (
-    <footer className="glass-card mt-auto border-t">
+    <footer className="glass-main mt-auto border-t">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1 space-y-4">
@@ -59,19 +59,19 @@ const Footer = () => {
             <h3 className="font-headline text-lg font-semibold text-primary">Connect</h3>
             <div className="flex mt-4 space-x-4">
               <Button variant="ghost" size="icon" asChild>
-                <Link href="#">
+                <Link href="#" target="_blank" rel="noopener noreferrer">
                   <Twitter className="h-5 w-5" />
                   <span className="sr-only">Twitter</span>
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" asChild>
-                <Link href="#">
+                <Link href="#" target="_blank" rel="noopener noreferrer">
                   <Facebook className="h-5 w-5" />
                   <span className="sr-only">Facebook</span>
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" asChild>
-                <Link href="#">
+                <Link href="#" target="_blank" rel="noopener noreferrer">
                   <Instagram className="h-5 w-5" />
                   <span className="sr-only">Instagram</span>
                 </Link>

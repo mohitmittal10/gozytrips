@@ -1,8 +1,9 @@
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
 import { Button } from "../ui/button";
-import { ArrowRight, MapPin } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const Packages = () => {
     const packages = [
@@ -38,15 +39,15 @@ const Packages = () => {
                 {packages.map((pkg) => {
                     const image = PlaceHolderImages.find(img => img.id === pkg.id);
                     return (
-                        <Card key={pkg.id} className="glass-card flex flex-col overflow-hidden">
+                        <Card key={pkg.id} className="glass-main flex flex-col overflow-hidden transition-all duration-300 hover:shadow-primary/20 hover:shadow-2xl hover:-translate-y-2">
                             <CardHeader className="p-0">
-                                <div className="relative h-60 w-full">
+                                <div className="relative h-60 w-full overflow-hidden">
                                     {image && (
                                         <Image
                                             src={image.imageUrl}
                                             alt={image.description}
                                             fill
-                                            className="object-cover"
+                                            className="object-cover transition-transform duration-500 group-hover:scale-110"
                                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                                             data-ai-hint={image.imageHint}
                                         />
@@ -62,8 +63,10 @@ const Packages = () => {
                                 </div>
                             </CardContent>
                             <CardFooter>
-                                <Button className="w-full" variant="secondary">
-                                    View Details <ArrowRight className="ml-2 h-4 w-4" />
+                                <Button className="w-full" variant="secondary" asChild>
+                                    <Link href="#contact">
+                                        View Details <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Link>
                                 </Button>
                             </CardFooter>
                         </Card>

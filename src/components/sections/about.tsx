@@ -2,6 +2,7 @@ import { PlaceHolderImages } from "@/lib/placeholder-images";
 import Image from "next/image";
 import { Button } from "../ui/button";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 const About = () => {
     const aboutImage = PlaceHolderImages.find(img => img.id === 'about-us');
@@ -18,18 +19,18 @@ const About = () => {
                         With years of expertise and a passion for exploration, our team of travel connoisseurs meticulously designs each itinerary, ensuring unparalleled comfort, exclusivity, and authenticity. From serene beach escapes to vibrant cultural immersions, we unlock the doors to the world's most extraordinary experiences.
                     </p>
                     <Button asChild>
-                        <a href="#contact">
+                        <Link href="#contact">
                             Start Your Journey <ArrowRight className="ml-2 h-4 w-4" />
-                        </a>
+                        </Link>
                     </Button>
                 </div>
-                <div className="relative h-80 md:h-[500px] rounded-lg overflow-hidden shadow-2xl">
+                <div className="relative h-80 md:h-[500px] rounded-lg overflow-hidden shadow-2xl glass-main">
                     {aboutImage && (
                         <Image
                             src={aboutImage.imageUrl}
                             alt={aboutImage.description}
                             fill
-                            className="object-cover"
+                            className="object-cover transition-transform duration-500 hover:scale-110"
                             sizes="(max-width: 768px) 100vw, 50vw"
                             data-ai-hint={aboutImage.imageHint}
                         />

@@ -5,7 +5,6 @@ import Image from "next/image";
 const Gallery = () => {
     const galleryImages = PlaceHolderImages.filter(img => img.id.startsWith('gallery-'));
     
-    // Define spans for a masonry-like layout
     const spans = [
         'md:col-span-2 md:row-span-2', 'md:col-span-1', 'md:col-span-1',
         'md:col-span-1', 'md:col-span-1', 'md:col-span-2'
@@ -21,7 +20,7 @@ const Gallery = () => {
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 auto-rows-[250px] gap-4">
                 {galleryImages.map((image, index) => (
-                    <div key={image.id} className={cn("relative rounded-lg overflow-hidden group shadow-lg", spans[index % spans.length])}>
+                    <div key={image.id} className={cn("relative rounded-lg overflow-hidden group shadow-lg glass-main", spans[index % spans.length])}>
                         <Image
                             src={image.imageUrl}
                             alt={image.description}

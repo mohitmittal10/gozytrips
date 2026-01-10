@@ -1,11 +1,11 @@
 "use client";
 
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Calendar, Car, CheckCircle2 } from "lucide-react";
+import { Calendar, CheckCircle2 } from "lucide-react";
+import Image from "next/image";
 
 type ItineraryTimelineProps = {
   itinerary: TravelItineraryOutput["itinerary"];
@@ -22,14 +22,14 @@ const ItineraryTimelineSkeleton = () => {
                         <Skeleton className="h-6 w-6 rounded-full" />
                     </div>
                     <div className="flex-grow">
-                        <Card className="glass-card animate-pulse">
+                        <Card className="glass-main animate-pulse">
                             <CardHeader>
                                 <Skeleton className="h-6 w-1/4" />
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <Skeleton className="h-4 w-full" />
                                 <Skeleton className="h-4 w-3/4" />
-                                <Skeleton className="h-10 w-36" />
+                                <Skeleton className="h-40 w-full" />
                             </CardContent>
                         </Card>
                     </div>
@@ -66,23 +66,32 @@ const ItineraryTimeline = ({ itinerary, isLoading }: ItineraryTimelineProps) => 
             </div>
           </div>
           <div className="flex-1">
-            <Card className="glass-card">
+            <Card className="glass-main">
               <CardHeader>
-                <CardTitle className="font-headline text-2xl text-primary">Day {day.day}</CardTitle>
+                <p className="font-headline text-lg text-primary/80">Day {day.day}</p>
+                <CardTitle className="font-headline text-3xl text-primary">{day.title}</CardTitle>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-3 mb-6">
+                <ul className="space-y-8">
                   {day.activities.map((activity, i) => (
-                    <li key={i} className="flex items-start gap-3">
-                      <CheckCircle2 className="w-5 h-5 text-primary/80 mt-1 flex-shrink-0" />
-                      <span className="text-foreground/90">{activity}</span>
+                    <li key={i} className="flex flex-col gap-4">
+                      <div className="flex items-start gap-3">
+                        <CheckCircle2 className="w-5 h-5 text-primary/80 mt-1 flex-shrink-0" />
+                        <p className="text-foreground/90 font-body text-base">{activity.description}</p>
+                      </div>
+                      <div className="relative h-48 sm:h-64 rounded-md overflow-hidden ml-8">
+                          <Image 
+                            src={`https://picsum.photos/seed/${day.day * 10 + i}/600/400`}
+                            alt={activity.description}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 80vw, 40vw"
+                            data-ai-hint={activity.imageHint}
+                          />
+                      </div>
                     </li>
                   ))}
                 </ul>
-                <Button variant="secondary">
-                  <Car className="mr-2 h-4 w-4" />
-                  Book Taxi for this Day
-                </Button>
               </CardContent>
             </Card>
           </div>

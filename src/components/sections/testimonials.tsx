@@ -44,11 +44,11 @@ const Testimonials = () => {
                     {testimonials.map((testimonial, index) => (
                         <CarouselItem key={index}>
                             <div className="p-1">
-                                <Card className="glass-card">
+                                <Card className="glass-main">
                                     <CardContent className="flex flex-col items-center justify-center p-8 text-center">
                                         <div className="flex mb-4">
                                             {[...Array(5)].map((_, i) => (
-                                                <Star key={i} className={`w-5 h-5 ${i < testimonial.rating ? 'text-primary fill-current' : 'text-primary/50'}`} />
+                                                <Star key={i} className={`w-5 h-5 transition-colors duration-300 ${i < testimonial.rating ? 'text-primary fill-current' : 'text-primary/50'}`} />
                                             ))}
                                         </div>
                                         <p className="italic text-lg text-foreground mb-6">"{testimonial.review}"</p>
@@ -68,8 +68,8 @@ const Testimonials = () => {
                         </CarouselItem>
                     ))}
                 </CarouselContent>
-                <CarouselPrevious className="hidden sm:flex" />
-                <CarouselNext className="hidden sm:flex" />
+                <CarouselPrevious className="hidden sm:flex glass-main" />
+                <CarouselNext className="hidden sm:flex glass-main" />
             </Carousel>
         </section>
     );
