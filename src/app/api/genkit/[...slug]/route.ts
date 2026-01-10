@@ -1,13 +1,9 @@
 
-import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
 import {defineNextJsHandler} from '@genkit-ai/next';
 import '@/ai/flows/generate-travel-itinerary';
+import { ai } from '@/ai/genkit';
 
-export const ai = genkit({
-  plugins: [googleAI({apiKey: process.env.GEMINI_API_KEY})],
-  enableTracingAndMetrics: true,
-  logLevel: 'debug',
-});
+// This export is necessary for Genkit to find the flows.
+export {ai};
 
 export const POST = defineNextJsHandler();
