@@ -4,7 +4,7 @@ import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Calendar, Star, Clock, Sigma, Footprints, Wallet, CheckCircle, ShipWheel, Mountain, Sun, Snowflake, User, Users, Camera, Info } from "lucide-react";
+import { Calendar, Star, Clock, Footprints, Wallet, CheckCircle, ShipWheel, Mountain, Sun, Users, Camera, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 type ItineraryTimelineProps = {
@@ -80,7 +80,11 @@ const ItineraryTimeline = ({ itinerary, isLoading }: ItineraryTimelineProps) => 
                         <p className="font-headline text-lg text-primary/80">Day {day.day} - {day.date}</p>
                         <CardTitle className="font-headline text-3xl text-primary">{day.areaFocus}</CardTitle>
                     </div>
-                    <Badge variant="secondary">Morning: {day.morningRoute}</Badge>
+                    <div className="flex flex-col items-end gap-2">
+                      <Badge variant="secondary">Morning: {day.morningRoute}</Badge>
+                      <Badge variant="secondary">Afternoon: {day.afternoonRoute}</Badge>
+                      <Badge variant="secondary">Evening: {day.eveningRoute}</Badge>
+                    </div>
                 </div>
               </CardHeader>
               <CardContent className="py-6">
