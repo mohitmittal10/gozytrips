@@ -29,7 +29,7 @@ import ItineraryTimeline from "../itinerary-timeline";
 import { Sparkles } from "lucide-react";
 
 const formSchema = z.object({
-  destination: z.string().min(2, "Destination must be at least 2 characters."),
+  destinations: z.string().min(2, "Destination must be at least 2 characters."),
   numberOfDays: z.coerce.number().int().min(1, "Must be at least 1 day.").max(14, "Cannot exceed 14 days."),
   vibe: z.string().min(1, "Please select a vibe."),
 });
@@ -42,7 +42,7 @@ const AiArchitect = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      destination: "",
+      destinations: "",
       numberOfDays: 3,
       vibe: "Adventure",
     },
@@ -76,9 +76,9 @@ const AiArchitect = () => {
       </div>
 
       <div className="max-w-4xl mx-auto">
-        <Card className="glass-card">
+        <Card className="ai-architect-page-card">
           <CardHeader>
-            <CardTitle className="font-headline text-2xl flex items-center gap-2">
+            <CardTitle className="font-headline text-2xl flex items-center gap-2 text-white">
                 <Sparkles className="w-6 h-6 text-primary" />
                 <span>Create Your Itinerary</span>
             </CardTitle>
@@ -88,12 +88,12 @@ const AiArchitect = () => {
               <form onSubmit={form.handleSubmit(onSubmit)} className="grid md:grid-cols-3 gap-6 items-end">
                 <FormField
                   control={form.control}
-                  name="destination"
+                  name="destinations"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Destination</FormLabel>
+                      <FormLabel className="text-gray-300">Destinations</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Paris, France" {...field} />
+                        <Input placeholder="e.g., Paris, Rome, Bali" {...field} className="ai-architect-input" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -104,9 +104,9 @@ const AiArchitect = () => {
                   name="numberOfDays"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Number of Days</FormLabel>
+                      <FormLabel className="text-gray-300">Number of Days</FormLabel>
                       <FormControl>
-                        <Input type="number" min="1" max="14" {...field} />
+                        <Input type="number" min="1" max="14" {...field} className="ai-architect-input" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -117,14 +117,14 @@ const AiArchitect = () => {
                   name="vibe"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Vibe</FormLabel>
+                      <FormLabel className="text-gray-300">Vibe</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger className="ai-architect-input">
                             <SelectValue placeholder="Select a travel style" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="bg-background/80 backdrop-blur-lg">
+                        <SelectContent className="bg-gray-900/80 backdrop-blur-lg border-gray-700 text-white">
                           <SelectItem value="Adventure">Adventure</SelectItem>
                           <SelectItem value="Chill">Chill</SelectItem>
                           <SelectItem value="Foodie">Foodie</SelectItem>

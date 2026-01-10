@@ -60,6 +60,10 @@
   section {
     @apply py-16 sm:py-20 md:py-24;
   }
+
+  .ai-architect-page {
+    @apply bg-black;
+  }
 }
 
 @layer utilities {
@@ -69,10 +73,19 @@
   .dark .glass-card {
     @apply bg-black/10;
   }
-  .ai-architect-page .glass-card {
-    background-color: rgba(255, 255, 255, 0.05) !important;
+  .ai-architect-page .ai-architect-page-card {
+    background-color: rgba(30, 30, 30, 0.5) !important;
     backdrop-filter: blur(18px) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: white;
+  }
+  .ai-architect-input {
+    background-color: rgba(40, 40, 40, 0.7) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
+  }
+  .ai-architect-input::placeholder {
+    color: rgb(156 163 175) !important;
   }
   .glass-main {
     @apply bg-[rgba(212,163,115,0.12)] backdrop-blur-[18px] border border-[hsla(var(--primary)/0.2)] saturate-150;
