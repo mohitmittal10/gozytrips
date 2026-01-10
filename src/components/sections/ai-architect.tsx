@@ -101,7 +101,7 @@ const AiArchitect = () => {
 
     try {
         const canvas = await html2canvas(itineraryElement, {
-            scale: 2,
+            scale: 2, // Increase scale for better quality
             backgroundColor: null, // Use transparent background to show CSS gradient
             useCORS: true, // For images from other origins
         });
@@ -319,3 +319,5 @@ const AiArchitect = () => {
 };
 
 export default AiArchitect;
+
+    
