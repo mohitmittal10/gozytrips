@@ -13,7 +13,7 @@ import {z} from 'genkit';
 
 const TravelItineraryInputSchema = z.object({
   destination: z.string().describe('The desired travel destination.'),
-  numberOfDays: z.number().int().positive().describe('The number of days for the trip.'),
+  numberOfDays: z.number().int().min(1).describe('The number of days for the trip.'),
   vibe: z.string().describe('The desired vibe of the trip (e.g., chill, adventure, foodie).'),
 });
 export type TravelItineraryInput = z.infer<typeof TravelItineraryInputSchema>;
@@ -47,7 +47,7 @@ const prompt = ai.definePrompt({
   For each day:
   1.  Create a catchy, thematic title (e.g., "A Day of Parisian Romance," "Secrets of the Roman Forum").
   2.  Write engaging, persuasive descriptions for each activity. Don't just list places; sell the experience. Use evocative language. What will they see, feel, taste, or hear? Make it sound like a must-do adventure.
-  3.  For each activity, provide a short, effective `imageHint` (2-3 words) to find a stunning, representative photo.
+  3.  For each activity, provide a short, effective 'imageHint' (2-3 words) to find a stunning, representative photo.
 
   Your response must be a valid JSON object that adheres to the output schema.
   `,
