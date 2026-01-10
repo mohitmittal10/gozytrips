@@ -13,13 +13,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-  } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useState } from "react";
 import { generateTravelItinerary } from "@/ai/flows/generate-travel-itinerary";
@@ -27,11 +20,18 @@ import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary
 import { useToast } from "@/hooks/use-toast";
 import ItineraryTimeline from "../itinerary-timeline";
 import { Sparkles } from "lucide-react";
+import { Textarea } from "../ui/textarea";
 
 const formSchema = z.object({
-  destinations: z.string().min(2, "Destination must be at least 2 characters."),
-  numberOfDays: z.coerce.number().int().min(1, "Must be at least 1 day.").max(14, "Cannot exceed 14 days."),
-  vibe: z.string().min(1, "Please select a vibe."),
+    destination: z.string().min(2, "Destination is required."),
+    numberOfDays: z.coerce.number().int().min(1, "Must be at least 1 day.").max(14, "Cannot exceed 14 days."),
+    startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]( (AM|PM))?$/, "Invalid time format (e.g., 9:00 AM)."),
+    endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]( (AM|PM))?$/, "Invalid time format (e.g., 10:00 PM)."),
+    budget: z.coerce.number().int().positive("Budget must be a positive number."),
+    walkingDistance: z.coerce.number().int().positive("Distance must be a positive number."),
+    mustInclude: z.string().optional(),
+    avoid: z.string().optional(),
+    accommodation: z.string().min(2, "Accommodation location is required."),
 });
 
 const AiArchitect = () => {
@@ -42,9 +42,15 @@ const AiArchitect = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      destinations: "",
+      destination: "Paris, France",
       numberOfDays: 3,
-      vibe: "Adventure",
+      startTime: "9:00 AM",
+      endTime: "10:00 PM",
+      budget: 150,
+      walkingDistance: 10,
+      mustInclude: "Eiffel Tower, Louvre Museum",
+      avoid: "Tourist traps",
+      accommodation: "Le Marais neighborhood",
     },
   });
 
@@ -59,7 +65,7 @@ const AiArchitect = () => {
         toast({
             variant: "destructive",
             title: "Generation Failed",
-            description: "Sorry, we couldn't create your itinerary. Please try again.",
+            description: "Sorry, we couldn't create your itinerary. Please try again or check the input fields.",
         });
     } finally {
         setIsGenerating(false);
@@ -75,70 +81,146 @@ const AiArchitect = () => {
         </p>
       </div>
 
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-5xl mx-auto">
         <Card className="ai-architect-page-card">
           <CardHeader>
             <CardTitle className="font-headline text-2xl flex items-center gap-2 text-white">
                 <Sparkles className="w-6 h-6 text-primary" />
-                <span>Create Your Itinerary</span>
+                <span>Create Your Optimized Itinerary</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="grid md:grid-cols-3 gap-6 items-end">
-                <FormField
-                  control={form.control}
-                  name="destinations"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">Destinations</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Paris, Rome, Bali" {...field} className="ai-architect-input" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="numberOfDays"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">Number of Days</FormLabel>
-                      <FormControl>
-                        <Input type="number" min="1" max="14" {...field} className="ai-architect-input" />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="vibe"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">Vibe</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger className="ai-architect-input">
-                            <SelectValue placeholder="Select a travel style" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-gray-900/80 backdrop-blur-lg border-gray-700 text-white">
-                          <SelectItem value="Adventure">Adventure</SelectItem>
-                          <SelectItem value="Chill">Chill</SelectItem>
-                          <SelectItem value="Foodie">Foodie</SelectItem>
-                          <SelectItem value="Cultural">Cultural</SelectItem>
-                          <SelectItem value="Luxury">Luxury</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="md:col-span-3 text-center mt-4">
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                <div className="grid md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="destination"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">Destination</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Paris, France" {...field} className="ai-architect-input" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="accommodation"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">Accommodation Location</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Le Marais neighborhood" {...field} className="ai-architect-input" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </div>
+                <div className="grid md:grid-cols-4 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="numberOfDays"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">Trip Duration (days)</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} className="ai-architect-input" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="budget"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">Max Daily Budget ($)</FormLabel>
+                          <FormControl>
+                            <Input type="number" {...field} className="ai-architect-input" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                     <FormField
+                      control={form.control}
+                      name="startTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">Daily Start Time</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 9:00 AM" {...field} className="ai-architect-input" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="endTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">Daily End Time</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 10:00 PM" {...field} className="ai-architect-input" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </div>
+                 <div className="grid md:grid-cols-1 gap-6">
+                    <FormField
+                        control={form.control}
+                        name="walkingDistance"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel className="text-gray-300">Max Walking Distance (km per day)</FormLabel>
+                            <FormControl>
+                                <Input type="number" {...field} className="ai-architect-input" />
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                        />
+                 </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="mustInclude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">Must-Include Attractions (comma-separated)</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="e.g., Eiffel Tower, Louvre Museum" {...field} className="ai-architect-input" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="avoid"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">Things to Avoid (comma-separated)</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="e.g., Overcrowded tourist traps" {...field} className="ai-architect-input" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                </div>
+
+                <div className="text-center pt-4">
                   <Button type="submit" size="lg" disabled={isGenerating}>
-                    {isGenerating ? "Crafting Your Journey..." : "Generate My Trip"}
+                    {isGenerating ? "Crafting Your Journey..." : "Generate Optimized Trip"}
                   </Button>
                 </div>
               </form>

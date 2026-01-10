@@ -1,7 +1,7 @@
 'use server';
 
 /**
- * @fileOverview Generates a personalized travel itinerary based on destination, number of days, and vibe.
+ * @fileOverview Generates a personalized and optimized travel itinerary.
  *
  * - generateTravelItinerary - A function that generates a travel itinerary.
  * - TravelItineraryInput - The input type for the generateTravelItinerary function.
@@ -12,22 +12,56 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const TravelItineraryInputSchema = z.object({
-  destinations: z.string().describe('The desired travel destinations, can be a single place or a comma-separated list.'),
-  numberOfDays: z.number().int().min(1).describe('The number of days for the trip.'),
-  vibe: z.string().describe('The desired vibe of the trip (e.g., chill, adventure, foodie).'),
+  destination: z.string().describe('The primary travel destination.'),
+  numberOfDays: z.coerce.number().int().min(1).describe('The total duration of the trip in days.'),
+  startTime: z.string().describe('The typical start time for daily activities (e.g., "9:00 AM").'),
+  endTime: z.string().describe('The typical end time for daily activities (e.g., "10:00 PM").'),
+  budget: z.coerce.number().int().positive().describe('The maximum budget per day in USD.'),
+  walkingDistance: z.coerce.number().int().positive().describe('The maximum preferred walking distance per day in kilometers.'),
+  mustInclude: z.string().describe('A comma-separated list of must-see attractions or experiences.'),
+  avoid: z.string().describe('A comma-separated list of things to skip or avoid.'),
+  accommodation: z.string().describe('The neighborhood or address of the accommodation.'),
 });
 export type TravelItineraryInput = z.infer<typeof TravelItineraryInputSchema>;
 
 const TravelItineraryOutputSchema = z.object({
   itinerary: z.array(
     z.object({
-      day: z.number().int().min(1).describe('The day number in the itinerary.'),
-      title: z.string().describe("A catchy and descriptive title for the day's theme or main event."),
-      activities: z.array(z.object({
-        description: z.string().describe('An engaging, persuasive description of the activity that sells the experience. Use different font styles or markdown to make it more appealing.'),
-      })).describe('A list of activities for the day.'),
+      day: z.number().int().min(1),
+      date: z.string().describe('The date for this day of the itinerary.'),
+      areaFocus: z.string().describe('The geographical area or neighborhood focus for the day.'),
+      morningRoute: z.string().describe('A summary of the morning route.'),
+      afternoonRoute: z.string().describe('A summary of the afternoon route.'),
+      eveningRoute: z.string().describe('A summary of the evening route.'),
+      timeline: z.array(
+        z.object({
+          time: z.string().describe('The specific time for the activity (e.g., "08:00 AM").'),
+          details: z.string().describe('A short description of the step (e.g., "Depart Hotel", "Walk 10 min to [Location]").'),
+          activity: z.object({
+            name: z.string().describe('The name of the activity.'),
+            rating: z.number().int().min(1).max(3).describe('Priority rating from 1 to 3 stars.'),
+            duration: z.string().describe('Recommended duration for the activity (e.g., "90 min").'),
+            cost: z.string().describe('Estimated cost of the activity (e.g., "$20").'),
+            bookingInfo: z.string().describe('Information on booking tickets (e.g., "Book online 2 weeks in advance").'),
+            energyLevel: z.enum(['Low', 'Medium', 'High']).describe('The physical energy level required.'),
+            instagramWorthy: z.boolean().describe('Is it a great photo opportunity?'),
+            kidFriendly: z.boolean().describe('Is it suitable for children?'),
+            weatherDependent: z.boolean().describe('Is the activity dependent on good weather?'),
+            whyNow: z.string().describe('Justification for visiting at this specific time (e.g., "Opens at 8 AM, crowds arrive by 10 AM").'),
+            proTip: z.string().describe('An insider tip for the activity.'),
+          }).optional(),
+        })
+      ),
+      dailyStats: z.object({
+        attractionsVisited: z.number().int().describe('Total number of attractions visited.'),
+        totalCost: z.string().describe('Estimated total cost for the day.'),
+        walkingDistance: z.string().describe('Total walking distance in km.'),
+        transitRides: z.number().int().describe('Number of transit rides taken.'),
+        activeTime: z.string().describe('Total active hours.'),
+        restTime: z.string().describe('Total rest hours.'),
+      }),
     })
-  ).describe('A detailed travel itinerary for each day.'),
+  ),
 });
 export type TravelItineraryOutput = z.infer<typeof TravelItineraryOutputSchema>;
 
@@ -39,15 +73,28 @@ const prompt = ai.definePrompt({
   name: 'travelItineraryPrompt',
   input: {schema: TravelItineraryInputSchema},
   output: {schema: TravelItineraryOutputSchema},
-  prompt: `You are a world-class travel expert and storyteller who crafts irresistible, personalized travel itineraries. Your goal is to make the user dream about the trip.
+  prompt: `
+  Generate an optimized travel itinerary for {{destination}} that minimizes travel time and maximizes experiences.
 
-  Generate a {{numberOfDays}}-day travel itinerary for a trip to the following destinations: {{destinations}}, with a "{{vibe}}" vibe.
+  CONSTRAINTS:
+  - Trip duration: {{numberOfDays}} days
+  - Daily active hours: {{startTime}} to {{endTime}}
+  - Maximum daily budget: \${{budget}}
+  - Maximum walking distance per day: {{walkingDistance}} km
+  - Must include: {{mustInclude}}
+  - Avoid: {{avoid}}
+  - Accommodation location: {{accommodation}}
 
-  For each day:
-  1.  Create a catchy, thematic title (e.g., "A Day of Parisian Romance," "Secrets of the Roman Forum").
-  2.  Write engaging, persuasive descriptions for each activity. Don't just list places; sell the experience. Keep the description concise and exciting, around 2-3 lines. Use evocative language and various font styles (like bold or italics using markdown) to make the text exciting.
+  OPTIMIZATION GOALS:
+  1. Group nearby attractions on the same day.
+  2. Visit popular sites at off-peak hours.
+  3. Sequence activities by opening/closing times.
+  4. Account for day-of-week closures.
+  5. Position restaurants near midday/evening locations.
+  6. Schedule rest after high-intensity activities.
+  7. Reserve energy-intensive activities for the morning.
 
-  Your response must be a valid JSON object that adheres to the output schema.
+  Your response must be a valid JSON object that adheres to the output schema. For each day, provide a summary route, a detailed timeline, and daily stats. Each activity in the timeline must be fully detailed as per the schema.
   `,
 });
 
