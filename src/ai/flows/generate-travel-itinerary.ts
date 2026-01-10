@@ -21,7 +21,7 @@ export type TravelItineraryInput = z.infer<typeof TravelItineraryInputSchema>;
 const TravelItineraryOutputSchema = z.object({
   itinerary: z.array(
     z.object({
-      day: z.number().int().positive().describe('The day number in the itinerary.'),
+      day: z.number().int().min(1).describe('The day number in the itinerary.'),
       activities: z.array(z.string()).describe('A list of activities for the day.'),
     })
   ).describe('A detailed travel itinerary for each day.'),
