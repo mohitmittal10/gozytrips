@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { generateTravelItinerary } from "@/ai/flows/generate-travel-itinerary";
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +54,31 @@ const AiArchitect = () => {
       avoid: "Tourist traps",
     },
   });
+
+  // Load itinerary from localStorage on component mount
+  useEffect(() => {
+    try {
+      const savedItinerary = localStorage.getItem("travelItinerary");
+      if (savedItinerary) {
+        setItinerary(JSON.parse(savedItinerary));
+      }
+    } catch (error) {
+      console.error("Failed to load itinerary from local storage", error);
+    }
+  }, []);
+
+  // Save itinerary to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      if (itinerary) {
+        localStorage.setItem("travelItinerary", JSON.stringify(itinerary));
+      } else {
+        localStorage.removeItem("travelItinerary");
+      }
+    } catch (error) {
+      console.error("Failed to save itinerary to local storage", error);
+    }
+  }, [itinerary]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsGenerating(true);
