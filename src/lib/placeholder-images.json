@@ -1,3 +1,70 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero-background",
+      "description": "A stunning view of mountains over a serene lake at sunset.",
+      "imageUrl": "https://images.unsplash.com/photo-1610552050890-fe99536c2615?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxtb3VudGFpbiUyMGxhbmRzY2FwZXxlbnwwfHx8fDE3Njc5MzQwNDF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mountain landscape"
+    },
+    {
+      "id": "about-us",
+      "description": "A person looking at a world map.",
+      "imageUrl": "https://images.unsplash.com/photo-1597434430513-537624aa33c9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHx0cmF2ZWwlMjBwbGFubmluZ3xlbnwwfHx8fDE3Njc5MzM0OTR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "travel planning"
+    },
+    {
+      "id": "package-paris",
+      "description": "The Eiffel Tower in Paris at night.",
+      "imageUrl": "https://images.unsplash.com/photo-1511739001486-6bfe10ce785f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxFaWZmZWwlMjBUb3dlcnxlbnwwfHx8fDE3Njc5OTkyNTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "Eiffel Tower"
+    },
+    {
+      "id": "package-maldives",
+      "description": "Overwater bungalows in the Maldives.",
+      "imageUrl": "https://images.unsplash.com/photo-1611561937862-9d0527d25f63?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8TWFsZGl2ZXMlMjBiZWFjaHxlbnwwfHx8fDE3NjgwNTc3NDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "Maldives beach"
+    },
+    {
+      "id": "package-kyoto",
+      "description": "A traditional temple in Kyoto, Japan during autumn.",
+      "imageUrl": "https://images.unsplash.com/photo-1706132604889-eaec56922a73?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxLeW90byUyMHRlbXBsZXxlbnwwfHx8fDE3Njc5OTkyNTd8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "Kyoto temple"
+    },
+    {
+      "id": "gallery-1",
+      "description": "Colorful hot air balloons over Cappadocia.",
+      "imageUrl": "https://images.unsplash.com/photo-1549740425-5e9ed4d8cd34?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxob3QlMjBhaXIlMjBiYWxsb29ufGVufDB8fHx8MTc2ODA0NTc3OXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "hot air balloon"
+    },
+    {
+      "id": "gallery-2",
+      "description": "The Northern Lights over a snowy landscape.",
+      "imageUrl": "https://images.unsplash.com/photo-1531366936337-7c912a4589a7?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxhdXJvcmElMjBib3JlYWxpc3xlbnwwfHx8fDE3NjgwNTc3NDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "aurora borealis"
+    },
+    {
+      "id": "gallery-3",
+      "description": "A vibrant street in a Moroccan medina.",
+      "imageUrl": "https://images.unsplash.com/photo-1595183163487-ab8321cc5239?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxNb3JvY2NvJTIwc3RyZWV0fGVufDB8fHx8MTc2ODA1Nzc0M3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "Morocco street"
+    },
+    {
+      "id": "gallery-4",
+      "description": "Santorini with its white buildings and blue domes.",
+      "imageUrl": "https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxTYW50b3JpbmklMjBncmVlY2V8ZW58MHx8fHwxNzY4MDU3NzQzfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "Santorini greece"
+    },
+    {
+      "id": "gallery-5",
+      "description": "Machu Picchu ancient ruins in Peru.",
+      "imageUrl": "https://images.unsplash.com/photo-1590835192370-3941b97e93fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxNYWNodSUyMFBpY2NodXxlbnwwfHx8fDE3NjgwNDE2NTJ8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "Machu Picchu"
+    },
+    {
+      "id": "gallery-6",
+      "description": "A gondola in the canals of Venice, Italy.",
+      "imageUrl": "https://images.unsplash.com/photo-1754417443708-562c39c4eb46?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxWZW5pY2UlMjBjYW5hbHxlbnwwfHx8fDE3NjgwNTc3NDN8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "Venice canal"
+    }
+  ]
 }
