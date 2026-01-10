@@ -64,12 +64,15 @@
 
 @layer utilities {
   .glass-card {
-    @apply bg-[rgba(212,163,115,0.05)] backdrop-blur-lg border border-[hsla(var(--primary)/0.2)] saturate-150;
+    @apply bg-white/5 backdrop-blur-lg border border-white/10 saturate-150;
+  }
+  .dark .glass-card {
+    @apply bg-black/10;
   }
   .ai-architect-page .glass-card {
-    background-color: rgba(43, 34, 28, 0.4) !important;
+    background-color: rgba(255, 255, 255, 0.05) !important;
     backdrop-filter: blur(18px) !important;
-    border: 1px solid rgba(212, 163, 115, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
   }
   .glass-main {
     @apply bg-[rgba(212,163,115,0.12)] backdrop-blur-[18px] border border-[hsla(var(--primary)/0.2)] saturate-150;

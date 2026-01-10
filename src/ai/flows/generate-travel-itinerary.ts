@@ -22,10 +22,9 @@ const TravelItineraryOutputSchema = z.object({
   itinerary: z.array(
     z.object({
       day: z.number().int().min(1).describe('The day number in the itinerary.'),
-      title: z.string().describe('A catchy and descriptive title for the day\'s theme or main event.'),
+      title: z.string().describe("A catchy and descriptive title for the day's theme or main event."),
       activities: z.array(z.object({
-        description: z.string().describe('An engaging, persuasive description of the activity that sells the experience.'),
-        imageHint: z.string().describe('Two or three keywords for finding a relevant photo for this activity. For example: "Eiffel Tower night".'),
+        description: z.string().describe('An engaging, persuasive description of the activity that sells the experience. Use different font styles or markdown to make it more appealing.'),
       })).describe('A list of activities for the day.'),
     })
   ).describe('A detailed travel itinerary for each day.'),
@@ -46,8 +45,7 @@ const prompt = ai.definePrompt({
 
   For each day:
   1.  Create a catchy, thematic title (e.g., "A Day of Parisian Romance," "Secrets of the Roman Forum").
-  2.  Write engaging, persuasive descriptions for each activity. Don't just list places; sell the experience. Use evocative language. What will they see, feel, taste, or hear? Make it sound like a must-do adventure.
-  3.  For each activity, provide a short, effective 'imageHint' (2-3 words) to find a stunning, representative photo.
+  2.  Write engaging, persuasive descriptions for each activity. Don't just list places; sell the experience. Use evocative language and various font styles (like bold or italics using markdown) to make the text exciting. What will they see, feel, taste, or hear? Make it sound like a must-do adventure.
 
   Your response must be a valid JSON object that adheres to the output schema.
   `,

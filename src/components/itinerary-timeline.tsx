@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Calendar, CheckCircle2 } from "lucide-react";
-import Image from "next/image";
 
 type ItineraryTimelineProps = {
   itinerary: TravelItineraryOutput["itinerary"];
@@ -22,14 +21,13 @@ const ItineraryTimelineSkeleton = () => {
                         <Skeleton className="h-6 w-6 rounded-full" />
                     </div>
                     <div className="flex-grow">
-                        <Card className="glass-main animate-pulse">
+                        <Card className="glass-card animate-pulse">
                             <CardHeader>
                                 <Skeleton className="h-6 w-1/4" />
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <Skeleton className="h-4 w-full" />
                                 <Skeleton className="h-4 w-3/4" />
-                                <Skeleton className="h-40 w-full" />
                             </CardContent>
                         </Card>
                     </div>
@@ -66,7 +64,7 @@ const ItineraryTimeline = ({ itinerary, isLoading }: ItineraryTimelineProps) => 
             </div>
           </div>
           <div className="flex-1">
-            <Card className="glass-main">
+            <Card className="glass-card">
               <CardHeader>
                 <p className="font-headline text-lg text-primary/80">Day {day.day}</p>
                 <CardTitle className="font-headline text-3xl text-primary">{day.title}</CardTitle>
@@ -77,17 +75,7 @@ const ItineraryTimeline = ({ itinerary, isLoading }: ItineraryTimelineProps) => 
                     <li key={i} className="flex flex-col gap-4">
                       <div className="flex items-start gap-3">
                         <CheckCircle2 className="w-5 h-5 text-primary/80 mt-1 flex-shrink-0" />
-                        <p className="text-foreground/90 font-body text-base">{activity.description}</p>
-                      </div>
-                      <div className="relative h-48 sm:h-64 rounded-md overflow-hidden ml-8">
-                          <Image 
-                            src={`https://picsum.photos/seed/${day.day * 10 + i}/600/400`}
-                            alt={activity.description}
-                            fill
-                            className="object-cover"
-                            sizes="(max-width: 768px) 80vw, 40vw"
-                            data-ai-hint={activity.imageHint}
-                          />
+                        <p className="text-foreground/90 font-body text-base" dangerouslySetInnerHTML={{ __html: activity.description.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>') }}></p>
                       </div>
                     </li>
                   ))}
