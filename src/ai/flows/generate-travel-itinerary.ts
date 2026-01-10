@@ -9,7 +9,7 @@
  * - TravelItineraryOutput - The return type for the generateTravelItinerary function.
  */
 
-import {ai} from '@/app/api/genkit/[...slug]/route';
+import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const TravelItineraryInputSchema = z.object({

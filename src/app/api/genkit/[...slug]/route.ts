@@ -1,17 +1,9 @@
 
 import {defineNextJsHandler} from '@genkit-ai/next';
-import {genkit} from 'genkit';
-import {googleAI} from '@genkit-ai/google-genai';
+import {ai} from '@/ai/genkit';
 
-// Initialize Genkit and export the 'ai' object.
-// This is the required pattern for the Next.js handler.
-export const ai = genkit({
-  plugins: [googleAI({apiKey: process.env.GEMINI_API_KEY})],
-  enableTracingAndMetrics: true,
-  logLevel: 'debug',
-});
-
-// Import flows AFTER 'ai' is exported. This ensures flows are registered.
+// Import flows to register them with the Genkit system.
 import '@/ai/flows/generate-travel-itinerary';
 
+// Expose the registered flows as Next.js API routes.
 export const {POST} = defineNextJsHandler();
