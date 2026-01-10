@@ -23,15 +23,15 @@ import { Sparkles } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 
 const formSchema = z.object({
-    destination: z.string().min(2, "Destination is required."),
+    destinations: z.string().min(2, "At least one destination is required."),
     numberOfDays: z.coerce.number().int().min(1, "Must be at least 1 day.").max(14, "Cannot exceed 14 days."),
     startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]( (AM|PM))?$/, "Invalid time format (e.g., 9:00 AM)."),
     endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]( (AM|PM))?$/, "Invalid time format (e.g., 10:00 PM)."),
-    budget: z.coerce.number().int().positive("Budget must be a positive number."),
-    walkingDistance: z.coerce.number().int().positive("Distance must be a positive number."),
+    budget: z.coerce.number().int().positive("Budget must be a positive number.").optional().or(z.literal('')),
+    walkingDistance: z.coerce.number().int().positive("Distance must be a positive number.").optional().or(z.literal('')),
     mustInclude: z.string().optional(),
     avoid: z.string().optional(),
-    accommodation: z.string().min(2, "Accommodation location is required."),
+    accommodation: z.string().optional(),
 });
 
 const AiArchitect = () => {
@@ -42,7 +42,7 @@ const AiArchitect = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      destination: "Paris, France",
+      destinations: "Paris, France",
       numberOfDays: 3,
       startTime: "9:00 AM",
       endTime: "10:00 PM",
@@ -58,7 +58,16 @@ const AiArchitect = () => {
     setIsGenerating(true);
     setItinerary(null);
     try {
-      const result = await generateTravelItinerary(values);
+      // Filter out empty optional values before sending to the API
+      const apiValues = {
+        ...values,
+        budget: values.budget || undefined,
+        walkingDistance: values.walkingDistance || undefined,
+        accommodation: values.accommodation || undefined,
+        mustInclude: values.mustInclude || undefined,
+        avoid: values.avoid || undefined,
+      };
+      const result = await generateTravelItinerary(apiValues);
       setItinerary(result);
     } catch (error) {
         console.error("Failed to generate itinerary:", error);
@@ -82,7 +91,7 @@ const AiArchitect = () => {
       </div>
 
       <div className="max-w-5xl mx-auto">
-        <Card className="ai-architect-page-card">
+        <Card className="ai-architect-page-card bg-black/50 border-white/10 backdrop-blur-xl">
           <CardHeader>
             <CardTitle className="font-headline text-2xl flex items-center gap-2 text-white">
                 <Sparkles className="w-6 h-6 text-primary" />
@@ -95,12 +104,12 @@ const AiArchitect = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
-                      name="destination"
+                      name="destinations"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-300">Destination</FormLabel>
+                          <FormLabel className="text-gray-300">Destinations (comma-separated)</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Paris, France" {...field} className="ai-architect-input" />
+                            <Input placeholder="e.g., Paris, France, Rome, Italy" {...field} className="ai-architect-input" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -113,7 +122,7 @@ const AiArchitect = () => {
                         <FormItem>
                           <FormLabel className="text-gray-300">Accommodation Location</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Le Marais neighborhood" {...field} className="ai-architect-input" />
+                            <Input placeholder="e.g., Le Marais neighborhood (Optional)" {...field} className="ai-architect-input" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -141,7 +150,7 @@ const AiArchitect = () => {
                         <FormItem>
                           <FormLabel className="text-gray-300">Max Daily Budget ($)</FormLabel>
                           <FormControl>
-                            <Input type="number" {...field} className="ai-architect-input" />
+                            <Input type="number" placeholder="Optional" {...field} className="ai-architect-input" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -182,7 +191,7 @@ const AiArchitect = () => {
                             <FormItem>
                             <FormLabel className="text-gray-300">Max Walking Distance (km per day)</FormLabel>
                             <FormControl>
-                                <Input type="number" {...field} className="ai-architect-input" />
+                                <Input type="number" placeholder="Optional" {...field} className="ai-architect-input" />
                             </FormControl>
                             <FormMessage />
                             </FormItem>
@@ -197,7 +206,7 @@ const AiArchitect = () => {
                         <FormItem>
                           <FormLabel className="text-gray-300">Must-Include Attractions (comma-separated)</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="e.g., Eiffel Tower, Louvre Museum" {...field} className="ai-architect-input" />
+                            <Textarea placeholder="e.g., Eiffel Tower, Louvre Museum (Optional)" {...field} className="ai-architect-input" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
@@ -210,7 +219,7 @@ const AiArchitect = () => {
                         <FormItem>
                           <FormLabel className="text-gray-300">Things to Avoid (comma-separated)</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="e.g., Overcrowded tourist traps" {...field} className="ai-architect-input" />
+                            <Textarea placeholder="e.g., Overcrowded tourist traps (Optional)" {...field} className="ai-architect-input" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>

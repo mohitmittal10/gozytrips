@@ -12,15 +12,15 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 
 const TravelItineraryInputSchema = z.object({
-  destination: z.string().describe('The primary travel destination.'),
+  destinations: z.string().describe('A comma-separated list of primary travel destinations.'),
   numberOfDays: z.coerce.number().int().min(1).describe('The total duration of the trip in days.'),
   startTime: z.string().describe('The typical start time for daily activities (e.g., "9:00 AM").'),
   endTime: z.string().describe('The typical end time for daily activities (e.g., "10:00 PM").'),
-  budget: z.coerce.number().int().positive().describe('The maximum budget per day in USD.'),
-  walkingDistance: z.coerce.number().int().positive().describe('The maximum preferred walking distance per day in kilometers.'),
-  mustInclude: z.string().describe('A comma-separated list of must-see attractions or experiences.'),
-  avoid: z.string().describe('A comma-separated list of things to skip or avoid.'),
-  accommodation: z.string().describe('The neighborhood or address of the accommodation.'),
+  budget: z.coerce.number().int().positive().optional().describe('The maximum budget per day in USD.'),
+  walkingDistance: z.coerce.number().int().positive().optional().describe('The maximum preferred walking distance per day in kilometers.'),
+  mustInclude: z.string().optional().describe('A comma-separated list of must-see attractions or experiences.'),
+  avoid: z.string().optional().describe('A comma-separated list of things to skip or avoid.'),
+  accommodation: z.string().optional().describe('The neighborhood or address of the accommodation.'),
 });
 export type TravelItineraryInput = z.infer<typeof TravelItineraryInputSchema>;
 
@@ -74,7 +74,7 @@ const prompt = ai.definePrompt({
   input: {schema: TravelItineraryInputSchema},
   output: {schema: TravelItineraryOutputSchema},
   prompt: `
-  Generate an optimized travel itinerary for {{destination}} that minimizes travel time and maximizes experiences.
+  Generate an optimized travel itinerary for {{destinations}} that minimizes travel time and maximizes experiences. Keep descriptions for each activity brief and engaging (2-3 lines max).
 
   CONSTRAINTS:
   - Trip duration: {{numberOfDays}} days
