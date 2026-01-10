@@ -10,8 +10,8 @@
  */
 
 import {ai} from '@/ai/genkit';
+import {googleAI} from '@genkit-ai/google-genai';
 import {z} from 'zod';
-import {gemini15Flash} from 'genkit/models';
 
 const TravelItineraryInputSchema = z.object({
   destinations: z.string().describe('A comma-separated list of primary travel destinations.'),
@@ -72,7 +72,7 @@ export async function generateTravelItinerary(input: TravelItineraryInput): Prom
 
 const prompt = ai.definePrompt({
   name: 'travelItineraryPrompt',
-  model: gemini15Flash,
+  model: googleAI.model('gemini-1.5-flash-latest'),
   input: {schema: TravelItineraryInputSchema},
   output: {schema: TravelItineraryOutputSchema},
   prompt: `
