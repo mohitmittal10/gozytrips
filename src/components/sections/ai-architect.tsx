@@ -24,7 +24,6 @@ import { ChevronDown, Sparkles, Download } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { cn } from "@/lib/utils";
-import html2pdf from "html2pdf.js";
 
 const formSchema = z.object({
     destinations: z.string().min(2, "At least one destination is required."),
@@ -100,6 +99,9 @@ const AiArchitect = () => {
     });
 
     try {
+      // Dynamically import html2pdf only on the client side
+      const html2pdf = (await import("html2pdf.js")).default;
+
       // Temporarily show the element for pdf capture
       pdfElement.style.display = "block";
 
