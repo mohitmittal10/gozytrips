@@ -1,0 +1,14 @@
+{
+  "typescript.tsserver.projectDeferredDiagnosticsDelay": 0,
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "typescript.tsc.autoDetect": "off",
+  "files.exclude": {
+    "node_modules/**": true
+  },
+  "search.exclude": {
+    "node_modules": true
+  }
+}

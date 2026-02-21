@@ -24,8 +24,7 @@ import { ChevronDown, Sparkles, Download } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { cn } from "@/lib/utils";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+import html2pdf from "html2pdf.js";
 
 const formSchema = z.object({
     destinations: z.string().min(2, "At least one destination is required."),
@@ -50,6 +49,7 @@ const AiArchitect = () => {
   const { toast } = useToast();
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const itineraryRef = useRef<HTMLDivElement>(null);
+  const pdfTemplateRef = useRef<HTMLDivElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -91,37 +91,43 @@ const AiArchitect = () => {
   }, [itinerary]);
 
   const handleDownloadPdf = async () => {
-    const itineraryElement = itineraryRef.current;
-    if (!itineraryElement) return;
+    const pdfElement = pdfTemplateRef.current;
+    if (!pdfElement || !itinerary) return;
 
     toast({
-      title: "Preparing PDF...",
-      description: "Your itinerary is being converted to a PDF. Please wait.",
+      title: "Generating PDF...",
+      description: "Your professional itinerary is being created.",
     });
 
     try {
-        const canvas = await html2canvas(itineraryElement, {
-            scale: 2, // Increase scale for better quality
-            backgroundColor: null, // Use transparent background to show CSS gradient
-            useCORS: true, // For images from other origins
-        });
-        
-        const imgData = canvas.toDataURL("image/png");
-        const pdf = new jsPDF({
-            orientation: "portrait",
-            unit: "px",
-            format: [canvas.width, canvas.height]
-        });
-        
-        pdf.addImage(imgData, "PNG", 0, 0, canvas.width, canvas.height);
-        pdf.save("OdysseyLuxe_Itinerary.pdf");
+      // Temporarily show the element for pdf capture
+      pdfElement.style.display = "block";
+
+      const options = {
+        margin: [15, 15, 15, 15] as [number, number, number, number],
+        filename: "OdysseyLuxe_Itinerary.pdf",
+        image: { type: "jpeg", quality: 0.98 } as { type: "jpeg" | "png" | "webp", quality: number },
+        html2canvas: { scale: 5, backgroundColor: "#ffffff", logging: false },
+        jsPDF: { orientation: "portrait" as const, unit: "mm" as const, format: "a4" as const },
+      };
+
+      await html2pdf().set(options).from(pdfElement).save();
+
+      // Hide element again
+      pdfElement.style.display = "none";
+
+      toast({
+        title: "Success!",
+        description: "Your itinerary PDF has been downloaded.",
+      });
     } catch (error) {
-        console.error("Failed to generate PDF:", error);
-        toast({
-            variant: "destructive",
-            title: "PDF Generation Failed",
-            description: "Sorry, we couldn't download your itinerary. Please try again.",
-        });
+      console.error("Failed to generate PDF:", error);
+      pdfElement.style.display = "none"; // Ensure it's hidden even on error
+      toast({
+        variant: "destructive",
+        title: "PDF Generation Failed",
+        description: "Sorry, we couldn't download your itinerary. Please try again.",
+      });
     }
   };
 
@@ -300,21 +306,126 @@ const AiArchitect = () => {
       </div>
       
       {(isGenerating || itinerary) && (
-        <div className="mt-12" >
-             <div className="flex justify-end mb-4">
-                {itinerary && !isGenerating && (
-                    <Button onClick={handleDownloadPdf}>
-                        <Download className="mr-2 h-4 w-4" />
-                        Download PDF
-                    </Button>
-                )}
-            </div>
-            <div ref={itineraryRef}>
-              <ItineraryTimeline itinerary={itinerary?.itinerary || []} isLoading={isGenerating} />
-            </div>
+        <div className="mt-12">
+          <div className="flex justify-end mb-4">
+            {itinerary && !isGenerating && (
+              <Button onClick={handleDownloadPdf}>
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
+            )}
+          </div>
+          <div ref={itineraryRef}>
+            <ItineraryTimeline itinerary={itinerary?.itinerary || []} isLoading={isGenerating} />
+          </div>
+
+          {/* Hidden PDF Template */}
+          <div ref={pdfTemplateRef} style={{ display: "none" }}>
+            <PdfTemplate itinerary={itinerary} />
+          </div>
         </div>
       )}
     </section>
+  );
+};
+
+interface PdfTemplateProps {
+  itinerary: TravelItineraryOutput | null;
+}
+
+const PdfTemplate = ({ itinerary }: PdfTemplateProps) => {
+  if (!itinerary) return null;
+
+  return (
+    <div style={{
+      fontFamily: "Arial, sans-serif",
+      padding: "20px",
+      backgroundColor: "#fff",
+      color: "#333"
+    }}>
+      {/* Header */}
+      <div style={{ borderBottom: "3px solid #0066cc", paddingBottom: "15px", marginBottom: "20px" }}>
+        <h1 style={{ color: "#0066cc", fontSize: "28px", margin: "0 0 5px 0" }}>
+          Your Travel Itinerary
+        </h1>
+        <p style={{ color: "#666", fontSize: "12px", margin: "0" }}>
+          Generated on {new Date().toLocaleDateString()}
+        </p>
+      </div>
+
+      {/* Overview */}
+      <div style={{ marginBottom: "20px" }}>
+        <h2 style={{ color: "#0066cc", fontSize: "16px", borderBottom: "2px solid #eee", paddingBottom: "8px" }}>
+          Trip Overview
+        </h2>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", marginTop: "10px" }}>
+          <div>
+            <p style={{ margin: "5px 0", fontSize: "12px" }}>
+              <strong>Duration:</strong> {itinerary.itinerary.length} days
+            </p>
+            <p style={{ margin: "5px 0", fontSize: "12px" }}>
+              <strong>Total Walking Distance:</strong> {itinerary.itinerary[0]?.dailyStats?.walkingDistance || "N/A"} km
+            </p>
+          </div>
+          <div>
+            <p style={{ margin: "5px 0", fontSize: "12px" }}>
+              <strong>Estimated Budget:</strong> ₹{itinerary.itinerary[0]?.dailyStats?.totalCost || "N/A"}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Daily Itineraries */}
+      {itinerary.itinerary.map((day, index) => (
+        <div key={index} style={{ marginBottom: "20px", pageBreakInside: "avoid" }}>
+          <h3 style={{
+            color: "#fff",
+            backgroundColor: "#0066cc",
+            padding: "10px",
+            margin: "0 0 10px 0",
+            fontSize: "14px"
+          }}>
+            Day {index + 1}: {day.date} - {day.areaFocus}
+          </h3>
+
+          {day.timeline.map((step, stepIndex) => (
+            <div key={stepIndex} style={{ marginBottom: "10px", paddingLeft: "10px", borderLeft: "3px solid #0066cc" }}>
+              <p style={{ margin: "0 0 3px 0", fontWeight: "bold", fontSize: "12px", color: "#0066cc" }}>
+                {step.time}
+              </p>
+              <p style={{ margin: "0", fontSize: "12px", color: "#333", lineHeight: "1.4" }}>
+                {step.details}
+              </p>
+            </div>
+          ))}
+
+          <div style={{
+            backgroundColor: "#f5f5f5",
+            padding: "10px",
+            marginTop: "10px",
+            fontSize: "11px",
+            borderRadius: "4px"
+          }}>
+            <p style={{ margin: "0", color: "#666" }}>
+              <strong>Daily Stats:</strong> Walk {day.dailyStats?.walkingDistance || "N/A"} km | Budget ₹{day.dailyStats?.totalCost || "N/A"}
+            </p>
+          </div>
+        </div>
+      ))}
+
+      {/* Footer */}
+      <div style={{
+        marginTop: "30px",
+        paddingTop: "15px",
+        borderTop: "2px solid #eee",
+        fontSize: "10px",
+        color: "#999",
+        textAlign: "center"
+      }}>
+        <p style={{ margin: "0" }}>OdysseyLuxe - Your Personal AI Travel Architect</p>
+        <p style={{ margin: "5px 0 0 0" }}>www.odysseyluxe.com</p>
+      </div>
+    </div>
   );
 };
 

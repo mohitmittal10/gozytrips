@@ -5,7 +5,6 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Calendar, Star, Clock, Footprints, Wallet, CheckCircle, ShipWheel, Mountain, Sun, Users, Camera, Info } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 
 type ItineraryTimelineProps = {
   itinerary: TravelItineraryOutput["itinerary"];
