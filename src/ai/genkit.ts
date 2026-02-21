@@ -10,6 +10,4 @@ import {googleAI} from '@genkit-ai/google-genai';
 // This object is imported by other parts of the application to define and use AI flows.
 export const ai = genkit({
   plugins: [googleAI({apiKey: process.env.GEMINI_API_KEY})],
-  enableTracingAndMetrics: true,
-  logLevel: 'debug',
 });
