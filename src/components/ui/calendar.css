@@ -1,0 +1,56 @@
+/* Calendar alignment fixes */
+
+thead {
+  display: flex;
+  justify-content: space-around;
+}
+
+tr.rdp-weekdays {
+  display: contents;
+}
+
+/* Ensure proper spacing for calendar grid */
+.rdp-months {
+  width: 100%;
+}
+
+.rdp-month {
+  width: 100%;
+}
+
+/* Align weekday cells */
+.rdp-cell {
+  padding: 0;
+}
+
+/* Better row distribution */
+.rdp-row {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+}
+
+.rdp-row_head {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin-bottom: 0.5rem;
+}
+
+/* Head cells alignment */
+.rdp-head_cell {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5rem;
+  width: 2.5rem;
+}
+
+/* Day cells alignment */
+.rdp-cell:not(.rdp-head_cell) {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

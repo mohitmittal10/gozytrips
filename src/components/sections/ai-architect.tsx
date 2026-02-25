@@ -20,16 +20,22 @@ import { generateTravelItinerary } from "@/ai/flows/generate-travel-itinerary";
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
 import { useToast } from "@/hooks/use-toast";
 import ItineraryTimeline from "../itinerary-timeline";
-import { ChevronDown, Sparkles, Download } from "lucide-react";
+import { ChevronDown, Sparkles, Download, Calendar as CalendarIcon } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { cn } from "@/lib/utils";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
 
 const formSchema = z.object({
-    destinations: z.string().min(2, "At least one destination is required."),
-    numberOfDays: z.coerce.number().int().min(1, "Must be at least 1 day.").max(14, "Cannot exceed 14 days."),
+    startingLocation: z.string().min(2, "Starting location is required."),
+    endingLocation: z.string().optional(),
+    startDate: z.date({ required_error: "Start date is required." }),
+    endDate: z.date({ required_error: "End date is required." }),
     startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]( (AM|PM))?$/, "Invalid time format (e.g., 9:00 AM)."),
     endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]( (AM|PM))?$/, "Invalid time format (e.g., 10:00 PM)."),
+    destinations: z.string().min(2, "At least one destination is required."),
     budget: z.preprocess(
       (val) => (val === "" || val === undefined || val === null ? undefined : val),
       z.coerce.number().int().positive("Budget must be a positive number.").optional()
@@ -40,6 +46,9 @@ const formSchema = z.object({
     ),
     mustInclude: z.string().optional(),
     avoid: z.string().optional(),
+}).refine((data) => data.endDate > data.startDate, {
+    message: "End date must be after start date.",
+    path: ["endDate"],
 });
 
 const AiArchitect = () => {
@@ -53,10 +62,13 @@ const AiArchitect = () => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      destinations: "",
-      numberOfDays: 3,
+      startingLocation: "",
+      endingLocation: "",
+      startDate: undefined,
+      endDate: undefined,
       startTime: "9:00 AM",
       endTime: "10:00 PM",
+      destinations: "",
       budget: undefined,
       walkingDistance: undefined,
       mustInclude: "",
@@ -138,7 +150,23 @@ const AiArchitect = () => {
     setIsGenerating(true);
     setItinerary(null);
     try {
-      const result = await generateTravelItinerary(values);
+      // Format dates to YYYY-MM-DD
+      const startDateStr = format(values.startDate, "yyyy-MM-dd");
+      const endDateStr = format(values.endDate, "yyyy-MM-dd");
+
+      const result = await generateTravelItinerary({
+        startingLocation: values.startingLocation,
+        endingLocation: values.endingLocation || values.startingLocation,
+        startDate: startDateStr,
+        endDate: endDateStr,
+        startTime: values.startTime,
+        endTime: values.endTime,
+        destinations: values.destinations,
+        budget: values.budget,
+        walkingDistance: values.walkingDistance,
+        mustInclude: values.mustInclude,
+        avoid: values.avoid,
+      });
       setItinerary(result);
     } catch (error) {
         console.error("Failed to generate itinerary:", error);
@@ -175,58 +203,164 @@ const AiArchitect = () => {
                 <div className="space-y-6">
                     <FormField
                       control={form.control}
-                      name="destinations"
+                      name="startingLocation"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-300">Destinations (comma-separated)</FormLabel>
+                          <FormLabel className="text-gray-300">Starting Location</FormLabel>
                           <FormControl>
-                            <Input placeholder="e.g., Paris, France, Rome, Italy" {...field} className="ai-architect-input" />
+                            <Input placeholder="e.g., New Delhi, India" {...field} className="ai-architect-input" />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
-                    <div className="grid md:grid-cols-3 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="destinations"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">Destinations to Visit (comma-separated)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., Paris, Rome, Florence" {...field} className="ai-architect-input" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="endingLocation"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">Ending Location (Optional)</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Leave empty to return to starting location" {...field} className="ai-architect-input" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <div className="grid md:grid-cols-2 gap-6">
                         <FormField
                           control={form.control}
-                          name="numberOfDays"
+                          name="startDate"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-gray-300">Trip Duration (days)</FormLabel>
-                              <FormControl>
-                                <Input type="number" placeholder="e.g., 3" {...field} className="ai-architect-input" />
-                              </FormControl>
+                              <FormLabel className="text-gray-300">Trip Start Date</FormLabel>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full justify-start text-left font-normal px-4 py-2.5 h-auto border border-gray-700 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 rounded-lg",
+                                        !field.value && "text-gray-400",
+                                        field.value && "text-white border-primary/30 bg-primary/5"
+                                      )}
+                                    >
+                                      <CalendarIcon className="mr-3 h-5 w-5 flex-shrink-0 text-primary" />
+                                      {field.value ? (
+                                        <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span>
+                                      ) : (
+                                        <span>Select start date</span>
+                                      )}
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0 border border-gray-700 bg-gray-950 shadow-lg rounded-lg" align="start">
+                                  <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg">
+                                    <Calendar
+                                      mode="single"
+                                      selected={field.value}
+                                      onSelect={field.onChange}
+                                      disabled={(date) =>
+                                        date < new Date(new Date().setHours(0, 0, 0, 0))
+                                      }
+                                      initialFocus
+                                    />
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                         <FormField
-                          control={form.control}
-                          name="startTime"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel className="text-gray-300">Daily Start Time</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g., 9:00 AM" {...field} className="ai-architect-input" />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
+
                         <FormField
                           control={form.control}
-                          name="endTime"
+                          name="endDate"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="text-gray-300">Daily End Time</FormLabel>
-                              <FormControl>
-                                <Input placeholder="e.g., 10:00 PM" {...field} className="ai-architect-input" />
-                              </FormControl>
+                              <FormLabel className="text-gray-300">Trip End Date</FormLabel>
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <FormControl>
+                                    <Button
+                                      variant="outline"
+                                      className={cn(
+                                        "w-full justify-start text-left font-normal px-4 py-2.5 h-auto border border-gray-700 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 rounded-lg",
+                                        !field.value && "text-gray-400",
+                                        field.value && "text-white border-primary/30 bg-primary/5"
+                                      )}
+                                    >
+                                      <CalendarIcon className="mr-3 h-5 w-5 flex-shrink-0 text-primary" />
+                                      {field.value ? (
+                                        <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span>
+                                      ) : (
+                                        <span>Select end date</span>
+                                      )}
+                                    </Button>
+                                  </FormControl>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-auto p-0 border border-gray-700 bg-gray-950 shadow-lg rounded-lg" align="start">
+                                  <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg">
+                                    <Calendar
+                                      mode="single"
+                                      selected={field.value}
+                                      onSelect={field.onChange}
+                                      disabled={(date) => {
+                                        const startDate = form.getValues("startDate");
+                                        return date < (startDate || new Date());
+                                      }}
+                                      initialFocus
+                                    />
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                     </div>
+
+                    <FormField
+                      control={form.control}
+                      name="startTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">Daily Start Time</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 9:00 AM" {...field} className="ai-architect-input" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="endTime"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-gray-300">Daily End Time</FormLabel>
+                          <FormControl>
+                            <Input placeholder="e.g., 10:00 PM" {...field} className="ai-architect-input" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                 </div>
                 
                 <Collapsible open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen} className="space-y-4">

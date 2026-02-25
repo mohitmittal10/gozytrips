@@ -9,7 +9,11 @@
     "build": "NODE_ENV=production next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "token:stats": "tsx scripts/token-usage-inspector.ts stats",
+    "token:stats:7d": "tsx scripts/token-usage-inspector.ts stats --days 7",
+    "token:stats:flow": "tsx scripts/token-usage-inspector.ts stats --flow",
+    "token:clear": "tsx scripts/token-usage-inspector.ts clear"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.20.0",
