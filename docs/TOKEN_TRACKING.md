@@ -98,7 +98,7 @@ const TOKEN_PRICING = {
 
 ### Setup Production Authentication
 
-Add to your `.env.local`:
+Add to your `.env`:
 ```
 TOKEN_TRACKER_SECRET=your_secret_key_here
 ```

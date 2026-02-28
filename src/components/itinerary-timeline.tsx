@@ -9,6 +9,7 @@ import { Calendar, Star, Clock, Footprints, Wallet, CheckCircle, ShipWheel, Moun
 type ItineraryTimelineProps = {
   itinerary: TravelItineraryOutput["itinerary"];
   isLoading?: boolean;
+  showDecorations?: boolean;
 };
 
 const ItineraryTimelineSkeleton = () => {
@@ -45,7 +46,7 @@ const ActivityDetail = ({ icon: Icon, label, value }: { icon: React.ElementType,
     </div>
 );
 
-const ItineraryTimeline = ({ itinerary, isLoading }: ItineraryTimelineProps) => {
+const ItineraryTimeline = ({ itinerary, isLoading, showDecorations = true }: ItineraryTimelineProps) => {
   if (isLoading) {
     return <ItineraryTimelineSkeleton />;
   }
@@ -56,7 +57,9 @@ const ItineraryTimeline = ({ itinerary, isLoading }: ItineraryTimelineProps) => 
 
   return (
     <div className="relative w-full max-w-5xl mx-auto space-y-16 py-8">
-      <div className="absolute left-5 sm:left-1/2 top-4 h-[calc(100%-2rem)] w-1 bg-primary/20 transform sm:-translate-x-1/2" />
+      {showDecorations && (
+        <div className="absolute left-5 sm:left-9 top-4 h-[calc(100%-2rem)] w-1 bg-primary/20" />
+      )}
 
       {itinerary.map((day, index) => (
         <div
@@ -67,9 +70,11 @@ const ItineraryTimeline = ({ itinerary, isLoading }: ItineraryTimelineProps) => 
           )}
         >
           <div className="relative flex-shrink-0">
-            <div className="bg-background ring-4 ring-primary rounded-full p-2 absolute -left-1.5 top-0 z-10 sm:left-1/2 sm:-translate-x-1/2">
-                <Calendar className="w-8 h-8 text-primary" />
-            </div>
+            {showDecorations && (
+              <div className="bg-background ring-4 ring-primary rounded-full p-2 absolute -left-1.5 top-0 z-10 sm:left-9 sm:-translate-x-1/2">
+                  <Calendar className="w-8 h-8 text-primary" />
+              </div>
+            )}
           </div>
           <div className="flex-1">
             <Card className="glass-card ai-architect-page-card overflow-hidden">

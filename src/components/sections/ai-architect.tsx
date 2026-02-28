@@ -20,13 +20,15 @@ import { generateTravelItinerary } from "@/ai/flows/generate-travel-itinerary";
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
 import { useToast } from "@/hooks/use-toast";
 import ItineraryTimeline from "../itinerary-timeline";
-import { ChevronDown, Sparkles, Download, Calendar as CalendarIcon } from "lucide-react";
+import { ChevronDown, Sparkles, Download, Calendar as CalendarIcon, Save, AlertCircle } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
+import { useAuth } from "@/contexts/auth-context";
+import { createClient } from "@/lib/supabase/client";
 
 const formSchema = z.object({
     startingLocation: z.string().min(2, "Starting location is required."),
@@ -58,6 +60,9 @@ const AiArchitect = () => {
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const itineraryRef = useRef<HTMLDivElement>(null);
   const pdfTemplateRef = useRef<HTMLDivElement>(null);
+  const [isSaving, setIsSaving] = useState(false);
+  const { user } = useAuth();
+  const supabase = createClient();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -87,6 +92,31 @@ const AiArchitect = () => {
       console.error("Failed to load itinerary from local storage", error);
     }
   }, []);
+
+  // Verify Supabase session on mount
+  useEffect(() => {
+    const verifySession = async () => {
+      console.log("🔐 Verifying Supabase session...");
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("❌ Session verification error:", error);
+        } else if (session?.user) {
+          console.log("✅ Session verified");
+          console.log("   User ID:", session.user.id);
+          console.log("   Email:", session.user.email);
+          console.log("   Access Token Valid:", !!session.access_token);
+        } else {
+          console.warn("⚠️ No active session");
+        }
+      } catch (error) {
+        console.error("💥 Error during session verification:", error);
+      }
+    };
+    
+    verifySession();
+  }, [supabase]);
 
   // Save itinerary to localStorage whenever it changes
   useEffect(() => {
@@ -142,6 +172,250 @@ const AiArchitect = () => {
         title: "PDF Generation Failed",
         description: "Sorry, we couldn't download your itinerary. Please try again.",
       });
+    }
+  };
+
+  const handleSaveItinerary = async () => {
+    console.log("🔍 handleSaveItinerary called");
+    
+    // Pre-validation checks
+    if (!user) {
+      console.warn("❌ No user found in auth context");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please sign in to save your itinerary.",
+      });
+      return;
+    }
+
+    if (!itinerary) {
+      console.warn("❌ No itinerary found");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No itinerary to save. Please generate one first.",
+      });
+      return;
+    }
+
+    setIsSaving(true);
+    
+    try {
+      console.log("📝 Getting form values...");
+      const values = form.getValues();
+      console.log("📝 Form values:", {
+        startDate: values.startDate,
+        endDate: values.endDate,
+        startingLocation: values.startingLocation,
+        destinations: values.destinations,
+      });
+      
+      // Validate dates exist
+      if (!values.startDate) {
+        console.warn("❌ No start date");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please select a start date.",
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      if (!values.endDate) {
+        console.warn("❌ No end date");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please select an end date.",
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      // Validate locations
+      if (!values.startingLocation?.trim()) {
+        console.warn("❌ No starting location");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please enter a starting location.",
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      if (!values.destinations?.trim()) {
+        console.warn("❌ No destinations");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please enter destinations.",
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      // Convert to Date objects if needed
+      let startDate = values.startDate;
+      let endDate = values.endDate;
+
+      // Ensure they're Date objects
+      if (!(startDate instanceof Date)) {
+        console.log("📅 Converting start date to Date object");
+        startDate = new Date(startDate);
+      }
+      if (!(endDate instanceof Date)) {
+        console.log("📅 Converting end date to Date object");
+        endDate = new Date(endDate);
+      }
+
+      // Validate dates are valid
+      if (isNaN(startDate.getTime())) {
+        console.warn("❌ Invalid start date");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Invalid start date. Please select a valid date.",
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      if (isNaN(endDate.getTime())) {
+        console.warn("❌ Invalid end date");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Invalid end date. Please select a valid date.",
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      if (endDate <= startDate) {
+        console.warn("❌ End date is not after start date");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "End date must be after start date.",
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      // Format dates to YYYY-MM-DD
+      const startDateStr = format(startDate, "yyyy-MM-dd");
+      const endDateStr = format(endDate, "yyyy-MM-dd");
+
+      // 🔐 CRITICAL: Verify session is valid before insert
+      console.log("🔐 Verifying Supabase session before insert...");
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error("❌ Session error:", sessionError);
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Failed to verify session. Please try signing in again.",
+        });
+        setIsSaving(false);
+        return;
+      }
+      
+      if (!session?.user) {
+        console.error("❌ No valid session found");
+        toast({
+          variant: "destructive",
+          title: "Authentication Error",
+          description: "Your session has expired. Please sign in again.",
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      console.log("✅ Session verified. User ID:", session.user.id);
+
+      const tripData = {
+        user_id: session.user.id, // Use the freshly verified session user ID
+        title: `Trip to ${values.destinations}`,
+        description: values.mustInclude ? `Must include: ${values.mustInclude}` : null,
+        starting_location: values.startingLocation,
+        ending_location: values.endingLocation || values.startingLocation,
+        start_date: startDateStr,
+        end_date: endDateStr,
+        budget: values.budget || null,
+        itinerary_data: itinerary,
+      };
+
+      console.log("💾 Preparing to save to Supabase:", tripData);
+      console.log("🔐 User ID from session:", session.user.id);
+      console.log("📊 Access Token exists:", !!session.access_token);
+
+      // Insert with error handling
+      console.log("📤 Sending insert request to Supabase...");
+      const { data, error } = await supabase
+        .from("itineraries")
+        .insert([tripData]);
+
+      console.log("📥 Supabase response received");
+      console.log("✅ Data:", data);
+      console.log("❌ Error:", error);
+
+      if (error) {
+        console.error("🚨 Supabase error details:", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+        });
+        toast({
+          variant: "destructive",
+          title: "Database Error",
+          description: `${error.message}${error.hint ? " - " + error.hint : ""}`,
+        });
+        setIsSaving(false);
+        return;
+      }
+
+      console.log("✅ Itinerary saved successfully!");
+
+      toast({
+        title: "Success!",
+        description: "Your itinerary has been saved to your trips.",
+      });
+
+      // Reset the form and clear itinerary from local state after successful save
+      form.reset({
+        startingLocation: "",
+        endingLocation: "",
+        startDate: undefined,
+        endDate: undefined,
+        startTime: "9:00 AM",
+        endTime: "10:00 PM",
+        destinations: "",
+        budget: undefined,
+        walkingDistance: undefined,
+        mustInclude: "",
+        avoid: "",
+      });
+      
+      console.log("🔄 Form reset complete");
+      setItinerary(null);
+
+    } catch (error) {
+      console.error("💥 Catch block error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred while saving.";
+      console.error("Error details:", errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: errorMessage,
+      });
+    } finally {
+      console.log("🏁 Finally block - setting isSaving to false");
+      setIsSaving(false);
     }
   };
 
@@ -443,12 +717,33 @@ const AiArchitect = () => {
       
       {(isGenerating || itinerary) && (
         <div className="mt-12">
-          <div className="flex justify-end mb-4">
+          <div className="flex justify-end gap-3 mb-4">
             {itinerary && !isGenerating && (
-              <Button onClick={handleDownloadPdf}>
-                <Download className="mr-2 h-4 w-4" />
-                Download PDF
-              </Button>
+              <>
+                <Button variant="outline" onClick={handleSaveItinerary} disabled={isSaving}>
+                  <Save className="mr-2 h-4 w-4" />
+                  {isSaving ? "Saving..." : "Save Trip"}
+                </Button>
+                <Button onClick={handleDownloadPdf}>
+                  <Download className="mr-2 h-4 w-4" />
+                  Download PDF
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={async () => {
+                    console.log("🧪 Running diagnostic check...");
+                    const { data: { session } } = await supabase.auth.getSession();
+                    console.log("Session:", session);
+                    console.log("User:", user);
+                    console.log("Itinerary exists:", !!itinerary);
+                  }}
+                  className="text-xs"
+                >
+                  <AlertCircle className="mr-1 h-3 w-3" />
+                  Debug
+                </Button>
+              </>
             )}
           </div>
           <div ref={itineraryRef}>

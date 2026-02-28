@@ -9,7 +9,7 @@ Your codebase now automatically tracks every Gemini API call and calculates bill
 ### 1. **Verify Configuration**
 No additional setup needed! The system works automatically with your existing `GEMINI_API_KEY`.
 
-Optionally, for production security, add to `.env.local`:
+Optionally, for production security, add to `.env`:
 ```env
 TOKEN_TRACKER_SECRET=your_secret_key
 ```
