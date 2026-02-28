@@ -12,8 +12,17 @@ import { ArrowLeft, Save } from 'lucide-react';
 import Link from 'next/link';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
+import { ProtectedRoute } from '@/components/protected-route';
 
 export default function ProfilePage() {
+  return (
+    <ProtectedRoute>
+      <ProfileContent />
+    </ProtectedRoute>
+  );
+}
+
+function ProfileContent() {
   const { user, userProfile, refreshProfile } = useAuth();
   const { toast } = useToast();
   const supabase = createClient();

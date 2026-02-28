@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/auth-context";
-import { ProtectedRoute } from "@/components/protected-route";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -27,9 +26,7 @@ export default function RootLayout({
         "bg-gradient-to-br from-background via-secondary/10 to-background"
         )}>
         <AuthProvider>
-          <ProtectedRoute>
-            {children}
-          </ProtectedRoute>
+          {children}
         </AuthProvider>
         <Toaster />
       </body>

@@ -12,7 +12,16 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ItineraryTimeline from '@/components/itinerary-timeline';
+import { ProtectedRoute } from '@/components/protected-route';
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
+
+export default function MyTripsPage() {
+  return (
+    <ProtectedRoute>
+      <MyTripsContent />
+    </ProtectedRoute>
+  );
+}
 
 interface SavedItinerary {
   id: string;
@@ -28,7 +37,7 @@ interface SavedItinerary {
   updated_at: string;
 }
 
-export default function MyTripsPage() {
+function MyTripsContent() {
   const { user } = useAuth();
   const supabase = createClient();
   const { toast } = useToast();
