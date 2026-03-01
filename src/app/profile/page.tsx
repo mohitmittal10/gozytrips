@@ -21,10 +21,21 @@ export default function ProfilePage() {
   const [fullName, setFullName] = useState('');
   const [bio, setBio] = useState('');
 
+  const [companyName, setCompanyName] = useState('');
+  const [businessEmail, setBusinessEmail] = useState('');
+  const [businessPhone, setBusinessPhone] = useState('');
+  const [website, setWebsite] = useState('');
+  const [brandColor, setBrandColor] = useState('#0066cc');
+
   useEffect(() => {
     if (userProfile) {
       setFullName(userProfile.full_name || '');
       setBio(userProfile.bio || '');
+      setCompanyName(userProfile.company_name || '');
+      setBusinessEmail(userProfile.business_email || '');
+      setBusinessPhone(userProfile.business_phone || '');
+      setWebsite(userProfile.website || '');
+      setBrandColor(userProfile.brand_color || '#0066cc');
     }
   }, [userProfile]);
 
@@ -39,6 +50,11 @@ export default function ProfilePage() {
         .update({
           full_name: fullName,
           bio: bio,
+          company_name: companyName,
+          business_email: businessEmail,
+          business_phone: businessPhone,
+          website: website,
+          brand_color: brandColor,
           updated_at: new Date().toISOString(),
         })
         .eq('id', user.id);
@@ -115,28 +131,94 @@ export default function ProfilePage() {
 
           <Card className="glass-main border-white/10">
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>Update your public profile</CardDescription>
+              <CardTitle>Travel Agent Profile</CardTitle>
+              <CardDescription>Update your professional branding and contact info for generated itineraries</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleUpdateProfile} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Full Name</label>
-                  <Input
-                    type="text"
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Your full name"
-                    className="glass-input border-white/10"
-                  />
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Full Name / Agent Name</label>
+                    <Input
+                      type="text"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      placeholder="Your full name"
+                      className="glass-input border-white/10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Company Name</label>
+                    <Input
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="e.g. Odyssey Luxe Travel"
+                      className="glass-input border-white/10"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Business Email</label>
+                    <Input
+                      type="email"
+                      value={businessEmail}
+                      onChange={(e) => setBusinessEmail(e.target.value)}
+                      placeholder="hello@travelagency.com"
+                      className="glass-input border-white/10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Business Phone</label>
+                    <Input
+                      type="tel"
+                      value={businessPhone}
+                      onChange={(e) => setBusinessPhone(e.target.value)}
+                      placeholder="+1 (555) 000-0000"
+                      className="glass-input border-white/10"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Website</label>
+                    <Input
+                      type="url"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                      placeholder="https://www.youragency.com"
+                      className="glass-input border-white/10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Brand Accent Color (Hex)</label>
+                    <div className="flex gap-2">
+                      <Input
+                        type="color"
+                        value={brandColor}
+                        onChange={(e) => setBrandColor(e.target.value)}
+                        className="w-12 h-10 p-1 bg-transparent border-white/10 cursor-pointer rounded-md"
+                      />
+                      <Input
+                        type="text"
+                        value={brandColor}
+                        onChange={(e) => setBrandColor(e.target.value)}
+                        className="glass-input border-white/10 uppercase"
+                        maxLength={7}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Bio</label>
+                  <label className="text-sm font-medium">Bio / Tagline</label>
                   <Textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    placeholder="Tell us about yourself and your travel interests"
+                    placeholder="Tell us about yourself and your travel interests. This may appear on your itineraries."
                     className="glass-input border-white/10 min-h-20 resize-none"
                   />
                 </div>
@@ -144,10 +226,10 @@ export default function ProfilePage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 group"
+                  className="glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 group w-full sm:w-auto mt-4"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  {loading ? 'Saving...' : 'Save Changes'}
+                  {loading ? 'Saving...' : 'Save Profile Changes'}
                 </Button>
               </form>
             </CardContent>

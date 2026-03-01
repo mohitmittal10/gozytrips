@@ -16,13 +16,16 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+
   useEffect(() => {
-    if (!loading && !user && protectedRoutes.some(route => pathname.startsWith(route))) {
+    if (!loading && !user && isProtectedRoute) {
       router.push(`/auth/login?redirect=${pathname}`);
     }
-  }, [user, loading, router, pathname]);
+  }, [user, loading, router, pathname, isProtectedRoute]);
 
-  if (loading) {
+  // Only show the loading state if we are trying to access a protected route
+  if (loading && isProtectedRoute) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/10 to-background">
         <div className="text-center space-y-4">
@@ -33,9 +36,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!user && protectedRoutes.some(route => pathname.startsWith(route))) {
+  // If user is not authenticated and trying to access a protected route,
+  // return null to prevent flash of content before redirect
+  if (!user && isProtectedRoute) {
     return null;
   }
 
+  // On public routes, or when user is authenticated on protected routes, show children
   return <>{children}</>;
 }

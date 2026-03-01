@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
@@ -12,6 +12,11 @@ interface UserProfile {
   full_name: string | null;
   avatar_url: string | null;
   bio: string | null;
+  company_name: string | null;
+  business_email: string | null;
+  business_phone: string | null;
+  website: string | null;
+  brand_color: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -31,45 +36,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const supabase = createClient();
+  const supabase = useMemo(() => createClient(), []);
 
   useEffect(() => {
-    const getSession = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        setUser(session?.user || null);
-
-        if (session?.user) {
-          await fetchUserProfile(session.user.id);
-        }
-      } catch (error) {
-        console.error('Error getting session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    getSession();
-
+    // Set up auth state listener — only update user state synchronously.
+    // Do NOT perform any async Supabase calls (like fetching profile) inside
+    // this callback, as it holds the auth lock and will cause contention.
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
-      if (session?.user) {
-        await fetchUserProfile(session.user.id);
-      } else {
+      if (!session?.user) {
         setUserProfile(null);
       }
       setLoading(false);
     });
 
+    // Fallback timeout in case onAuthStateChange doesn't fire
+    const timeout = setTimeout(() => {
+      setLoading((prev) => {
+        if (prev) {
+          console.warn('[Auth] Fallback: resolving loading state after timeout');
+        }
+        return false;
+      });
+    }, 5000);
+
     return () => {
       subscription?.unsubscribe();
+      clearTimeout(timeout);
     };
-  }, [supabase]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Fetch user profile separately — this runs AFTER the auth lock is released,
+  // preventing the "Lock broken by another request" error
+  useEffect(() => {
+    if (user) {
+      fetchUserProfile(user.id);
+    }
+  }, [user]);
 
   const fetchUserProfile = async (userId: string) => {
     try {

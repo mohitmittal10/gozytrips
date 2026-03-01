@@ -8,6 +8,11 @@ export type Database = {
           full_name: string | null;
           avatar_url: string | null;
           bio: string | null;
+          company_name: string | null;
+          business_email: string | null;
+          business_phone: string | null;
+          website: string | null;
+          brand_color: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -17,6 +22,11 @@ export type Database = {
           full_name?: string | null;
           avatar_url?: string | null;
           bio?: string | null;
+          company_name?: string | null;
+          business_email?: string | null;
+          business_phone?: string | null;
+          website?: string | null;
+          brand_color?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -24,6 +34,11 @@ export type Database = {
           full_name?: string | null;
           avatar_url?: string | null;
           bio?: string | null;
+          company_name?: string | null;
+          business_email?: string | null;
+          business_phone?: string | null;
+          website?: string | null;
+          brand_color?: string | null;
           updated_at?: string;
         };
       };

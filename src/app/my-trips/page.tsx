@@ -13,6 +13,14 @@ import Footer from '@/components/layout/footer';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ItineraryTimeline from '@/components/itinerary-timeline';
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
+import { PdfTemplate, type PdfTheme } from '@/components/pdf-template';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface SavedItinerary {
   id: string;
@@ -29,7 +37,7 @@ interface SavedItinerary {
 }
 
 export default function MyTripsPage() {
-  const { user } = useAuth();
+  const { user, userProfile, loading: authLoading } = useAuth();
   const supabase = createClient();
   const { toast } = useToast();
   const [trips, setTrips] = useState<SavedItinerary[]>([]);
@@ -38,19 +46,27 @@ export default function MyTripsPage() {
   const [showModal, setShowModal] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
   const pdfTemplateRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Don't do anything while auth is still loading
+    if (authLoading) return;
+
     if (user) {
       fetchTrips();
+    } else {
+      // Auth finished but no user — stop the loading spinner
+      setLoading(false);
     }
-  }, [user]);
+  }, [user, authLoading]);
 
-  const fetchTrips = async () => {
+  const fetchTrips = async (retryCount = 0) => {
     if (!user) return;
 
     try {
       setLoading(true);
+
       const { data, error } = await supabase
         .from('itineraries')
         .select('*')
@@ -68,6 +84,11 @@ export default function MyTripsPage() {
 
       setTrips(data as SavedItinerary[]);
     } catch (error) {
+      // Retry on lock contention errors (can happen during initial auth setup)
+      if (retryCount < 2 && error instanceof Error && error.name === 'AbortError') {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return fetchTrips(retryCount + 1);
+      }
       toast({
         title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to fetch trips',
@@ -113,44 +134,53 @@ export default function MyTripsPage() {
   };
 
   const handleDownloadPdf = async () => {
-    const pdfElement = pdfTemplateRef.current;
-    if (!pdfElement || !selectedTrip) return;
+    if (!selectedTrip) return;
 
+    setIsDownloading(true);
     toast({
       title: "Generating PDF...",
       description: "Your professional itinerary is being created.",
     });
 
-    try {
-      const html2pdf = (await import("html2pdf.js")).default;
-      pdfElement.style.display = "block";
+    // Use a small timeout to allow the conditional PdfTemplate to mount in the DOM
+    setTimeout(async () => {
+      const pdfElement = pdfTemplateRef.current;
+      if (!pdfElement) {
+        setIsDownloading(false);
+        return;
+      }
 
-      const options = {
-        margin: [15, 15, 15, 15] as [number, number, number, number],
-        filename: `${selectedTrip.title}.pdf`,
-        image: { type: "jpeg", quality: 0.98 } as { type: "jpeg" | "png" | "webp", quality: number },
-        html2canvas: { scale: 5, backgroundColor: "#ffffff", logging: false },
-        jsPDF: { orientation: "portrait" as const, unit: "mm" as const, format: "a4" as const },
-      };
+      try {
+        const html2pdf = (await import("html2pdf.js")).default;
+        pdfElement.style.display = "block";
 
-      await html2pdf().set(options).from(pdfElement).save();
-      pdfElement.style.display = "none";
+        const options = {
+          margin: [15, 15, 15, 15] as [number, number, number, number],
+          filename: `${selectedTrip.title}.pdf`,
+          image: { type: "jpeg", quality: 0.98 } as { type: "jpeg" | "png" | "webp", quality: number },
+          html2canvas: { scale: 5, backgroundColor: "#ffffff", logging: false, useCORS: true },
+          jsPDF: { orientation: "portrait" as const, unit: "mm" as const, format: "a4" as const },
+        };
 
-      toast({
-        title: "Success!",
-        description: "Your itinerary PDF has been downloaded.",
-      });
-    } catch (error) {
-      console.error("Failed to generate PDF:", error);
-      pdfElement.style.display = "none";
-      toast({
-        variant: "destructive",
-        title: "PDF Generation Failed",
-        description: "Sorry, we couldn't download your itinerary. Please try again.",
-      });
-    } finally {
-      setIsDownloading(false);
-    }
+        await html2pdf().set(options).from(pdfElement).save();
+        pdfElement.style.display = "none";
+
+        toast({
+          title: "Success!",
+          description: "Your itinerary PDF has been downloaded.",
+        });
+      } catch (error) {
+        console.error("Failed to generate PDF:", error);
+        if (pdfElement) pdfElement.style.display = "none";
+        toast({
+          variant: "destructive",
+          title: "PDF Generation Failed",
+          description: "Sorry, we couldn't download your itinerary. Please try again.",
+        });
+      } finally {
+        setIsDownloading(false);
+      }
+    }, 200);
   };
 
   const formatDate = (date: string) => {
@@ -275,14 +305,28 @@ export default function MyTripsPage() {
           <DialogHeader>
             <DialogTitle>{selectedTrip?.title}</DialogTitle>
             <DialogDescription>{selectedTrip?.description}</DialogDescription>
-            <Button 
-              onClick={handleDownloadPdf} 
-              disabled={isDownloading}
-              className="w-fit mt-4"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              {isDownloading ? "Downloading..." : "Download PDF"}
-            </Button>
+            <div className="flex items-center gap-4 mt-4">
+              <Select defaultValue="classic" onValueChange={(value) => setSelectedTheme(value as PdfTheme)}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Select PDF Format" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="classic">Classic (Default)</SelectItem>
+                  <SelectItem value="editorial">Editorial (Magazine)</SelectItem>
+                  <SelectItem value="minimalist">Minimalist</SelectItem>
+                  <SelectItem value="dark">Dark Mode</SelectItem>
+                  <SelectItem value="corporate">Corporate</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
+                onClick={handleDownloadPdf}
+                disabled={isDownloading}
+                className="w-fit"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                {isDownloading ? "Downloading..." : "Download PDF"}
+              </Button>
+            </div>
           </DialogHeader>
           {selectedTrip && (
             <div className="mt-4">
@@ -290,113 +334,14 @@ export default function MyTripsPage() {
             </div>
           )}
 
-          {/* Hidden PDF Template */}
-          <div ref={pdfTemplateRef} style={{ display: "none" }}>
-            <PdfTemplate itinerary={selectedTrip?.itinerary_data} title={selectedTrip?.title} />
-          </div>
+          {/* Hidden PDF Template - Only render when actively downloading to prevent iframe message channel errors */}
+          {isDownloading && (
+            <div ref={pdfTemplateRef} style={{ display: "none" }}>
+              <PdfTemplate itinerary={selectedTrip?.itinerary_data} title={selectedTrip?.title} userProfile={userProfile} theme={selectedTheme} />
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
   );
 }
-
-interface PdfTemplateProps {
-  itinerary: TravelItineraryOutput | null | undefined;
-  title?: string;
-}
-
-const PdfTemplate = ({ itinerary, title }: PdfTemplateProps) => {
-  if (!itinerary) return null;
-
-  return (
-    <div style={{
-      fontFamily: "Arial, sans-serif",
-      padding: "20px",
-      backgroundColor: "#fff",
-      color: "#333"
-    }}>
-      {/* Header */}
-      <div style={{ borderBottom: "3px solid #0066cc", paddingBottom: "15px", marginBottom: "20px" }}>
-        <h1 style={{ color: "#0066cc", fontSize: "28px", margin: "0 0 5px 0" }}>
-          {title || "Your Travel Itinerary"}
-        </h1>
-        <p style={{ color: "#666", fontSize: "12px", margin: "0" }}>
-          Generated on {new Date().toLocaleDateString()}
-        </p>
-      </div>
-
-      {/* Overview */}
-      <div style={{ marginBottom: "20px" }}>
-        <h2 style={{ color: "#0066cc", fontSize: "16px", borderBottom: "2px solid #eee", paddingBottom: "8px" }}>
-          Trip Overview
-        </h2>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", marginTop: "10px" }}>
-          <div>
-            <p style={{ margin: "5px 0", fontSize: "12px" }}>
-              <strong>Duration:</strong> {itinerary.itinerary.length} days
-            </p>
-            <p style={{ margin: "5px 0", fontSize: "12px" }}>
-              <strong>Total Walking Distance:</strong> {itinerary.itinerary[0]?.dailyStats?.walkingDistance || "N/A"} km
-            </p>
-          </div>
-          <div>
-            <p style={{ margin: "5px 0", fontSize: "12px" }}>
-              <strong>Estimated Budget:</strong> ₹{itinerary.itinerary[0]?.dailyStats?.totalCost || "N/A"}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Daily Itineraries */}
-      {itinerary.itinerary.map((day, index) => (
-        <div key={index} style={{ marginBottom: "20px", pageBreakInside: "avoid" }}>
-          <h3 style={{
-            color: "#fff",
-            backgroundColor: "#0066cc",
-            padding: "10px",
-            margin: "0 0 10px 0",
-            fontSize: "14px"
-          }}>
-            Day {index + 1}: {day.date} - {day.areaFocus}
-          </h3>
-
-          {day.timeline.map((step, stepIndex) => (
-            <div key={stepIndex} style={{ marginBottom: "10px", paddingLeft: "10px", borderLeft: "3px solid #0066cc" }}>
-              <p style={{ margin: "0 0 3px 0", fontWeight: "bold", fontSize: "12px", color: "#0066cc" }}>
-                {step.time}
-              </p>
-              <p style={{ margin: "0", fontSize: "12px", color: "#333", lineHeight: "1.4" }}>
-                {step.details}
-              </p>
-            </div>
-          ))}
-
-          <div style={{
-            backgroundColor: "#f5f5f5",
-            padding: "10px",
-            marginTop: "10px",
-            fontSize: "11px",
-            borderRadius: "4px"
-          }}>
-            <p style={{ margin: "0", color: "#666" }}>
-              <strong>Daily Stats:</strong> Walk {day.dailyStats?.walkingDistance || "N/A"} km | Budget ₹{day.dailyStats?.totalCost || "N/A"}
-            </p>
-          </div>
-        </div>
-      ))}
-
-      {/* Footer */}
-      <div style={{
-        marginTop: "30px",
-        paddingTop: "15px",
-        borderTop: "2px solid #eee",
-        fontSize: "10px",
-        color: "#999",
-        textAlign: "center"
-      }}>
-        <p style={{ margin: "0" }}>OdysseyLuxe - Your Personal AI Travel Architect</p>
-        <p style={{ margin: "5px 0 0 0" }}>www.odysseyluxe.com</p>
-      </div>
-    </div>
-  );
-};
