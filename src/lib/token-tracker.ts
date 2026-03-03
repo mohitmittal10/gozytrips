@@ -94,9 +94,14 @@ export async function logTokenUsage(
     cost,
   };
 
-  const logs = await readTokenLogs();
-  logs.push(record);
-  await writeTokenLogs(logs);
+  try {
+    const logs = await readTokenLogs();
+    logs.push(record);
+    await writeTokenLogs(logs);
+  } catch (error) {
+    // Gracefully handle read-only file systems (e.g., Vercel serverless)
+    console.warn('Token usage logging skipped (file system may be read-only):', error instanceof Error ? error.message : error);
+  }
 
   return record;
 }
