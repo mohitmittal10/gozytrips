@@ -14,6 +14,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import ItineraryTimeline from '@/components/itinerary-timeline';
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
 import { PdfTemplate, type PdfTheme } from '@/components/pdf-template';
+import { useRouter } from 'next/navigation';
+import { useClients } from '@/lib/hooks/use-clients';
+import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -31,6 +34,8 @@ interface SavedItinerary {
   start_date: string;
   end_date: string;
   budget: number | null;
+  client_id: string | null;
+  status: string;
   itinerary_data: TravelItineraryOutput;
   created_at: string;
   updated_at: string;
@@ -48,6 +53,8 @@ export default function MyTripsPage() {
   const [isDownloading, setIsDownloading] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
   const pdfTemplateRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const { clients } = useClients();
 
   useEffect(() => {
     // Don't do anything while auth is still loading
@@ -133,6 +140,34 @@ export default function MyTripsPage() {
     }
   };
 
+  const handleDuplicateTrip = async (trip: SavedItinerary) => {
+    try {
+      // 1. Set the draft variables in local storage
+      const { hotels, flights, pricing, ...coreItinerary } = trip.itinerary_data as any;
+      localStorage.setItem('travelItinerary', JSON.stringify(coreItinerary));
+      if (hotels) localStorage.setItem('travelHotels', JSON.stringify(hotels));
+      if (flights) localStorage.setItem('travelFlights', JSON.stringify(flights));
+      if (pricing) localStorage.setItem('travelPricing', JSON.stringify(pricing));
+
+      localStorage.removeItem('draft_client_id'); // Reset CRM fields for the copy
+      localStorage.setItem('draft_status', 'draft');
+
+      toast({
+        title: 'Duplicating Trip',
+        description: 'Opening a copy in the AI Architect...',
+      });
+
+      router.push('/ai-architect');
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: 'Error',
+        description: 'Failed to duplicate trip',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleDownloadPdf = async () => {
     if (!selectedTrip) return;
 
@@ -155,11 +190,12 @@ export default function MyTripsPage() {
         pdfElement.style.display = "block";
 
         const options = {
-          margin: [15, 15, 15, 15] as [number, number, number, number],
+          margin: [10, 10, 10, 10] as [number, number, number, number],
           filename: `${selectedTrip.title}.pdf`,
-          image: { type: "jpeg", quality: 0.98 } as { type: "jpeg" | "png" | "webp", quality: number },
-          html2canvas: { scale: 5, backgroundColor: "#ffffff", logging: false, useCORS: true },
+          image: { type: "jpeg", quality: 0.95 } as { type: "jpeg" | "png" | "webp", quality: number },
+          html2canvas: { scale: 2, backgroundColor: "#ffffff", logging: false, useCORS: true },
           jsPDF: { orientation: "portrait" as const, unit: "mm" as const, format: "a4" as const },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
         };
 
         await html2pdf().set(options).from(pdfElement).save();
@@ -244,9 +280,27 @@ export default function MyTripsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {trips.map((trip) => (
               <Card key={trip.id} className="glass-main border-white/10 hover:border-white/20 transition-all duration-300 overflow-hidden group">
-                <CardHeader className="pb-3">
-                  <CardTitle className="line-clamp-2">{trip.title}</CardTitle>
-                  <CardDescription className="line-clamp-1">{trip.description}</CardDescription>
+                <CardHeader className="pb-3 relative">
+                  <div className="flex justify-between items-start gap-2">
+                    <div>
+                      <CardTitle className="line-clamp-2">{trip.title}</CardTitle>
+                      <CardDescription className="line-clamp-1">{trip.description}</CardDescription>
+                    </div>
+                  </div>
+                  {(trip.client_id || trip.status) && (
+                    <div className="flex items-center gap-2 mt-2">
+                      {trip.client_id && (
+                        <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 text-xs shadow-none">
+                          {clients.find(c => c.id === trip.client_id)?.name || 'Unknown Client'}
+                        </Badge>
+                      )}
+                      {trip.status && trip.status !== 'draft' && (
+                        <Badge variant="secondary" className="text-xs capitalize shadow-none">
+                          {trip.status}
+                        </Badge>
+                      )}
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent className="space-y-4 pb-4">
                   <div className="space-y-2 text-sm">
@@ -269,6 +323,15 @@ export default function MyTripsPage() {
                   </div>
 
                   <div className="flex gap-2 pt-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDuplicateTrip(trip)}
+                      className="glass-button border-white/20 flex-1 hover:text-primary transition-colors"
+                      title="Duplicate & Customize"
+                    >
+                      Duplicate
+                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -330,14 +393,19 @@ export default function MyTripsPage() {
           </DialogHeader>
           {selectedTrip && (
             <div className="mt-4">
-              <ItineraryTimeline itinerary={selectedTrip.itinerary_data?.itinerary || []} showDecorations={false} />
+              <ItineraryTimeline
+                itinerary={selectedTrip.itinerary_data?.itinerary || []}
+                showDecorations={false}
+                hotels={(selectedTrip.itinerary_data as any)?.hotels || []}
+                flights={(selectedTrip.itinerary_data as any)?.flights || []}
+              />
             </div>
           )}
 
           {/* Hidden PDF Template - Only render when actively downloading to prevent iframe message channel errors */}
           {isDownloading && (
             <div ref={pdfTemplateRef} style={{ display: "none" }}>
-              <PdfTemplate itinerary={selectedTrip?.itinerary_data} title={selectedTrip?.title} userProfile={userProfile} theme={selectedTheme} />
+              <PdfTemplate itinerary={selectedTrip?.itinerary_data} title={selectedTrip?.title} userProfile={userProfile} theme={selectedTheme} hotels={(selectedTrip?.itinerary_data as any)?.hotels || []} flights={(selectedTrip?.itinerary_data as any)?.flights || []} />
             </div>
           )}
         </DialogContent>

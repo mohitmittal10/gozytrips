@@ -48,6 +48,20 @@ declare module 'lucide-react' {
   const ArrowLeft: React.FC<IconProps>;
   const Loader: React.FC<IconProps>;
   const LoaderCircle: React.FC<IconProps>;
+  const Hotel: React.FC<IconProps>;
+  const Plane: React.FC<IconProps>;
+  const Star: React.FC<IconProps>;
+  const GripVertical: React.FC<IconProps>;
+  const Pencil: React.FC<IconProps>;
+  const Footprints: React.FC<IconProps>;
+  const Wallet: React.FC<IconProps>;
+  const ShipWheel: React.FC<IconProps>;
+  const Mountain: React.FC<IconProps>;
+  const Sun: React.FC<IconProps>;
+  const Users: React.FC<IconProps>;
+  const Camera: React.FC<IconProps>;
+  const ArrowUp: React.FC<IconProps>;
+  const ArrowDown: React.FC<IconProps>;
   
   export {
     Sparkles,
@@ -88,5 +102,19 @@ declare module 'lucide-react' {
     ArrowLeft,
     Loader,
     LoaderCircle,
+    Hotel,
+    Plane,
+    Star,
+    GripVertical,
+    Pencil,
+    Footprints,
+    Wallet,
+    ShipWheel,
+    Mountain,
+    Sun,
+    Users,
+    Camera,
+    ArrowUp,
+    ArrowDown,
   };
 }

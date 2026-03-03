@@ -1,6 +1,38 @@
 export type Database = {
   public: {
     Tables: {
+      clients: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          email: string | null;
+          phone: string | null;
+          notes: string | null;
+          tags: string[] | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          email?: string | null;
+          phone?: string | null;
+          notes?: string | null;
+          tags?: string[] | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          email?: string | null;
+          phone?: string | null;
+          notes?: string | null;
+          tags?: string[] | null;
+          updated_at?: string;
+        };
+      };
       user_profiles: {
         Row: {
           id: string;
@@ -60,6 +92,8 @@ export type Database = {
           must_include: string | null;
           avoid: string | null;
           itinerary_data: Record<string, any>;
+          client_id: string | null;
+          status: string;
           created_at: string;
           updated_at: string;
         };
@@ -79,12 +113,16 @@ export type Database = {
           must_include?: string | null;
           avoid?: string | null;
           itinerary_data: Record<string, any>;
+          client_id?: string | null;
+          status?: string;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           title?: string;
           description?: string | null;
+          client_id?: string | null;
+          status?: string;
           updated_at?: string;
         };
       };

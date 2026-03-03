@@ -1,0 +1,222 @@
+# 🚀 GozyTrips — Feature Recommendations to Drive Growth & Solve Real Travel Agent Problems
+
+## What You Already Have ✅
+
+| Feature | Status |
+|---|---|
+| AI itinerary generation (Gemini) | ✅ |
+| Day-by-day timeline view | ✅ |
+| 5 PDF themes (Classic, Editorial, Minimalist, Dark, Corporate) | ✅ |
+| Save/load trips to Supabase | ✅ |
+| Travel agent branding (company name, watermark) | ✅ |
+| User auth (Supabase) | ✅ |
+| Profile with business fields | ✅ |
+| Token usage tracking | ✅ |
+
+---
+
+## 🏆 Tier 1 — High-Impact Features (Build These First)
+
+These directly solve pain points that cost travel agents hours per itinerary.
+
+---
+
+### 1. ✏️ Inline Itinerary Editing
+**Problem:** Agents always need to tweak AI output — swap a restaurant, shift timings, add a client's specific hotel. Right now they must regenerate the entire itinerary or edit the PDF externally.
+
+**Solution:** Make the timeline view editable:
+- Click any activity to edit time, description, or delete it
+- Drag-and-drop to reorder activities within a day
+- Add new activities at any point in the timeline
+- Edit daily area focus / title
+
+**Why it matters:** This is the #1 thing that turns "cool AI toy" into "production tool." Agents will adopt this overnight.
+
+---
+
+### 2. 🏨 Hotel & Flight Information Blocks
+**Problem:** Itineraries without accommodation and flight details are incomplete. Agents currently add these manually in Word/Canva after downloading the PDF.
+
+**Solution:** Add structured input fields for:
+- **Hotels**: Name, address, check-in/check-out, booking ref, star rating per night
+- **Flights**: Airline, flight number, departure/arrival times, terminals, PNR
+
+These should appear prominently in the PDF output and the timeline view (at the start/end of each day or as separate header blocks).
+
+**Why it matters:** Eliminates the biggest post-generation editing task. The PDF becomes truly "ready to send."
+
+---
+
+### 3. 👥 Client/Lead Management (CRM Lite)
+**Problem:** Agents juggle dozens of client inquiries. They generate itineraries but have no way to tie them to specific clients or track which proposals are pending.
+
+**Solution:**
+- Add a `clients` table: name, email, phone, notes, tags
+- Link each itinerary to a client
+- Client dashboard showing: all proposals sent, status (draft/sent/confirmed/rejected), follow-up dates
+- Quick "Duplicate & Customize" — clone an existing itinerary for a new client with minor tweaks
+
+**Why it matters:** This turns GozyTrips from an "itinerary tool" into a "business tool" that agents open daily.
+
+---
+
+### 4. 📧 Direct Email/WhatsApp Share
+**Problem:** The current workflow is: Generate → Download PDF → Open email/WhatsApp → Attach → Send. Four steps.
+
+**Solution:**
+- **Email**: One-click "Send to Client" button that emails the PDF + a styled HTML preview directly
+- **WhatsApp**: Generate a shareable link (public read-only itinerary page) that the agent can send via WhatsApp
+- **Tracking**: Optional read-receipt / link-open tracking so agents know if the client viewed the itinerary
+
+**Why it matters:** Reduces the delivery workflow from 4 steps to 1 click. Agents send 10-20 proposals/day — this saves real time.
+
+---
+
+### 5. 📋 Itinerary Templates & Reusable Packages
+**Problem:** Agents sell the same Bali 5-night or Rajasthan 7-day packages repeatedly. They regenerate from scratch each time.
+
+**Solution:**
+- Allow saving any itinerary as a "Template"
+- Template library with search/filter (by destination, duration, budget)
+- "Use Template" → pre-fills the form and generates a customized version with the new client's dates
+- Option to create templates manually without AI generation
+
+**Why it matters:** For popular routes, this brings itinerary creation time from ~3 minutes to ~30 seconds.
+
+---
+
+## 🥈 Tier 2 — Differentiation Features (Build Next)
+
+These separate you from competitors and create stickiness.
+
+---
+
+### 6. 💰 Costing & Pricing Module
+**Problem:** After generating the itinerary, agents manually calculate costs, add markup, and create a pricing breakdown.
+
+**Solution:**
+- Per-activity cost fields (entry fees, transport, meals)
+- Hotel and flight cost integration
+- Auto-calculated trip total with configurable agent markup (% or flat)
+- Cost breakdowns in PDF: per-day and total, with/without markup (agent view vs client view)
+- Multi-currency support (INR, USD, EUR, etc.)
+
+**Why it matters:** This is the #1 feature request in every travel agent tool survey. It's where agents spend the most time after itinerary creation.
+
+---
+
+### 7. 🖼️ Destination Images in Itinerary
+**Problem:** Plain text itineraries don't excite clients. Agents add photos manually in Canva/Word.
+
+**Solution:**
+- Auto-fetch destination/attraction images using Unsplash API (you already have `unsplash.ts`)
+- Include curated images in the PDF per day or per activity
+- Allow agents to upload their own images for specific activities
+- Cover photo selection for the itinerary header
+
+**Why it matters:** Visual itineraries convert better. This is a common client complaint — "the itinerary looks boring."
+
+---
+
+### 8. 🗺️ Interactive Map View
+**Problem:** Clients (and agents) struggle to visualize the route and proximity of attractions.
+
+**Solution:**
+- Embed a map (Google Maps or Mapbox) showing all daily stops as pins
+- Route lines connecting each day's activities
+- Day-by-day toggle: show only Day 1 pins, Day 2, etc.
+- Include a static map snapshot in the PDF export
+
+**Why it matters:** Map view is the #2 most requested feature in B2B travel tools after costing.
+
+---
+
+### 9. 🌐 Multi-Language Itinerary Export
+**Problem:** Indian agents serve clients who speak Hindi, Gujarati, Marathi, etc. International agents need itineraries in Arabic, French, etc.
+
+**Solution:**
+- Language selector in the form (Hindi, English, Spanish, French, Arabic, etc.)
+- AI generates the itinerary directly in the chosen language
+- PDF export respects the selected language
+
+**Why it matters:** Opens up non-English-speaking market segments. Very few competitors offer this.
+
+---
+
+### 10. 📊 Agent Dashboard & Analytics
+**Problem:** Agents don't know which destinations are popular, how many itineraries they've created this month, or their conversion rates.
+
+**Solution:**
+- Dashboard with: itineraries created (by week/month), top destinations, average trip duration, average budget
+- If CRM is built: proposal-to-booking conversion rate, revenue tracking
+- Export reports for team leads / agency owners
+
+**Why it matters:** Agency owners/managers want visibility. This is what drives enterprise/team adoption.
+
+---
+
+## 🥉 Tier 3 — Growth & Moat Features (Long-Term)
+
+These create viral growth and competitive moats.
+
+---
+
+### 11. 🔄 Itinerary Versioning & Comparison
+Save revision history. Let agents compare v1 vs v2 side-by-side when iterating with clients.
+
+### 12. 🤝 Team/Agency Accounts
+Multiple agents under one agency. Shared template library, shared client database, role-based permissions (admin, agent, viewer).
+
+### 13. 📱 Mobile-Responsive Itinerary Viewer
+A public shareable link that renders beautifully on phone screens. Clients rarely open PDFs on mobile — a web-based itinerary viewer with swipeable days wins.
+
+### 14. 🧠 AI "Regenerate Section" 
+Instead of regenerating the entire itinerary, let agents select a specific day or time block and say: "Regenerate just Day 3 with more adventure activities" or "Replace the lunch spot with something vegetarian."
+
+### 15. 📅 Seasonal & Event Awareness
+AI considers local festivals, weather patterns, peak/off-peak pricing in its recommendations. Show tags like "Cherry Blossom Season 🌸" or "⚠️ Monsoon — pack rain gear."
+
+### 16. 🔗 Booking Integrations
+Partner with booking APIs (hotels, flights, activities) so agents can add affiliate links or direct booking buttons. Revenue share model.
+
+### 17. ⭐ Client Feedback Collection
+After the trip, send clients a feedback form. Agents build a verified review portfolio to show new prospects.
+
+---
+
+## 📌 Recommended Build Order
+
+| Priority | Feature | Estimated Effort | User Impact |
+|----------|---------|-----------------|-------------|
+| 🔴 P0 | Inline Itinerary Editing | Medium | 🔥🔥🔥🔥🔥 |
+| 🔴 P0 | Hotel & Flight Info Blocks | Medium | 🔥🔥🔥🔥🔥 |
+| 🟠 P1 | Direct Email/WhatsApp Share | Medium | 🔥🔥🔥🔥 |
+| 🟠 P1 | Itinerary Templates | Medium | 🔥🔥🔥🔥 |
+| 🟠 P1 | Client/Lead Management | Large | 🔥🔥🔥🔥 |
+| 🟡 P2 | Costing & Pricing Module | Large | 🔥🔥🔥🔥🔥 |
+| 🟡 P2 | Destination Images | Medium | 🔥🔥🔥 |
+| 🟡 P2 | Interactive Map View | Medium | 🔥🔥🔥 |
+| 🟢 P3 | Multi-Language Export | Small | 🔥🔥🔥 |
+| 🟢 P3 | Agent Dashboard | Large | 🔥🔥🔥 |
+| 🟢 P3 | AI "Regenerate Section" | Medium | 🔥🔥🔥🔥 |
+| 🔵 P4 | Team/Agency Accounts | Large | 🔥🔥🔥 |
+| 🔵 P4 | Mobile Itinerary Viewer | Medium | 🔥🔥🔥 |
+| 🔵 P4 | Booking Integrations | Large | 🔥🔥 |
+
+---
+
+## 💡 Quick Wins (Can Build in < 1 Day Each)
+
+These are small but noticeable improvements:
+
+1. **"Duplicate Trip" button** on My Trips page — clone an itinerary instantly
+2. **Trip notes/comments** — free-text notes on each saved trip
+3. **Custom PDF filename** — let agents set the filename (e.g., "Sharma_Family_Bali_March2026.pdf")
+4. **Print-friendly view** — a clean browser print layout as an alternative to PDF
+5. **Favorite/star trips** — pin frequently-used itineraries
+6. **Search & filter** on My Trips — by destination, date range, client name
+7. **"Copy itinerary as text"** — one-click copy to clipboard for pasting into WhatsApp/email
+
+---
+
+> **Bottom line:** The two features that will give you the biggest leap are **Inline Editing** and **Hotel/Flight Info**. Together, they transform the output from "AI draft" to "client-ready document" — which is exactly the promise that will get travel agents to pay for and stick with the tool.

@@ -34,10 +34,12 @@ const TravelItineraryOutputSchema = z.object({
       day: z.number(),
       date: z.string(),
       areaFocus: z.string(),
+      imageSearchTerm: z.string().describe('A descriptive Unsplash search term for this day\'s main destination or highlight, e.g. "Taj Mahal sunrise", "Kerala houseboat backwaters", "Old Delhi street food market". Be specific and visual.'),
       timeline: z.array(
         z.object({
           time: z.string(),
           details: z.string(),
+          cost: z.number().optional(),
         })
       ),
       dailyStats: z.object({
@@ -82,6 +84,11 @@ const prompt = ai.definePrompt({
   8. Include travel time between destinations in the itinerary.
 
   For each timeline step, include: time, details (description).
+
+  IMPORTANT — For each day, include an 'imageSearchTerm'. This MUST be a real place name or landmark name that would return beautiful travel photos on a stock photo site. Use the format: "[Landmark/Place Name] [City/Region]". 
+  GOOD examples: "Red Fort Delhi", "Hawa Mahal Jaipur", "Marina Beach Chennai", "Munnar tea plantation", "Varanasi ghats", "Goa beach Palolem", "Hampi ruins Karnataka".
+  BAD examples (too vague/descriptive — DO NOT USE): "beautiful morning walk", "explore local culture", "day 1 adventure", "food market", "sunset view".
+  Always use the ACTUAL name of the most iconic place visited that day.
   `,
 });
 

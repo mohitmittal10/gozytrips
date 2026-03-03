@@ -15,11 +15,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { generateTravelItinerary } from "@/ai/flows/generate-travel-itinerary";
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
+import { fetchItineraryImages } from "@/ai/flows/fetch-itinerary-images";
 import { useToast } from "@/hooks/use-toast";
 import ItineraryTimeline from "../itinerary-timeline";
+import HotelFlightEditor, { type HotelInfo, type FlightInfo } from "@/components/hotel-flight-editor";
+import PricingModule from "@/components/pricing-module";
+import type { PricingConfig } from "@/types/pricing";
 import { ChevronDown, Sparkles, Download, Calendar as CalendarIcon, Save, AlertCircle } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
@@ -37,6 +41,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useClients } from "@/lib/hooks/use-clients";
 
 const formSchema = z.object({
   startingLocation: z.string().min(2, "Starting location is required."),
@@ -73,6 +78,14 @@ const AiArchitect = () => {
   const [isSaving, setIsSaving] = useState(false);
   const { user, userProfile } = useAuth();
   const supabase = createClient();
+  const [hotels, setHotels] = useState<HotelInfo[]>([]);
+  const [flights, setFlights] = useState<FlightInfo[]>([]);
+  const [pricing, setPricing] = useState<PricingConfig | undefined>(undefined);
+
+  // CRM fields
+  const { clients } = useClients();
+  const [selectedClientId, setSelectedClientId] = useState<string>("none");
+  const [selectedStatus, setSelectedStatus] = useState<string>("draft");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -96,10 +109,33 @@ const AiArchitect = () => {
     try {
       const savedItinerary = localStorage.getItem("travelItinerary");
       if (savedItinerary) {
-        setItinerary(JSON.parse(savedItinerary));
+        const parsed = JSON.parse(savedItinerary);
+        if (Array.isArray(parsed)) {
+          // Handle old saved sessions where only the array was stored
+          setItinerary({ title: "Custom Itinerary", description: "Modified itinerary", itinerary: parsed });
+        } else {
+          setItinerary(parsed);
+        }
       }
+      const savedHotels = localStorage.getItem("travelHotels");
+      if (savedHotels) setHotels(JSON.parse(savedHotels));
+      const savedFlights = localStorage.getItem("travelFlights");
+      if (savedFlights) setFlights(JSON.parse(savedFlights));
+      const savedPricing = localStorage.getItem("travelPricing");
+      if (savedPricing) setPricing(JSON.parse(savedPricing));
     } catch (error) {
       console.error("Failed to load itinerary from local storage", error);
+    }
+
+    try {
+      // Try to load auth related configs specifically if available, though they might not be part of the base save
+      const savedClientId = localStorage.getItem('draft_client_id');
+      if (savedClientId) setSelectedClientId(savedClientId);
+
+      const savedStatus = localStorage.getItem('draft_status');
+      if (savedStatus) setSelectedStatus(savedStatus);
+    } catch (error) {
+      console.error("Failed to load metadata from local storage", error);
     }
   }, []);
 
@@ -117,6 +153,58 @@ const AiArchitect = () => {
       console.error("Failed to save itinerary to local storage", error);
     }
   }, [itinerary]);
+
+  // Save hotels/flights to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("travelHotels", JSON.stringify(hotels));
+      localStorage.setItem("travelFlights", JSON.stringify(flights));
+      if (pricing) {
+        localStorage.setItem("travelPricing", JSON.stringify(pricing));
+      } else {
+        localStorage.removeItem("travelPricing");
+      }
+    } catch (error) {
+      console.error("Failed to save hotels/flights/pricing to local storage", error);
+    }
+  }, [hotels, flights, pricing]);
+
+  const baseCost = useMemo(() => {
+    let cost = 0;
+
+    // Activities cost
+    if (itinerary) {
+      itinerary.itinerary.forEach(day => {
+        if (day.timeline) {
+          day.timeline.forEach(step => {
+            if (step.cost) cost += step.cost;
+          });
+        }
+      });
+    }
+
+    const pax = {
+      adult: pricing?.adultPax || 2,
+      child: pricing?.childPax || 0,
+      infant: pricing?.infantPax || 0
+    };
+
+    // Flights cost
+    flights.forEach(f => {
+      if (f.costAdult) cost += f.costAdult * pax.adult;
+      if (f.costChild) cost += f.costChild * pax.child;
+      if (f.costInfant) cost += f.costInfant * pax.infant;
+    });
+
+    // Hotels cost
+    hotels.forEach(h => {
+      if (h.costAdult) cost += h.costAdult * pax.adult;
+      if (h.costChild) cost += h.costChild * pax.child;
+      if (h.costInfant) cost += h.costInfant * pax.infant;
+    });
+
+    return cost;
+  }, [itinerary, flights, hotels, pricing]);
 
   const handleDownloadPdf = async () => {
     if (!itinerary) return;
@@ -143,11 +231,12 @@ const AiArchitect = () => {
         pdfElement.style.display = "block";
 
         const options = {
-          margin: [15, 15, 15, 15] as [number, number, number, number],
+          margin: [10, 10, 10, 10] as [number, number, number, number],
           filename: "OdysseyLuxe_Itinerary.pdf",
-          image: { type: "jpeg", quality: 0.98 } as { type: "jpeg" | "png" | "webp", quality: number },
-          html2canvas: { scale: 5, backgroundColor: "#ffffff", logging: false },
+          image: { type: "jpeg", quality: 0.95 } as { type: "jpeg" | "png" | "webp", quality: number },
+          html2canvas: { scale: 2, backgroundColor: "#ffffff", logging: false, useCORS: true },
           jsPDF: { orientation: "portrait" as const, unit: "mm" as const, format: "a4" as const },
+          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
         };
 
         await html2pdf().set(options).from(pdfElement).save();
@@ -344,7 +433,9 @@ const AiArchitect = () => {
         start_date: startDateStr,
         end_date: endDateStr,
         budget: values.budget || null,
-        itinerary_data: itinerary,
+        client_id: selectedClientId === "none" ? null : selectedClientId,
+        status: selectedStatus,
+        itinerary_data: { ...itinerary, hotels, flights, pricing },
       };
 
       console.log("💾 Preparing to save to Supabase:", tripData);
@@ -401,6 +492,13 @@ const AiArchitect = () => {
 
       console.log("🔄 Form reset complete");
       setItinerary(null);
+      setHotels([]);
+      setFlights([]);
+      setPricing(undefined);
+      setSelectedClientId("none");
+      setSelectedStatus("draft");
+      localStorage.removeItem('draft_client_id');
+      localStorage.removeItem('draft_status');
 
     } catch (error) {
       console.error("💥 Catch block error:", error);
@@ -439,6 +537,21 @@ const AiArchitect = () => {
         mustInclude: values.mustInclude,
         avoid: values.avoid,
       });
+
+      // Fetch destination images from Unsplash
+      try {
+        const searchTerms = result.itinerary.map(day => day.imageSearchTerm || day.areaFocus);
+        const areaNames = result.itinerary.map(day => day.areaFocus);
+        const imageUrls = await fetchItineraryImages(searchTerms, areaNames);
+        // Merge image URLs into each day
+        result.itinerary = result.itinerary.map((day, i) => ({
+          ...day,
+          imageUrl: imageUrls[i] || undefined,
+        }));
+      } catch (imgError) {
+        console.warn('Failed to fetch destination images, continuing without them:', imgError);
+      }
+
       setItinerary(result);
     } catch (error) {
       console.error("Failed to generate itinerary:", error);
@@ -726,6 +839,32 @@ const AiArchitect = () => {
                   <Save className="w-4 h-4 mr-2" />
                   {isSaving ? "Saving..." : "Save to My Trips"}
                 </Button>
+
+                <div className="flex-1 flex gap-2">
+                  <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Assign Client (Optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">-- No Client Assigned --</SelectItem>
+                      {clients.map(client => (
+                        <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                    <SelectTrigger className="w-[120px]">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="draft">Draft</SelectItem>
+                      <SelectItem value="sent">Sent</SelectItem>
+                      <SelectItem value="confirmed">Confirmed</SelectItem>
+                      <SelectItem value="rejected">Rejected</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="flex-1 flex gap-2">
                   <Select defaultValue="classic" onValueChange={(value) => setSelectedTheme(value as PdfTheme)}>
                     <SelectTrigger className="w-[180px]">
@@ -767,12 +906,50 @@ const AiArchitect = () => {
             )}
           </div>
           <div ref={itineraryRef}>
-            <ItineraryTimeline itinerary={itinerary?.itinerary || []} isLoading={isGenerating} />
+            {/* Hotel & Flight Editor */}
+            {itinerary && !isGenerating && (
+              <HotelFlightEditor
+                hotels={hotels}
+                flights={flights}
+                totalDays={itinerary.itinerary.length}
+                onHotelsChange={setHotels}
+                onFlightsChange={setFlights}
+              />
+            )}
+            <ItineraryTimeline
+              itinerary={itinerary?.itinerary || []}
+              isLoading={isGenerating}
+              editable={true}
+              onItineraryChange={(updatedItinerary) => {
+                if (itinerary) {
+                  setItinerary({ ...itinerary, itinerary: updatedItinerary });
+                }
+              }}
+              hotels={hotels}
+              flights={flights}
+            />
+            {/* Pricing Module */}
+            {itinerary && !isGenerating && (
+              <PricingModule
+                pricing={pricing}
+                onChange={setPricing}
+                baseCost={baseCost}
+              />
+            )}
           </div>
 
           {/* Hidden PDF Template */}
           <div ref={pdfTemplateRef} style={{ display: "none" }}>
-            <PdfTemplate itinerary={itinerary} title={`Trip to ${itinerary?.itinerary[0]?.areaFocus?.split(',')[0] || 'Destination'}`} userProfile={userProfile} theme={selectedTheme} />
+            <PdfTemplate
+              itinerary={itinerary}
+              title={`Trip to ${itinerary?.itinerary[0]?.areaFocus?.split(',')[0] || 'Destination'}`}
+              userProfile={userProfile}
+              theme={selectedTheme}
+              hotels={hotels}
+              flights={flights}
+              pricing={pricing}
+              baseCost={baseCost}
+            />
           </div>
         </div>
       )}

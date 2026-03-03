@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, LogOut, User, MapPin } from "lucide-react";
+import { Menu, LogOut, User, MapPin, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "./logo";
 import { usePathname } from "next/navigation";
@@ -39,7 +39,7 @@ const Header = () => {
     { name: "Testimonials", href: "/#testimonials" },
     { name: "Contact", href: "/#contact" },
   ];
-  
+
   const isAiArchitectPage = pathname === '/ai-architect';
 
   return (
@@ -52,7 +52,7 @@ const Header = () => {
       <div className={cn(
         "container mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-300",
         scrolled || isAiArchitectPage ? "py-2 glass-main rounded-lg" : "py-4"
-        )}>
+      )}>
         <Logo />
         <nav className="hidden md:flex items-center space-x-6">
           {navLinks.map((link) => (
@@ -65,7 +65,7 @@ const Header = () => {
             </Link>
           ))}
         </nav>
-        
+
         {/* Auth Section */}
         <div className="flex items-center gap-4">
           {!loading && (
@@ -91,6 +91,12 @@ const Header = () => {
                           <Link href="/my-trips" className="cursor-pointer">
                             <MapPin className="w-4 h-4 mr-2" />
                             My Trips
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/clients" className="cursor-pointer">
+                            <Users className="w-4 h-4 mr-2" />
+                            Clients
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
@@ -139,6 +145,12 @@ const Header = () => {
                               <Button variant="outline" className="w-full glass-button border-white/20 justify-start">
                                 <MapPin className="w-4 h-4 mr-2" />
                                 My Trips
+                              </Button>
+                            </Link>
+                            <Link href="/clients">
+                              <Button variant="outline" className="w-full glass-button border-white/20 justify-start">
+                                <Users className="w-4 h-4 mr-2" />
+                                Clients
                               </Button>
                             </Link>
                             <Link href="/profile">
