@@ -13,9 +13,6 @@ import {googleAI} from '@genkit-ai/google-genai';
 import {z} from 'zod';
 import {logTokenUsage} from '@/lib/token-tracker';
 
-// Extend Vercel serverless function timeout (default is 10s, which is too short for AI calls)
-export const maxDuration = 60;
-
 const TravelItineraryInputSchema = z.object({
   startingLocation: z.string().describe('The starting location/city for the trip.'),
   endingLocation: z.string().optional().describe('The ending location/city for the trip (if different from starting location).'),
