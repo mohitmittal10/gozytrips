@@ -5,15 +5,16 @@ import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect, useRef } from 'react';
-import { MapPin, Calendar, DollarSign, Trash2, Eye, Plus, ArrowLeft, Download } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MapPin, Calendar, DollarSign, Trash2, Eye, Plus, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ItineraryTimeline from '@/components/itinerary-timeline';
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
-import { PdfTemplate, type PdfTheme } from '@/components/pdf-template';
+import { type PdfTheme } from '@/components/pdf-template';
+import { PdfPreviewEditor } from '@/components/pdf-preview-editor';
 import { useRouter } from 'next/navigation';
 import { useClients } from '@/lib/hooks/use-clients';
 import { Badge } from '@/components/ui/badge';
@@ -50,9 +51,8 @@ export default function MyTripsPage() {
   const [selectedTrip, setSelectedTrip] = useState<SavedItinerary | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
-  const [isDownloading, setIsDownloading] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
-  const pdfTemplateRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { clients } = useClients();
 
@@ -168,55 +168,9 @@ export default function MyTripsPage() {
     }
   };
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = () => {
     if (!selectedTrip) return;
-
-    setIsDownloading(true);
-    toast({
-      title: "Generating PDF...",
-      description: "Your professional itinerary is being created.",
-    });
-
-    // Use a small timeout to allow the conditional PdfTemplate to mount in the DOM
-    setTimeout(async () => {
-      const pdfElement = pdfTemplateRef.current;
-      if (!pdfElement) {
-        setIsDownloading(false);
-        return;
-      }
-
-      try {
-        const html2pdf = (await import("html2pdf.js")).default;
-        pdfElement.style.display = "block";
-
-        const options = {
-          margin: [10, 10, 10, 10] as [number, number, number, number],
-          filename: `${selectedTrip.title}.pdf`,
-          image: { type: "jpeg", quality: 0.95 } as { type: "jpeg" | "png" | "webp", quality: number },
-          html2canvas: { scale: 2, backgroundColor: "#ffffff", logging: false, useCORS: true },
-          jsPDF: { orientation: "portrait" as const, unit: "mm" as const, format: "a4" as const },
-          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-        };
-
-        await html2pdf().set(options).from(pdfElement).save();
-        pdfElement.style.display = "none";
-
-        toast({
-          title: "Success!",
-          description: "Your itinerary PDF has been downloaded.",
-        });
-      } catch (error) {
-        console.error("Failed to generate PDF:", error);
-        if (pdfElement) pdfElement.style.display = "none";
-        toast({
-          variant: "destructive",
-          title: "PDF Generation Failed",
-          description: "Sorry, we couldn't download your itinerary. Please try again.",
-        });
-      } finally {
-        setIsDownloading(false);
-      }
-    }, 200);
+    setIsPreviewOpen(true);
   };
 
   const formatDate = (date: string) => {
@@ -383,11 +337,11 @@ export default function MyTripsPage() {
               </Select>
               <Button
                 onClick={handleDownloadPdf}
-                disabled={isDownloading}
+                disabled={!selectedTrip}
                 className="w-fit"
               >
-                <Download className="mr-2 h-4 w-4" />
-                {isDownloading ? "Downloading..." : "Download PDF"}
+                <Eye className="mr-2 h-4 w-4" />
+                Preview & Export
               </Button>
             </div>
           </DialogHeader>
@@ -402,12 +356,20 @@ export default function MyTripsPage() {
             </div>
           )}
 
-          {/* Hidden PDF Template - Only render when actively downloading to prevent iframe message channel errors */}
-          {isDownloading && (
-            <div ref={pdfTemplateRef} style={{ display: "none" }}>
-              <PdfTemplate itinerary={selectedTrip?.itinerary_data} title={selectedTrip?.title} userProfile={userProfile} theme={selectedTheme} hotels={(selectedTrip?.itinerary_data as any)?.hotels || []} flights={(selectedTrip?.itinerary_data as any)?.flights || []} />
-            </div>
-          )}
+          {/* PDF Preview & Export */}
+          <PdfPreviewEditor
+            isOpen={isPreviewOpen}
+            onOpenChange={setIsPreviewOpen}
+            templateProps={{
+              itinerary: selectedTrip?.itinerary_data,
+              title: selectedTrip?.title,
+              userProfile: userProfile,
+              hotels: (selectedTrip?.itinerary_data as any)?.hotels || [],
+              flights: (selectedTrip?.itinerary_data as any)?.flights || [],
+            }}
+            initialTheme={selectedTheme}
+            filename={`${selectedTrip?.title || 'Itinerary'}.pdf`}
+          />
         </DialogContent>
       </Dialog>
     </div>

@@ -24,7 +24,7 @@ import ItineraryTimeline from "../itinerary-timeline";
 import HotelFlightEditor, { type HotelInfo, type FlightInfo } from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
 import type { PricingConfig } from "@/types/pricing";
-import { ChevronDown, Sparkles, Download, Calendar as CalendarIcon, Save, AlertCircle } from "lucide-react";
+import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,7 @@ import { format } from "date-fns";
 import { useAuth } from "@/contexts/auth-context";
 import { createClient } from "@/lib/supabase/client";
 import { PdfTemplate, type PdfTheme } from "@/components/pdf-template";
+import { PdfPreviewEditor } from "@/components/pdf-preview-editor";
 import {
   Select,
   SelectContent,
@@ -71,10 +72,10 @@ const AiArchitect = () => {
   const [itinerary, setItinerary] = useState<TravelItineraryOutput | null>(null);
   const { toast } = useToast();
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
   const itineraryRef = useRef<HTMLDivElement>(null);
-  const pdfTemplateRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const { user, userProfile } = useAuth();
   const supabase = createClient();
@@ -112,7 +113,7 @@ const AiArchitect = () => {
         const parsed = JSON.parse(savedItinerary);
         if (Array.isArray(parsed)) {
           // Handle old saved sessions where only the array was stored
-          setItinerary({ title: "Custom Itinerary", description: "Modified itinerary", itinerary: parsed });
+          setItinerary({ title: "Custom Itinerary", description: "Modified itinerary", itinerary: parsed } as any);
         } else {
           setItinerary(parsed);
         }
@@ -206,60 +207,9 @@ const AiArchitect = () => {
     return cost;
   }, [itinerary, flights, hotels, pricing]);
 
-  const handleDownloadPdf = async () => {
+  const handleDownloadPdf = () => {
     if (!itinerary) return;
-
-    setIsDownloading(true);
-    toast({
-      title: "Generating PDF...",
-      description: "Your professional itinerary is being created.",
-    });
-
-    // Use a small timeout to allow the conditional PdfTemplate to mount in the DOM
-    setTimeout(async () => {
-      const pdfElement = pdfTemplateRef.current;
-      if (!pdfElement) {
-        setIsDownloading(false);
-        return;
-      }
-
-      try {
-        // Dynamically import html2pdf only on the client side
-        const html2pdf = (await import("html2pdf.js")).default;
-
-        // Temporarily show the element for pdf capture
-        pdfElement.style.display = "block";
-
-        const options = {
-          margin: [10, 10, 10, 10] as [number, number, number, number],
-          filename: "OdysseyLuxe_Itinerary.pdf",
-          image: { type: "jpeg", quality: 0.95 } as { type: "jpeg" | "png" | "webp", quality: number },
-          html2canvas: { scale: 2, backgroundColor: "#ffffff", logging: false, useCORS: true },
-          jsPDF: { orientation: "portrait" as const, unit: "mm" as const, format: "a4" as const },
-          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] },
-        };
-
-        await html2pdf().set(options).from(pdfElement).save();
-
-        // Hide element again
-        pdfElement.style.display = "none";
-
-        toast({
-          title: "Success!",
-          description: "Your itinerary PDF has been downloaded.",
-        });
-      } catch (error) {
-        console.error("Failed to generate PDF:", error);
-        pdfElement.style.display = "none"; // Ensure it's hidden even on error
-        toast({
-          variant: "destructive",
-          title: "PDF Generation Failed",
-          description: "Sorry, we couldn't download your itinerary. Please try again.",
-        });
-      } finally {
-        setIsDownloading(false);
-      }
-    }, 100); // 100ms timeout to ensure the DOM is painted
+    setIsPreviewOpen(true);
   };
 
   const handleSaveItinerary = async () => {
@@ -880,11 +830,11 @@ const AiArchitect = () => {
                   </Select>
                   <Button
                     onClick={handleDownloadPdf}
-                    disabled={isDownloading}
+                    disabled={!itinerary}
                     className="flex-1 glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0"
                   >
-                    <Download className="w-4 h-4 mr-2" />
-                    {isDownloading ? "Downloading..." : "Download PDF"}
+                    <Eye className="w-4 h-4 mr-2" />
+                    Preview & Export
                   </Button>
                 </div>
                 <Button
@@ -938,19 +888,22 @@ const AiArchitect = () => {
             )}
           </div>
 
-          {/* Hidden PDF Template */}
-          <div ref={pdfTemplateRef} style={{ display: "none" }}>
-            <PdfTemplate
-              itinerary={itinerary}
-              title={`Trip to ${itinerary?.itinerary[0]?.areaFocus?.split(',')[0] || 'Destination'}`}
-              userProfile={userProfile}
-              theme={selectedTheme}
-              hotels={hotels}
-              flights={flights}
-              pricing={pricing}
-              baseCost={baseCost}
-            />
-          </div>
+          {/* PDF Preview & Export */}
+          <PdfPreviewEditor
+            isOpen={isPreviewOpen}
+            onOpenChange={setIsPreviewOpen}
+            templateProps={{
+              itinerary: itinerary,
+              title: `Trip to ${itinerary?.itinerary[0]?.areaFocus?.split(',')[0] || 'Destination'}`,
+              userProfile: userProfile,
+              hotels: hotels,
+              flights: flights,
+              pricing: pricing,
+              baseCost: baseCost,
+            }}
+            initialTheme={selectedTheme}
+            filename="OdysseyLuxe_Itinerary.pdf"
+          />
         </div>
       )}
     </section>

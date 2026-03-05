@@ -99,18 +99,32 @@ const generateTravelItineraryFlow = ai.defineFlow(
     outputSchema: TravelItineraryOutputSchema,
   },
   async input => {
-    const {output, usage} = await prompt(input);
-    
-    // Log token usage if available
-    if (usage) {
-      await logTokenUsage(
-        'generateTravelItineraryFlow',
-        'gemini-2.5-flash-lite',
-        usage.inputTokens || 0,
-        usage.outputTokens || 0
-      );
+    try {
+      console.log('Starting itinerary generation for:', input.destinations);
+      const {output, usage} = await prompt(input);
+      
+      // Log token usage if available
+      if (usage) {
+        await logTokenUsage(
+          'generateTravelItineraryFlow',
+          'gemini-2.5-flash-lite',
+          usage.inputTokens || 0,
+          usage.outputTokens || 0
+        );
+      }
+      
+      console.log('Itinerary generation successful');
+      return output!;
+    } catch (error) {
+      // 🔴 CRITICAL LOGGING FOR VERCEL DEPLOYMENT 🔴
+      console.error('------- AI GENERATION FAILED -------');
+      console.error('Error message:', error instanceof Error ? error.message : String(error));
+      if (error instanceof Error && error.stack) {
+        console.error('Stack trace:', error.stack);
+      }
+      console.error('Input payload:', JSON.stringify(input, null, 2));
+      console.error('------------------------------------');
+      throw error; // Re-throw so the frontend still catches it
     }
-    
-    return output!;
   }
 );
