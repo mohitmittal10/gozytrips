@@ -94,6 +94,7 @@ export type Database = {
           itinerary_data: Record<string, any>;
           client_id: string | null;
           status: string;
+          is_favourite: boolean | null;
           created_at: string;
           updated_at: string;
         };
@@ -115,6 +116,7 @@ export type Database = {
           itinerary_data: Record<string, any>;
           client_id?: string | null;
           status?: string;
+          is_favourite?: boolean | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -123,6 +125,7 @@ export type Database = {
           description?: string | null;
           client_id?: string | null;
           status?: string;
+          is_favourite?: boolean | null;
           updated_at?: string;
         };
       };

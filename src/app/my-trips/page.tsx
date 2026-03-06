@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
-import { MapPin, Calendar, DollarSign, Trash2, Eye, Plus, ArrowLeft } from 'lucide-react';
+import { MapPin, Calendar, DollarSign, Trash2, Eye, Plus, ArrowLeft, Heart } from 'lucide-react';
 import Link from 'next/link';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
@@ -37,6 +37,7 @@ interface SavedItinerary {
   budget: number | null;
   client_id: string | null;
   status: string;
+  is_favourite: boolean | null;
   itinerary_data: TravelItineraryOutput;
   created_at: string;
   updated_at: string;
@@ -53,6 +54,7 @@ export default function MyTripsPage() {
   const [deleting, setDeleting] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
+  const [showFavouritesOnly, setShowFavouritesOnly] = useState(false);
   const router = useRouter();
   const { clients } = useClients();
 
@@ -140,6 +142,43 @@ export default function MyTripsPage() {
     }
   };
 
+  const handleToggleFavourite = async (trip: SavedItinerary) => {
+    try {
+      const newStatus = !trip.is_favourite;
+
+      setTrips(trips.map(t =>
+        t.id === trip.id ? { ...t, is_favourite: newStatus } : t
+      ));
+
+      const { error } = await supabase
+        .from('itineraries')
+        .update({ is_favourite: newStatus })
+        .eq('id', trip.id)
+        .eq('user_id', user?.id);
+
+      if (error) {
+        setTrips(trips.map(t =>
+          t.id === trip.id ? { ...t, is_favourite: trip.is_favourite } : t
+        ));
+        toast({
+          title: 'Error',
+          description: error.message,
+          variant: 'destructive',
+        });
+        return;
+      }
+    } catch (error) {
+      setTrips(trips.map(t =>
+        t.id === trip.id ? { ...t, is_favourite: trip.is_favourite } : t
+      ));
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to update favourite status',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const handleDuplicateTrip = async (trip: SavedItinerary) => {
     try {
       // 1. Set the draft variables in local storage
@@ -198,6 +237,24 @@ export default function MyTripsPage() {
               </Button>
             </Link>
           </div>
+
+          <div className="flex mb-6 space-x-3">
+            <Button
+              variant="outline"
+              onClick={() => setShowFavouritesOnly(false)}
+              className={`glass-button rounded-full px-6 ${!showFavouritesOnly ? 'bg-primary/20 hover:bg-primary/30 text-primary border-primary/50' : 'border-white/10 hover:bg-white/5'}`}
+            >
+              All Trips
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowFavouritesOnly(true)}
+              className={`glass-button rounded-full px-6 gap-2 ${showFavouritesOnly ? 'bg-pink-500/20 hover:bg-pink-500/30 text-pink-500 border-pink-500/50' : 'border-white/10 hover:bg-white/5'}`}
+            >
+              <Heart className="w-4 h-4" fill={showFavouritesOnly ? "currentColor" : "none"} />
+              Favourites
+            </Button>
+          </div>
         </div>
 
         {loading ? (
@@ -215,24 +272,43 @@ export default function MyTripsPage() {
               </Card>
             ))}
           </div>
-        ) : trips.length === 0 ? (
+        ) : (showFavouritesOnly ? trips.filter(t => t.is_favourite) : trips).length === 0 ? (
           <Card className="glass-main border-white/10 text-center p-12">
             <CardContent>
-              <MapPin className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h2 className="text-xl font-semibold mb-2">No trips yet</h2>
-              <p className="text-muted-foreground mb-6">
-                Start creating your first luxurious travel itinerary with AI Architect
-              </p>
-              <Link href="/ai-architect">
-                <Button className="glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0">
-                  Create Your First Trip
-                </Button>
-              </Link>
+              {showFavouritesOnly ? (
+                <>
+                  <Heart className="w-12 h-12 mx-auto text-pink-500/50 mb-4" />
+                  <h2 className="text-xl font-semibold mb-2">No favourite trips</h2>
+                  <p className="text-muted-foreground mb-6">
+                    You haven't added any trips to your favourites yet.
+                  </p>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowFavouritesOnly(false)}
+                    className="glass-button"
+                  >
+                    View All Trips
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <MapPin className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
+                  <h2 className="text-xl font-semibold mb-2">No trips yet</h2>
+                  <p className="text-muted-foreground mb-6">
+                    Start creating your first luxurious travel itinerary with AI Architect
+                  </p>
+                  <Link href="/ai-architect">
+                    <Button className="glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0">
+                      Create Your First Trip
+                    </Button>
+                  </Link>
+                </>
+              )}
             </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {trips.map((trip) => (
+            {(showFavouritesOnly ? trips.filter(t => t.is_favourite) : trips).map((trip) => (
               <Card key={trip.id} className="glass-main border-white/10 hover:border-white/20 transition-all duration-300 overflow-hidden group">
                 <CardHeader className="pb-3 relative">
                   <div className="flex justify-between items-start gap-2">
@@ -240,6 +316,18 @@ export default function MyTripsPage() {
                       <CardTitle className="line-clamp-2">{trip.title}</CardTitle>
                       <CardDescription className="line-clamp-1">{trip.description}</CardDescription>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        handleToggleFavourite(trip);
+                      }}
+                      className="text-pink-500 hover:bg-pink-500/10 -mt-1 -mr-2 rounded-full h-8 w-8 flex-shrink-0"
+                    >
+                      <Heart className="w-5 h-5" fill={trip.is_favourite ? "currentColor" : "none"} />
+                    </Button>
                   </div>
                   {(trip.client_id || trip.status) && (
                     <div className="flex items-center gap-2 mt-2">

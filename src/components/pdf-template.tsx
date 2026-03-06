@@ -99,8 +99,60 @@ const getSanitizedTitle = (title: string, itinerary: TravelItineraryOutput): str
  */
 
 /* ───────── shared hotel / flight PDF blocks ───────── */
+const THEME_PATTERNS = {
+    topography: "data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM15 45c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5v0zm32 0c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 23c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2zm63 7.004c-1.105 0-2-.896-2-2.004 0-1.105.895-2 2-2s2 .895 2 2c0 1.108-.895 2.004-2 2.004z' fill='currentColor' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E",
+    minimal: "data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5z' fill='currentColor' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E",
+    geometric: "data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='currentColor' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E",
+    diagonal: "data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 12 12' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M4.22 0l-1.415 1.414L10.392 9l-1.414 1.414L1.392 2.828 0 4.243v2.828l1.414-1.414L8.98 13.22l1.415-1.414L2.808 4.243l1.414-1.414L11.808 10.42 13.22 9V6.172l-1.414 1.414L4.22 0z' fill='currentColor' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E",
+    waves: "data:image/svg+xml,%3Csvg width='100' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M21.184 20c.392-5.024 3.42-9.61 8.816-9.61 5.395 0 8.423 4.586 8.816 9.61H21.184zM100 20c-.392-5.59-3.92-10.39-9.825-10.39-4.886 0-8.238 3.518-9.355 7.64L78.697 16c-.576-8.525-4.57-16-12.78-16-8.21 0-12.204 7.475-12.78 16l-2.12-1.25C49.897 10.518 46.545 7 41.66 7c-5.905 0-9.434 4.802-9.826 10.39H0c.392-5.59 3.92-10.39 9.825-10.39 4.886 0 8.238 3.518 9.355 7.64l2.122 1.25c.576-8.525 4.57-16 12.78-16 8.21 0 12.204 7.475 12.78 16l2.12 1.25c1.117-4.12 4.47-7.64 9.355-7.64 5.905 0 9.434 4.802 9.826 10.39H100z' fill='currentColor' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E",
+    darkDots: "data:image/svg+xml,%3Csvg width='16' height='16' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M8 9l3 3-3 3-3-3 3-3zm0-2L5 4l3-3 3 3-3 3z' fill='currentColor' fill-opacity='0.04' fill-rule='evenodd'/%3E%3C/svg%3E",
+    moroccan: "data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M15 0C6.716 0 0 6.716 0 15c0 8.284 6.716 15 15 15 8.284 0 15-6.716 15-15 0-8.284-6.716-15-15-15zm0 28C7.82 28 2 22.18 2 15S7.82 2 15 2s13 5.82 13 13-5.82 13-13 13zm8-13c0-4.418-3.582-8-8-8s-8 3.582-8 8 3.582 8 8 8 8-3.582 8-8z' fill='currentColor' fill-opacity='0.02' fill-rule='evenodd'/%3E%3C/svg%3E"
+};
+
+const getThematicBackground = (itinerary: TravelItineraryOutput, theme: PdfTheme, agentColor: string) => {
+    let patternSrc = THEME_PATTERNS.topography;
+    let color = "%231e293b"; // slate-800 mostly
+
+    const destString = (itinerary.itinerary.map(d => d.areaFocus).join(" ") + " ").toLowerCase();
+
+    if (destString.match(/beach|island|coast|sea|ocean|resort|maldives|hawaii|bali|phuket|goa|cancun|cruise/)) {
+        patternSrc = THEME_PATTERNS.waves;
+    } else if (destString.match(/tokyo|new york|london|paris|city|dubai|singapore|urban|downtown/)) {
+        patternSrc = THEME_PATTERNS.geometric;
+    } else if (destString.match(/marrakech|morocco|istanbul|egypt|arab|middle east/)) {
+        patternSrc = THEME_PATTERNS.moroccan;
+    } else if (theme === 'minimalist' || theme === 'corporate') {
+        patternSrc = THEME_PATTERNS.diagonal;
+    } else if (theme === 'dark') {
+        patternSrc = THEME_PATTERNS.darkDots;
+        color = "%23ffffff";
+    }
+
+    if (agentColor && agentColor.startsWith('#') && theme !== 'dark') {
+        color = "%23" + agentColor.substring(1);
+    }
+
+    return patternSrc.replace(/currentColor/g, color);
+};
+
+const glassStyles = {
+    background: "rgba(255, 255, 255, 0.75)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+    border: "1px solid rgba(255, 255, 255, 0.6)",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.05)",
+};
+
+const darkGlassStyles = {
+    background: "rgba(15, 23, 42, 0.65)",
+    backdropFilter: "blur(12px)",
+    WebkitBackdropFilter: "blur(12px)",
+    border: "1px solid rgba(255, 255, 255, 0.08)",
+    boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
+};
+
 const PdfFlightBlock = ({ flight, accentColor, bgColor, textColor }: { flight: FlightInfo; accentColor: string; bgColor: string; textColor: string }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', borderRadius: '8px', background: bgColor, border: `1px solid ${accentColor}30`, margin: '16px 0', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', borderRadius: '8px', background: bgColor, border: `1px solid ${accentColor}30`, margin: '16px 0', pageBreakInside: 'avoid', breakInside: 'avoid', ...glassStyles, background: bgColor.replace(')', ', 0.6)').replace('rgb', 'rgba') }}>
         <span style={{ fontSize: '18px' }}>✈️</span>
         <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -117,7 +169,7 @@ const PdfFlightBlock = ({ flight, accentColor, bgColor, textColor }: { flight: F
 );
 
 const PdfHotelBlock = ({ hotel, accentColor, bgColor, textColor }: { hotel: HotelInfo; accentColor: string; bgColor: string; textColor: string }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', borderRadius: '8px', background: bgColor, border: `1px solid ${accentColor}30`, margin: '16px 0', pageBreakInside: 'avoid', breakInside: 'avoid' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', borderRadius: '8px', background: bgColor, border: `1px solid ${accentColor}30`, margin: '16px 0', pageBreakInside: 'avoid', breakInside: 'avoid', ...glassStyles, background: bgColor.replace(')', ', 0.6)').replace('rgb', 'rgba') }}>
         <span style={{ fontSize: '18px' }}>🏨</span>
         <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -139,7 +191,7 @@ type ThemeProps = { itinerary: TravelItineraryOutput; title: string; agent: Retu
    THEME 1 — CLASSIC
    ═══════════════════════════════════════════════ */
 const ClassicTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => (
-    <div style={{ fontFamily: "'Inter', sans-serif", backgroundColor: "#faf9f7", color: "#1e293b", width: "100%" }}>
+    <div style={{ fontFamily: "'Inter', sans-serif", backgroundColor: "#f8fafc", backgroundImage: `url("${getThematicBackground(itinerary, 'classic', agent.primaryColor)}")`, backgroundRepeat: "repeat", color: "#1e293b", width: "100%" }}>
         {/* Hero — cover section */}
         <div data-pdf-section="cover">
             <div style={{ position: "relative", height: "280px", overflow: "hidden", marginBottom: "30px" }}>
@@ -156,7 +208,7 @@ const ClassicTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "2px solid #e2e8f0", paddingBottom: "25px", marginBottom: "30px", pageBreakInside: "avoid" }}>
                     <div style={{ maxWidth: "60%" }}>
                         {agent.agentBio && (
-                            <div style={{ padding: "15px 20px", borderRadius: "8px", borderLeft: `4px solid ${agent.primaryColor}`, fontStyle: "italic", color: "#475569", fontSize: "14px", backgroundColor: "#f8fafc", lineHeight: "1.6" }}>
+                            <div style={{ padding: "15px 20px", borderRadius: "8px", borderLeft: `4px solid ${agent.primaryColor}`, fontStyle: "italic", color: "#475569", fontSize: "14px", lineHeight: "1.6", ...glassStyles }}>
                                 &quot;{agent.agentBio}&quot;
                             </div>
                         )}
@@ -172,11 +224,11 @@ const ClassicTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) 
 
                 {/* Stat cards */}
                 <div style={{ display: "flex", gap: "20px", marginBottom: "40px", pageBreakInside: "avoid" }}>
-                    <div style={{ flex: 1, background: "#f8fafc", borderRadius: "12px", padding: "20px", border: "1px solid #e2e8f0", borderLeft: "4px solid #a855f7" }}>
+                    <div style={{ flex: 1, borderRadius: "12px", padding: "20px", borderLeft: "4px solid #a855f7", ...glassStyles }}>
                         <h3 style={{ margin: "0 0 5px 0", fontSize: "14px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px" }}>Duration</h3>
                         <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>{itinerary.itinerary.length} Days</p>
                     </div>
-                    <div style={{ flex: 1, background: "#f8fafc", borderRadius: "12px", padding: "20px", border: "1px solid #e2e8f0", borderLeft: "4px solid #ec4899" }}>
+                    <div style={{ flex: 1, borderRadius: "12px", padding: "20px", borderLeft: "4px solid #ec4899", ...glassStyles }}>
                         <h3 style={{ margin: "0 0 5px 0", fontSize: "14px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px" }}>Total Budget</h3>
                         <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>₹{getTotalBudget(itinerary).toLocaleString()}</p>
                     </div>
@@ -201,17 +253,17 @@ const ClassicTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) 
                 </div>
 
                 {/* Timeline steps — each step self-contained */}
-                <div style={{ border: "1px solid #e2e8f0", borderTop: "none", borderRadius: "0 0 16px 16px", padding: "20px 25px", backgroundColor: "#faf9f7" }}>
+                <div style={{ borderRadius: "0 0 16px 16px", padding: "20px 25px", ...glassStyles }}>
                     {flights.filter(f => f.dayIndex === index).map((flight, fi) => (
                         <PdfFlightBlock key={fi} flight={flight} accentColor="#10b981" bgColor="#ecfdf5" textColor="#475569" />
                     ))}
                     {day.timeline.map((step, si) => (
-                        <div key={si} className="pdf-no-cut" style={{ display: "flex", alignItems: "center", gap: "15px", marginBottom: si === day.timeline.length - 1 ? "0" : "14px", paddingBottom: si === day.timeline.length - 1 ? "0" : "14px", borderBottom: si === day.timeline.length - 1 ? "none" : "1px solid #f1f5f9", pageBreakInside: "avoid", breakInside: "avoid" }}>
-                            <span style={{ fontWeight: "bold", color: "#a855f7", fontSize: "13px", background: "#f3e8ff", padding: "5px 14px", borderRadius: "20px", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, minWidth: "90px", textAlign: "center" }}>{step.time}</span>
+                        <div key={si} className="pdf-no-cut" style={{ display: "flex", alignItems: "center", gap: "15px", marginBottom: si === day.timeline.length - 1 ? "0" : "14px", paddingBottom: si === day.timeline.length - 1 ? "0" : "14px", borderBottom: si === day.timeline.length - 1 ? "none" : "1px solid rgba(255,255,255,0.4)", pageBreakInside: "avoid", breakInside: "avoid" }}>
+                            <span style={{ fontWeight: "bold", color: "#a855f7", fontSize: "13px", background: "rgba(243, 232, 255, 0.7)", padding: "5px 14px", borderRadius: "20px", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, minWidth: "90px", textAlign: "center" }}>{step.time}</span>
                             <p style={{ margin: 0, fontSize: "14px", lineHeight: "1.6", color: "#475569", flex: 1 }}>{step.details}</p>
                         </div>
                     ))}
-                    <div style={{ marginTop: "18px", paddingTop: "15px", borderTop: "1px solid #f1f5f9", display: "flex", gap: "20px", fontSize: "13px", color: "#64748b", fontWeight: 500, pageBreakInside: "avoid", breakInside: "avoid" }}>
+                    <div style={{ marginTop: "18px", paddingTop: "15px", borderTop: "1px solid rgba(255,255,255,0.4)", display: "flex", gap: "20px", fontSize: "13px", color: "#64748b", fontWeight: 500, pageBreakInside: "avoid", breakInside: "avoid" }}>
                         <div>🏃‍♂️ Distance: {formatDistance(day.dailyStats?.walkingDistance)} km</div>
                         <div>💰 Budget: ₹{formatCurrency(day.dailyStats?.totalCost)}</div>
                     </div>
@@ -237,7 +289,7 @@ const ClassicTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) 
 const EditorialTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => {
     const gold = "#b8860b";
     return (
-        <div style={{ fontFamily: "'Georgia', 'Times New Roman', serif", backgroundColor: "#fdfcfa", color: "#2c2c2c", width: "100%" }}>
+        <div style={{ fontFamily: "'Georgia', 'Times New Roman', serif", backgroundColor: "#fdfcfa", backgroundImage: `url("${getThematicBackground(itinerary, 'editorial', gold)}")`, backgroundRepeat: "repeat", color: "#2c2c2c", width: "100%" }}>
             {/* Cover */}
             <div data-pdf-section="cover">
                 <div style={{ position: "relative", height: "480px", overflow: "hidden" }}>
@@ -256,7 +308,7 @@ const EditorialTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps
                     <div style={{ display: "flex", gap: "60px", marginBottom: "50px", borderBottom: `1px solid ${gold}`, paddingBottom: "40px", pageBreakInside: "avoid" }}>
                         <div style={{ flex: 2 }}>
                             {agent.agentBio && (
-                                <blockquote style={{ fontSize: "20px", lineHeight: "1.8", color: "#555", fontStyle: "italic", margin: 0, padding: 0 }}>
+                                <blockquote style={{ fontSize: "20px", lineHeight: "1.8", color: "#555", fontStyle: "italic", margin: 0, padding: "20px", borderRadius: "12px", ...glassStyles }}>
                                     &ldquo;{agent.agentBio}&rdquo;
                                 </blockquote>
                             )}
@@ -338,7 +390,7 @@ const EditorialTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps
 const MinimalistTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => {
     const accent = agent.primaryColor || "#000000";
     return (
-        <div style={{ fontFamily: "'Helvetica Neue', 'Arial', sans-serif", backgroundColor: "#f8f9fa", color: "#111", width: "100%", padding: "60px" }}>
+        <div style={{ fontFamily: "'Helvetica Neue', 'Arial', sans-serif", backgroundColor: "#f8f9fa", backgroundImage: `url("${getThematicBackground(itinerary, 'minimalist', accent)}")`, backgroundRepeat: "repeat", color: "#111", width: "100%", padding: "60px" }}>
             {/* Header — cover section */}
             <div data-pdf-section="cover" style={{ marginBottom: "40px" }}>
                 <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "5px", color: "#999", margin: "0 0 20px 0" }}>{agent.companyName} / {agent.agentName}</p>
@@ -357,7 +409,7 @@ const MinimalistTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProp
             </div>
 
             {agent.agentBio && (
-                <div style={{ margin: "0 0 40px 0", padding: "0 0 0 20px", borderLeft: `3px solid ${accent}`, maxWidth: "600px", pageBreakInside: "avoid" }}>
+                <div style={{ margin: "0 0 40px 0", padding: "16px 20px", borderLeft: `3px solid ${accent}`, maxWidth: "600px", borderRadius: "0 12px 12px 0", pageBreakInside: "avoid", ...glassStyles }}>
                     <p style={{ fontSize: "14px", lineHeight: "1.8", color: "#555", margin: 0, fontStyle: "italic" }}>{agent.agentBio}</p>
                 </div>
             )}
@@ -387,7 +439,7 @@ const MinimalistTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProp
                             <PdfFlightBlock key={fi} flight={flight} accentColor={accent} bgColor="#f0fdf4" textColor="#666" />
                         ))}
                         {day.timeline.map((step, si) => (
-                            <div key={si} className="pdf-no-cut" style={{ display: "flex", gap: "20px", padding: "14px 0", borderBottom: "1px solid #f5f5f5", pageBreakInside: "avoid" }}>
+                            <div key={si} className="pdf-no-cut" style={{ display: "flex", gap: "20px", padding: "14px 20px", margin: "10px 0", borderRadius: "12px", border: "none", pageBreakInside: "avoid", ...glassStyles }}>
                                 <div style={{ width: "80px", flexShrink: 0, fontSize: "13px", fontWeight: 700, color: accent }}>{step.time}</div>
                                 <p style={{ flex: 1, margin: 0, fontSize: "14px", lineHeight: "1.6", color: "#444" }}>{step.details}</p>
                             </div>
@@ -414,7 +466,7 @@ const MinimalistTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProp
 const DarkTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => {
     const accent = agent.primaryColor || "#a855f7";
     return (
-        <div style={{ fontFamily: "'Inter', sans-serif", backgroundColor: "#0a0e1a", color: "#e2e8f0", width: "100%" }}>
+        <div style={{ fontFamily: "'Inter', sans-serif", backgroundColor: "#0a0e1a", backgroundImage: `url("${getThematicBackground(itinerary, 'dark', accent)}")`, backgroundRepeat: "repeat", color: "#e2e8f0", width: "100%" }}>
             {/* Hero — cover section */}
             <div data-pdf-section="cover" style={{ position: "relative", height: "300px", overflow: "hidden" }}>
                 <img src={getCoverImage(itinerary)} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.3) saturate(0.5)" }} crossOrigin="anonymous" />
@@ -427,7 +479,7 @@ const DarkTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => 
 
             <div style={{ padding: "40px" }}>
                 {/* Agent info */}
-                <div style={{ background: "rgba(30, 41, 59, 0.6)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "16px", padding: "25px 30px", marginBottom: "30px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ borderRadius: "16px", padding: "25px 30px", marginBottom: "30px", display: "flex", justifyContent: "space-between", alignItems: "center", ...darkGlassStyles }}>
                     <div style={{ flex: 1 }}>
                         {agent.agentBio && <p style={{ fontSize: "14px", color: "#94a3b8", margin: 0, fontStyle: "italic", lineHeight: "1.7" }}>&quot;{agent.agentBio}&quot;</p>}
                     </div>
@@ -445,7 +497,7 @@ const DarkTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => 
                         { label: "Budget", value: `₹${getTotalBudget(itinerary).toLocaleString()}` },
                         { label: "Activities", value: `${itinerary.itinerary.reduce((sum, d) => sum + d.timeline.length, 0)}+` },
                     ].map((stat, i) => (
-                        <div key={i} style={{ flex: 1, background: "rgba(30, 41, 59, 0.5)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "20px", textAlign: "center" }}>
+                        <div key={i} style={{ flex: 1, borderRadius: "12px", padding: "20px", textAlign: "center", ...darkGlassStyles }}>
                             <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#64748b", margin: "0 0 8px 0" }}>{stat.label}</p>
                             <p style={{ fontSize: "22px", fontWeight: "bold", margin: 0, color: accent }}>{stat.value}</p>
                         </div>
@@ -473,12 +525,12 @@ const DarkTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => 
                         </div>
 
                         {/* Activities */}
-                        <div style={{ padding: "20px 25px", background: "rgba(30, 41, 59, 0.4)", border: "1px solid rgba(255,255,255,0.06)", borderTop: "none", borderRadius: "0 0 16px 16px" }}>
+                        <div style={{ padding: "20px 25px", borderTop: "none", borderRadius: "0 0 16px 16px", ...darkGlassStyles, boxShadow: "none", background: "rgba(15, 23, 42, 0.4)" }}>
                             {flights.filter(f => f.dayIndex === index).map((flight, fi) => (
                                 <PdfFlightBlock key={fi} flight={flight} accentColor="#34d399" bgColor="rgba(16,185,129,0.1)" textColor="#94a3b8" />
                             ))}
                             {day.timeline.map((step, si) => (
-                                <div key={si} className="pdf-no-cut" style={{ display: "flex", gap: "15px", marginBottom: si === day.timeline.length - 1 ? "0" : "15px", padding: "12px 15px", borderLeft: `3px solid ${accent}40`, borderRadius: "0 8px 8px 0", background: "rgba(255,255,255,0.02)", pageBreakInside: "avoid" }}>
+                                <div key={si} className="pdf-no-cut" style={{ display: "flex", gap: "15px", marginBottom: si === day.timeline.length - 1 ? "0" : "15px", padding: "12px 15px", borderLeft: `3px solid ${accent}40`, borderRadius: "0 8px 8px 0", pageBreakInside: "avoid", ...darkGlassStyles }}>
                                     <span style={{ fontSize: "13px", fontWeight: 700, color: accent, width: "70px", flexShrink: 0 }}>{step.time}</span>
                                     <p style={{ margin: 0, fontSize: "14px", lineHeight: "1.6", color: "#cbd5e1" }}>{step.details}</p>
                                 </div>
@@ -506,7 +558,7 @@ const DarkTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => 
 const CorporateTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => {
     const navy = "#003366";
     return (
-        <div style={{ fontFamily: "'Helvetica', 'Arial', sans-serif", backgroundColor: "#f4f6f8", color: "#333", width: "100%" }}>
+        <div style={{ fontFamily: "'Helvetica', 'Arial', sans-serif", backgroundColor: "#f4f6f8", backgroundImage: `url("${getThematicBackground(itinerary, 'corporate', navy)}")`, backgroundRepeat: "repeat", color: "#333", width: "100%" }}>
             {/* Letterhead — cover section */}
             <div data-pdf-section="cover">
                 <div style={{ background: navy, padding: "30px 50px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -535,8 +587,8 @@ const CorporateTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps
                     )}
 
                     {/* Summary table */}
-                    <div style={{ width: "100%", marginBottom: "35px", fontSize: "13px", display: "flex", flexDirection: "column" }}>
-                        <div style={{ display: "flex", backgroundColor: "#f0f3f7", borderBottom: `2px solid ${navy}` }}>
+                    <div style={{ width: "100%", marginBottom: "35px", fontSize: "13px", display: "flex", flexDirection: "column", borderRadius: "12px", ...glassStyles }}>
+                        <div style={{ display: "flex", borderBottom: `2px solid ${navy}`, background: "rgba(0,51,102,0.05)", borderRadius: "12px 12px 0 0" }}>
                             <div style={{ padding: "10px 15px", flex: "0 0 40%", color: navy, textTransform: "uppercase", fontSize: "11px", letterSpacing: "1px", fontWeight: "bold" }}>Metric</div>
                             <div style={{ padding: "10px 15px", flex: "0 0 60%", color: navy, textTransform: "uppercase", fontSize: "11px", letterSpacing: "1px", fontWeight: "bold" }}>Details</div>
                         </div>
