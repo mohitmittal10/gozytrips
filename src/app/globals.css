@@ -27,25 +27,75 @@
   }
 
   .dark {
-    --background: 25 20% 12%; /* Deep Umber */
-    --foreground: 33 30% 85%; /* Light Sand */
-    --card: 25 20% 15%;
-    --card-foreground: 33 30% 85%;
-    --popover: 25 25% 10%;
-    --popover-foreground: 33 30% 85%;
-    --primary: 34 56% 64%; /* Sandy Beige: #D4A373 */
-    --primary-foreground: 25 74% 15%; /* Dark Terracotta */
-    --secondary: 25 74% 31%; /* Terracotta: #8B4513 */
-    --secondary-foreground: 33 56% 87%;
-    --muted: 25 74% 25%;
-    --muted-foreground: 33 30% 70%;
-    --accent: 33 56% 77%; /* Warm Cream: #E8C4A0 */
-    --accent-foreground: 25 74% 15%;
-    --destructive: 0 63% 40%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 34 56% 64%;
-    --input: 25 20% 18%;
-    --ring: 34 56% 64%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .testimonial-theme {
+    --foreground: oklch(0.12 0 0);
+    --card: 0 0% 100%;
+    --card-foreground: oklch(0.12 0 0);
+    --popover: 0 0% 100%;
+    --popover-foreground: oklch(0.12 0 0);
+    --primary: oklch(0.12 0 0);
+    --primary-foreground: oklch(0.98 0 0);
+    --secondary: oklch(0.96 0.002 90);
+    --secondary-foreground: oklch(0.12 0 0);
+    --muted: oklch(0.94 0.002 90);
+    --muted-foreground: oklch(0.45 0 0);
+    --accent: oklch(0.65 0.15 25);
+    --accent-foreground: oklch(0.98 0 0);
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: oklch(0.577 0.245 27.325);
+    --border: oklch(0.9 0.002 90);
+    --input: oklch(0.9 0.002 90);
+    --ring: oklch(0.12 0 0);
+  }
+
+  .dark .testimonial-theme {
+    --foreground: oklch(0.95 0 0);
+    --card: oklch(0.12 0 0);
+    --card-foreground: oklch(0.95 0 0);
+    --popover: oklch(0.12 0 0);
+    --popover-foreground: oklch(0.95 0 0);
+    --primary: oklch(0.95 0 0);
+    --primary-foreground: oklch(0.1 0 0);
+    --secondary: oklch(0.18 0 0);
+    --secondary-foreground: oklch(0.95 0 0);
+    --muted: oklch(0.22 0 0);
+    --muted-foreground: oklch(0.6 0 0);
+    --accent: oklch(0.7 0.12 25);
+    --accent-foreground: oklch(0.1 0 0);
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: oklch(0.22 0 0);
+    --input: oklch(0.22 0 0);
+    --ring: oklch(0.5 0 0);
   }
 }
 
@@ -53,12 +103,13 @@
   * {
     @apply border-border/20;
   }
+
   body {
     @apply bg-background text-foreground;
   }
 
   section {
-    @apply py-16 sm:py-20 md:py-24;
+    @apply py-8 sm:py-12 md:py-16;
   }
 
   .ai-architect-page {
@@ -70,54 +121,56 @@
   .glass-card {
     @apply bg-white/5 backdrop-blur-lg border border-white/10 saturate-150;
   }
+
   .dark .glass-card {
     @apply bg-black/10;
   }
+
   .ai-architect-page .ai-architect-page-card {
     background-color: rgba(30, 30, 30, 0.5) !important;
     backdrop-filter: blur(18px) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: white;
   }
+
   .ai-architect-input {
     background-color: rgba(40, 40, 40, 0.7) !important;
     border-color: rgba(255, 255, 255, 0.15) !important;
     color: white !important;
   }
+
   .ai-architect-input::placeholder {
     color: rgb(156 163 175) !important;
   }
+
   .glass-main {
-    @apply bg-[rgba(212,163,115,0.12)] backdrop-blur-[18px] border border-[hsla(var(--primary)/0.2)] saturate-150;
+    @apply bg-background/60 backdrop-blur-xl border border-white/5 saturate-[1.2] shadow-xl;
   }
 
   /* Custom Scrollbar Styling */
   ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+    width: 8px;
+    height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: rgba(25, 25, 25, 0.5);
-    backdrop-filter: blur(10px);
-    border-radius: 5px;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, rgb(212, 163, 115), rgb(139, 69, 19));
-    border-radius: 5px;
-    border: 2px solid rgba(25, 25, 25, 0.5);
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
     transition: background 0.3s ease;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, rgb(228, 178, 135), rgb(160, 90, 40));
-    box-shadow: 0 0 10px rgba(212, 163, 115, 0.3);
+    background: rgba(255, 255, 255, 0.25);
   }
 
   /* Firefox Scrollbar */
   * {
-    scrollbar-color: rgb(212, 163, 115) rgba(25, 25, 25, 0.5);
+    scrollbar-color: rgba(255, 255, 255, 0.15) rgba(0, 0, 0, 0.1);
     scrollbar-width: thin;
   }
 }

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
-    Hotel, Plane, Plus, Trash2, Star, ChevronDown,
+    Hotel, Plane, Plus, Trash2, Star, ChevronDown, X, ImageIcon
 } from "lucide-react";
 import {
     Collapsible, CollapsibleContent, CollapsibleTrigger,
@@ -26,9 +26,11 @@ export type HotelInfo = {
     checkOut: string;
     bookingRef: string;
     starRating: number;
+    nights?: number;
     costAdult?: number;
     costChild?: number;
     costInfant?: number;
+    imageUrls?: string[];
 };
 
 export type FlightInfo = {
@@ -53,7 +55,7 @@ let _idCounter = 0;
 const uid = () => `hf-${Date.now()}-${++_idCounter}`;
 
 const emptyHotel = (dayIndex: number): HotelInfo => ({
-    id: uid(), dayIndex, name: "", address: "", checkIn: "2:00 PM", checkOut: "11:00 AM", bookingRef: "", starRating: 3,
+    id: uid(), dayIndex, nights: 1, name: "", address: "", checkIn: "2:00 PM", checkOut: "11:00 AM", bookingRef: "", starRating: 3,
 });
 
 const emptyFlight = (dayIndex: number): FlightInfo => ({
@@ -126,8 +128,28 @@ function HotelCard({ hotel, totalDays, onChange, onDelete }: {
     hotel: HotelInfo; totalDays: number;
     onChange: (updated: HotelInfo) => void; onDelete: () => void;
 }) {
-    const update = (field: keyof HotelInfo, value: string | number | undefined) =>
+    const update = (field: keyof HotelInfo, value: any) =>
         onChange({ ...hotel, [field]: value } as any);
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const currentUrls = hotel.imageUrls || [];
+            if (currentUrls.length >= 2) return;
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                update("imageUrls", [...currentUrls, reader.result as string]);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeImage = (index: number) => {
+        const currentUrls = hotel.imageUrls || [];
+        const newUrls = [...currentUrls];
+        newUrls.splice(index, 1);
+        update("imageUrls", newUrls.length > 0 ? newUrls : undefined);
+    };
 
     return (
         <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3 group">
@@ -136,6 +158,15 @@ function HotelCard({ hotel, totalDays, onChange, onDelete }: {
                     <Hotel className="w-4 h-4 text-blue-400" />
                     <span className="text-sm font-semibold text-blue-400">Hotel</span>
                     <DaySelect value={hotel.dayIndex} onChange={(v) => update("dayIndex", v)} totalDays={totalDays} />
+                    <span className="text-sm text-gray-400 ml-2">for</span>
+                    <Input
+                        type="number"
+                        min={1}
+                        value={hotel.nights || 1}
+                        onChange={(e) => update("nights", Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-16 h-8 text-sm text-center px-1"
+                    />
+                    <span className="text-sm text-gray-400">nights</span>
                 </div>
                 <div className="flex items-center gap-3">
                     <StarRating value={hotel.starRating} onChange={(v) => update("starRating", v)} />
@@ -157,6 +188,42 @@ function HotelCard({ hotel, totalDays, onChange, onDelete }: {
                     <Field label="Adult Cost" type="number" value={hotel.costAdult} onChange={(v) => update("costAdult", v ? Number(v) : undefined)} placeholder="0" />
                     <Field label="Child Cost" type="number" value={hotel.costChild} onChange={(v) => update("costChild", v ? Number(v) : undefined)} placeholder="0" />
                     <Field label="Infant Cost" type="number" value={hotel.costInfant} onChange={(v) => update("costInfant", v ? Number(v) : undefined)} placeholder="0" />
+                </div>
+            </div>
+
+            <div className="pt-2 border-t border-white/5 space-y-2 mt-2!">
+                <label className="text-xs font-semibold text-gray-400">Hotel Photos (Up to 2)</label>
+                <div className="flex flex-col gap-2">
+                    <div className="flex items-start gap-4 flex-wrap">
+                        {(hotel.imageUrls || []).map((url, idx) => (
+                            <div key={idx} className="relative w-24 h-24 rounded-lg overflow-hidden border border-white/10 group/img flex-shrink-0">
+                                <img src={url} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                                <button
+                                    onClick={() => removeImage(idx)}
+                                    className="absolute top-1 right-1 bg-black/60 p-1 rounded-full text-white opacity-0 group-hover/img:opacity-100 transition-opacity hover:bg-red-500"
+                                >
+                                    <X className="w-3 h-3" />
+                                </button>
+                            </div>
+                        ))}
+                        {(!hotel.imageUrls || hotel.imageUrls.length < 2) && (
+                            <div className="relative flex items-center justify-center w-24 h-24 flex-shrink-0 rounded-lg border-2 border-dashed border-white/20 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group/upload">
+                                <div className="flex flex-col items-center gap-1 text-gray-400 group-hover/upload:text-white transition-colors">
+                                    <ImageIcon className="w-5 h-5" />
+                                    <span className="text-[10px] uppercase font-semibold text-center leading-tight">Upload<br />({(hotel.imageUrls || []).length}/2)</span>
+                                </div>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleImageUpload}
+                                    className="absolute top-0 left-0 w-full h-full opacity-0 cursor-pointer"
+                                />
+                            </div>
+                        )}
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">
+                        Upload up to 2 photos of the hotel to display them on the itinerary page and PDF export. Local files are processed securely in your browser.
+                    </div>
                 </div>
             </div>
         </div>

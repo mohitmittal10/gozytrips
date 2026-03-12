@@ -1,40 +1,56 @@
-import { PlaceHolderImages } from "@/lib/placeholder-images";
-import Image from "next/image";
-import { Button } from "../ui/button";
-import { ArrowDown } from "lucide-react";
+"use client"
+
+import { Hero as NewHero } from "@/components/ui/hero";
+import { LayoutGroup, motion } from "motion/react";
+import { TextRotate } from "@/components/ui/text-rotate";
 
 const Hero = () => {
-    const heroImage = PlaceHolderImages.find(img => img.id === 'hero-background');
-
     return (
-        <section id="home" className="relative h-screen flex items-center justify-center text-center pt-20">
-            {heroImage && (
-                <Image
-                    src={heroImage.imageUrl}
-                    alt={heroImage.description}
-                    fill
-                    className="object-cover"
-                    priority
-                    data-ai-hint={heroImage.imageHint}
-                />
-            )}
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/40 to-transparent" />
-            <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-                <h1 className="font-headline text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-extrabold text-white" style={{textShadow: '0 4px 15px rgba(0,0,0,0.4)'}}>
-                    Your World, Reimagined
-                </h1>
-                <p className="mt-6 max-w-2xl mx-auto text-lg md:text-xl text-white/90" style={{textShadow: '0 2px 8px rgba(0,0,0,0.3)'}}>
-                    Experience the pinnacle of luxury travel, with bespoke journeys crafted to perfection.
-                </p>
-                <div className="mt-10">
-                    <Button size="lg" asChild>
-                        <a href="#packages">
-                            Explore Packages
-                            <ArrowDown className="ml-2 h-4 w-4" />
-                        </a>
-                    </Button>
-                </div>
-            </div>
+        <section id="home">
+            <NewHero
+                title={
+                    <LayoutGroup>
+                        <motion.div className="flex whitespace-pre flex-wrap justify-center items-center" layout>
+                            <motion.span
+                                className="pt-0.5 sm:pt-1 md:pt-2"
+                                layout
+                                transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                            >
+                                Your Trip,{" "}
+                            </motion.span>
+                            <TextRotate
+                                texts={[
+                                    "Reimagined",
+                                    "Simplified",
+                                    "Automated",
+                                    "Explored",
+                                    "Elevated",
+                                ]}
+                                mainClassName="text-foreground px-2 sm:px-2 md:px-4 bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/20 dark:border-white/10 shadow-lg shadow-black/5 overflow-hidden py-0.5 sm:py-1 md:py-2 justify-center rounded-xl"
+                                staggerFrom={"last"}
+                                initial={{ y: "100%" }}
+                                animate={{ y: 0 }}
+                                exit={{ y: "-120%" }}
+                                staggerDuration={0.025}
+                                splitLevelClassName="overflow-hidden pb-0.5 sm:pb-1 md:pb-1"
+                                transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                                rotationInterval={2000}
+                            />
+                        </motion.div>
+                    </LayoutGroup>
+                }
+                subtitle="Experience the pinnacle of AI-driven travel planning. Effortless itineraries, bespoke routes, and unforgettable journeys crafted in seconds."
+                actions={[
+                    {
+                        label: "Start Planning",
+                        href: "#packages",
+                        variant: "default"
+                    }
+                ]}
+                titleClassName="text-4xl sm:text-5xl md:text-6xl font-extrabold w-full flex justify-center"
+                subtitleClassName="text-lg md:text-xl max-w-[600px] mt-4"
+                actionsClassName="mt-8"
+            />
         </section>
     );
 }

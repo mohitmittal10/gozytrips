@@ -25,7 +25,7 @@ export default function RootLayout({
       <body className={cn(
         "font-body antialiased min-h-screen bg-background",
         "bg-gradient-to-br from-background via-secondary/10 to-background"
-        )}>
+      )}>
         <AuthProvider>
           <ProtectedRoute>
             {children}

@@ -152,7 +152,7 @@ const darkGlassStyles = {
 };
 
 const PdfFlightBlock = ({ flight, accentColor, bgColor, textColor }: { flight: FlightInfo; accentColor: string; bgColor: string; textColor: string }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', borderRadius: '8px', background: bgColor, border: `1px solid ${accentColor}30`, margin: '16px 0', pageBreakInside: 'avoid', breakInside: 'avoid', ...glassStyles, background: bgColor.replace(')', ', 0.6)').replace('rgb', 'rgba') }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', borderRadius: '8px', margin: '16px 0', pageBreakInside: 'avoid', breakInside: 'avoid', ...glassStyles, background: bgColor.replace(')', ', 0.6)').replace('rgb', 'rgba'), border: `1px solid ${accentColor}30` }}>
         <span style={{ fontSize: '18px' }}>✈️</span>
         <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -168,29 +168,47 @@ const PdfFlightBlock = ({ flight, accentColor, bgColor, textColor }: { flight: F
     </div>
 );
 
-const PdfHotelBlock = ({ hotel, accentColor, bgColor, textColor }: { hotel: HotelInfo; accentColor: string; bgColor: string; textColor: string }) => (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', borderRadius: '8px', background: bgColor, border: `1px solid ${accentColor}30`, margin: '16px 0', pageBreakInside: 'avoid', breakInside: 'avoid', ...glassStyles, background: bgColor.replace(')', ', 0.6)').replace('rgb', 'rgba') }}>
-        <span style={{ fontSize: '18px' }}>🏨</span>
-        <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span style={{ fontWeight: 'bold', color: accentColor, fontSize: '13px' }}>{hotel.name || 'Hotel'}</span>
-                <span style={{ color: '#f59e0b', fontSize: '12px' }}>{'★'.repeat(hotel.starRating)}{'☆'.repeat(5 - hotel.starRating)}</span>
-                {hotel.bookingRef && <span style={{ fontSize: '11px', background: `${accentColor}20`, color: accentColor, padding: '2px 6px', borderRadius: '4px' }}>Ref: {hotel.bookingRef}</span>}
+const PdfHotelBlock = ({ hotel, accentColor, bgColor, textColor }: { hotel: HotelInfo; accentColor: string; bgColor: string; textColor: string }) => {
+    const hasImages = hotel.imageUrls && hotel.imageUrls.length > 0;
+    const isSingleImage = hotel.imageUrls?.length === 1;
+    return (
+        <div style={{ padding: '16px', borderRadius: '8px', margin: '16px 0', pageBreakInside: 'avoid', breakInside: 'avoid', ...glassStyles, background: bgColor.replace(')', ', 0.6)').replace('rgb', 'rgba'), border: `1px solid ${accentColor}30` }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <span style={{ fontSize: '18px', display: 'block', marginTop: '2px' }}>🏨</span>
+                <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 'bold', color: accentColor, fontSize: '15px' }}>{hotel.name || 'Hotel'}</span>
+                        <span style={{ color: '#f59e0b', fontSize: '13px' }}>{'★'.repeat(hotel.starRating)}{'☆'.repeat(5 - hotel.starRating)}</span>
+                        {hotel.bookingRef && <span style={{ fontSize: '11px', background: `${accentColor}20`, color: accentColor, padding: '2px 6px', borderRadius: '4px' }}>Ref: {hotel.bookingRef}</span>}
+                    </div>
+                    <div style={{ fontSize: '13px', color: textColor, marginTop: '4px' }}>
+                        {hotel.address && <span style={{ marginRight: '4px' }}>{hotel.address} •</span>}
+                        <span>Check-in: {hotel.checkIn} • Check-out: {hotel.checkOut}</span>
+                    </div>
+                </div>
             </div>
-            <div style={{ fontSize: '12px', color: textColor, marginTop: '2px' }}>
-                {hotel.address && <span>{hotel.address} • </span>}
-                Check-in: {hotel.checkIn} • Check-out: {hotel.checkOut}
-            </div>
+            {hasImages && (
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '16px' }}>
+                    {hotel.imageUrls!.map((url, idx) => (
+                        <div key={idx} style={{
+                            flex: isSingleImage ? '1 1 100%' : '1 1 calc(50% - 4px)',
+                            height: isSingleImage ? '240px' : '160px'
+                        }}>
+                            <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '6px', display: 'block' }} crossOrigin="anonymous" />
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
-    </div>
-);
+    );
+};
 
-type ThemeProps = { itinerary: TravelItineraryOutput; title: string; agent: ReturnType<typeof getAgentInfo>; hotels: HotelInfo[]; flights: FlightInfo[] };
+type ThemeProps = { itinerary: TravelItineraryOutput; title: string; agent: ReturnType<typeof getAgentInfo> };
 
 /* ═══════════════════════════════════════════════
    THEME 1 — CLASSIC
    ═══════════════════════════════════════════════ */
-const ClassicTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => (
+const ClassicTheme = ({ itinerary, title, agent }: ThemeProps) => (
     <div style={{ fontFamily: "'Inter', sans-serif", backgroundColor: "#f8fafc", backgroundImage: `url("${getThematicBackground(itinerary, 'classic', agent.primaryColor)}")`, backgroundRepeat: "repeat", color: "#1e293b", width: "100%" }}>
         {/* Hero — cover section */}
         <div data-pdf-section="cover">
@@ -254,9 +272,6 @@ const ClassicTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) 
 
                 {/* Timeline steps — each step self-contained */}
                 <div style={{ borderRadius: "0 0 16px 16px", padding: "20px 25px", ...glassStyles }}>
-                    {flights.filter(f => f.dayIndex === index).map((flight, fi) => (
-                        <PdfFlightBlock key={fi} flight={flight} accentColor="#10b981" bgColor="#ecfdf5" textColor="#475569" />
-                    ))}
                     {day.timeline.map((step, si) => (
                         <div key={si} className="pdf-no-cut" style={{ display: "flex", alignItems: "center", gap: "15px", marginBottom: si === day.timeline.length - 1 ? "0" : "14px", paddingBottom: si === day.timeline.length - 1 ? "0" : "14px", borderBottom: si === day.timeline.length - 1 ? "none" : "1px solid rgba(255,255,255,0.4)", pageBreakInside: "avoid", breakInside: "avoid" }}>
                             <span style={{ fontWeight: "bold", color: "#a855f7", fontSize: "13px", background: "rgba(243, 232, 255, 0.7)", padding: "5px 14px", borderRadius: "20px", display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0, minWidth: "90px", textAlign: "center" }}>{step.time}</span>
@@ -267,9 +282,6 @@ const ClassicTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) 
                         <div>🏃‍♂️ Distance: {formatDistance(day.dailyStats?.walkingDistance)} km</div>
                         <div>💰 Budget: ₹{formatCurrency(day.dailyStats?.totalCost)}</div>
                     </div>
-                    {hotels.filter(h => h.dayIndex === index).map((hotel, hi) => (
-                        <PdfHotelBlock key={hi} hotel={hotel} accentColor="#3b82f6" bgColor="#eff6ff" textColor="#475569" />
-                    ))}
                 </div>
             </div>
         ))}
@@ -286,7 +298,7 @@ const ClassicTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) 
 /* ═══════════════════════════════════════════════
    THEME 2 — EDITORIAL
    ═══════════════════════════════════════════════ */
-const EditorialTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => {
+const EditorialTheme = ({ itinerary, title, agent }: ThemeProps) => {
     const gold = "#b8860b";
     return (
         <div style={{ fontFamily: "'Georgia', 'Times New Roman', serif", backgroundColor: "#fdfcfa", backgroundImage: `url("${getThematicBackground(itinerary, 'editorial', gold)}")`, backgroundRepeat: "repeat", color: "#2c2c2c", width: "100%" }}>
@@ -355,9 +367,6 @@ const EditorialTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps
                     <div style={{ marginBottom: "30px" }} />
 
                     {/* Activities */}
-                    {flights.filter(f => f.dayIndex === index).map((flight, fi) => (
-                        <PdfFlightBlock key={fi} flight={flight} accentColor={gold} bgColor="#fefce8" textColor="#666" />
-                    ))}
                     {day.timeline.map((step, si) => (
                         <div key={si} style={{ marginBottom: "20px", paddingLeft: "20px", borderLeft: `2px solid ${gold}`, pageBreakInside: "avoid" }}>
                             <p style={{ fontSize: "13px", color: gold, fontWeight: "bold", margin: "0 0 6px 0", fontFamily: "'Helvetica Neue', sans-serif", letterSpacing: "1px" }}>{step.time}</p>
@@ -369,9 +378,6 @@ const EditorialTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps
                         {day.dailyStats?.walkingDistance && <span>{formatDistance(day.dailyStats?.walkingDistance)} km walking</span>}
                         {day.dailyStats?.totalCost && <span>Est. ₹{formatCurrency(day.dailyStats?.totalCost)}</span>}
                     </div>
-                    {hotels.filter(h => h.dayIndex === index).map((hotel, hi) => (
-                        <PdfHotelBlock key={hi} hotel={hotel} accentColor={gold} bgColor="#fefce8" textColor="#666" />
-                    ))}
                 </div>
             ))}
 
@@ -387,72 +393,116 @@ const EditorialTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps
 /* ═══════════════════════════════════════════════
    THEME 3 — MINIMALIST
    ═══════════════════════════════════════════════ */
-const MinimalistTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => {
+const MinimalistTheme = ({ itinerary, title, agent }: ThemeProps) => {
     const accent = agent.primaryColor || "#000000";
+    const totalActivities = itinerary.itinerary.reduce((s, d) => s + d.timeline.length, 0);
     return (
-        <div style={{ fontFamily: "'Helvetica Neue', 'Arial', sans-serif", backgroundColor: "#f8f9fa", backgroundImage: `url("${getThematicBackground(itinerary, 'minimalist', accent)}")`, backgroundRepeat: "repeat", color: "#111", width: "100%", padding: "60px" }}>
-            {/* Header — cover section */}
-            <div data-pdf-section="cover" style={{ marginBottom: "40px" }}>
-                <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "5px", color: "#999", margin: "0 0 20px 0" }}>{agent.companyName} / {agent.agentName}</p>
-                <h1 style={{ fontSize: "48px", fontWeight: 900, margin: "0 0 15px 0", lineHeight: "1.1", textTransform: "uppercase", letterSpacing: "-1px" }}>{title}</h1>
-                <div style={{ width: "60px", height: "4px", background: accent, marginBottom: "20px" }} />
-                <p style={{ fontSize: "14px", color: "#666", margin: 0, maxWidth: "500px", lineHeight: "1.6" }}>
-                    {itinerary.itinerary.length} days • ₹{getTotalBudget(itinerary).toLocaleString()} estimated budget
-                </p>
-            </div>
+        /* No backgroundImage — keep it truly minimal and clean */
+        <div style={{ fontFamily: "'Helvetica Neue', 'Arial', sans-serif", backgroundColor: "#ffffff", color: "#111", width: "100%" }}>
 
-            {/* Contact */}
-            <div style={{ display: "flex", gap: "30px", marginBottom: "40px", paddingBottom: "30px", borderBottom: "1px solid #eee", fontSize: "12px", color: "#888", pageBreakInside: "avoid" }}>
-                {agent.agentPhone && <span>{agent.agentPhone}</span>}
-                {agent.agentEmail && <span>{agent.agentEmail}</span>}
-                {agent.agentWebsite && <span style={{ color: accent }}>{agent.agentWebsite}</span>}
-            </div>
-
-            {agent.agentBio && (
-                <div style={{ margin: "0 0 40px 0", padding: "16px 20px", borderLeft: `3px solid ${accent}`, maxWidth: "600px", borderRadius: "0 12px 12px 0", pageBreakInside: "avoid", ...glassStyles }}>
-                    <p style={{ fontSize: "14px", lineHeight: "1.8", color: "#555", margin: 0, fontStyle: "italic" }}>{agent.agentBio}</p>
+            {/* ── Cover strip image ── */}
+            <div data-pdf-section="cover">
+                <div style={{ height: "220px", overflow: "hidden", position: "relative" }}>
+                    <img
+                        src={getCoverImage(itinerary)}
+                        alt=""
+                        style={{ width: "100%", height: "220px", objectFit: "cover", display: "block", filter: "brightness(0.75)" }}
+                        crossOrigin="anonymous"
+                    />
+                    <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to right, ${accent}cc, transparent)` }} />
+                    <div style={{ position: "absolute", bottom: "30px", left: "50px", color: "#fff" }}>
+                        <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "5px", margin: "0 0 10px 0", opacity: 0.85 }}>{agent.companyName}</p>
+                        <h1 style={{ fontSize: "42px", fontWeight: 900, margin: 0, lineHeight: "1.08", textTransform: "uppercase", letterSpacing: "-1px", textShadow: "0 2px 8px rgba(0,0,0,0.3)" }}>{title}</h1>
+                    </div>
                 </div>
-            )}
 
-            {/* Daily */}
-            {itinerary.itinerary.map((day, index) => (
-                <div key={index} data-pdf-section={`day-${index}`} style={{ marginBottom: "20px", display: "block" }}>
-                    {/* Day header with thumbnail — keep together */}
-                    <div style={{ display: "block", alignItems: "flex-start", gap: "20px", marginBottom: "15px", pageBreakInside: "avoid", pageBreakAfter: "avoid", breakInside: "avoid" }}>
-                        <img src={getDayImage(day)} alt={formatTitleCase(day.areaFocus)} style={{ width: "80px", height: "80px", objectFit: "cover", flexShrink: 0 }} crossOrigin="anonymous" />
-                        <div>
-                            <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
-                                <span style={{ fontSize: "32px", fontWeight: 900, color: accent }}>{String(index + 1).padStart(2, '0')}</span>
-                                <h3 style={{ fontSize: "20px", fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "1px" }}>{formatTitleCase(day.areaFocus)}</h3>
+                {/* ── Accent bar ── */}
+                <div style={{ height: "4px", background: accent }} />
+
+                {/* ── Main cover body ── */}
+                <div style={{ padding: "40px 50px" }}>
+
+                    {/* Headline summary */}
+                    <p style={{ fontSize: "14px", color: "#666", margin: "0 0 30px 0", lineHeight: "1.6" }}>
+                        {itinerary.itinerary.length}-day journey · Curated by {agent.agentName}
+                    </p>
+
+                    {/* Stat cards row */}
+                    <div style={{ display: "flex", gap: "16px", marginBottom: "35px", pageBreakInside: "avoid" }}>
+                        {[
+                            { label: "Duration", value: `${itinerary.itinerary.length} Days` },
+                            { label: "Est. Budget", value: `₹${getTotalBudget(itinerary).toLocaleString()}` },
+                            { label: "Activities", value: `${totalActivities}+` },
+                        ].map((stat, i) => (
+                            <div key={i} style={{ flex: 1, padding: "18px 20px", borderTop: `3px solid ${accent}`, background: "#f8f9fa" }}>
+                                <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "#999", margin: "0 0 6px 0" }}>{stat.label}</p>
+                                <p style={{ fontSize: "22px", fontWeight: 900, margin: 0, color: "#111" }}>{stat.value}</p>
                             </div>
-                            <div style={{ display: "flex", gap: "20px", marginTop: "6px", fontSize: "11px", color: "#999", textTransform: "uppercase", letterSpacing: "2px" }}>
-                                <span>{formatDate(day.date)}</span>
-                                {day.dailyStats?.walkingDistance && <span>{formatDistance(day.dailyStats?.walkingDistance)} km walk</span>}
-                                {day.dailyStats?.totalCost && <span>₹{formatCurrency(day.dailyStats?.totalCost)}</span>}
-                            </div>
+                        ))}
+                    </div>
+
+                    {/* Agent details row */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingTop: "25px", borderTop: "1px solid #e5e7eb", pageBreakInside: "avoid" }}>
+                        {/* Bio */}
+                        <div style={{ flex: 2, paddingRight: "40px" }}>
+                            {agent.agentBio && (
+                                <div style={{ borderLeft: `3px solid ${accent}`, paddingLeft: "16px" }}>
+                                    <p style={{ fontSize: "13px", lineHeight: "1.8", color: "#555", margin: 0, fontStyle: "italic" }}>{agent.agentBio}</p>
+                                </div>
+                            )}
+                        </div>
+                        {/* Contact */}
+                        <div style={{ flex: 1, textAlign: "right", fontSize: "12px", color: "#666", lineHeight: "2" }}>
+                            <p style={{ fontWeight: 800, color: "#111", fontSize: "14px", margin: "0 0 4px 0" }}>{agent.agentName}</p>
+                            {agent.agentPhone && <p style={{ margin: "2px 0" }}>{agent.agentPhone}</p>}
+                            {agent.agentEmail && <p style={{ margin: "2px 0" }}>{agent.agentEmail}</p>}
+                            {agent.agentWebsite && <p style={{ margin: "2px 0", color: accent, fontWeight: 600 }}>{agent.agentWebsite}</p>}
                         </div>
                     </div>
-
-                    {/* Activities — each row avoids break */}
-                    <div style={{ borderTop: "1px solid #eee" }}>
-                        {flights.filter(f => f.dayIndex === index).map((flight, fi) => (
-                            <PdfFlightBlock key={fi} flight={flight} accentColor={accent} bgColor="#f0fdf4" textColor="#666" />
-                        ))}
-                        {day.timeline.map((step, si) => (
-                            <div key={si} className="pdf-no-cut" style={{ display: "flex", gap: "20px", padding: "14px 20px", margin: "10px 0", borderRadius: "12px", border: "none", pageBreakInside: "avoid", ...glassStyles }}>
-                                <div style={{ width: "80px", flexShrink: 0, fontSize: "13px", fontWeight: 700, color: accent }}>{step.time}</div>
-                                <p style={{ flex: 1, margin: 0, fontSize: "14px", lineHeight: "1.6", color: "#444" }}>{step.details}</p>
-                            </div>
-                        ))}
-                        {hotels.filter(h => h.dayIndex === index).map((hotel, hi) => (
-                            <PdfHotelBlock key={hi} hotel={hotel} accentColor={accent} bgColor="#eff6ff" textColor="#666" />
-                        ))}
-                    </div>
                 </div>
-            ))}
+            </div>
 
-            {/* Footer */}
-            <div data-pdf-section="footer" style={{ marginTop: "40px", paddingTop: "20px", borderTop: "1px solid #ddd", display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#bbb", textTransform: "uppercase", letterSpacing: "2px" }}>
+            {/* ── Daily itinerary ── */}
+            <div style={{ padding: "0 50px 50px" }}>
+                {itinerary.itinerary.map((day, index) => (
+                    <div key={index} data-pdf-section={`day-${index}`} style={{ marginBottom: "30px", display: "block" }}>
+
+                        {/* Day header — image thumbnail + title side by side */}
+                        <div style={{ display: "flex", alignItems: "stretch", gap: "0", marginBottom: "14px", pageBreakInside: "avoid", pageBreakAfter: "avoid", breakInside: "avoid" }}>
+                            <img
+                                src={getDayImage(day)}
+                                alt={formatTitleCase(day.areaFocus)}
+                                style={{ width: "90px", height: "90px", objectFit: "cover", flexShrink: 0, display: "block" }}
+                                crossOrigin="anonymous"
+                            />
+                            <div style={{ flex: 1, padding: "12px 18px", background: "#f8f9fa", borderTop: `3px solid ${accent}`, display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                                <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
+                                    <span style={{ fontSize: "28px", fontWeight: 900, color: accent, lineHeight: 1 }}>{String(index + 1).padStart(2, '0')}</span>
+                                    <h3 style={{ fontSize: "18px", fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "0.5px", color: "#111" }}>{formatTitleCase(day.areaFocus)}</h3>
+                                </div>
+                                <div style={{ display: "flex", gap: "16px", marginTop: "5px", fontSize: "11px", color: "#999", textTransform: "uppercase", letterSpacing: "1.5px" }}>
+                                    {day.date && <span>{formatDate(day.date)}</span>}
+                                    {day.dailyStats?.walkingDistance && <span>{formatDistance(day.dailyStats?.walkingDistance)} km walk</span>}
+                                    {day.dailyStats?.totalCost && <span>₹{formatCurrency(day.dailyStats?.totalCost)}</span>}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Activities */}
+                        <div style={{ borderTop: "1px solid #eee" }}>
+                            {day.timeline.map((step, si) => (
+                                <div key={si} className="pdf-no-cut" style={{ display: "flex", gap: "20px", padding: "12px 16px", margin: "8px 0", background: "#f8f9fa", borderRadius: "6px", pageBreakInside: "avoid" }}>
+                                    <div style={{ width: "75px", flexShrink: 0, fontSize: "12px", fontWeight: 700, color: accent }}>{step.time}</div>
+                                    <p style={{ flex: 1, margin: 0, fontSize: "13px", lineHeight: "1.6", color: "#444" }}>{step.details}</p>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* ── Footer ── */}
+            <div data-pdf-section="footer" style={{ padding: "16px 50px", borderTop: `3px solid ${accent}`, display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#bbb", textTransform: "uppercase", letterSpacing: "2px", background: "#f8f9fa" }}>
                 <span>{agent.companyName}</span>
                 <span>{new Date().toLocaleDateString()}</span>
             </div>
@@ -463,90 +513,113 @@ const MinimalistTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProp
 /* ═══════════════════════════════════════════════
    THEME 4 — DARK MODE
    ═══════════════════════════════════════════════ */
-const DarkTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => {
+const DarkTheme = ({ itinerary, title, agent }: ThemeProps) => {
     const accent = agent.primaryColor || "#a855f7";
+    const totalActivities = itinerary.itinerary.reduce((sum, d) => sum + d.timeline.length, 0);
     return (
-        <div style={{ fontFamily: "'Inter', sans-serif", backgroundColor: "#0a0e1a", backgroundImage: `url("${getThematicBackground(itinerary, 'dark', accent)}")`, backgroundRepeat: "repeat", color: "#e2e8f0", width: "100%" }}>
-            {/* Hero — cover section */}
-            <div data-pdf-section="cover" style={{ position: "relative", height: "300px", overflow: "hidden" }}>
-                <img src={getCoverImage(itinerary)} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.3) saturate(0.5)" }} crossOrigin="anonymous" />
-                <div style={{ position: "absolute", bottom: "40px", left: "40px", zIndex: 1 }}>
-                    <p style={{ fontSize: "12px", letterSpacing: "4px", textTransform: "uppercase", color: accent, margin: "0 0 12px 0" }}>{agent.companyName}</p>
-                    <h1 style={{ fontSize: "40px", fontWeight: "bold", margin: "0 0 8px 0", color: "#ffffff" }}>{title}</h1>
-                    <p style={{ fontSize: "14px", color: "#94a3b8", margin: 0 }}>Crafted by {agent.agentName}</p>
+        /* No repeating dot background — clean pure dark */
+        <div style={{ fontFamily: "'Inter', sans-serif", backgroundColor: "#0a0e1a", color: "#e2e8f0", width: "100%" }}>
+
+            {/* ── Cover image ── */}
+            <div data-pdf-section="cover">
+                <div style={{ position: "relative", height: "260px", overflow: "hidden" }}>
+                    <img
+                        src={getCoverImage(itinerary)}
+                        alt=""
+                        style={{ width: "100%", height: "260px", objectFit: "cover", display: "block", filter: "brightness(0.35) saturate(0.5)" }}
+                        crossOrigin="anonymous"
+                    />
+                    {/* gradient: dark left panel for text */}
+                    <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to right, rgba(10,14,26,0.92) 38%, rgba(10,14,26,0.2))` }} />
+                    <div style={{ position: "absolute", bottom: "35px", left: "48px", zIndex: 1 }}>
+                        <p style={{ fontSize: "11px", letterSpacing: "5px", textTransform: "uppercase", color: accent, margin: "0 0 12px 0" }}>{agent.companyName}</p>
+                        <h1 style={{ fontSize: "38px", fontWeight: 900, margin: "0 0 6px 0", color: "#f1f5f9", lineHeight: "1.1", letterSpacing: "-0.5px" }}>{title}</h1>
+                        <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0 }}>Curated by {agent.agentName}</p>
+                    </div>
+                </div>
+
+                {/* ── Accent bar ── */}
+                <div style={{ height: "3px", background: `linear-gradient(to right, ${accent}, transparent)` }} />
+
+                {/* ── Cover body ── */}
+                <div style={{ padding: "36px 48px" }}>
+
+                    {/* Stat cards */}
+                    <div style={{ display: "flex", gap: "14px", marginBottom: "32px", pageBreakInside: "avoid" }}>
+                        {[
+                            { label: "Duration", value: `${itinerary.itinerary.length} Days` },
+                            { label: "Est. Budget", value: `₹${getTotalBudget(itinerary).toLocaleString()}` },
+                            { label: "Activities", value: `${totalActivities}+` },
+                        ].map((stat, i) => (
+                            <div key={i} style={{ flex: 1, padding: "18px 20px", borderTop: `3px solid ${accent}`, background: "rgba(255,255,255,0.04)", borderRadius: "0 0 8px 8px" }}>
+                                <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "#64748b", margin: "0 0 6px 0" }}>{stat.label}</p>
+                                <p style={{ fontSize: "22px", fontWeight: 900, margin: 0, color: accent }}>{stat.value}</p>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Agent details: bio left, contact right */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,0.08)", pageBreakInside: "avoid" }}>
+                        <div style={{ flex: 2, paddingRight: "40px" }}>
+                            {agent.agentBio && (
+                                <div style={{ borderLeft: `3px solid ${accent}`, paddingLeft: "16px" }}>
+                                    <p style={{ fontSize: "13px", lineHeight: "1.8", color: "#94a3b8", margin: 0, fontStyle: "italic" }}>{agent.agentBio}</p>
+                                </div>
+                            )}
+                        </div>
+                        <div style={{ flex: 1, textAlign: "right", fontSize: "12px", color: "#64748b", lineHeight: "2" }}>
+                            <p style={{ fontWeight: 800, color: "#e2e8f0", fontSize: "14px", margin: "0 0 4px 0" }}>{agent.agentName}</p>
+                            {agent.agentPhone && <p style={{ margin: "2px 0" }}>{agent.agentPhone}</p>}
+                            {agent.agentEmail && <p style={{ margin: "2px 0" }}>{agent.agentEmail}</p>}
+                            {agent.agentWebsite && <p style={{ margin: "2px 0", color: accent, fontWeight: 600 }}>{agent.agentWebsite}</p>}
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div style={{ padding: "40px" }}>
-                {/* Agent info */}
-                <div style={{ borderRadius: "16px", padding: "25px 30px", marginBottom: "30px", display: "flex", justifyContent: "space-between", alignItems: "center", ...darkGlassStyles }}>
-                    <div style={{ flex: 1 }}>
-                        {agent.agentBio && <p style={{ fontSize: "14px", color: "#94a3b8", margin: 0, fontStyle: "italic", lineHeight: "1.7" }}>&quot;{agent.agentBio}&quot;</p>}
-                    </div>
-                    <div style={{ textAlign: "right", fontSize: "13px", color: "#64748b", lineHeight: "2" }}>
-                        {agent.agentPhone && <p style={{ margin: "2px 0" }}>{agent.agentPhone}</p>}
-                        {agent.agentEmail && <p style={{ margin: "2px 0" }}>{agent.agentEmail}</p>}
-                        {agent.agentWebsite && <p style={{ margin: "2px 0", color: accent }}>{agent.agentWebsite}</p>}
-                    </div>
-                </div>
-
-                {/* Stats */}
-                <div style={{ display: "flex", gap: "15px", marginBottom: "40px", pageBreakInside: "avoid" }}>
-                    {[
-                        { label: "Duration", value: `${itinerary.itinerary.length} Days` },
-                        { label: "Budget", value: `₹${getTotalBudget(itinerary).toLocaleString()}` },
-                        { label: "Activities", value: `${itinerary.itinerary.reduce((sum, d) => sum + d.timeline.length, 0)}+` },
-                    ].map((stat, i) => (
-                        <div key={i} style={{ flex: 1, borderRadius: "12px", padding: "20px", textAlign: "center", ...darkGlassStyles }}>
-                            <p style={{ fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#64748b", margin: "0 0 8px 0" }}>{stat.label}</p>
-                            <p style={{ fontSize: "22px", fontWeight: "bold", margin: 0, color: accent }}>{stat.value}</p>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Daily */}
+            {/* ── Daily itinerary ── */}
+            <div style={{ padding: "0 48px 48px" }}>
                 {itinerary.itinerary.map((day, index) => (
-                    <div key={index} data-pdf-section={`day-${index}`} style={{ marginBottom: "10px", display: "block" }}>
-                        {/* Day header with blended image — NO overflow:hidden */}
-                        <div style={{ height: "140px", borderRadius: "16px 16px 0 0", pageBreakInside: "avoid", pageBreakAfter: "avoid", display: "block", position: "relative" }}>
-                            <img src={getDayImage(day)} alt={formatTitleCase(day.areaFocus)} style={{ width: "100%", height: "140px", objectFit: "cover", filter: "brightness(0.35) saturate(0.6)", display: "block", borderRadius: "16px 16px 0 0" }} crossOrigin="anonymous" />
-                            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "20px 25px", zIndex: 1 }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-                                    <div>
-                                        <h3 style={{ fontSize: "20px", fontWeight: "bold", margin: "0 0 4px 0", color: "#f1f5f9" }}>{formatTitleCase(day.areaFocus)}</h3>
-                                        <p style={{ fontSize: "12px", color: "#94a3b8", margin: 0 }}>Day {index + 1} • {formatDate(day.date)}</p>
-                                    </div>
-                                    <div style={{ display: "flex", gap: "10px" }}>
-                                        {day.dailyStats?.walkingDistance && <span style={{ fontSize: "11px", padding: "4px 12px", borderRadius: "20px", background: "rgba(255,255,255,0.1)", color: "#94a3b8" }}>{formatDistance(day.dailyStats?.walkingDistance)} km</span>}
-                                        {day.dailyStats?.totalCost && <span style={{ fontSize: "11px", padding: "4px 12px", borderRadius: "20px", background: `${accent}20`, color: accent }}>₹{formatCurrency(day.dailyStats?.totalCost)}</span>}
-                                    </div>
+                    <div key={index} data-pdf-section={`day-${index}`} style={{ marginBottom: "20px", display: "block" }}>
+
+                        {/* Day header: thumbnail + info panel side-by-side */}
+                        <div style={{ display: "flex", alignItems: "stretch", marginBottom: "12px", pageBreakInside: "avoid", pageBreakAfter: "avoid", breakInside: "avoid" }}>
+                            <img
+                                src={getDayImage(day)}
+                                alt={formatTitleCase(day.areaFocus)}
+                                style={{ width: "90px", height: "90px", objectFit: "cover", flexShrink: 0, display: "block", filter: "brightness(0.6) saturate(0.7)" }}
+                                crossOrigin="anonymous"
+                            />
+                            <div style={{ flex: 1, padding: "12px 18px", borderTop: `3px solid ${accent}`, background: "rgba(255,255,255,0.04)", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                                <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
+                                    <span style={{ fontSize: "26px", fontWeight: 900, color: accent, lineHeight: 1 }}>{String(index + 1).padStart(2, '0')}</span>
+                                    <h3 style={{ fontSize: "17px", fontWeight: 700, margin: 0, textTransform: "uppercase", letterSpacing: "0.5px", color: "#f1f5f9" }}>{formatTitleCase(day.areaFocus)}</h3>
+                                </div>
+                                <div style={{ display: "flex", gap: "14px", marginTop: "5px", fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px" }}>
+                                    {day.date && <span>{formatDate(day.date)}</span>}
+                                    {day.dailyStats?.walkingDistance && <span>{formatDistance(day.dailyStats?.walkingDistance)} km walk</span>}
+                                    {day.dailyStats?.totalCost && <span style={{ color: accent }}>₹{formatCurrency(day.dailyStats?.totalCost)}</span>}
                                 </div>
                             </div>
                         </div>
 
                         {/* Activities */}
-                        <div style={{ padding: "20px 25px", borderTop: "none", borderRadius: "0 0 16px 16px", ...darkGlassStyles, boxShadow: "none", background: "rgba(15, 23, 42, 0.4)" }}>
-                            {flights.filter(f => f.dayIndex === index).map((flight, fi) => (
-                                <PdfFlightBlock key={fi} flight={flight} accentColor="#34d399" bgColor="rgba(16,185,129,0.1)" textColor="#94a3b8" />
-                            ))}
+                        <div style={{ padding: "16px 20px", borderRadius: "0 0 10px 10px", background: "rgba(15, 23, 42, 0.5)" }}>
                             {day.timeline.map((step, si) => (
-                                <div key={si} className="pdf-no-cut" style={{ display: "flex", gap: "15px", marginBottom: si === day.timeline.length - 1 ? "0" : "15px", padding: "12px 15px", borderLeft: `3px solid ${accent}40`, borderRadius: "0 8px 8px 0", pageBreakInside: "avoid", ...darkGlassStyles }}>
-                                    <span style={{ fontSize: "13px", fontWeight: 700, color: accent, width: "70px", flexShrink: 0 }}>{step.time}</span>
-                                    <p style={{ margin: 0, fontSize: "14px", lineHeight: "1.6", color: "#cbd5e1" }}>{step.details}</p>
+                                <div key={si} className="pdf-no-cut" style={{ display: "flex", gap: "14px", marginBottom: si === day.timeline.length - 1 ? "0" : "10px", padding: "10px 14px", borderLeft: `3px solid ${accent}50`, borderRadius: "0 6px 6px 0", background: "rgba(255,255,255,0.03)", pageBreakInside: "avoid" }}>
+                                    <span style={{ fontSize: "12px", fontWeight: 700, color: accent, width: "68px", flexShrink: 0 }}>{step.time}</span>
+                                    <p style={{ margin: 0, fontSize: "13px", lineHeight: "1.6", color: "#cbd5e1" }}>{step.details}</p>
                                 </div>
-                            ))}
-                            {hotels.filter(h => h.dayIndex === index).map((hotel, hi) => (
-                                <PdfHotelBlock key={hi} hotel={hotel} accentColor="#60a5fa" bgColor="rgba(59,130,246,0.1)" textColor="#94a3b8" />
                             ))}
                         </div>
                     </div>
                 ))}
             </div>
 
-            {/* Footer */}
-            <div data-pdf-section="footer" style={{ padding: "30px 40px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <p style={{ margin: 0, fontSize: "12px", color: "#475569" }}>Powered by GozyTrips</p>
-                <p style={{ margin: 0, fontSize: "14px", color: accent, fontWeight: "bold", letterSpacing: "1px" }}>{agent.companyName}</p>
+            {/* ── Footer ── */}
+            <div data-pdf-section="footer" style={{ padding: "18px 48px", borderTop: `3px solid ${accent}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.03)" }}>
+                <p style={{ margin: 0, fontSize: "11px", color: "#334155", textTransform: "uppercase", letterSpacing: "2px" }}>Powered by GozyTrips</p>
+                <p style={{ margin: 0, fontSize: "13px", color: accent, fontWeight: 700, letterSpacing: "1px" }}>{agent.companyName}</p>
             </div>
         </div>
     );
@@ -555,7 +628,7 @@ const DarkTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => 
 /* ═══════════════════════════════════════════════
    THEME 5 — CORPORATE
    ═══════════════════════════════════════════════ */
-const CorporateTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps) => {
+const CorporateTheme = ({ itinerary, title, agent }: ThemeProps) => {
     const navy = "#003366";
     return (
         <div style={{ fontFamily: "'Helvetica', 'Arial', sans-serif", backgroundColor: "#f4f6f8", backgroundImage: `url("${getThematicBackground(itinerary, 'corporate', navy)}")`, backgroundRepeat: "repeat", color: "#333", width: "100%" }}>
@@ -631,22 +704,10 @@ const CorporateTheme = ({ itinerary, title, agent, hotels, flights }: ThemeProps
                             <div style={{ padding: "8px 15px", flex: "0 0 100px", color: "#555", fontSize: "11px", textTransform: "uppercase", fontWeight: "bold" }}>Time</div>
                             <div style={{ padding: "8px 15px", flex: 1, color: "#555", fontSize: "11px", textTransform: "uppercase", fontWeight: "bold" }}>Activity</div>
                         </div>
-                        {flights.filter(f => f.dayIndex === index).map((flight, fi) => (
-                            <div key={`fl-${fi}`} style={{ display: "flex", borderBottom: "1px solid #eee", background: "#f0fdf4" }}>
-                                <div style={{ padding: "8px 15px", flex: "0 0 100px", fontWeight: "bold", color: navy }}>✈️ {flight.departure || "–"}</div>
-                                <div style={{ padding: "8px 15px", flex: 1, lineHeight: "1.5", color: "#444" }}>{flight.airline} {flight.flightNumber} — {flight.departureAirport} → {flight.arrivalAirport}{flight.pnr ? ` (PNR: ${flight.pnr})` : ''}</div>
-                            </div>
-                        ))}
                         {day.timeline.map((step, si) => (
                             <div key={si} className="pdf-no-cut" style={{ display: "flex", background: si % 2 === 0 ? "#ffffff" : "#fafbfc", pageBreakInside: "avoid", borderBottom: "1px solid #eee" }}>
                                 <div style={{ padding: "10px 15px", flex: "0 0 100px", fontWeight: "bold", color: navy }}>{step.time}</div>
                                 <div style={{ padding: "10px 15px", flex: 1, lineHeight: "1.5", color: "#444" }}>{step.details}</div>
-                            </div>
-                        ))}
-                        {hotels.filter(h => h.dayIndex === index).map((hotel, hi) => (
-                            <div key={`ht-${hi}`} style={{ display: "flex", background: "#eff6ff", borderBottom: "1px solid #eee" }}>
-                                <div style={{ padding: "8px 15px", flex: "0 0 100px", fontWeight: "bold", color: navy }}>🏨 {hotel.checkIn}</div>
-                                <div style={{ padding: "8px 15px", flex: 1, lineHeight: "1.5", color: "#444" }}>{hotel.name} {'★'.repeat(hotel.starRating)} — {hotel.address}{hotel.bookingRef ? ` (Ref: ${hotel.bookingRef})` : ''}</div>
                             </div>
                         ))}
                     </div>
@@ -735,6 +796,33 @@ const PdfPricingPage = ({ pricing, baseCost = 0, agent }: { pricing: PricingConf
     );
 };
 
+const PdfFlightAndHotelSummary = ({ flights, hotels, accentColor }: { flights: FlightInfo[], hotels: HotelInfo[], accentColor: string }) => {
+    if ((!flights || flights.length === 0) && (!hotels || hotels.length === 0)) return null;
+    return (
+        <div data-pdf-section="flights-hotels-summary" style={{ padding: "40px 50px", fontFamily: "'Inter', sans-serif", color: "#1e293b", backgroundColor: "#ffffff" }}>
+            <h2 style={{ fontSize: "28px", color: accentColor, marginBottom: "30px", borderBottom: `2px solid ${accentColor}`, paddingBottom: "15px" }}>
+                Flights & Accommodations
+            </h2>
+            {flights && flights.length > 0 && (
+                <div style={{ marginBottom: "30px" }}>
+                    <h3 style={{ fontSize: "20px", color: "#0f172a", marginBottom: "15px", fontWeight: "bold" }}>Flight Details</h3>
+                    {flights.map((flight, fi) => (
+                        <PdfFlightBlock key={fi} flight={flight} accentColor={accentColor} bgColor="#f8fafc" textColor="#475569" />
+                    ))}
+                </div>
+            )}
+            {hotels && hotels.length > 0 && (
+                <div>
+                    <h3 style={{ fontSize: "20px", color: "#0f172a", marginBottom: "15px", fontWeight: "bold" }}>Hotel Details</h3>
+                    {hotels.map((hotel, hi) => (
+                        <PdfHotelBlock key={hi} hotel={hotel} accentColor={accentColor} bgColor="#f8fafc" textColor="#475569" />
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 /* ═════════ MAIN EXPORTED COMPONENT ═════════ */
 export const PdfTemplate = ({ itinerary, title, userProfile, theme = 'classic', hotels = [], flights = [], pricing, baseCost }: PdfTemplateProps) => {
     if (!itinerary) return null;
@@ -745,26 +833,27 @@ export const PdfTemplate = ({ itinerary, title, userProfile, theme = 'classic', 
     let ThemeComponent;
     switch (theme) {
         case 'editorial':
-            ThemeComponent = <EditorialTheme itinerary={itinerary} title={displayTitle} agent={agent} hotels={hotels} flights={flights} />;
+            ThemeComponent = <EditorialTheme itinerary={itinerary} title={displayTitle} agent={agent} />;
             break;
         case 'minimalist':
-            ThemeComponent = <MinimalistTheme itinerary={itinerary} title={displayTitle} agent={agent} hotels={hotels} flights={flights} />;
+            ThemeComponent = <MinimalistTheme itinerary={itinerary} title={displayTitle} agent={agent} />;
             break;
         case 'dark':
-            ThemeComponent = <DarkTheme itinerary={itinerary} title={displayTitle} agent={agent} hotels={hotels} flights={flights} />;
+            ThemeComponent = <DarkTheme itinerary={itinerary} title={displayTitle} agent={agent} />;
             break;
         case 'corporate':
-            ThemeComponent = <CorporateTheme itinerary={itinerary} title={displayTitle} agent={agent} hotels={hotels} flights={flights} />;
+            ThemeComponent = <CorporateTheme itinerary={itinerary} title={displayTitle} agent={agent} />;
             break;
         case 'classic':
         default:
-            ThemeComponent = <ClassicTheme itinerary={itinerary} title={displayTitle} agent={agent} hotels={hotels} flights={flights} />;
+            ThemeComponent = <ClassicTheme itinerary={itinerary} title={displayTitle} agent={agent} />;
             break;
     }
 
     return (
-        <div>
+        <div style={{ position: "relative" }}>
             {ThemeComponent}
+            <PdfFlightAndHotelSummary flights={flights} hotels={hotels} accentColor={agent.primaryColor} />
             {pricing && <PdfPricingPage pricing={pricing} baseCost={baseCost} agent={agent} />}
         </div>
     );

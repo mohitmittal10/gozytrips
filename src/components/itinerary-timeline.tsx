@@ -46,6 +46,7 @@ type ItineraryTimelineProps = {
   onItineraryChange?: (itinerary: TravelItineraryOutput["itinerary"]) => void;
   hotels?: HotelInfo[];
   flights?: FlightInfo[];
+  showTimestamps?: boolean;
 };
 
 // ── Hotel & Flight Display Blocks ──────────────────────────────────────────────
@@ -78,26 +79,48 @@ function FlightBanner({ flight }: { flight: FlightInfo }) {
 }
 
 function HotelBanner({ hotel }: { hotel: HotelInfo }) {
+  const hasImages = hotel.imageUrls && hotel.imageUrls.length > 0;
   return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-sm">
-      <Hotel className="w-4 h-4 text-blue-400 flex-shrink-0" />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-blue-400">{hotel.name || "Hotel"}</span>
-          <span className="flex items-center gap-0.5">
-            {Array.from({ length: hotel.starRating }, (_, i) => (
-              <Star key={i} className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-            ))}
-          </span>
-          {hotel.bookingRef && (
-            <span className="text-xs bg-blue-500/20 text-blue-300 px-1.5 py-0.5 rounded">Ref: {hotel.bookingRef}</span>
-          )}
-        </div>
-        <div className="text-foreground/70 text-xs mt-0.5">
-          {hotel.address && <span>{hotel.address} • </span>}
-          Check-in: {hotel.checkIn} • Check-out: {hotel.checkOut}
+    <div className="flex flex-col gap-4 px-5 py-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-sm overflow-hidden">
+      <div className="flex items-start gap-4">
+        <Hotel className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="font-semibold text-blue-400 text-base">{hotel.name || "Hotel"}</span>
+            <span className="flex items-center gap-0.5">
+              {Array.from({ length: hotel.starRating }, (_, i) => (
+                <Star key={i} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
+              ))}
+            </span>
+            {hotel.bookingRef && (
+              <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-md font-medium">Ref: {hotel.bookingRef}</span>
+            )}
+          </div>
+          <div className="text-foreground/70 text-xs mt-1">
+            {hotel.address && <span>{hotel.address} • </span>}
+            Check-in: {hotel.checkIn} • Check-out: {hotel.checkOut}
+          </div>
         </div>
       </div>
+
+      {hasImages && (
+        <div className={cn(
+          "mt-2 grid gap-3",
+          hotel.imageUrls!.length === 1 ? "grid-cols-1" : "grid-cols-2"
+        )}>
+          {hotel.imageUrls!.map((url, idx) => (
+            <img
+              key={idx}
+              src={url}
+              alt={`Hotel ${idx + 1}`}
+              className={cn(
+                "w-full object-cover rounded-lg shadow-sm border border-blue-500/10",
+                hotel.imageUrls!.length === 1 ? "h-64 sm:h-80" : "h-40 sm:h-48"
+              )}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -222,6 +245,7 @@ function SortableActivity({
   isEditable,
   onUpdateStep,
   onDeleteStep,
+  showTimestamps,
 }: {
   id: string;
   stepIndex: number;
@@ -229,6 +253,7 @@ function SortableActivity({
   isEditable: boolean;
   onUpdateStep: (field: keyof TimelineStep, value: string | number | undefined) => void;
   onDeleteStep: () => void;
+  showTimestamps?: boolean;
 }) {
   const {
     attributes,
@@ -270,13 +295,17 @@ function SortableActivity({
           {isEditable ? (
             <>
               <div className="flex items-start justify-between gap-4">
-                <InlineEdit
-                  value={step.time}
-                  onSave={(v) => onUpdateStep("time", v)}
-                  className="font-bold text-primary text-lg"
-                  inputClassName="text-lg font-bold"
-                  placeholder="e.g. 9:00 AM"
-                />
+                {showTimestamps !== false ? (
+                  <InlineEdit
+                    value={step.time}
+                    onSave={(v) => onUpdateStep("time", v)}
+                    className="font-bold text-primary text-lg"
+                    inputClassName="text-lg font-bold"
+                    placeholder="e.g. 9:00 AM"
+                  />
+                ) : (
+                  <div className="font-bold text-primary text-lg opacity-0 pointer-events-none w-0 text-transparent select-none">-</div>
+                )}
                 <div className="flex items-center gap-2 bg-primary/5 px-2 py-1 rounded-md border border-primary/10">
                   <span className="text-xs font-semibold text-primary/60">Cost</span>
                   <InlineEdit
@@ -299,9 +328,9 @@ function SortableActivity({
           ) : (
             <>
               <div className="flex items-center justify-between">
-                <p className="font-bold text-primary text-lg">{step.time}</p>
+                {showTimestamps !== false && <p className="font-bold text-primary text-lg">{step.time}</p>}
                 {step.cost !== undefined && (
-                  <p className="text-sm font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded">₹{step.cost}</p>
+                  <p className={cn("text-sm font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded", showTimestamps === false && "ml-auto")}>₹{step.cost}</p>
                 )}
               </div>
               <p className="text-foreground/80 mb-4">{step.details}</p>
@@ -326,10 +355,10 @@ function SortableActivity({
 
 // ── Activity Overlay (shown while dragging) ────────────────────────────────────
 
-function ActivityOverlay({ step }: { step: TimelineStep }) {
+function ActivityOverlay({ step, showTimestamps }: { step: TimelineStep, showTimestamps?: boolean }) {
   return (
     <div className="bg-primary/20 backdrop-blur-md border border-primary/40 rounded-lg px-4 py-3 shadow-2xl max-w-md">
-      <p className="font-bold text-primary text-lg">{step.time}</p>
+      {showTimestamps !== false && <p className="font-bold text-primary text-lg">{step.time}</p>}
       <p className="text-foreground/80 text-sm line-clamp-2">{step.details}</p>
     </div>
   );
@@ -385,6 +414,7 @@ const ItineraryTimeline = ({
   onItineraryChange,
   hotels = [],
   flights = [],
+  showTimestamps = true,
 }: ItineraryTimelineProps) => {
   const { toast } = useToast();
   const [isEditMode, setIsEditMode] = useState(false);
@@ -635,9 +665,6 @@ const ItineraryTimeline = ({
 
           {itinerary.map((day, dayIndex) => {
             const dayStepIds = day.timeline.map((_, stepIdx) => stepId(dayIndex, stepIdx));
-            const dayFlights = flights.filter((f) => f.dayIndex === dayIndex);
-            const dayHotels = hotels.filter((h) => h.dayIndex === dayIndex);
-
             return (
               <div
                 key={`day-${dayIndex}`}
@@ -704,14 +731,6 @@ const ItineraryTimeline = ({
                     </CardHeader>
 
                     <CardContent className="py-6">
-                      {/* Flight blocks at start of day */}
-                      {dayFlights.length > 0 && (
-                        <div className="space-y-2 mb-6">
-                          {dayFlights.map((flight) => (
-                            <FlightBanner key={flight.id} flight={flight} />
-                          ))}
-                        </div>
-                      )}
                       <SortableContext
                         items={dayStepIds}
                         strategy={verticalListSortingStrategy}
@@ -727,6 +746,7 @@ const ItineraryTimeline = ({
                               isEditable={isEditMode}
                               onUpdateStep={(field, value) => updateStep(dayIndex, stepIndex, field, value)}
                               onDeleteStep={() => deleteStep(dayIndex, stepIndex)}
+                              showTimestamps={showTimestamps}
                             />
                           ))}
                         </div>
@@ -735,15 +755,6 @@ const ItineraryTimeline = ({
                       {/* Add activity button */}
                       {isEditMode && (
                         <AddActivityButton onClick={() => addStep(dayIndex)} />
-                      )}
-
-                      {/* Hotel blocks at end of day */}
-                      {dayHotels.length > 0 && (
-                        <div className="space-y-2 mt-6">
-                          {dayHotels.map((hotel) => (
-                            <HotelBanner key={hotel.id} hotel={hotel} />
-                          ))}
-                        </div>
                       )}
                     </CardContent>
 
@@ -793,9 +804,51 @@ const ItineraryTimeline = ({
 
         {/* Drag overlay */}
         <DragOverlay>
-          {activeStep ? <ActivityOverlay step={activeStep} /> : null}
+          {activeStep ? <ActivityOverlay step={activeStep} showTimestamps={showTimestamps} /> : null}
         </DragOverlay>
       </DndContext>
+
+      {/* Global Flights & Accommodations Summary */}
+      {(flights.length > 0 || hotels.length > 0) && (
+        <div className="relative flex items-start gap-6 sm:gap-12 mt-16 sm:flex-row">
+          <div className="relative flex-shrink-0">
+            {showDecorations && (
+              <div className="bg-background ring-4 ring-primary rounded-full p-2 absolute -left-1.5 top-0 z-10 sm:left-9 sm:-translate-x-1/2">
+                <Plane className="w-8 h-8 text-primary" />
+              </div>
+            )}
+          </div>
+          <div className="flex-1">
+            <Card className="glass-card overflow-hidden">
+              <CardHeader className="bg-white/5">
+                <CardTitle className="font-headline text-3xl text-primary">Flights & Accommodations</CardTitle>
+              </CardHeader>
+              <CardContent className="py-6 space-y-8">
+                {flights.length > 0 && (
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg text-foreground/80">Flight Details</h4>
+                    <div className="space-y-2">
+                      {flights.map(flight => (
+                        <FlightBanner key={flight.id} flight={flight} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {hotels.length > 0 && (
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg text-foreground/80">Hotel Details</h4>
+                    <div className="space-y-2">
+                      {hotels.map(hotel => (
+                        <HotelBanner key={hotel.id} hotel={hotel} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
       {/* Add day button */}
       {isEditMode && (

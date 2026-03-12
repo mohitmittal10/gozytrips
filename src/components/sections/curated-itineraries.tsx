@@ -1,0 +1,54 @@
+"use client";
+
+import { FocusRail, type FocusRailItem } from "@/components/ui/focus-rail";
+
+const ITINERARY_ITEMS: FocusRailItem[] = [
+    {
+        id: 1,
+        title: "Dark",
+        description: "Sleek and sophisticated night-mode design perfect for showcasing high-end evening tours, nightlife experiences, and premium stays.",
+        meta: "Format • PDF",
+        imageSrc: "/dark.png",
+        href: "/ai-architect",
+    },
+    {
+        id: 2,
+        title: "Editorial",
+        description: "A magazine-style layout featuring bold typography and expansive imagery for the ultimate visual storytelling experience.",
+        meta: "Format • PDF",
+        imageSrc: "/editorial.png",
+        href: "/ai-architect",
+    },
+    {
+        id: 3,
+        title: "Minimalist",
+        description: "Clean lines, ample white space, and a refined focus on trip details. The essential choice for modern, clutter-free itineraries.",
+        meta: "Format • PDF",
+        imageSrc: "/minimalist.png",
+        href: "/ai-architect",
+    },
+];
+
+export default function CuratedItineraries() {
+    return (
+        <section className="w-full">
+            <div className="mx-auto max-w-7xl px-4 pt-16 pb-4 text-center">
+                <p className="text-xs font-medium uppercase tracking-[0.3em] text-emerald-400 mb-3">
+                    Curated by GozyTrips
+                </p>
+                <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+                    PDF Itinerary Formats
+                </h2>
+                <p className="mt-4 text-neutral-400 max-w-xl mx-auto">
+                    Drag, scroll, or use the arrows to preview our professionally designed PDF travel itinerary formats.
+                </p>
+            </div>
+            <FocusRail
+                items={ITINERARY_ITEMS}
+                autoPlay={true}
+                interval={5000}
+                loop={true}
+            />
+        </section>
+    );
+}

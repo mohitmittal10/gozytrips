@@ -11,7 +11,7 @@ import Footer from "@/components/layout/footer";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, UserCircle, Phone, Mail, FileText, MapPin, Calendar, DollarSign, Eye, Edit2 } from "lucide-react";
+import { ArrowLeft, UserCircle, Phone, Mail, FileIcon, MapPin, Calendar, DollarSign, Eye, Edit } from "lucide-react";
 import { ClientItineraryEditor } from "@/components/client-itinerary-editor";
 
 export default function ClientDetailsPage(props: { params: Promise<{ id: string }> }) {
@@ -108,7 +108,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                             )}
                             {client.notes && (
                                 <div className="flex items-start gap-2 max-w-sm mt-2 pt-2 border-t border-white/5">
-                                    <FileText className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
+                                    <FileIcon className="w-4 h-4 text-gray-400 shrink-0 mt-0.5" />
                                     <p className="text-xs text-gray-400 italic line-clamp-3">{client.notes}</p>
                                 </div>
                             )}
@@ -186,7 +186,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                                                 }}
                                                 className="glass-button border-white/20 flex-1 gap-2 hover:bg-primary hover:border-primary hover:text-white transition-all"
                                             >
-                                                <Edit2 className="w-4 h-4" />
+                                                <Edit className="w-4 h-4" />
                                                 Review / Edit
                                             </Button>
                                         </div>

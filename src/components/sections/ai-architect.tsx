@@ -24,7 +24,7 @@ import ItineraryTimeline from "../itinerary-timeline";
 import HotelFlightEditor, { type HotelInfo, type FlightInfo } from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
 import type { PricingConfig } from "@/types/pricing";
-import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye } from "lucide-react";
+import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye, Check, ArrowRight } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { cn } from "@/lib/utils";
@@ -43,14 +43,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useClients } from "@/lib/hooks/use-clients";
+import { Switch } from "@/components/ui/switch";
 
 const formSchema = z.object({
   startingLocation: z.string().min(2, "Starting location is required."),
   endingLocation: z.string().optional(),
   startDate: z.date({ required_error: "Start date is required." }),
   endDate: z.date({ required_error: "End date is required." }),
-  startTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]( (AM|PM))?$/, "Invalid time format (e.g., 9:00 AM)."),
-  endTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]( (AM|PM))?$/, "Invalid time format (e.g., 10:00 PM)."),
   destinations: z.string().min(2, "At least one destination is required."),
   budget: z.preprocess(
     (val) => (val === "" || val === undefined || val === null ? undefined : val),
@@ -62,12 +61,31 @@ const formSchema = z.object({
   ),
   mustInclude: z.string().optional(),
   avoid: z.string().optional(),
+  leisureTime: z.boolean().default(false),
+  leisureDay: z.preprocess(
+    (val) => (val === "" || val === undefined || val === null ? undefined : val),
+    z.coerce.number().int().positive().optional()
+  ),
+  travelTimePreference: z.enum([
+    "no_preference",
+    "avoid_night_travel",
+    "prefer_morning_travel",
+    "prefer_afternoon_travel",
+    "prefer_night_travel"
+  ]).default("no_preference"),
 }).refine((data) => data.endDate > data.startDate, {
   message: "End date must be after start date.",
   path: ["endDate"],
 });
 
+const aiArchitectSteps = [
+  { id: 1, label: "Destinations", fields: ["startingLocation", "destinations", "endingLocation"] as const },
+  { id: 2, label: "Dates", fields: ["startDate", "endDate"] as const },
+  { id: 3, label: "Preferences", fields: ["budget", "walkingDistance", "mustInclude", "avoid", "leisureTime", "leisureDay", "travelTimePreference"] as const },
+];
+
 const AiArchitect = () => {
+  const [currentStep, setCurrentStep] = useState(0);
   const [isGenerating, setIsGenerating] = useState(false);
   const [itinerary, setItinerary] = useState<TravelItineraryOutput | null>(null);
   const { toast } = useToast();
@@ -87,6 +105,8 @@ const AiArchitect = () => {
   const { clients } = useClients();
   const [selectedClientId, setSelectedClientId] = useState<string>("none");
   const [selectedStatus, setSelectedStatus] = useState<string>("draft");
+  const [tripMetadata, setTripMetadata] = useState<any>(null);
+  const [showTimestamps, setShowTimestamps] = useState(true);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -95,13 +115,14 @@ const AiArchitect = () => {
       endingLocation: "",
       startDate: undefined,
       endDate: undefined,
-      startTime: "9:00 AM",
-      endTime: "10:00 PM",
       destinations: "",
       budget: undefined,
       walkingDistance: undefined,
       mustInclude: "",
       avoid: "",
+      leisureTime: false,
+      leisureDay: undefined,
+      travelTimePreference: "no_preference",
     },
   });
 
@@ -135,6 +156,14 @@ const AiArchitect = () => {
 
       const savedStatus = localStorage.getItem('draft_status');
       if (savedStatus) setSelectedStatus(savedStatus);
+
+      const savedMetadata = localStorage.getItem('travelMetadata');
+      if (savedMetadata) {
+        const parsed = JSON.parse(savedMetadata);
+        if (parsed.startDate) parsed.startDate = new Date(parsed.startDate);
+        if (parsed.endDate) parsed.endDate = new Date(parsed.endDate);
+        setTripMetadata(parsed);
+      }
     } catch (error) {
       console.error("Failed to load metadata from local storage", error);
     }
@@ -149,11 +178,15 @@ const AiArchitect = () => {
         localStorage.setItem("travelItinerary", JSON.stringify(itinerary));
       } else {
         localStorage.removeItem("travelItinerary");
+        localStorage.removeItem("travelMetadata");
+      }
+      if (tripMetadata) {
+        localStorage.setItem("travelMetadata", JSON.stringify(tripMetadata));
       }
     } catch (error) {
       console.error("Failed to save itinerary to local storage", error);
     }
-  }, [itinerary]);
+  }, [itinerary, tripMetadata]);
 
   // Save hotels/flights to localStorage
   useEffect(() => {
@@ -240,8 +273,15 @@ const AiArchitect = () => {
 
     try {
       console.log("📝 Getting form values...");
-      const values = form.getValues();
-      console.log("📝 Form values:", {
+      let values = form.getValues();
+
+      // Fallback to tripMetadata if form values are empty
+      if (tripMetadata && (!values.startDate || !values.destinations || !values.startingLocation)) {
+        console.log("🔄 Using trip metadata fallback due to empty form fields");
+        values = { ...values, ...tripMetadata };
+      }
+
+      console.log("📝 Form values used for save:", {
         startDate: values.startDate,
         endDate: values.endDate,
         startingLocation: values.startingLocation,
@@ -431,17 +471,19 @@ const AiArchitect = () => {
         endingLocation: "",
         startDate: undefined,
         endDate: undefined,
-        startTime: "9:00 AM",
-        endTime: "10:00 PM",
         destinations: "",
         budget: undefined,
         walkingDistance: undefined,
         mustInclude: "",
         avoid: "",
+        leisureTime: false,
+        leisureDay: undefined,
+        travelTimePreference: "no_preference",
       });
 
       console.log("🔄 Form reset complete");
       setItinerary(null);
+      setTripMetadata(null);
       setHotels([]);
       setFlights([]);
       setPricing(undefined);
@@ -449,6 +491,7 @@ const AiArchitect = () => {
       setSelectedStatus("draft");
       localStorage.removeItem('draft_client_id');
       localStorage.removeItem('draft_status');
+      localStorage.removeItem('travelMetadata');
 
     } catch (error) {
       console.error("💥 Catch block error:", error);
@@ -466,9 +509,20 @@ const AiArchitect = () => {
   };
 
 
+  const handleNext = async () => {
+    const currentFields = aiArchitectSteps[currentStep].fields;
+    const isValid = await form.trigger(currentFields as any);
+    if (isValid) {
+      if (currentStep < aiArchitectSteps.length - 1) {
+        setCurrentStep(currentStep + 1);
+      }
+    }
+  };
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsGenerating(true);
     setItinerary(null);
+    setTripMetadata(values);
     try {
       // Format dates to YYYY-MM-DD
       const startDateStr = format(values.startDate, "yyyy-MM-dd");
@@ -479,13 +533,14 @@ const AiArchitect = () => {
         endingLocation: values.endingLocation || values.startingLocation,
         startDate: startDateStr,
         endDate: endDateStr,
-        startTime: values.startTime,
-        endTime: values.endTime,
         destinations: values.destinations,
         budget: values.budget,
         walkingDistance: values.walkingDistance,
         mustInclude: values.mustInclude,
         avoid: values.avoid,
+        leisureTime: values.leisureTime,
+        leisureDay: values.leisureDay,
+        travelTimePreference: values.travelTimePreference,
       });
 
       // Fetch destination images from Unsplash
@@ -534,17 +589,87 @@ const AiArchitect = () => {
           </CardHeader>
           <CardContent>
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                <div className="space-y-6">
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+                onKeyDown={(e) => {
+                  if (
+                    e.key === "Enter" &&
+                    e.target instanceof HTMLInputElement &&
+                    e.target.type !== "submit" &&
+                    e.target.type !== "button"
+                  ) {
+                    e.preventDefault();
+                    if (currentStep < aiArchitectSteps.length - 1) {
+                      handleNext();
+                    }
+                  }
+                }}
+              >
+                {/* Steps Indicator & Progress Bar */}
+                <div className="mb-10 flex items-center justify-center gap-3">
+                  {aiArchitectSteps.map((step, index) => (
+                    <div key={step.id} className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (index < currentStep) setCurrentStep(index);
+                        }}
+                        disabled={index > currentStep}
+                        className={cn(
+                          "group relative flex h-9 w-9 items-center justify-center rounded-full transition-all duration-700 ease-out",
+                          "disabled:cursor-not-allowed",
+                          index < currentStep && "bg-foreground/10 text-foreground/60",
+                          index === currentStep && "bg-foreground text-background shadow-[0_0_20px_-5px_rgba(0,0,0,0.3)]",
+                          index > currentStep && "bg-muted/50 text-muted-foreground/40",
+                        )}
+                      >
+                        {index < currentStep ? (
+                          <Check className="h-4 w-4 animate-in zoom-in duration-500" strokeWidth={2.5} />
+                        ) : (
+                          <span className="text-sm font-medium tabular-nums">{step.id}</span>
+                        )}
+                        {index === currentStep && (
+                          <div className="absolute inset-0 rounded-full bg-foreground/20 blur-md animate-pulse" />
+                        )}
+                      </button>
+                      {index < aiArchitectSteps.length - 1 && (
+                        <div className="relative h-[1.5px] w-12 sm:w-16">
+                          <div className="absolute inset-0 bg-[rgba(207,207,207,0.4)]" />
+                          <div
+                            className="absolute inset-0 bg-foreground/30 transition-all duration-700 ease-out origin-left"
+                            style={{
+                              transform: `scaleX(${index < currentStep ? 1 : 0})`,
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mb-8 overflow-hidden rounded-full bg-muted/30 h-[2px]">
+                  <div
+                    className="h-full bg-gradient-to-r from-foreground/60 to-foreground transition-all duration-1000 ease-out"
+                    style={{ width: `${((currentStep + 1) / aiArchitectSteps.length) * 100}%` }}
+                  />
+                </div>
+
+                {/* Step 1: Destinations */}
+                <div className={cn("space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700", currentStep !== 0 && "hidden")}>
                   <FormField
                     control={form.control}
                     name="startingLocation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-300">Starting Location</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., New Delhi, India" {...field} className="ai-architect-input" />
-                        </FormControl>
+                        <div className="flex items-baseline justify-between mb-2">
+                          <FormLabel className="text-lg font-medium tracking-tight">Starting Location</FormLabel>
+                        </div>
+                        <div className="relative group">
+                          <FormControl>
+                            <Input placeholder="e.g., New Delhi, India" autoFocus {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                          </FormControl>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -554,10 +679,14 @@ const AiArchitect = () => {
                     name="destinations"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-300">Destinations to Visit (comma-separated)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Paris, Rome, Florence" {...field} className="ai-architect-input" />
-                        </FormControl>
+                        <div className="flex items-baseline justify-between mb-2">
+                          <FormLabel className="text-lg font-medium tracking-tight">Destinations to Visit (comma-separated)</FormLabel>
+                        </div>
+                        <div className="relative group">
+                          <FormControl>
+                            <Input placeholder="e.g., Paris, Rome, Florence" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                          </FormControl>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -567,34 +696,42 @@ const AiArchitect = () => {
                     name="endingLocation"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-gray-300">Ending Location (Optional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Leave empty to return to starting location" {...field} className="ai-architect-input" />
-                        </FormControl>
+                        <div className="flex items-baseline justify-between mb-2">
+                          <FormLabel className="text-lg font-medium tracking-tight">Ending Location (Optional)</FormLabel>
+                        </div>
+                        <div className="relative group">
+                          <FormControl>
+                            <Input placeholder="Leave empty to return to starting location" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                          </FormControl>
+                        </div>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
+                </div>
 
+                {/* Step 2: Dates & Times */}
+                <div className={cn("space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700", currentStep !== 1 && "hidden")}>
                   <div className="grid md:grid-cols-2 gap-6">
                     <FormField
                       control={form.control}
                       name="startDate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-300">Trip Start Date</FormLabel>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <FormLabel className="text-lg font-medium tracking-tight">Trip Start Date</FormLabel>
+                          </div>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
                                 <Button
                                   variant="outline"
                                   className={cn(
-                                    "w-full justify-start text-left font-normal px-4 py-2.5 h-auto border border-gray-700 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 rounded-lg",
-                                    !field.value && "text-gray-400",
-                                    field.value && "text-white border-primary/30 bg-primary/5"
+                                    "w-full justify-start text-left font-normal px-4 py-2.5 h-14 text-base border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur transition-all duration-500 rounded-lg",
+                                    !field.value && "text-muted-foreground/70"
                                   )}
                                 >
-                                  <CalendarIcon className="mr-3 h-5 w-5 flex-shrink-0 text-primary" />
+                                  <CalendarIcon className="mr-3 h-5 w-5 flex-shrink-0 text-foreground/60" />
                                   {field.value ? (
                                     <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span>
                                   ) : (
@@ -603,18 +740,16 @@ const AiArchitect = () => {
                                 </Button>
                               </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 border border-gray-700 bg-gray-950 shadow-lg rounded-lg" align="start">
-                              <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) =>
-                                    date < new Date(new Date().setHours(0, 0, 0, 0))
-                                  }
-                                  initialFocus
-                                />
-                              </div>
+                            <PopoverContent className="w-auto p-0 border border-border/50 bg-background/95 backdrop-blur shadow-lg rounded-lg" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) =>
+                                  date < new Date(new Date().setHours(0, 0, 0, 0))
+                                }
+                                initialFocus
+                              />
                             </PopoverContent>
                           </Popover>
                           <FormMessage />
@@ -627,19 +762,20 @@ const AiArchitect = () => {
                       name="endDate"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-gray-300">Trip End Date</FormLabel>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <FormLabel className="text-lg font-medium tracking-tight">Trip End Date</FormLabel>
+                          </div>
                           <Popover>
                             <PopoverTrigger asChild>
                               <FormControl>
                                 <Button
                                   variant="outline"
                                   className={cn(
-                                    "w-full justify-start text-left font-normal px-4 py-2.5 h-auto border border-gray-700 hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 rounded-lg",
-                                    !field.value && "text-gray-400",
-                                    field.value && "text-white border-primary/30 bg-primary/5"
+                                    "w-full justify-start text-left font-normal px-4 py-2.5 h-14 text-base border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur transition-all duration-500 rounded-lg",
+                                    !field.value && "text-muted-foreground/70"
                                   )}
                                 >
-                                  <CalendarIcon className="mr-3 h-5 w-5 flex-shrink-0 text-primary" />
+                                  <CalendarIcon className="mr-3 h-5 w-5 flex-shrink-0 text-foreground/60" />
                                   {field.value ? (
                                     <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span>
                                   ) : (
@@ -648,19 +784,17 @@ const AiArchitect = () => {
                                 </Button>
                               </FormControl>
                             </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 border border-gray-700 bg-gray-950 shadow-lg rounded-lg" align="start">
-                              <div className="bg-gradient-to-b from-gray-900 to-gray-950 rounded-lg">
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  disabled={(date) => {
-                                    const startDate = form.getValues("startDate");
-                                    return date < (startDate || new Date());
-                                  }}
-                                  initialFocus
-                                />
-                              </div>
+                            <PopoverContent className="w-auto p-0 border border-border/50 bg-background/95 backdrop-blur shadow-lg rounded-lg" align="start">
+                              <Calendar
+                                mode="single"
+                                selected={field.value}
+                                onSelect={field.onChange}
+                                disabled={(date) => {
+                                  const startDate = form.getValues("startDate");
+                                  return date < (startDate || new Date());
+                                }}
+                                initialFocus
+                              />
                             </PopoverContent>
                           </Popover>
                           <FormMessage />
@@ -668,107 +802,182 @@ const AiArchitect = () => {
                       )}
                     />
                   </div>
-
-                  <FormField
-                    control={form.control}
-                    name="startTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-300">Daily Start Time</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., 9:00 AM" {...field} className="ai-architect-input" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="endTime"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-300">Daily End Time</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., 10:00 PM" {...field} className="ai-architect-input" />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
 
-                <Collapsible open={isAdvancedOpen} onOpenChange={setIsAdvancedOpen} className="space-y-4">
-                  <CollapsibleTrigger asChild>
-                    <div className="flex items-center gap-2 cursor-pointer text-sm text-primary hover:underline">
-                      <ChevronDown className={cn("w-4 h-4 transition-transform", isAdvancedOpen && "rotate-180")} />
-                      <span>Advanced Filters</span>
-                    </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className="space-y-6 pt-4 animate-in fade-in-0 zoom-in-95">
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="budget"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-300">Max Daily Budget (INR)</FormLabel>
+                {/* Step 3: Preferences */}
+                <div className={cn("space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700", currentStep !== 2 && "hidden")}>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="budget"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <FormLabel className="text-lg font-medium tracking-tight">Max Daily Budget (INR)</FormLabel>
+                          </div>
+                          <div className="relative group">
                             <FormControl>
-                              <Input type="number" placeholder="Optional, e.g., 10000" {...field} className="ai-architect-input" />
+                              <Input type="number" placeholder="Optional, e.g., 10000" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
                             </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="walkingDistance"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-300">Max Walking Distance (km per day)</FormLabel>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="walkingDistance"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <FormLabel className="text-lg font-medium tracking-tight">Max Walking Distance (km/day)</FormLabel>
+                          </div>
+                          <div className="relative group">
                             <FormControl>
-                              <Input type="number" placeholder="Optional, e.g., 10" {...field} className="ai-architect-input" />
+                              <Input type="number" placeholder="Optional, e.g., 10" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
                             </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <FormField
-                        control={form.control}
-                        name="mustInclude"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-300">Must-Include Attractions (comma-separated)</FormLabel>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="mustInclude"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <FormLabel className="text-lg font-medium tracking-tight">Must-Include Attractions (comma-separated)</FormLabel>
+                          </div>
+                          <FormControl>
+                            <Textarea placeholder="Optional, e.g., Eiffel Tower, Louvre Museum" {...field} className="min-h-[100px] text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur rounded-xl p-4 resize-none" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="avoid"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <FormLabel className="text-lg font-medium tracking-tight">Things to Avoid (comma-separated)</FormLabel>
+                          </div>
+                          <FormControl>
+                            <Textarea placeholder="Optional, e.g., Overcrowded tourist traps" {...field} className="min-h-[100px] text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur rounded-xl p-4 resize-none" />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="leisureTime"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 bg-background/50 backdrop-blur p-4">
+                          <div className="space-y-0.5">
+                            <FormLabel className="text-lg font-medium tracking-tight">Include Leisure Time</FormLabel>
+                            <div className="text-sm text-muted-foreground/80">Deliberately add unstructured time</div>
+                          </div>
+                          <FormControl>
+                            <Switch checked={field.value} onCheckedChange={field.onChange} />
+                          </FormControl>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="leisureDay"
+                      render={({ field }) => (
+                        <FormItem className={cn("transition-opacity duration-300", !form.watch("leisureTime") && "opacity-50 pointer-events-none")}>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <FormLabel className="text-lg font-medium tracking-tight">Leisure Day Preference</FormLabel>
+                          </div>
+                          <div className="relative group">
                             <FormControl>
-                              <Textarea placeholder="Optional, e.g., Eiffel Tower, Louvre Museum" {...field} className="ai-architect-input" />
+                              <Input type="number" placeholder="Optional, e.g., 2" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
                             </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="avoid"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="text-gray-300">Things to Avoid (comma-separated)</FormLabel>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="grid md:grid-cols-1 gap-6">
+                    <FormField
+                      control={form.control}
+                      name="travelTimePreference"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <FormLabel className="text-lg font-medium tracking-tight">Travel Timing Preference</FormLabel>
+                          </div>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <Textarea placeholder="Optional, e.g., Overcrowded tourist traps" {...field} className="ai-architect-input" />
+                              <SelectTrigger className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur">
+                                <SelectValue placeholder="Select a travel preference" />
+                              </SelectTrigger>
                             </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+                            <SelectContent>
+                              <SelectItem value="no_preference">No specific preference</SelectItem>
+                              <SelectItem value="avoid_night_travel">Avoid night travel (No travel after 6 PM)</SelectItem>
+                              <SelectItem value="prefer_morning_travel">Prefer morning travel (Before 12 PM)</SelectItem>
+                              <SelectItem value="prefer_afternoon_travel">Prefer afternoon travel (12 PM - 6 PM)</SelectItem>
+                              <SelectItem value="prefer_night_travel">Prefer night travel (Overnight journeys)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
 
-                <div className="text-center pt-4">
-                  <Button type="submit" size="lg" disabled={isGenerating}>
-                    {isGenerating ? "Crafting Your Journey..." : "Generate Optimized Trip"}
-                  </Button>
+                {/* Form Actions */}
+                <div className="space-y-4 pt-4">
+                  {currentStep < aiArchitectSteps.length - 1 ? (
+                    <Button
+                      key="continue-btn"
+                      type="button"
+                      onClick={handleNext}
+                      className="w-full h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 bg-foreground text-background hover:bg-foreground/90"
+                    >
+                      <span className="flex items-center justify-center gap-2 font-medium">
+                        Continue
+                        <ArrowRight
+                          className="h-4 w-4 transition-transform group-hover:translate-x-0.5 duration-300"
+                          strokeWidth={2}
+                        />
+                      </span>
+                    </Button>
+                  ) : (
+                    <Button
+                      key="submit-btn"
+                      type="submit"
+                      disabled={isGenerating}
+                      className="w-full h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 bg-foreground text-background hover:bg-foreground/90"
+                    >
+                      <span className="flex items-center justify-center gap-2 font-medium">
+                        {isGenerating ? "Crafting Your Journey..." : "Generate Optimized Trip"}
+                        {!isGenerating && <Check className="h-4 w-4 ml-1 transition-transform duration-300" strokeWidth={2} />}
+                      </span>
+                    </Button>
+                  )}
+
+                  {currentStep > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(currentStep - 1)}
+                      className="w-full text-center text-sm text-muted-foreground/60 hover:text-foreground/80 transition-all duration-300"
+                    >
+                      Go back
+                    </button>
+                  )}
                 </div>
               </form>
             </Form>
@@ -855,6 +1064,25 @@ const AiArchitect = () => {
               </>
             )}
           </div>
+
+          {itinerary && !isGenerating && (
+            <div className="flex justify-end mb-4">
+              <div className="flex items-center space-x-2 bg-background/50 backdrop-blur px-4 py-2 rounded-lg border border-border/50">
+                <Switch
+                  id="show-timestamps"
+                  checked={showTimestamps}
+                  onCheckedChange={setShowTimestamps}
+                />
+                <label
+                  htmlFor="show-timestamps"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Show Timestamps
+                </label>
+              </div>
+            </div>
+          )}
+
           <div ref={itineraryRef}>
             {/* Hotel & Flight Editor */}
             {itinerary && !isGenerating && (
@@ -877,6 +1105,7 @@ const AiArchitect = () => {
               }}
               hotels={hotels}
               flights={flights}
+              showTimestamps={showTimestamps}
             />
             {/* Pricing Module */}
             {itinerary && !isGenerating && (

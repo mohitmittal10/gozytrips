@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Wallet, Settings, Calculator } from "lucide-react";
+import { Plus, Trash2, Wallet, Settings } from "lucide-react";
 import {
     type PricingConfig,
     type Currency,
@@ -162,7 +162,7 @@ export default function PricingModule({ pricing, onChange, baseCost }: PricingMo
 
                     <div className="space-y-4">
                         <div className="flex items-center gap-2 text-primary font-medium">
-                            <Calculator className="w-4 h-4" />
+                            <Wallet className="w-4 h-4" />
                             Taxation
                         </div>
                         <div className="space-y-2">
