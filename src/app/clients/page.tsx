@@ -5,11 +5,12 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useClients, type Client } from "@/lib/hooks/use-clients";
 import { ClientDialog } from "@/components/client-dialog";
+import { getAvatarColor, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Plus, User, PhoneCall, Mail, File, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Search, Plus, User, Mail, Edit, Trash2, MoreHorizontal, PhoneCall, File } from "lucide-react";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -18,12 +19,20 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
 
 export default function ClientsPage() {
     const router = useRouter();
     const { user } = useAuth();
     const { clients, loading, error, createClient, updateClient, deleteClient } = useClients();
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedTag, setSelectedTag] = useState<string>("all");
 
     // Dialog state
     const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -38,11 +47,17 @@ export default function ClientsPage() {
         );
     }
 
-    const filteredClients = clients.filter(c =>
-        c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        c.tags?.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
+    const uniqueTags = Array.from(new Set(clients.flatMap(c => c.tags || []))).sort();
+
+    const filteredClients = clients.filter(c => {
+        const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            c.tags?.some(t => t.toLowerCase().includes(searchTerm.toLowerCase()));
+
+        const matchesTag = selectedTag === "all" || (c.tags && c.tags.includes(selectedTag));
+
+        return matchesSearch && matchesTag;
+    });
 
     const handleOpenCreate = () => {
         setEditingClient(null);
@@ -82,16 +97,32 @@ export default function ClientsPage() {
                 </Button>
             </div>
 
-            <div className="bg-black/20 border border-white/10 rounded-xl p-4 mb-8">
-                <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                    <Input
-                        type="text"
-                        placeholder="Search clients by name, email, or tags..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                    />
+            <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <div className="bg-black/20 border border-white/10 rounded-xl p-4 flex-1">
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                        <Input
+                            type="text"
+                            placeholder="Search clients by name, email, or tags..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                        />
+                    </div>
+                </div>
+
+                <div className="bg-black/20 border border-white/10 rounded-xl p-4 sm:w-64">
+                    <Select value={selectedTag} onValueChange={setSelectedTag}>
+                        <SelectTrigger className="w-full bg-white/5 border-white/10 text-white">
+                            <SelectValue placeholder="Filter by Tag" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Tags</SelectItem>
+                            {uniqueTags.map(tag => (
+                                <SelectItem key={tag} value={tag}>{tag}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
             </div>
 
@@ -131,7 +162,7 @@ export default function ClientsPage() {
                             <CardHeader className="pb-4 relative">
                                 <div className="flex justify-between items-start">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-primary/10 border border-primary/20 flex items-center justify-center text-xl font-bold text-primary">
+                                        <div className={cn("w-12 h-12 rounded-full flex items-center justify-center text-xl font-bold text-white bg-gradient-to-br", getAvatarColor(client.name))}>
                                             {client.name.charAt(0).toUpperCase()}
                                         </div>
                                         <div>

@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 interface ClientDialogProps {
     isOpen: boolean;
@@ -24,23 +26,31 @@ interface ClientDialogProps {
 
 export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDialogProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [formData, setFormData] = useState({
+    const [tagInput, setTagInput] = useState("");
+    const [formData, setFormData] = useState<{
+        name: string;
+        email: string;
+        phone: string;
+        notes: string;
+        tags: string[];
+    }>({
         name: "",
         email: "",
         phone: "",
         notes: "",
-        tags: "",
+        tags: [],
     });
 
     useEffect(() => {
         if (isOpen) {
+            setTagInput("");
             if (client) {
                 setFormData({
                     name: client.name || "",
                     email: client.email || "",
                     phone: client.phone || "",
                     notes: client.notes || "",
-                    tags: client.tags ? client.tags.join(", ") : "",
+                    tags: client.tags ? [...client.tags] : [],
                 });
             } else {
                 setFormData({
@@ -48,11 +58,26 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                     email: "",
                     phone: "",
                     notes: "",
-                    tags: "",
+                    tags: [],
                 });
             }
         }
     }, [client, isOpen]);
+
+    const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter' || e.key === ',') {
+            e.preventDefault();
+            const newTag = tagInput.trim();
+            if (newTag && !formData.tags.includes(newTag)) {
+                setFormData(prev => ({ ...prev, tags: [...prev.tags, newTag] }));
+                setTagInput("");
+            }
+        }
+    };
+
+    const removeTag = (tagToRemove: string) => {
+        setFormData(prev => ({ ...prev, tags: prev.tags.filter(t => t !== tagToRemove) }));
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -65,7 +90,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                 email: formData.email || null,
                 phone: formData.phone || null,
                 notes: formData.notes || null,
-                tags: formData.tags ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+                tags: formData.tags,
             });
             onOpenChange(false);
         } catch (error) {
@@ -118,13 +143,33 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="tags">Tags (comma separated)</Label>
-                            <Input
-                                id="tags"
-                                value={formData.tags}
-                                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                                placeholder="e.g. VIP, Honeymoon, Warm Lead"
-                            />
+                            <Label htmlFor="tags">Tags</Label>
+                            <div className="flex flex-col gap-2">
+                                <Input
+                                    id="tags"
+                                    value={tagInput}
+                                    onChange={(e) => setTagInput(e.target.value)}
+                                    onKeyDown={handleAddTag}
+                                    placeholder="Type and press Enter or comma to add"
+                                />
+                                {formData.tags.length > 0 && (
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {formData.tags.map((tag, idx) => (
+                                            <Badge key={idx} variant="secondary" className="flex items-center gap-1 bg-primary/20 hover:bg-primary/30 text-primary border-primary/20">
+                                                {tag}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => removeTag(tag)}
+                                                    className="ml-1 rounded-full outline-none ring-offset-background focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                                                >
+                                                    <X className="h-3 w-3" />
+                                                    <span className="sr-only">Remove {tag}</span>
+                                                </button>
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                         <div className="space-y-2">
                             <Label htmlFor="notes">Notes</Label>
