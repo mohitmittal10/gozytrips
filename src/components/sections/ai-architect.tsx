@@ -24,7 +24,10 @@ import ItineraryTimeline from "../itinerary-timeline";
 import HotelFlightEditor, { type HotelInfo, type FlightInfo } from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
 import type { PricingConfig } from "@/types/pricing";
-import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye, Check, ArrowRight } from "lucide-react";
+import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye, Check, ArrowRight, Plane, Wallet } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import UniqueLoading from "@/components/ui/morph-loading";
+import { ShiningText } from "@/components/ui/shining-text";
 import { Textarea } from "../ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/collapsible";
 import { cn } from "@/lib/utils";
@@ -107,6 +110,25 @@ const AiArchitect = () => {
   const [selectedStatus, setSelectedStatus] = useState<string>("draft");
   const [tripMetadata, setTripMetadata] = useState<any>(null);
   const [showTimestamps, setShowTimestamps] = useState(true);
+
+  const loadingTexts = [
+    "Analyzing your preferences...",
+    "Finding the best flights...",
+    "Selecting premium hotels...",
+    "Curating local experiences...",
+    "Optimizing travel routes...",
+    "Crafting your perfect itinerary...",
+  ];
+  const [loadingTextIndex, setLoadingTextIndex] = useState(0);
+
+  useEffect(() => {
+    if (isGenerating) {
+      const interval = setInterval(() => {
+        setLoadingTextIndex((prev) => (prev + 1) % loadingTexts.length);
+      }, 2500);
+      return () => clearInterval(interval);
+    }
+  }, [isGenerating, loadingTexts.length]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -571,17 +593,11 @@ const AiArchitect = () => {
   }
 
   return (
-    <section id="ai-architect" className="container mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="text-center mb-12">
-        <h2 className="font-headline text-3xl md:text-4xl font-bold text-primary">Your Personal AI Travel Architect</h2>
-        <p className="mt-4 max-w-2xl mx-auto text-foreground/80">
-          Describe your dream trip, and let our AI craft a personalized, day-by-day itinerary just for you.
-        </p>
-      </div>
-
+    <section id="ai-architect" className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8">
       <div className="max-w-5xl mx-auto">
-        <Card className="ai-architect-page-card">
-          <CardHeader>
+        <div className={cn("transition-all duration-500 w-full", (isGenerating || itinerary) ? "hidden" : "block")}>
+          <Card className="ai-architect-page-card">
+            <CardHeader>
             <CardTitle className="font-headline text-2xl flex items-center gap-2 text-white">
               <Sparkles className="w-6 h-6 text-primary" />
               <span>Create Your Optimized Itinerary</span>
@@ -983,138 +999,188 @@ const AiArchitect = () => {
             </Form>
           </CardContent>
         </Card>
+        </div>
       </div>
 
-      {(isGenerating || itinerary) && (
-        <div className="mt-12">
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            {itinerary && !isGenerating && (
-              <>
-                <Button
-                  onClick={handleSaveItinerary}
-                  disabled={isSaving}
-                  className="flex-1 glass-button bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white border-0"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  {isSaving ? "Saving..." : "Save to My Trips"}
-                </Button>
+      {isGenerating && (
+        <div className="max-w-5xl mx-auto mt-8">
+          <Card className="ai-architect-page-card py-24 flex flex-col items-center justify-center min-h-[400px] space-y-12">
+            <UniqueLoading variant="morph" size="lg" />
+            <div className="h-8 overflow-hidden flex items-center justify-center">
+               <ShiningText text={loadingTexts[loadingTextIndex]} />
+            </div>
+          </Card>
+        </div>
+      )}
 
-                <div className="flex-1 flex gap-2">
-                  <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Assign Client (Optional)" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">-- No Client Assigned --</SelectItem>
-                      {clients.map(client => (
-                        <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                    <SelectTrigger className="w-[120px]">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="draft">Draft</SelectItem>
-                      <SelectItem value="sent">Sent</SelectItem>
-                      <SelectItem value="confirmed">Confirmed</SelectItem>
-                      <SelectItem value="rejected">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+      {(!isGenerating && itinerary) && (
+        <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-4 bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-lg">
+          
+          {/* Left Side: CRM Config */}
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+              <SelectTrigger className="w-full md:w-[200px] h-9 text-sm bg-black/40 border-white/10 hover:bg-white/5 transition-colors">
+                <SelectValue placeholder="Assign Client (Optional)" />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                <SelectItem value="none">-- No Client Assigned --</SelectItem>
+                {clients.map((client) => (
+                  <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-                <div className="flex-1 flex gap-2">
-                  <Select defaultValue="classic" onValueChange={(value) => setSelectedTheme(value as PdfTheme)}>
-                    <SelectTrigger className="w-[180px]">
-                      <SelectValue placeholder="Format" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="classic">Classic (Default)</SelectItem>
-                      <SelectItem value="editorial">Editorial (Magazine)</SelectItem>
-                      <SelectItem value="minimalist">Minimalist</SelectItem>
-                      <SelectItem value="dark">Dark Mode</SelectItem>
-                      <SelectItem value="corporate">Corporate</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button
-                    onClick={handleDownloadPdf}
-                    disabled={!itinerary}
-                    className="flex-1 glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0"
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    Preview & Export
-                  </Button>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={async () => {
-                    console.log("🧪 Running diagnostic check...");
-                    const { data: { session } } = await supabase.auth.getSession();
-                    console.log("Session:", session);
-                    console.log("User:", user);
-                    console.log("Itinerary exists:", !!itinerary);
-                  }}
-                  className="text-xs"
-                >
-                  <AlertCircle className="mr-1 h-3 w-3" />
-                  Debug
-                </Button>
-              </>
-            )}
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="w-full md:w-[120px] h-9 text-sm bg-black/40 border-white/10 hover:bg-white/5 transition-colors">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="sent">Sent</SelectItem>
+                <SelectItem value="confirmed">Confirmed</SelectItem>
+                <SelectItem value="rejected">Rejected</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
-          {itinerary && !isGenerating && (
-            <div className="flex justify-end mb-4">
-              <div className="flex items-center space-x-2 bg-background/50 backdrop-blur px-4 py-2 rounded-lg border border-border/50">
-                <Switch
-                  id="show-timestamps"
-                  checked={showTimestamps}
-                  onCheckedChange={setShowTimestamps}
-                />
-                <label
-                  htmlFor="show-timestamps"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Show Timestamps
-                </label>
-              </div>
+          {/* Right Side: Actions and Options */}
+          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            
+            {/* Timestamps Toggle */}
+            <div className="flex items-center space-x-2 px-2 py-1 rounded-md border border-white/5 bg-black/20">
+              <Switch
+                id="show-timestamps"
+                checked={showTimestamps}
+                onCheckedChange={setShowTimestamps}
+                className="scale-75 origin-right"
+              />
+              <label htmlFor="show-timestamps" className="text-xs font-medium text-gray-300 select-none whitespace-nowrap">
+                Timestamps
+              </label>
             </div>
-          )}
 
-          <div ref={itineraryRef}>
-            {/* Hotel & Flight Editor */}
-            {itinerary && !isGenerating && (
-              <HotelFlightEditor
-                hotels={hotels}
-                flights={flights}
-                totalDays={itinerary.itinerary.length}
-                onHotelsChange={setHotels}
-                onFlightsChange={setFlights}
-              />
-            )}
-            <ItineraryTimeline
-              itinerary={itinerary?.itinerary || []}
-              isLoading={isGenerating}
-              editable={true}
-              onItineraryChange={(updatedItinerary) => {
-                if (itinerary) {
-                  setItinerary({ ...itinerary, itinerary: updatedItinerary });
-                }
-              }}
-              hotels={hotels}
-              flights={flights}
-              showTimestamps={showTimestamps}
-            />
-            {/* Pricing Module */}
-            {itinerary && !isGenerating && (
-              <PricingModule
-                pricing={pricing}
-                onChange={setPricing}
-                baseCost={baseCost}
-              />
-            )}
+            {/* Export Format */}
+            <Select defaultValue="classic" onValueChange={(value) => setSelectedTheme(value as PdfTheme)}>
+              <SelectTrigger className="w-full md:w-[130px] h-9 text-sm bg-black/40 border-white/10 hover:bg-white/5 transition-colors">
+                <SelectValue placeholder="Format" />
+              </SelectTrigger>
+              <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                <SelectItem value="classic">Classic</SelectItem>
+                <SelectItem value="editorial">Editorial</SelectItem>
+                <SelectItem value="minimalist">Minimalist</SelectItem>
+                <SelectItem value="dark">Dark Mode</SelectItem>
+                <SelectItem value="corporate">Corporate</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {/* Buttons */}
+            <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
+              <Button
+                size="sm"
+                onClick={handleDownloadPdf}
+                disabled={!itinerary}
+                className="flex-1 md:flex-none h-9 glass-button bg-gradient-to-r from-purple-500/80 to-pink-500/80 hover:from-purple-500 hover:to-pink-500 text-white border border-white/10 shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all px-4"
+              >
+                <Eye className="w-3.5 h-3.5 mr-2" />
+                Preview
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={handleSaveItinerary}
+                disabled={isSaving}
+                className="flex-1 md:flex-none h-9 glass-button bg-gradient-to-r from-blue-500/80 to-cyan-500/80 hover:from-blue-500 hover:to-cyan-500 text-white border border-white/10 shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all px-4"
+              >
+                <Save className="w-3.5 h-3.5 mr-2" />
+                {isSaving ? "Saving..." : "Save"}
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={async () => {
+                  console.log("🧪 Running diagnostic check...");
+                  const { data: { session } } = await supabase.auth.getSession();
+                  console.log("Session:", session);
+                  console.log("User:", user);
+                  console.log("Itinerary exists:", !!itinerary);
+                }}
+                className="h-9 w-9 text-gray-400 hover:text-white hover:bg-white/10 rounded-md border border-white/5 bg-black/20"
+                title="Debug"
+              >
+                <AlertCircle className="h-4 w-4" />
+              </Button>
+            </div>
+            
+          </div>
+        </div>
+      )}
+
+      {itinerary && (
+        <>
+          <div ref={itineraryRef} className="mt-6">
+            <Tabs defaultValue="itinerary" className="flex flex-col lg:flex-row gap-6 items-start">
+              <div className="w-full lg:w-64 flex-shrink-0 lg:sticky lg:top-24">
+                <TabsList className="flex flex-col h-auto w-full items-stretch bg-background/50 backdrop-blur rounded-xl p-2 border border-border/50 gap-1">
+                  <TabsTrigger value="itinerary" className="justify-start px-4 py-3 text-left data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none transition-all rounded-lg whitespace-normal h-auto">
+                    <CalendarIcon className="w-4 h-4 mr-2 flex-shrink-0" />
+                    Itinerary Timeline
+                  </TabsTrigger>
+                  {itinerary && !isGenerating && (
+                    <>
+                      <TabsTrigger value="flights-hotels" className="justify-start px-4 py-3 text-left data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none transition-all rounded-lg whitespace-normal h-auto">
+                        <Plane className="w-4 h-4 mr-2 flex-shrink-0" />
+                        Flights & Hotels
+                      </TabsTrigger>
+                      <TabsTrigger value="pricing" className="justify-start px-4 py-3 text-left data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none transition-all rounded-lg whitespace-normal h-auto">
+                        <Wallet className="w-4 h-4 mr-2 flex-shrink-0" />
+                        Pricing & Settings
+                      </TabsTrigger>
+                    </>
+                  )}
+                </TabsList>
+              </div>
+
+              <div className="flex-1 w-full min-w-0">
+                <TabsContent value="itinerary" className="m-0 focus-visible:outline-none focus-visible:ring-0">
+                  <ItineraryTimeline
+                    itinerary={itinerary?.itinerary || []}
+                    isLoading={isGenerating}
+                    editable={true}
+                    onItineraryChange={(updatedItinerary) => {
+                      if (itinerary) {
+                        setItinerary({ ...itinerary, itinerary: updatedItinerary });
+                      }
+                    }}
+                    hotels={hotels}
+                    flights={flights}
+                    showTimestamps={showTimestamps}
+                  />
+                </TabsContent>
+
+                {itinerary && !isGenerating && (
+                  <TabsContent value="flights-hotels" className="m-0 focus-visible:outline-none focus-visible:ring-0">
+                    <HotelFlightEditor
+                      hotels={hotels}
+                      flights={flights}
+                      totalDays={itinerary.itinerary.length}
+                      onHotelsChange={setHotels}
+                      onFlightsChange={setFlights}
+                    />
+                  </TabsContent>
+                )}
+
+                {itinerary && !isGenerating && (
+                  <TabsContent value="pricing" className="m-0 focus-visible:outline-none focus-visible:ring-0">
+                    <PricingModule
+                      pricing={pricing}
+                      onChange={setPricing}
+                      baseCost={baseCost}
+                    />
+                  </TabsContent>
+                )}
+              </div>
+            </Tabs>
           </div>
 
           {/* PDF Preview & Export */}
@@ -1133,7 +1199,7 @@ const AiArchitect = () => {
             initialTheme={selectedTheme}
             filename="OdysseyLuxe_Itinerary.pdf"
           />
-        </div>
+        </>
       )}
     </section>
   );

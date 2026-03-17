@@ -6,11 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
-    Hotel, Plane, Plus, Trash2, Star, ChevronDown, X, ImageIcon
+    Hotel, Plane, Plus, Trash2, Star, ChevronDown, X, Camera
 } from "lucide-react";
-import {
-    Collapsible, CollapsibleContent, CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -209,7 +206,7 @@ function HotelCard({ hotel, totalDays, onChange, onDelete }: {
                         {(!hotel.imageUrls || hotel.imageUrls.length < 2) && (
                             <div className="relative flex items-center justify-center w-24 h-24 flex-shrink-0 rounded-lg border-2 border-dashed border-white/20 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group/upload">
                                 <div className="flex flex-col items-center gap-1 text-gray-400 group-hover/upload:text-white transition-colors">
-                                    <ImageIcon className="w-5 h-5" />
+                                    <Camera className="w-5 h-5" />
                                     <span className="text-[10px] uppercase font-semibold text-center leading-tight">Upload<br />({(hotel.imageUrls || []).length}/2)</span>
                                 </div>
                                 <input
@@ -302,82 +299,75 @@ export default function HotelFlightEditor({
     const itemCount = hotels.length + flights.length;
 
     return (
-        <Card className="glass-card ai-architect-page-card mb-6">
-            <Collapsible open={isOpen} onOpenChange={setIsOpen}>
-                <CollapsibleTrigger asChild>
-                    <CardHeader className="cursor-pointer hover:bg-white/5 transition-colors rounded-t-xl">
-                        <div className="flex items-center justify-between">
-                            <CardTitle className="flex items-center gap-2 text-lg">
-                                <Hotel className="w-5 h-5 text-blue-400" />
-                                <Plane className="w-5 h-5 text-emerald-400" />
-                                <span>Hotels & Flights</span>
-                                {itemCount > 0 && (
-                                    <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-normal">
-                                        {itemCount} {itemCount === 1 ? "item" : "items"}
-                                    </span>
-                                )}
-                            </CardTitle>
-                            <ChevronDown className={cn("w-5 h-5 text-gray-400 transition-transform", isOpen && "rotate-180")} />
-                        </div>
-                    </CardHeader>
-                </CollapsibleTrigger>
-
-                <CollapsibleContent>
-                    <CardContent className="space-y-4 pt-0">
-                        {/* Add buttons */}
-                        <div className="flex gap-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={addHotel}
-                                className="gap-1.5 text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
-                            >
-                                <Plus className="w-3.5 h-3.5" />
-                                Add Hotel
-                            </Button>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={addFlight}
-                                className="gap-1.5 text-emerald-400 border-emerald-400/30 hover:bg-emerald-400/10"
-                            >
-                                <Plus className="w-3.5 h-3.5" />
-                                Add Flight
-                            </Button>
-                        </div>
-
-                        {/* Hotels */}
-                        {hotels.map((hotel) => (
-                            <HotelCard
-                                key={hotel.id}
-                                hotel={hotel}
-                                totalDays={totalDays}
-                                onChange={(updated) => updateHotel(hotel.id, updated)}
-                                onDelete={() => deleteHotel(hotel.id)}
-                            />
-                        ))}
-
-                        {/* Flights */}
-                        {flights.map((flight) => (
-                            <FlightCard
-                                key={flight.id}
-                                flight={flight}
-                                totalDays={totalDays}
-                                onChange={(updated) => updateFlight(flight.id, updated)}
-                                onDelete={() => deleteFlight(flight.id)}
-                            />
-                        ))}
-
-                        {itemCount === 0 && (
-                            <p className="text-center text-sm text-gray-500 py-4">
-                                No hotels or flights added yet. Click the buttons above to add travel details.
-                            </p>
+        <Card className="glass-card ai-architect-page-card">
+            <CardHeader className="bg-white/5 pb-4">
+                <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                        <Hotel className="w-5 h-5 text-blue-400" />
+                        <Plane className="w-5 h-5 text-emerald-400" />
+                        <span>Hotels & Flights</span>
+                        {itemCount > 0 && (
+                            <span className="text-xs bg-primary/20 text-primary px-2 py-0.5 rounded-full font-normal">
+                                {itemCount} {itemCount === 1 ? "item" : "items"}
+                            </span>
                         )}
-                    </CardContent>
-                </CollapsibleContent>
-            </Collapsible>
+                    </CardTitle>
+                </div>
+            </CardHeader>
+
+            <CardContent className="space-y-4 pt-6">
+                {/* Add buttons */}
+                <div className="flex gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addHotel}
+                        className="gap-1.5 text-blue-400 border-blue-400/30 hover:bg-blue-400/10"
+                    >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add Hotel
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={addFlight}
+                        className="gap-1.5 text-emerald-400 border-emerald-400/30 hover:bg-emerald-400/10"
+                    >
+                        <Plus className="w-3.5 h-3.5" />
+                        Add Flight
+                    </Button>
+                </div>
+
+                {/* Hotels */}
+                {hotels.map((hotel) => (
+                    <HotelCard
+                        key={hotel.id}
+                        hotel={hotel}
+                        totalDays={totalDays}
+                        onChange={(updated) => updateHotel(hotel.id, updated)}
+                        onDelete={() => deleteHotel(hotel.id)}
+                    />
+                ))}
+
+                {/* Flights */}
+                {flights.map((flight) => (
+                    <FlightCard
+                        key={flight.id}
+                        flight={flight}
+                        totalDays={totalDays}
+                        onChange={(updated) => updateFlight(flight.id, updated)}
+                        onDelete={() => deleteFlight(flight.id)}
+                    />
+                ))}
+
+                {itemCount === 0 && (
+                    <p className="text-center text-sm text-gray-500 py-4">
+                        No hotels or flights added yet. Click the buttons above to add travel details.
+                    </p>
+                )}
+            </CardContent>
         </Card>
     );
 }

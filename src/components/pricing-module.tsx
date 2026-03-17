@@ -73,7 +73,7 @@ export default function PricingModule({ pricing, onChange, baseCost }: PricingMo
     const finalTotal = costWithMarkup + taxAmount;
 
     return (
-        <Card className="glass-card mt-8 overflow-hidden ai-architect-page-card">
+        <Card className="glass-card overflow-hidden ai-architect-page-card">
             <CardHeader className="bg-white/5 pb-4">
                 <div className="flex items-center gap-2">
                     <Wallet className="w-5 h-5 text-emerald-400" />

@@ -621,7 +621,7 @@ const ItineraryTimeline = ({
   );
 
   return (
-    <div className="relative w-full max-w-5xl mx-auto py-8">
+    <div className="relative w-full max-w-5xl mx-auto py-4">
       {/* Edit mode toggle */}
       {editable && (
         <div className="flex justify-end mb-6 sticky top-20 z-30">
