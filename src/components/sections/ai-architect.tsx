@@ -442,6 +442,7 @@ const AiArchitect = () => {
         description: values.mustInclude ? `Must include: ${values.mustInclude}` : null,
         starting_location: values.startingLocation,
         ending_location: values.endingLocation || values.startingLocation,
+        destinations: values.destinations,
         start_date: startDateStr,
         end_date: endDateStr,
         budget: values.budget || null,
@@ -596,409 +597,417 @@ const AiArchitect = () => {
     <section id="ai-architect" className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8">
       <div className="max-w-5xl mx-auto">
         <div className={cn("transition-all duration-500 w-full", (isGenerating || itinerary) ? "hidden" : "block")}>
-          <Card className="ai-architect-page-card">
-            <CardHeader>
-            <CardTitle className="font-headline text-2xl flex items-center gap-2 text-white">
-              <Sparkles className="w-6 h-6 text-primary" />
-              <span>Create Your Optimized Itinerary</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-8"
-                onKeyDown={(e) => {
-                  if (
-                    e.key === "Enter" &&
-                    e.target instanceof HTMLInputElement &&
-                    e.target.type !== "submit" &&
-                    e.target.type !== "button"
-                  ) {
-                    e.preventDefault();
-                    if (currentStep < aiArchitectSteps.length - 1) {
-                      handleNext();
+          <div className="text-center mb-16 animate-in fade-in slide-in-from-top-4 duration-1000">
+            <h1 className="text-5xl md:text-7xl font-serif font-bold text-white tracking-tighter mb-4 uppercase">
+              Odyssey <span className="text-zinc-600">Luxe</span>
+            </h1>
+            <p className="text-zinc-500 text-lg md:text-xl font-medium tracking-wide">
+              Your Personal AI Travel Architect
+            </p>
+          </div>
+          <Card className="liquid-glass glossy-surface border-white/5 shadow-2xl">
+            <CardHeader className="border-b border-white/5">
+              <CardTitle className="font-serif text-2xl flex items-center gap-2 text-white uppercase tracking-tight">
+                <Sparkles className="w-6 h-6 text-zinc-400" />
+                <span>Plan Your Next Escape</span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-8">
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="space-y-8"
+                  onKeyDown={(e) => {
+                    if (
+                      e.key === "Enter" &&
+                      e.target instanceof HTMLInputElement &&
+                      e.target.type !== "submit" &&
+                      e.target.type !== "button"
+                    ) {
+                      e.preventDefault();
+                      if (currentStep < aiArchitectSteps.length - 1) {
+                        handleNext();
+                      }
                     }
-                  }
-                }}
-              >
-                {/* Steps Indicator & Progress Bar */}
-                <div className="mb-10 flex items-center justify-center gap-3">
-                  {aiArchitectSteps.map((step, index) => (
-                    <div key={step.id} className="flex items-center gap-3">
+                  }}
+                >
+                  {/* Steps Indicator & Progress Bar */}
+                  <div className="mb-10 flex items-center justify-center gap-3">
+                    {aiArchitectSteps.map((step, index) => (
+                      <div key={step.id} className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (index < currentStep) setCurrentStep(index);
+                          }}
+                          disabled={index > currentStep}
+                          className={cn(
+                            "group relative flex h-9 w-9 items-center justify-center rounded-full transition-all duration-700 ease-out",
+                            "disabled:cursor-not-allowed",
+                            index < currentStep && "bg-foreground/10 text-foreground/60",
+                            index === currentStep && "bg-foreground text-background shadow-[0_0_20px_-5px_rgba(0,0,0,0.3)]",
+                            index > currentStep && "bg-muted/50 text-muted-foreground/40",
+                          )}
+                        >
+                          {index < currentStep ? (
+                            <Check className="h-4 w-4 animate-in zoom-in duration-500" strokeWidth={2.5} />
+                          ) : (
+                            <span className="text-sm font-medium tabular-nums">{step.id}</span>
+                          )}
+                          {index === currentStep && (
+                            <div className="absolute inset-0 rounded-full bg-foreground/20 blur-md animate-pulse" />
+                          )}
+                        </button>
+                        {index < aiArchitectSteps.length - 1 && (
+                          <div className="relative h-[1.5px] w-12 sm:w-16">
+                            <div className="absolute inset-0 bg-[rgba(207,207,207,0.4)]" />
+                            <div
+                              className="absolute inset-0 bg-foreground/30 transition-all duration-700 ease-out origin-left"
+                              style={{
+                                transform: `scaleX(${index < currentStep ? 1 : 0})`,
+                              }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mb-8 overflow-hidden rounded-full bg-muted/30 h-[2px]">
+                    <div
+                      className="h-full bg-gradient-to-r from-foreground/60 to-foreground transition-all duration-1000 ease-out"
+                      style={{ width: `${((currentStep + 1) / aiArchitectSteps.length) * 100}%` }}
+                    />
+                  </div>
+
+                  {/* Step 1: Destinations */}
+                  <div className={cn("space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700", currentStep !== 0 && "hidden")}>
+                    <FormField
+                      control={form.control}
+                      name="startingLocation"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <FormLabel className="text-lg font-medium tracking-tight">Starting Location</FormLabel>
+                          </div>
+                          <div className="relative group">
+                            <FormControl>
+                              <Input placeholder="e.g., New Delhi, India" autoFocus {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                            </FormControl>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="destinations"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <FormLabel className="text-lg font-medium tracking-tight">Destinations to Visit (comma-separated)</FormLabel>
+                          </div>
+                          <div className="relative group">
+                            <FormControl>
+                              <Input placeholder="e.g., Paris, Rome, Florence" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                            </FormControl>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="endingLocation"
+                      render={({ field }) => (
+                        <FormItem>
+                          <div className="flex items-baseline justify-between mb-2">
+                            <FormLabel className="text-lg font-medium tracking-tight">Ending Location (Optional)</FormLabel>
+                          </div>
+                          <div className="relative group">
+                            <FormControl>
+                              <Input placeholder="Leave empty to return to starting location" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                            </FormControl>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+
+                  {/* Step 2: Dates & Times */}
+                  <div className={cn("space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700", currentStep !== 1 && "hidden")}>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="startDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-baseline justify-between mb-2">
+                              <FormLabel className="text-lg font-medium tracking-tight">Trip Start Date</FormLabel>
+                            </div>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal px-4 py-2.5 h-14 text-base border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur transition-all duration-500 rounded-lg",
+                                      !field.value && "text-muted-foreground/70"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-3 h-5 w-5 flex-shrink-0 text-foreground/60" />
+                                    {field.value ? (
+                                      <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span>
+                                    ) : (
+                                      <span>Select start date</span>
+                                    )}
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0 border border-border/50 bg-background/95 backdrop-blur shadow-lg rounded-lg" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  disabled={(date) =>
+                                    date < new Date(new Date().setHours(0, 0, 0, 0))
+                                  }
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="endDate"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-baseline justify-between mb-2">
+                              <FormLabel className="text-lg font-medium tracking-tight">Trip End Date</FormLabel>
+                            </div>
+                            <Popover>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    className={cn(
+                                      "w-full justify-start text-left font-normal px-4 py-2.5 h-14 text-base border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur transition-all duration-500 rounded-lg",
+                                      !field.value && "text-muted-foreground/70"
+                                    )}
+                                  >
+                                    <CalendarIcon className="mr-3 h-5 w-5 flex-shrink-0 text-foreground/60" />
+                                    {field.value ? (
+                                      <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span>
+                                    ) : (
+                                      <span>Select end date</span>
+                                    )}
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-auto p-0 border border-border/50 bg-background/95 backdrop-blur shadow-lg rounded-lg" align="start">
+                                <Calendar
+                                  mode="single"
+                                  selected={field.value}
+                                  onSelect={field.onChange}
+                                  disabled={(date) => {
+                                    const startDate = form.getValues("startDate");
+                                    return date < (startDate || new Date());
+                                  }}
+                                  initialFocus
+                                />
+                              </PopoverContent>
+                            </Popover>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Step 3: Preferences */}
+                  <div className={cn("space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700", currentStep !== 2 && "hidden")}>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="budget"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-baseline justify-between mb-2">
+                              <FormLabel className="text-lg font-medium tracking-tight">Max Daily Budget (INR)</FormLabel>
+                            </div>
+                            <div className="relative group">
+                              <FormControl>
+                                <Input type="number" placeholder="Optional, e.g., 10000" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                              </FormControl>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="walkingDistance"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-baseline justify-between mb-2">
+                              <FormLabel className="text-lg font-medium tracking-tight">Max Walking Distance (km/day)</FormLabel>
+                            </div>
+                            <div className="relative group">
+                              <FormControl>
+                                <Input type="number" placeholder="Optional, e.g., 10" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                              </FormControl>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="mustInclude"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-baseline justify-between mb-2">
+                              <FormLabel className="text-lg font-medium tracking-tight">Must-Include Attractions (comma-separated)</FormLabel>
+                            </div>
+                            <FormControl>
+                              <Textarea placeholder="Optional, e.g., Eiffel Tower, Louvre Museum" {...field} className="min-h-[100px] text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur rounded-xl p-4 resize-none" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="avoid"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-baseline justify-between mb-2">
+                              <FormLabel className="text-lg font-medium tracking-tight">Things to Avoid (comma-separated)</FormLabel>
+                            </div>
+                            <FormControl>
+                              <Textarea placeholder="Optional, e.g., Overcrowded tourist traps" {...field} className="min-h-[100px] text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur rounded-xl p-4 resize-none" />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="leisureTime"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 bg-background/50 backdrop-blur p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-lg font-medium tracking-tight">Include Leisure Time</FormLabel>
+                              <div className="text-sm text-muted-foreground/80">Deliberately add unstructured time</div>
+                            </div>
+                            <FormControl>
+                              <Switch checked={field.value} onCheckedChange={field.onChange} />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="leisureDay"
+                        render={({ field }) => (
+                          <FormItem className={cn("transition-opacity duration-300", !form.watch("leisureTime") && "opacity-50 pointer-events-none")}>
+                            <div className="flex items-baseline justify-between mb-2">
+                              <FormLabel className="text-lg font-medium tracking-tight">Leisure Day Preference</FormLabel>
+                            </div>
+                            <div className="relative group">
+                              <FormControl>
+                                <Input type="number" placeholder="Optional, e.g., 2" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                              </FormControl>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <div className="grid md:grid-cols-1 gap-6">
+                      <FormField
+                        control={form.control}
+                        name="travelTimePreference"
+                        render={({ field }) => (
+                          <FormItem>
+                            <div className="flex items-baseline justify-between mb-2">
+                              <FormLabel className="text-lg font-medium tracking-tight">Travel Timing Preference</FormLabel>
+                            </div>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur">
+                                  <SelectValue placeholder="Select a travel preference" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="no_preference">No specific preference</SelectItem>
+                                <SelectItem value="avoid_night_travel">Avoid night travel (No travel after 6 PM)</SelectItem>
+                                <SelectItem value="prefer_morning_travel">Prefer morning travel (Before 12 PM)</SelectItem>
+                                <SelectItem value="prefer_afternoon_travel">Prefer afternoon travel (12 PM - 6 PM)</SelectItem>
+                                <SelectItem value="prefer_night_travel">Prefer night travel (Overnight journeys)</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Form Actions */}
+                  <div className="space-y-4 pt-4">
+                    {currentStep < aiArchitectSteps.length - 1 ? (
+                      <Button
+                        key="continue-btn"
+                        type="button"
+                        onClick={handleNext}
+                        className="w-full h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 bg-foreground text-background hover:bg-foreground/90"
+                      >
+                        <span className="flex items-center justify-center gap-2 font-medium">
+                          Continue
+                          <ArrowRight
+                            className="h-4 w-4 transition-transform group-hover:translate-x-0.5 duration-300"
+                            strokeWidth={2}
+                          />
+                        </span>
+                      </Button>
+                    ) : (
+                      <Button
+                        key="submit-btn"
+                        type="submit"
+                        disabled={isGenerating}
+                        className="w-full h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 bg-foreground text-background hover:bg-foreground/90"
+                      >
+                        <span className="flex items-center justify-center gap-2 font-medium">
+                          {isGenerating ? "Crafting Your Journey..." : "Generate Optimized Trip"}
+                          {!isGenerating && <Check className="h-4 w-4 ml-1 transition-transform duration-300" strokeWidth={2} />}
+                        </span>
+                      </Button>
+                    )}
+
+                    {currentStep > 0 && (
                       <button
                         type="button"
-                        onClick={() => {
-                          if (index < currentStep) setCurrentStep(index);
-                        }}
-                        disabled={index > currentStep}
-                        className={cn(
-                          "group relative flex h-9 w-9 items-center justify-center rounded-full transition-all duration-700 ease-out",
-                          "disabled:cursor-not-allowed",
-                          index < currentStep && "bg-foreground/10 text-foreground/60",
-                          index === currentStep && "bg-foreground text-background shadow-[0_0_20px_-5px_rgba(0,0,0,0.3)]",
-                          index > currentStep && "bg-muted/50 text-muted-foreground/40",
-                        )}
+                        onClick={() => setCurrentStep(currentStep - 1)}
+                        className="w-full text-center text-sm text-muted-foreground/60 hover:text-foreground/80 transition-all duration-300"
                       >
-                        {index < currentStep ? (
-                          <Check className="h-4 w-4 animate-in zoom-in duration-500" strokeWidth={2.5} />
-                        ) : (
-                          <span className="text-sm font-medium tabular-nums">{step.id}</span>
-                        )}
-                        {index === currentStep && (
-                          <div className="absolute inset-0 rounded-full bg-foreground/20 blur-md animate-pulse" />
-                        )}
+                        Go back
                       </button>
-                      {index < aiArchitectSteps.length - 1 && (
-                        <div className="relative h-[1.5px] w-12 sm:w-16">
-                          <div className="absolute inset-0 bg-[rgba(207,207,207,0.4)]" />
-                          <div
-                            className="absolute inset-0 bg-foreground/30 transition-all duration-700 ease-out origin-left"
-                            style={{
-                              transform: `scaleX(${index < currentStep ? 1 : 0})`,
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mb-8 overflow-hidden rounded-full bg-muted/30 h-[2px]">
-                  <div
-                    className="h-full bg-gradient-to-r from-foreground/60 to-foreground transition-all duration-1000 ease-out"
-                    style={{ width: `${((currentStep + 1) / aiArchitectSteps.length) * 100}%` }}
-                  />
-                </div>
-
-                {/* Step 1: Destinations */}
-                <div className={cn("space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700", currentStep !== 0 && "hidden")}>
-                  <FormField
-                    control={form.control}
-                    name="startingLocation"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-baseline justify-between mb-2">
-                          <FormLabel className="text-lg font-medium tracking-tight">Starting Location</FormLabel>
-                        </div>
-                        <div className="relative group">
-                          <FormControl>
-                            <Input placeholder="e.g., New Delhi, India" autoFocus {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
-                          </FormControl>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
                     )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="destinations"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-baseline justify-between mb-2">
-                          <FormLabel className="text-lg font-medium tracking-tight">Destinations to Visit (comma-separated)</FormLabel>
-                        </div>
-                        <div className="relative group">
-                          <FormControl>
-                            <Input placeholder="e.g., Paris, Rome, Florence" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
-                          </FormControl>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="endingLocation"
-                    render={({ field }) => (
-                      <FormItem>
-                        <div className="flex items-baseline justify-between mb-2">
-                          <FormLabel className="text-lg font-medium tracking-tight">Ending Location (Optional)</FormLabel>
-                        </div>
-                        <div className="relative group">
-                          <FormControl>
-                            <Input placeholder="Leave empty to return to starting location" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
-                          </FormControl>
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                {/* Step 2: Dates & Times */}
-                <div className={cn("space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700", currentStep !== 1 && "hidden")}>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="startDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-baseline justify-between mb-2">
-                            <FormLabel className="text-lg font-medium tracking-tight">Trip Start Date</FormLabel>
-                          </div>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full justify-start text-left font-normal px-4 py-2.5 h-14 text-base border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur transition-all duration-500 rounded-lg",
-                                    !field.value && "text-muted-foreground/70"
-                                  )}
-                                >
-                                  <CalendarIcon className="mr-3 h-5 w-5 flex-shrink-0 text-foreground/60" />
-                                  {field.value ? (
-                                    <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span>
-                                  ) : (
-                                    <span>Select start date</span>
-                                  )}
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 border border-border/50 bg-background/95 backdrop-blur shadow-lg rounded-lg" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) =>
-                                  date < new Date(new Date().setHours(0, 0, 0, 0))
-                                }
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="endDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-baseline justify-between mb-2">
-                            <FormLabel className="text-lg font-medium tracking-tight">Trip End Date</FormLabel>
-                          </div>
-                          <Popover>
-                            <PopoverTrigger asChild>
-                              <FormControl>
-                                <Button
-                                  variant="outline"
-                                  className={cn(
-                                    "w-full justify-start text-left font-normal px-4 py-2.5 h-14 text-base border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur transition-all duration-500 rounded-lg",
-                                    !field.value && "text-muted-foreground/70"
-                                  )}
-                                >
-                                  <CalendarIcon className="mr-3 h-5 w-5 flex-shrink-0 text-foreground/60" />
-                                  {field.value ? (
-                                    <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span>
-                                  ) : (
-                                    <span>Select end date</span>
-                                  )}
-                                </Button>
-                              </FormControl>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0 border border-border/50 bg-background/95 backdrop-blur shadow-lg rounded-lg" align="start">
-                              <Calendar
-                                mode="single"
-                                selected={field.value}
-                                onSelect={field.onChange}
-                                disabled={(date) => {
-                                  const startDate = form.getValues("startDate");
-                                  return date < (startDate || new Date());
-                                }}
-                                initialFocus
-                              />
-                            </PopoverContent>
-                          </Popover>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
                   </div>
-                </div>
-
-                {/* Step 3: Preferences */}
-                <div className={cn("space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700", currentStep !== 2 && "hidden")}>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="budget"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-baseline justify-between mb-2">
-                            <FormLabel className="text-lg font-medium tracking-tight">Max Daily Budget (INR)</FormLabel>
-                          </div>
-                          <div className="relative group">
-                            <FormControl>
-                              <Input type="number" placeholder="Optional, e.g., 10000" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
-                            </FormControl>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="walkingDistance"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-baseline justify-between mb-2">
-                            <FormLabel className="text-lg font-medium tracking-tight">Max Walking Distance (km/day)</FormLabel>
-                          </div>
-                          <div className="relative group">
-                            <FormControl>
-                              <Input type="number" placeholder="Optional, e.g., 10" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
-                            </FormControl>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="mustInclude"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-baseline justify-between mb-2">
-                            <FormLabel className="text-lg font-medium tracking-tight">Must-Include Attractions (comma-separated)</FormLabel>
-                          </div>
-                          <FormControl>
-                            <Textarea placeholder="Optional, e.g., Eiffel Tower, Louvre Museum" {...field} className="min-h-[100px] text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur rounded-xl p-4 resize-none" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="avoid"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-baseline justify-between mb-2">
-                            <FormLabel className="text-lg font-medium tracking-tight">Things to Avoid (comma-separated)</FormLabel>
-                          </div>
-                          <FormControl>
-                            <Textarea placeholder="Optional, e.g., Overcrowded tourist traps" {...field} className="min-h-[100px] text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur rounded-xl p-4 resize-none" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="leisureTime"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 bg-background/50 backdrop-blur p-4">
-                          <div className="space-y-0.5">
-                            <FormLabel className="text-lg font-medium tracking-tight">Include Leisure Time</FormLabel>
-                            <div className="text-sm text-muted-foreground/80">Deliberately add unstructured time</div>
-                          </div>
-                          <FormControl>
-                            <Switch checked={field.value} onCheckedChange={field.onChange} />
-                          </FormControl>
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="leisureDay"
-                      render={({ field }) => (
-                        <FormItem className={cn("transition-opacity duration-300", !form.watch("leisureTime") && "opacity-50 pointer-events-none")}>
-                          <div className="flex items-baseline justify-between mb-2">
-                            <FormLabel className="text-lg font-medium tracking-tight">Leisure Day Preference</FormLabel>
-                          </div>
-                          <div className="relative group">
-                            <FormControl>
-                              <Input type="number" placeholder="Optional, e.g., 2" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
-                            </FormControl>
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="grid md:grid-cols-1 gap-6">
-                    <FormField
-                      control={form.control}
-                      name="travelTimePreference"
-                      render={({ field }) => (
-                        <FormItem>
-                          <div className="flex items-baseline justify-between mb-2">
-                            <FormLabel className="text-lg font-medium tracking-tight">Travel Timing Preference</FormLabel>
-                          </div>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur">
-                                <SelectValue placeholder="Select a travel preference" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="no_preference">No specific preference</SelectItem>
-                              <SelectItem value="avoid_night_travel">Avoid night travel (No travel after 6 PM)</SelectItem>
-                              <SelectItem value="prefer_morning_travel">Prefer morning travel (Before 12 PM)</SelectItem>
-                              <SelectItem value="prefer_afternoon_travel">Prefer afternoon travel (12 PM - 6 PM)</SelectItem>
-                              <SelectItem value="prefer_night_travel">Prefer night travel (Overnight journeys)</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                {/* Form Actions */}
-                <div className="space-y-4 pt-4">
-                  {currentStep < aiArchitectSteps.length - 1 ? (
-                    <Button
-                      key="continue-btn"
-                      type="button"
-                      onClick={handleNext}
-                      className="w-full h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 bg-foreground text-background hover:bg-foreground/90"
-                    >
-                      <span className="flex items-center justify-center gap-2 font-medium">
-                        Continue
-                        <ArrowRight
-                          className="h-4 w-4 transition-transform group-hover:translate-x-0.5 duration-300"
-                          strokeWidth={2}
-                        />
-                      </span>
-                    </Button>
-                  ) : (
-                    <Button
-                      key="submit-btn"
-                      type="submit"
-                      disabled={isGenerating}
-                      className="w-full h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 bg-foreground text-background hover:bg-foreground/90"
-                    >
-                      <span className="flex items-center justify-center gap-2 font-medium">
-                        {isGenerating ? "Crafting Your Journey..." : "Generate Optimized Trip"}
-                        {!isGenerating && <Check className="h-4 w-4 ml-1 transition-transform duration-300" strokeWidth={2} />}
-                      </span>
-                    </Button>
-                  )}
-
-                  {currentStep > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => setCurrentStep(currentStep - 1)}
-                      className="w-full text-center text-sm text-muted-foreground/60 hover:text-foreground/80 transition-all duration-300"
-                    >
-                      Go back
-                    </button>
-                  )}
-                </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
@@ -1007,178 +1016,183 @@ const AiArchitect = () => {
           <Card className="ai-architect-page-card py-24 flex flex-col items-center justify-center min-h-[400px] space-y-12">
             <UniqueLoading variant="morph" size="lg" />
             <div className="h-8 overflow-hidden flex items-center justify-center">
-               <ShiningText text={loadingTexts[loadingTextIndex]} />
+              <ShiningText text={loadingTexts[loadingTextIndex]} />
             </div>
           </Card>
         </div>
       )}
 
       {(!isGenerating && itinerary) && (
-        <div className="mt-8 flex flex-col md:flex-row items-center justify-between gap-4 bg-white/5 backdrop-blur-md p-3 rounded-xl border border-white/10 shadow-lg">
-          
-          {/* Left Side: CRM Config */}
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-            <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-              <SelectTrigger className="w-full md:w-[200px] h-9 text-sm bg-black/40 border-white/10 hover:bg-white/5 transition-colors">
-                <SelectValue placeholder="Assign Client (Optional)" />
-              </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                <SelectItem value="none">-- No Client Assigned --</SelectItem>
-                {clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="w-full md:w-[120px] h-9 text-sm bg-black/40 border-white/10 hover:bg-white/5 transition-colors">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="sent">Sent</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Right Side: Actions and Options */}
-          <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
-            
-            {/* Timestamps Toggle */}
-            <div className="flex items-center space-x-2 px-2 py-1 rounded-md border border-white/5 bg-black/20">
-              <Switch
-                id="show-timestamps"
-                checked={showTimestamps}
-                onCheckedChange={setShowTimestamps}
-                className="scale-75 origin-right"
-              />
-              <label htmlFor="show-timestamps" className="text-xs font-medium text-gray-300 select-none whitespace-nowrap">
-                Timestamps
-              </label>
+        <div className="bg-obsidian-dark/40 backdrop-blur-sm border-b border-white/5 py-4 shadow-xl sticky top-20 z-40 mb-10 -mx-4 sm:-mx-6 lg:-mx-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-4">
+            <div className="flex flex-wrap items-center space-x-6">
+              <div className="flex items-center gap-3">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Client</label>
+                <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+                  <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-sm font-medium focus:ring-zinc-700 h-9 min-w-[180px]">
+                    <SelectValue placeholder="No Client Assigned" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+                    <SelectItem value="none">No Client Assigned</SelectItem>
+                    {clients.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-3">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Status</label>
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-sm font-medium focus:ring-zinc-700 h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="sent">Sent</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center space-x-2 px-2 py-1 rounded-md border border-white/5 bg-black/20">
+                <Switch
+                  id="show-timestamps"
+                  checked={showTimestamps}
+                  onCheckedChange={setShowTimestamps}
+                  className="scale-75 origin-right"
+                />
+                <label htmlFor="show-timestamps" className="text-[10px] font-bold uppercase text-zinc-600 select-none whitespace-nowrap">
+                  Time
+                </label>
+              </div>
             </div>
 
-            {/* Export Format */}
-            <Select defaultValue="classic" onValueChange={(value) => setSelectedTheme(value as PdfTheme)}>
-              <SelectTrigger className="w-full md:w-[130px] h-9 text-sm bg-black/40 border-white/10 hover:bg-white/5 transition-colors">
-                <SelectValue placeholder="Format" />
-              </SelectTrigger>
-              <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                <SelectItem value="classic">Classic</SelectItem>
-                <SelectItem value="editorial">Editorial</SelectItem>
-                <SelectItem value="minimalist">Minimalist</SelectItem>
-                <SelectItem value="dark">Dark Mode</SelectItem>
-                <SelectItem value="corporate">Corporate</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Buttons */}
-            <div className="flex gap-2 w-full md:w-auto mt-2 md:mt-0">
+            <div className="flex items-center space-x-3">
               <Button
+                variant="outline"
                 size="sm"
                 onClick={handleDownloadPdf}
-                disabled={!itinerary}
-                className="flex-1 md:flex-none h-9 glass-button bg-gradient-to-r from-purple-500/80 to-pink-500/80 hover:from-purple-500 hover:to-pink-500 text-white border border-white/10 shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all px-4"
+                className="px-5 py-2.5 bg-white/5 border border-white/10 text-zinc-300 rounded-lg text-sm font-semibold hover:bg-white/10 transition-all flex items-center gap-2 h-10"
               >
-                <Eye className="w-3.5 h-3.5 mr-2" />
+                <Eye className="w-4 h-4" />
                 Preview
               </Button>
-
               <Button
                 size="sm"
                 onClick={handleSaveItinerary}
                 disabled={isSaving}
-                className="flex-1 md:flex-none h-9 glass-button bg-gradient-to-r from-blue-500/80 to-cyan-500/80 hover:from-blue-500 hover:to-cyan-500 text-white border border-white/10 shadow-[0_0_15px_rgba(59,130,246,0.3)] transition-all px-4"
+                className="px-6 py-2.5 bg-zinc-100 text-black rounded-lg text-sm font-semibold hover:bg-white transition-all shadow-lg shadow-white/5 flex items-center gap-2 h-10"
               >
-                <Save className="w-3.5 h-3.5 mr-2" />
-                {isSaving ? "Saving..." : "Save"}
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={async () => {
-                  console.log("🧪 Running diagnostic check...");
-                  const { data: { session } } = await supabase.auth.getSession();
-                  console.log("Session:", session);
-                  console.log("User:", user);
-                  console.log("Itinerary exists:", !!itinerary);
-                }}
-                className="h-9 w-9 text-gray-400 hover:text-white hover:bg-white/10 rounded-md border border-white/5 bg-black/20"
-                title="Debug"
-              >
-                <AlertCircle className="h-4 w-4" />
+                <Save className="w-4 h-4" />
+                {isSaving ? "Saving..." : "Save Itinerary"}
               </Button>
             </div>
-            
           </div>
         </div>
       )}
 
       {itinerary && (
         <>
-          <div ref={itineraryRef} className="mt-6">
-            <Tabs defaultValue="itinerary" className="flex flex-col lg:flex-row gap-6 items-start">
-              <div className="w-full lg:w-64 flex-shrink-0 lg:sticky lg:top-24">
-                <TabsList className="flex flex-col h-auto w-full items-stretch bg-background/50 backdrop-blur rounded-xl p-2 border border-border/50 gap-1">
-                  <TabsTrigger value="itinerary" className="justify-start px-4 py-3 text-left data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none transition-all rounded-lg whitespace-normal h-auto">
-                    <CalendarIcon className="w-4 h-4 mr-2 flex-shrink-0" />
-                    Itinerary Timeline
-                  </TabsTrigger>
-                  {itinerary && !isGenerating && (
-                    <>
-                      <TabsTrigger value="flights-hotels" className="justify-start px-4 py-3 text-left data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none transition-all rounded-lg whitespace-normal h-auto">
-                        <Plane className="w-4 h-4 mr-2 flex-shrink-0" />
-                        Flights & Hotels
-                      </TabsTrigger>
-                      <TabsTrigger value="pricing" className="justify-start px-4 py-3 text-left data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none transition-all rounded-lg whitespace-normal h-auto">
-                        <Wallet className="w-4 h-4 mr-2 flex-shrink-0" />
-                        Pricing & Settings
-                      </TabsTrigger>
-                    </>
-                  )}
-                </TabsList>
-              </div>
+          <div ref={itineraryRef} className="mt-12">
+            <Tabs defaultValue="itinerary">
+              <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 items-start">
+                {/* Sidebar Summary */}
+                <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-40">
+                  <div className="liquid-glass rounded-2xl p-6 border border-white/5 space-y-8 shadow-2xl">
+                    <div>
+                      <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600 mb-4 text-center lg:text-left">Journey Summary</h3>
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-zinc-500">Duration</span>
+                          <span className="text-white font-medium">{itinerary.itinerary.length} Days</span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-zinc-500">Activities</span>
+                          <span className="text-white font-medium">
+                            {itinerary.itinerary.reduce((acc, day) => acc + day.timeline.length, 0)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-zinc-500">Budget</span>
+                          <span className="text-white font-medium">{form.getValues("budget") || "Flexible"}</span>
+                        </div>
+                      </div>
+                    </div>
 
-              <div className="flex-1 w-full min-w-0">
-                <TabsContent value="itinerary" className="m-0 focus-visible:outline-none focus-visible:ring-0">
-                  <ItineraryTimeline
-                    itinerary={itinerary?.itinerary || []}
-                    isLoading={isGenerating}
-                    editable={true}
-                    onItineraryChange={(updatedItinerary) => {
-                      if (itinerary) {
-                        setItinerary({ ...itinerary, itinerary: updatedItinerary });
-                      }
-                    }}
-                    hotels={hotels}
-                    flights={flights}
-                    showTimestamps={showTimestamps}
-                  />
-                </TabsContent>
+                    <div className="pt-6 border-t border-white/5">
+                      <TabsList className="bg-transparent h-auto p-0 flex flex-col gap-2 items-stretch">
+                        <TabsTrigger value="itinerary" className="nav-glow-item justify-start px-0 py-3 text-zinc-500 data-[state=active]:text-white bg-transparent border-none shadow-none text-xs font-bold uppercase tracking-widest transition-all">
+                          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3 group-data-[state=active]:bg-white group-data-[state=active]:text-black transition-colors">
+                            <CalendarIcon className="w-4 h-4" />
+                          </div>
+                          Timeline
+                        </TabsTrigger>
+                        <TabsTrigger value="flights-hotels" className="nav-glow-item justify-start px-0 py-3 text-zinc-500 data-[state=active]:text-white bg-transparent border-none shadow-none text-xs font-bold uppercase tracking-widest transition-all">
+                          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3">
+                            <Plane className="w-4 h-4" />
+                          </div>
+                          Logistics
+                        </TabsTrigger>
+                        <TabsTrigger value="pricing" className="nav-glow-item justify-start px-0 py-3 text-zinc-500 data-[state=active]:text-white bg-transparent border-none shadow-none text-xs font-bold uppercase tracking-widest transition-all">
+                          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3">
+                            <Wallet className="w-4 h-4" />
+                          </div>
+                          Financials
+                        </TabsTrigger>
+                      </TabsList>
+                    </div>
+                  </div>
 
-                {itinerary && !isGenerating && (
-                  <TabsContent value="flights-hotels" className="m-0 focus-visible:outline-none focus-visible:ring-0">
-                    <HotelFlightEditor
+                  <div className="liquid-glass rounded-xl p-4 border border-white/5 flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
+                      <AlertCircle className="w-4 h-4" />
+                    </div>
+                    <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider leading-relaxed">
+                      AI Architect V2.1 <br /> Liquid Glass Engine
+                    </div>
+                  </div>
+                </div>
+
+                {/* Main Content Area */}
+                <div className="lg:col-span-9 w-full min-w-0">
+                  <TabsContent value="itinerary" className="m-0 focus-visible:outline-none focus-visible:ring-0">
+                    <ItineraryTimeline
+                      itinerary={itinerary?.itinerary || []}
+                      isLoading={isGenerating}
+                      editable={true}
+                      onItineraryChange={(updatedItinerary) => {
+                        if (itinerary) {
+                          setItinerary({ ...itinerary, itinerary: updatedItinerary });
+                        }
+                      }}
                       hotels={hotels}
                       flights={flights}
-                      totalDays={itinerary.itinerary.length}
-                      onHotelsChange={setHotels}
-                      onFlightsChange={setFlights}
+                      showTimestamps={showTimestamps}
                     />
                   </TabsContent>
-                )}
 
-                {itinerary && !isGenerating && (
-                  <TabsContent value="pricing" className="m-0 focus-visible:outline-none focus-visible:ring-0">
-                    <PricingModule
-                      pricing={pricing}
-                      onChange={setPricing}
-                      baseCost={baseCost}
-                    />
-                  </TabsContent>
-                )}
+                  {itinerary && !isGenerating && (
+                    <TabsContent value="flights-hotels" className="m-0 focus-visible:outline-none focus-visible:ring-0">
+                      <HotelFlightEditor
+                        hotels={hotels}
+                        flights={flights}
+                        totalDays={itinerary.itinerary.length}
+                        onHotelsChange={setHotels}
+                        onFlightsChange={setFlights}
+                      />
+                    </TabsContent>
+                  )}
+
+                  {itinerary && !isGenerating && (
+                    <TabsContent value="pricing" className="m-0 focus-visible:outline-none focus-visible:ring-0">
+                      <PricingModule
+                        pricing={pricing}
+                        onChange={setPricing}
+                        baseCost={baseCost}
+                      />
+                    </TabsContent>
+                  )}
+                </div>
               </div>
             </Tabs>
           </div>

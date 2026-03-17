@@ -123,6 +123,7 @@ export type Database = {
         Update: {
           title?: string;
           description?: string | null;
+          budget?: number | null;
           client_id?: string | null;
           status?: string;
           is_favourite?: boolean | null;

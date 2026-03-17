@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Users, Calendar, MapPin, CheckCircle2, Clock, ArrowRight, Search, Plus, ListFilter, Compass, FileText, Settings, LayoutDashboard, Send, TrendingUp, Activity, CalendarDays, UserPlus, Plane, ArrowUpDown, ChevronLeft, ChevronRight, Download, Columns3, ArrowUp, ArrowDown, GripVertical, Archive, Save, X, Sliders, LayoutGrid, List, History, DollarSign } from "lucide-react";
+import { Users, Calendar, MapPin, CheckCircle2, Clock, ArrowRight, Search, Plus, ListFilter, Compass, FileText, Settings, LayoutDashboard, Send, TrendingUp, Activity, CalendarDays, UserPlus, Plane, ArrowUpDown, ChevronLeft, ChevronRight, Download, Columns3, ArrowUp, ArrowDown, GripVertical, Archive, Save, X, Sliders, LayoutGrid, List, History, DollarSign, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Header from "@/components/layout/header";
@@ -162,6 +162,78 @@ export default function CRMLitePage() {
     // Status audit trail (in-memory for this session, builds from trip data)
     const [statusHistory, setStatusHistory] = useState<Record<string, { status: string; timestamp: string; by: string }[]>>({});
 
+    // Helper function to extract total trip cost from itinerary data
+    const getTripCost = (trip: any): number => {
+        // If it's just a number (backwards compatibility)
+        if (typeof trip === 'number') return trip;
+        if (!trip) return 0;
+
+        let totalBaseCost = 0;
+        const data = trip.itinerary_data || {};
+
+        // 1. Calculate Activity Costs from itinerary or days
+        const itineraryDays = data.itinerary || data.days || [];
+        if (Array.isArray(itineraryDays)) {
+            itineraryDays.forEach((day: any) => {
+                if (Array.isArray(day.timeline)) {
+                    day.timeline.forEach((item: any) => {
+                        if (typeof item.cost === 'number') {
+                            totalBaseCost += item.cost;
+                        }
+                    });
+                } else if (day.dailyStats?.totalCost) {
+                    // Fallback for days-based structure
+                    const costStr = day.dailyStats.totalCost.toString();
+                    const costNum = parseInt(costStr.replace(/[^\d]/g, ''), 10);
+                    totalBaseCost += isNaN(costNum) ? 0 : costNum;
+                }
+            });
+        }
+
+        // 2. Add Hotel Costs
+        const pax = {
+            adult: data.pricing?.adultPax || 2,
+            child: data.pricing?.childPax || 0,
+            infant: data.pricing?.infantPax || 0
+        };
+
+        if (Array.isArray(data.hotels)) {
+            data.hotels.forEach((h: any) => {
+                if (h.costAdult) totalBaseCost += h.costAdult * pax.adult;
+                if (h.costChild) totalBaseCost += h.costChild * pax.child;
+                if (h.costInfant) totalBaseCost += h.costInfant * pax.infant;
+            });
+        }
+
+        // 3. Add Flight Costs
+        if (Array.isArray(data.flights)) {
+            data.flights.forEach((f: any) => {
+                if (f.costAdult) totalBaseCost += f.costAdult * pax.adult;
+                if (f.costChild) totalBaseCost += f.costChild * pax.child;
+                if (f.costInfant) totalBaseCost += f.costInfant * pax.infant;
+            });
+        }
+
+        // 4. Apply Markup and Tax
+        const pricing = data.pricing || {};
+        const markupValue = pricing.markupValue || 0;
+        const markupType = pricing.markupType || 'percentage';
+        const taxPercentage = pricing.taxPercentage || 0;
+
+        const markupAmount = markupType === 'percentage'
+            ? (totalBaseCost * markupValue) / 100
+            : markupValue;
+
+        const costWithMarkup = totalBaseCost + markupAmount;
+        const taxAmount = (costWithMarkup * taxPercentage) / 100;
+
+        const finalTotal = costWithMarkup + taxAmount;
+
+        // If we have a finalTotal > 0, return it. Otherwise fall back to trip.budget
+        if (finalTotal > 0) return finalTotal;
+        return trip.budget || 0;
+    };
+
     const { clients, loading: clientsLoading, createClient: _createClient, fetchClients, updateClient } = useClients();
     const { user, userProfile } = useAuth();
     const supabase = createClient();
@@ -184,15 +256,53 @@ export default function CRMLitePage() {
 
                 const combined = clients.map((client) => {
                     const clientTrips = itineraries?.filter(it => it.client_id === client.id) || [];
-                    const latestTrip = clientTrips[0]; // Assuming already ordered by updated_at descending
+                    const totalBookedRevenue = clientTrips
+                        .filter(t => t.status.toLowerCase() === 'booked' || t.status.toLowerCase() === 'confirmed')
+                        .reduce((acc, t) => acc + getTripCost(t), 0);
+                    
+                    const latestTrip = clientTrips[0];
+                    const latestCalculatedBudget = latestTrip ? getTripCost(latestTrip) : 0;
+
+                    const bookedTrips = clientTrips.filter(t => t.status.toLowerCase() === 'booked' || t.status.toLowerCase() === 'confirmed');
+                    
+                    const tripsToRender = bookedTrips.length > 0 ? bookedTrips : (latestTrip ? [latestTrip] : []);
+                    const bookedDestinations = tripsToRender.map(t => {
+                        // 1. Check destinations column
+                        let label = t.destinations && t.destinations !== "" ? t.destinations : "";
+                        
+                        // 2. If empty, check title (removing "Trip to " prefix)
+                        if (!label && t.title) {
+                            label = t.title.replace(/^Trip to\s+/i, "");
+                        }
+                        
+                        // 3. If still empty, check itinerary_data areaFocus
+                        if (!label && t.itinerary_data?.itinerary) {
+                            const cities = t.itinerary_data.itinerary
+                                .map((day: any) => day.areaFocus?.split(',')[0]?.trim())
+                                .filter(Boolean);
+                            const uniqueCities = Array.from(new Set(cities));
+                            if (uniqueCities.length > 0) {
+                                label = uniqueCities.join(", ");
+                            }
+                        }
+
+                        // 4. Default fallback to starting_location
+                        if (!label) {
+                            label = (t.starting_location === t.ending_location || !t.ending_location 
+                                ? t.starting_location 
+                                : `${t.starting_location} to ${t.ending_location}`);
+                        }
+                        
+                        return { id: t.id, label };
+                    });
 
                     return {
                         ...client,
                         tags: client.tags || [],
                         latestStatus: latestTrip?.status || "No Active Trips",
-                        latestDestination: latestTrip ? `${latestTrip.starting_location}${latestTrip.ending_location ? ` to ${latestTrip.ending_location}` : ''}` : "N/A",
-                        latestBudget: latestTrip?.budget ? `₹${latestTrip.budget.toLocaleString()}` : "N/A",
-                        latestRawBudget: latestTrip?.budget || 0,
+                        bookedDestinations: bookedDestinations,
+                        latestBudget: totalBookedRevenue > 0 ? `₹${totalBookedRevenue.toLocaleString()}` : (latestCalculatedBudget > 0 ? `₹${latestCalculatedBudget.toLocaleString()}` : "N/A"),
+                        latestRawBudget: totalBookedRevenue > 0 ? totalBookedRevenue : latestCalculatedBudget,
                         latestContact: new Date(client.updated_at).toLocaleDateString(),
                         latestTripId: latestTrip?.id,
                         allTrips: clientTrips
@@ -217,13 +327,33 @@ export default function CRMLitePage() {
         const statusToSave = newStatus.toLowerCase() === 'confirmed' ? 'booked' : newStatus;
 
         // Optimistic UI Update
-        setEnrichedClients(prev => prev.map(c =>
-            c.id === clientId ? { ...c, latestStatus: statusToSave } : c
-        ));
+        setEnrichedClients(prev => prev.map(c => {
+            if (c.id === clientId) {
+                const updatedTrips = c.allTrips.map(t =>
+                    t.id === tripId ? { ...t, status: statusToSave } : t
+                );
+                return {
+                    ...c,
+                    latestStatus: statusToSave,
+                    allTrips: updatedTrips
+                };
+            }
+            return c;
+        }));
 
         // Also update selected client if sheet is open
         if (selectedClient && selectedClient.id === clientId) {
-            setSelectedClient(prev => prev ? { ...prev, latestStatus: statusToSave } : null);
+            setSelectedClient(prev => {
+                if (!prev) return null;
+                const updatedTrips = prev.allTrips.map(t =>
+                    t.id === tripId ? { ...t, status: statusToSave } : t
+                );
+                return {
+                    ...prev,
+                    latestStatus: statusToSave,
+                    allTrips: updatedTrips
+                };
+            });
         }
 
         try {
@@ -604,10 +734,14 @@ export default function CRMLitePage() {
     ).length;
 
     const bookedRevenue = enrichedClients.reduce((acc, client) => {
-        if (client.latestStatus.toLowerCase() === "booked" || client.latestStatus.toLowerCase() === "confirmed") {
-            return acc + (client.latestRawBudget || 0);
-        }
-        return acc;
+        const clientBookedRevenue = client.allTrips.reduce((tripAcc: number, trip: any) => {
+            const s = (trip.status || "").toLowerCase();
+            if (s === "booked" || s === "confirmed") {
+                return tripAcc + getTripCost(trip);
+            }
+            return tripAcc;
+        }, 0);
+        return acc + clientBookedRevenue;
     }, 0);
 
     const proposalsSentCount = enrichedClients.filter(c =>
@@ -648,12 +782,15 @@ export default function CRMLitePage() {
         }
         enrichedClients.forEach(c => {
             c.allTrips.forEach((trip: any) => {
-                if ((trip.status === 'booked' || trip.status === 'confirmed') && trip.budget) {
-                    const tripDate = new Date(trip.updated_at || trip.created_at);
-                    const monthIdx = months.findIndex(m =>
-                        tripDate.getMonth() === m.monthDate.getMonth() && tripDate.getFullYear() === m.monthDate.getFullYear()
-                    );
-                    if (monthIdx >= 0) months[monthIdx].revenue += trip.budget;
+                if (trip.status === 'booked' || trip.status === 'confirmed') {
+                    const tripCost = getTripCost(trip);
+                    if (tripCost > 0) {
+                        const tripDate = new Date(trip.updated_at || trip.created_at);
+                        const monthIdx = months.findIndex(m =>
+                            tripDate.getMonth() === m.monthDate.getMonth() && tripDate.getFullYear() === m.monthDate.getFullYear()
+                        );
+                        if (monthIdx >= 0) months[monthIdx].revenue += tripCost;
+                    }
                 }
             });
         });
@@ -1044,9 +1181,9 @@ export default function CRMLitePage() {
                                                         <Activity className="w-4 h-4 text-green-400" />
                                                         <h3 className="text-sm font-semibold text-gray-300">Recent Activity</h3>
                                                     </div>
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="sm" 
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
                                                         className="h-7 text-[11px] text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 px-2 flex items-center gap-1.5"
                                                         onClick={handleOpenActivitySheet}
                                                     >
@@ -1399,9 +1536,17 @@ export default function CRMLitePage() {
                                                                 )}
                                                                 {visibleColumns.destination && (
                                                                     <td className="p-4 text-gray-300">
-                                                                        <div className="flex items-center gap-2">
-                                                                            {client.latestDestination !== "N/A" && <Compass className="w-3.5 h-3.5 text-gray-500" />}
-                                                                            <span className="truncate max-w-[150px]">{client.latestDestination}</span>
+                                                                        <div className="flex flex-col gap-1.5 py-1">
+                                                                            {client.bookedDestinations && client.bookedDestinations.length > 0 ? (
+                                                                                client.bookedDestinations.map((dest, idx) => (
+                                                                                    <div key={idx} className="flex items-center gap-2 group/dest">
+                                                                                        <Compass className="w-3.5 h-3.5 text-purple-400 group-hover/dest:text-purple-300 transition-colors shrink-0" />
+                                                                                        <span className="truncate max-w-[180px] text-xs font-medium text-gray-200 group-hover/dest:text-white transition-colors">{dest.label}</span>
+                                                                                    </div>
+                                                                                ))
+                                                                            ) : (
+                                                                                <span className="text-xs text-gray-600">N/A</span>
+                                                                            )}
                                                                         </div>
                                                                     </td>
                                                                 )}
@@ -1603,7 +1748,7 @@ export default function CRMLitePage() {
 
             {/* Client Details Sheet */}
             <Sheet open={!!selectedClient} onOpenChange={(open) => !open && setSelectedClient(null)}>
-                <SheetContent className="bg-[#0A0A0A] border-l border-white/10 text-white w-full sm:max-w-md overflow-y-auto">
+                <SheetContent className="bg-[#0A0A0A] border-l border-white/10 text-white w-full sm:max-w-2xl lg:max-w-3xl overflow-y-auto">
                     <SheetHeader className="mb-6">
                         <SheetTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">Client Profile</SheetTitle>
                         <SheetDescription className="text-gray-400">
@@ -1694,26 +1839,133 @@ export default function CRMLitePage() {
                                     <MapPin className="w-5 h-5 text-purple-400" /> Trip History
                                 </h3>
                                 {selectedClient.allTrips && selectedClient.allTrips.length > 0 ? (
-                                    <div className="space-y-4">
-                                        {selectedClient.allTrips.map((trip) => (
-                                            <TripCard
-                                                key={trip.id}
-                                                trip={trip as any}
-                                                onToggleFavourite={handleToggleFavourite}
-                                                onDuplicate={handleDuplicateTrip}
-                                                onView={(trip) => {
-                                                    setSelectedTripForModal(trip);
-                                                    setShowModal(true);
-                                                }}
-                                                onDelete={handleDeleteTrip}
-                                                deletingId={deleting}
-                                            />
-                                        ))}
+                                    <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+                                        <div className="overflow-x-auto">
+                                            <table className="w-full text-left border-collapse min-w-[600px]">
+                                                <thead>
+                                                    <tr className="border-b border-white/10 text-[10px] uppercase tracking-wider text-gray-500 font-bold">
+                                                        <th className="p-3">Status</th>
+                                                        <th className="p-3">Destination</th>
+                                                        <th className="p-3">Dates</th>
+                                                        <th className="p-3">Cost</th>
+                                                        <th className="p-3 text-right">Actions</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody className="divide-y divide-white/5">
+                                                    {selectedClient.allTrips.map((trip) => {
+                                                        const tripCost = getTripCost(trip);
+                                                        return (
+                                                            <tr key={trip.id} className="hover:bg-white/5 transition-colors group">
+                                                                <td className="p-3">
+                                                                    <Select
+                                                                        value={trip.status.toLowerCase()}
+                                                                        onValueChange={(val) => handleStatusChange(selectedClient.id, trip.id, val)}
+                                                                    >
+                                                                        <SelectTrigger className={`h-7 border-0 shadow-none focus:ring-0 w-[110px] inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight ${trip.status.toLowerCase() === 'booked' || trip.status.toLowerCase() === 'confirmed' ? 'bg-green-500/10 text-green-400' :
+                                                                            trip.status.toLowerCase() === 'proposed' || trip.status.toLowerCase() === 'sent' ? 'bg-blue-500/10 text-blue-400' :
+                                                                                'bg-purple-500/10 text-purple-400'
+                                                                            }`}>
+                                                                            <SelectValue />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            <SelectItem value="draft">Draft</SelectItem>
+                                                                            <SelectItem value="proposed">Proposed</SelectItem>
+                                                                            <SelectItem value="sent">Sent</SelectItem>
+                                                                            <SelectItem value="booked">Booked</SelectItem>
+                                                                            <SelectItem value="rejected">Rejected</SelectItem>
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                </td>
+                                                                <td className="p-3">
+                                                                    <div className="flex items-center gap-2 mb-0.5">
+                                                                        <Compass className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                                                                        {(() => {
+                                                                            let label = trip.destinations && trip.destinations !== "" ? trip.destinations : "";
+                                                                            if (!label && trip.title) {
+                                                                                label = trip.title.replace(/^Trip to\s+/i, "");
+                                                                            }
+                                                                            if (!label && trip.itinerary_data?.itinerary) {
+                                                                                const cities = trip.itinerary_data.itinerary
+                                                                                    .map((day: any) => day.areaFocus?.split(',')[0]?.trim())
+                                                                                    .filter(Boolean);
+                                                                                const uniqueCities = Array.from(new Set(cities));
+                                                                                if (uniqueCities.length > 0) {
+                                                                                    label = uniqueCities.join(", ");
+                                                                                }
+                                                                            }
+                                                                            if (!label) {
+                                                                                label = trip.starting_location;
+                                                                            }
+                                                                            return <p className="text-xs font-medium text-white line-clamp-1">{label}</p>;
+                                                                        })()}
+                                                                    </div>
+                                                                    <p className="text-[10px] text-gray-500 line-clamp-1 ml-[21px]">
+                                                                        {trip.starting_location}{trip.ending_location && trip.ending_location !== trip.starting_location ? ` to ${trip.ending_location}` : ''}
+                                                                        {(() => {
+                                                                            const start = new Date(trip.start_date);
+                                                                            const end = new Date(trip.end_date);
+                                                                            const diffTime = Math.abs(end.getTime() - start.getTime());
+                                                                            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                                                                            return ` \u2022 ${diffDays}D/${diffDays - 1}N`;
+                                                                        })()}
+                                                                    </p>
+                                                                </td>
+                                                                <td className="p-3">
+                                                                    <div className="flex flex-col text-[10px] text-gray-400">
+                                                                        <span>{new Date(trip.start_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                                                                        <span className="text-gray-600">to {new Date(trip.end_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</span>
+                                                                    </div>
+                                                                </td>
+                                                                <td className="p-3 text-xs font-medium text-purple-400">
+                                                                    {tripCost > 0 ? `\u20B9${tripCost.toLocaleString()}` : "N/A"}
+                                                                </td>
+                                                                <td className="p-3 text-right">
+                                                                    <div className="flex items-center justify-end gap-1">
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-7 w-7 text-gray-400 hover:text-white hover:bg-white/10"
+                                                                            onClick={() => {
+                                                                                setSelectedTripForModal(trip);
+                                                                                setShowModal(true);
+                                                                            }}
+                                                                            title="View Itinerary"
+                                                                        >
+                                                                            <Eye className="w-3.5 h-3.5" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-7 w-7 text-gray-400 hover:text-white hover:bg-white/10"
+                                                                            onClick={() => handleDuplicateTrip(trip)}
+                                                                            title="Duplicate Trip"
+                                                                        >
+                                                                            <Save className="w-3.5 h-3.5" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-7 w-7 text-gray-500 hover:text-red-400 hover:bg-red-400/10"
+                                                                            onClick={() => handleDeleteTrip(trip.id)}
+                                                                            disabled={deleting === trip.id}
+                                                                            title="Delete Trip"
+                                                                        >
+                                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                                        </Button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    })}
+                                                </tbody>
+                                            </table>
+                                        </div>
                                     </div>
                                 ) : (
-                                    <div className="p-8 text-center bg-white/5 border border-white/10 rounded-xl text-gray-500">
-                                        <Compass className="w-8 h-8 mx-auto mb-3 opacity-20" />
-                                        <p className="text-sm">No trips planned yet for this client.</p>
+                                    <div className="p-12 text-center bg-white/5 border border-white/10 rounded-2xl text-gray-500">
+                                        <Compass className="w-10 h-10 mx-auto mb-4 opacity-10" />
+                                        <p className="text-sm font-medium">No trips planned yet for this client.</p>
+                                        <p className="text-xs text-gray-600 mt-1">Start by creating a new itinerary in the AI Architect.</p>
                                     </div>
                                 )}
                             </div>
@@ -1772,91 +2024,89 @@ export default function CRMLitePage() {
                 </DialogContent>
             </Dialog>
 
-        <ClientDialog
-            isOpen={isEditDialogOpen}
-            onOpenChange={setIsEditDialogOpen}
-            client={editingClient}
-            onSave={async (clientData) => {
-                if (editingClient) {
-                    // Update client data in Supabase
-                    await updateClient(editingClient.id, clientData);
+            <ClientDialog
+                isOpen={isEditDialogOpen}
+                onOpenChange={setIsEditDialogOpen}
+                client={editingClient}
+                onSave={async (clientData) => {
+                    if (editingClient) {
+                        // Update client data in Supabase
+                        await updateClient(editingClient.id, clientData);
 
-                    // Optimistic UI update for the active sheet and row
-                    setEnrichedClients(prev => prev.map(c =>
-                        c.id === editingClient.id ? { ...c, ...clientData } : c
-                    ));
-                    if (selectedClient && selectedClient.id === editingClient.id) {
-                        setSelectedClient(prev => prev ? { ...prev, ...clientData } : null);
+                        // Optimistic UI update for the active sheet and row
+                        setEnrichedClients(prev => prev.map(c =>
+                            c.id === editingClient.id ? { ...c, ...clientData } : c
+                        ));
+                        if (selectedClient && selectedClient.id === editingClient.id) {
+                            setSelectedClient(prev => prev ? { ...prev, ...clientData } : null);
+                        }
                     }
-                }
-            }}
-        />
+                }}
+            />
 
-        {/* Activity Center Sheet */}
-        <Sheet open={isActivitySheetOpen} onOpenChange={setIsActivitySheetOpen}>
-            <SheetContent className="w-[400px] sm:w-[540px] bg-[#0A0A0A] border-white/10 text-white p-0 flex flex-col">
-                <SheetHeader className="p-6 border-b border-white/10">
-                    <SheetTitle className="text-xl flex items-center gap-2">
-                        <History className="w-5 h-5 text-purple-400" />
-                        Activity Center
-                    </SheetTitle>
-                    <SheetDescription className="text-gray-400">
-                        A complete history of all your CRM events.
-                    </SheetDescription>
-                    
-                    <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-none">
-                        {['all', 'client_added', 'trip_created', 'status_changed'].map(filter => (
-                            <button
-                                key={filter}
-                                onClick={() => setActivityFilter(filter)}
-                                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
-                                    activityFilter === filter 
-                                    ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
-                                    : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10 hover:text-gray-200'
-                                }`}
-                            >
-                                {filter === 'all' && 'All Activity'}
-                                {filter === 'client_added' && 'New Clients'}
-                                {filter === 'trip_created' && 'New Trips'}
-                                {filter === 'status_changed' && 'Status Updates'}
-                            </button>
-                        ))}
-                    </div>
-                </SheetHeader>
-                
-                <div className="flex-1 overflow-y-auto p-4 space-y-2">
-                    {allActivity.filter(a => activityFilter === 'all' || a.type === activityFilter).length === 0 ? (
-                        <div className="h-full flex flex-col items-center justify-center text-gray-500 space-y-3">
-                            <History className="w-8 h-8 opacity-50" />
-                            <p>No activity found for this filter.</p>
+            {/* Activity Center Sheet */}
+            <Sheet open={isActivitySheetOpen} onOpenChange={setIsActivitySheetOpen}>
+                <SheetContent className="w-[400px] sm:w-[540px] bg-[#0A0A0A] border-white/10 text-white p-0 flex flex-col">
+                    <SheetHeader className="p-6 border-b border-white/10">
+                        <SheetTitle className="text-xl flex items-center gap-2">
+                            <History className="w-5 h-5 text-purple-400" />
+                            Activity Center
+                        </SheetTitle>
+                        <SheetDescription className="text-gray-400">
+                            A complete history of all your CRM events.
+                        </SheetDescription>
+
+                        <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-none">
+                            {['all', 'client_added', 'trip_created', 'status_changed'].map(filter => (
+                                <button
+                                    key={filter}
+                                    onClick={() => setActivityFilter(filter)}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${activityFilter === filter
+                                            ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                                            : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10 hover:text-gray-200'
+                                        }`}
+                                >
+                                    {filter === 'all' && 'All Activity'}
+                                    {filter === 'client_added' && 'New Clients'}
+                                    {filter === 'trip_created' && 'New Trips'}
+                                    {filter === 'status_changed' && 'Status Updates'}
+                                </button>
+                            ))}
                         </div>
-                    ) : (
-                        allActivity
-                            .filter(a => activityFilter === 'all' || a.type === activityFilter)
-                            .map((event) => (
-                            <div key={event.id} className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
-                                <div className={`p-2 rounded-lg shrink-0 ${
-                                    event.icon === 'user' ? 'bg-purple-500/10 border border-purple-500/20' :
-                                    event.icon === 'plane' ? 'bg-blue-500/10 border border-blue-500/20' :
-                                    'bg-green-500/10 border border-green-500/20'
-                                }`}>
-                                    {event.icon === 'user' ? <UserPlus className="w-4 h-4 text-purple-400" /> :
-                                     event.icon === 'plane' ? <Plane className="w-4 h-4 text-blue-400" /> :
-                                     <Activity className="w-4 h-4 text-green-400" />}
-                                </div>
-                                <div className="min-w-0 flex-1 pt-0.5">
-                                    <p className="text-sm text-gray-200 leading-snug">{event.label}</p>
-                                    <p className="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5">
-                                        <Clock className="w-3 h-3" />
-                                        {event.time.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} at {event.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                    </p>
-                                </div>
+                    </SheetHeader>
+
+                    <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                        {allActivity.filter(a => activityFilter === 'all' || a.type === activityFilter).length === 0 ? (
+                            <div className="h-full flex flex-col items-center justify-center text-gray-500 space-y-3">
+                                <History className="w-8 h-8 opacity-50" />
+                                <p>No activity found for this filter.</p>
                             </div>
-                        ))
-                    )}
-                </div>
-            </SheetContent>
-        </Sheet>
-    </div>
-);
+                        ) : (
+                            allActivity
+                                .filter(a => activityFilter === 'all' || a.type === activityFilter)
+                                .map((event) => (
+                                    <div key={event.id} className="flex items-start gap-3 p-3 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                                        <div className={`p-2 rounded-lg shrink-0 ${event.icon === 'user' ? 'bg-purple-500/10 border border-purple-500/20' :
+                                                event.icon === 'plane' ? 'bg-blue-500/10 border border-blue-500/20' :
+                                                    'bg-green-500/10 border border-green-500/20'
+                                            }`}>
+                                            {event.icon === 'user' ? <UserPlus className="w-4 h-4 text-purple-400" /> :
+                                                event.icon === 'plane' ? <Plane className="w-4 h-4 text-blue-400" /> :
+                                                    <Activity className="w-4 h-4 text-green-400" />}
+                                        </div>
+                                        <div className="min-w-0 flex-1 pt-0.5">
+                                            <p className="text-sm text-gray-200 leading-snug">{event.label}</p>
+                                            <p className="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5">
+                                                <Clock className="w-3 h-3" />
+                                                {event.time.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} at {event.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))
+                        )}
+                    </div>
+                </SheetContent>
+            </Sheet>
+        </div>
+    );
 }

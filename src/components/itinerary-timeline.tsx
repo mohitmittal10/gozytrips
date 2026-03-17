@@ -272,8 +272,7 @@ function SortableActivity({
 
   return (
     <div ref={setNodeRef} style={style} className="relative pl-8 group/step">
-      <div className="absolute left-0 top-1.5 h-full border-l-2 border-dashed border-primary/30" />
-      <div className="absolute -left-3 top-0 flex items-center justify-center w-6 h-6 bg-primary rounded-full text-primary-foreground font-bold text-xs">
+      <div className="absolute left-0 top-2 w-10 h-10 rounded-full bg-onyx-black/80 backdrop-blur-md border border-zinc-700 flex items-center justify-center font-bold text-zinc-300 z-10 transition-transform group-hover:scale-110 shadow-lg shadow-black/50">
         {stepIndex + 1}
       </div>
 
@@ -292,50 +291,45 @@ function SortableActivity({
         )}
 
         <div className="flex-1 min-w-0">
-          {isEditable ? (
-            <>
-              <div className="flex items-start justify-between gap-4">
-                {showTimestamps !== false ? (
+            <div className="liquid-glass glossy-surface rounded-lg p-6 shadow-lg border border-white/5 hover:border-white/20 transition-all">
+              <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-2">
+                    {showTimestamps !== false ? (
+                      <InlineEdit
+                        value={step.time}
+                        onSave={(v) => onUpdateStep("time", v)}
+                        className="text-sm font-bold text-zinc-500 mb-1 block"
+                        inputClassName="text-sm font-bold"
+                        placeholder="e.g. 08:00 AM"
+                      />
+                    ) : (
+                      <div className="text-sm font-bold text-zinc-500 mb-1 block opacity-0">-</div>
+                    )}
+                  </div>
                   <InlineEdit
-                    value={step.time}
-                    onSave={(v) => onUpdateStep("time", v)}
-                    className="font-bold text-primary text-lg"
-                    inputClassName="text-lg font-bold"
-                    placeholder="e.g. 9:00 AM"
-                  />
-                ) : (
-                  <div className="font-bold text-primary text-lg opacity-0 pointer-events-none w-0 text-transparent select-none">-</div>
-                )}
-                <div className="flex items-center gap-2 bg-primary/5 px-2 py-1 rounded-md border border-primary/10">
-                  <span className="text-xs font-semibold text-primary/60">Cost</span>
-                  <InlineEdit
-                    value={step.cost !== undefined ? String(step.cost) : ""}
-                    onSave={(v) => onUpdateStep("cost", v ? Number(v) : undefined)}
-                    className="text-sm font-semibold text-primary min-w-[3rem]"
-                    inputClassName="text-sm font-semibold"
-                    placeholder="0"
+                    value={step.details}
+                    onSave={(v) => onUpdateStep("details", v)}
+                    className="text-zinc-500 leading-relaxed text-sm block"
+                    multiline
+                    placeholder="Activity description..."
                   />
                 </div>
+                <div className="bg-white/5 px-4 py-2 rounded-lg border border-white/10 flex flex-col items-center">
+                  <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">Estimated Cost</span>
+                  <div className="flex items-center gap-1">
+                    <span className="text-base font-bold text-white">₹</span>
+                    <InlineEdit
+                      value={step.cost !== undefined ? String(step.cost) : ""}
+                      onSave={(v) => onUpdateStep("cost", v ? Number(v) : undefined)}
+                      className="text-base font-bold text-white min-w-[3rem]"
+                      inputClassName="text-base font-bold"
+                      placeholder="0"
+                    />
+                  </div>
+                </div>
               </div>
-              <InlineEdit
-                value={step.details}
-                onSave={(v) => onUpdateStep("details", v)}
-                className="text-foreground/80 mt-1 block"
-                multiline
-                placeholder="Activity description..."
-              />
-            </>
-          ) : (
-            <>
-              <div className="flex items-center justify-between">
-                {showTimestamps !== false && <p className="font-bold text-primary text-lg">{step.time}</p>}
-                {step.cost !== undefined && (
-                  <p className={cn("text-sm font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded", showTimestamps === false && "ml-auto")}>₹{step.cost}</p>
-                )}
-              </div>
-              <p className="text-foreground/80 mb-4">{step.details}</p>
-            </>
-          )}
+            </div>
         </div>
 
         {/* Delete button */}
@@ -685,36 +679,36 @@ const ItineraryTimeline = ({
                     "glass-card ai-architect-page-card overflow-hidden transition-all",
                     isEditMode && "ring-1 ring-primary/20"
                   )}>
-                    <CardHeader className="bg-white/5">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1 min-w-0">
-                          {isEditMode ? (
-                            <>
-                              <InlineEdit
-                                value={`Day ${day.day} - ${day.date}`}
-                                onSave={(v) => {
-                                  // Parse out the date part after "Day X - "
-                                  const match = v.match(/^Day\s*\d+\s*-\s*(.+)$/);
-                                  if (match) updateDayField(dayIndex, "date", match[1].trim());
-                                  else updateDayField(dayIndex, "date", v);
-                                }}
-                                className="font-headline text-lg text-primary/80"
-                                inputClassName="text-lg"
-                              />
-                              <InlineEdit
-                                value={day.areaFocus}
-                                onSave={(v) => updateDayField(dayIndex, "areaFocus", v)}
-                                className="font-headline text-3xl text-primary block mt-1"
-                                inputClassName="text-2xl font-bold"
-                                placeholder="Area focus..."
-                              />
-                            </>
-                          ) : (
-                            <>
-                              <p className="font-headline text-lg text-primary/80">Day {day.day} - {day.date}</p>
-                              <CardTitle className="font-headline text-3xl text-primary">{day.areaFocus}</CardTitle>
-                            </>
-                          )}
+                    <CardHeader className="bg-obsidian-dark/40 border-b border-white/5">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-4">
+                          <div className="bg-zinc-800 p-3 rounded-lg text-white shadow-xl">
+                            <Calendar className="w-6 h-6" />
+                          </div>
+                          <div>
+                            {isEditMode ? (
+                              <>
+                                <InlineEdit
+                                  value={day.date}
+                                  onSave={(v) => updateDayField(dayIndex, "date", v)}
+                                  className="text-xs font-bold text-zinc-500 uppercase tracking-widest"
+                                  inputClassName="text-xs"
+                                />
+                                <InlineEdit
+                                  value={day.areaFocus}
+                                  onSave={(v) => updateDayField(dayIndex, "areaFocus", v)}
+                                  className="text-4xl font-serif font-bold text-white tracking-tight block"
+                                  inputClassName="text-3xl font-bold"
+                                  placeholder="Area focus..."
+                                />
+                              </>
+                            ) : (
+                              <>
+                                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{day.date}</p>
+                                <CardTitle className="text-4xl font-serif font-bold text-white tracking-tight">{day.areaFocus}</CardTitle>
+                              </>
+                            )}
+                          </div>
                         </div>
 
                         {/* Delete day button */}
@@ -730,13 +724,13 @@ const ItineraryTimeline = ({
                       </div>
                     </CardHeader>
 
-                    <CardContent className="py-6">
+                    <CardContent className="py-10">
                       <SortableContext
                         items={dayStepIds}
                         strategy={verticalListSortingStrategy}
                         disabled={!isEditMode}
                       >
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                           {day.timeline.map((step, stepIndex) => (
                             <SortableActivity
                               key={stepId(dayIndex, stepIndex)}
@@ -758,42 +752,34 @@ const ItineraryTimeline = ({
                       )}
                     </CardContent>
 
-                    <CardFooter className="bg-white/5 grid grid-cols-2 gap-4 text-xs p-4">
-                      {isEditMode ? (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <Wallet className="w-4 h-4 text-primary" />
-                            <InlineEdit
-                              value={day.dailyStats.totalCost}
-                              onSave={(v) => updateDailyStat(dayIndex, "totalCost", v)}
-                              className="text-xs"
-                              inputClassName="text-xs"
-                              placeholder="e.g. ₹5,000"
-                            />
+                    <CardFooter className="mt-6 ml-0 sm:ml-12 p-0 bg-transparent border-none">
+                      <div className="w-full p-4 liquid-glass rounded-lg flex justify-between items-center text-sm font-medium border border-white/5">
+                        <div className="flex items-center gap-4">
+                          <div className="flex items-center gap-1 text-zinc-500">
+                             <Footprints className="w-4 h-4 text-zinc-400" />
+                             {isEditMode ? (
+                                <InlineEdit
+                                  value={day.dailyStats.walkingDistance}
+                                  onSave={(v) => updateDailyStat(dayIndex, "walkingDistance", v)}
+                                  className="text-xs"
+                                  inputClassName="text-xs"
+                                />
+                             ) : <span>{day.dailyStats.walkingDistance} Walk</span>}
                           </div>
-                          <div className="flex items-center gap-2">
-                            <Footprints className="w-4 h-4 text-primary" />
-                            <InlineEdit
-                              value={day.dailyStats.walkingDistance}
-                              onSave={(v) => updateDailyStat(dayIndex, "walkingDistance", v)}
-                              className="text-xs"
-                              inputClassName="text-xs"
-                              placeholder="e.g. 5 km"
-                            />
-                          </div>
-                        </>
-                      ) : (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <Wallet className="w-4 h-4 text-primary" />
-                            <span>{day.dailyStats.totalCost} Total</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Footprints className="w-4 h-4 text-primary" />
-                            <span>{day.dailyStats.walkingDistance} Walk</span>
-                          </div>
-                        </>
-                      )}
+                        </div>
+                        <div className="text-zinc-300 font-bold">
+                           Total Day {day.day}: <span className="text-white">
+                             {isEditMode ? (
+                                <InlineEdit
+                                  value={day.dailyStats.totalCost}
+                                  onSave={(v) => updateDailyStat(dayIndex, "totalCost", v)}
+                                  className="text-white"
+                                  inputClassName="text-white"
+                                />
+                             ) : day.dailyStats.totalCost}
+                           </span>
+                        </div>
+                      </div>
                     </CardFooter>
                   </Card>
                 </div>

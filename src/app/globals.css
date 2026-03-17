@@ -203,3 +203,77 @@
   50% { transform: translate(0, -40px) scale(1.3) rotate(-180deg); border-radius: 100%; }
   75% { transform: translate(-20px, -20px) scale(0.9) rotate(-270deg); border-radius: 75%; }
 }
+
+@layer utilities {
+  /* Liquid Glass Effect - Monochrome */
+  .liquid-glass {
+    background: rgba(39, 39, 42, 0.4) !important;
+    backdrop-filter: blur(12px) saturate(0%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(0%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .liquid-glass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+  }
+
+  /* Glossy Highlights */
+  .glossy-surface {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.2) 100%) !important;
+  }
+
+  /* Tubelight Glow Effect - White/Silver */
+  .nav-glow-item {
+    position: relative;
+    transition: all 0.3s ease;
+  }
+  
+  .nav-glow-item.active::after,
+  .nav-glow-item:hover::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: #FFFFFF !important;
+    border-radius: 4px;
+    box-shadow: 0 0 8px #FFFFFF, 0 0 12px rgba(255, 255, 255, 0.5);
+    animation: flicker 2s infinite alternate;
+  }
+
+  @keyframes flicker {
+    0%, 18%, 22%, 25%, 53%, 57%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 8px #FFFFFF, 0 0 12px rgba(255, 255, 255, 0.5);
+    }
+    20%, 24%, 55% {
+      opacity: 0.8;
+      box-shadow: 0 0 4px #FFFFFF, 0 0 8px rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  /* Custom vertical timeline line */
+  .timeline-line-monochrome::before {
+    content: '';
+    position: absolute;
+    left: 1.25rem;
+    top: 2rem;
+    bottom: 0;
+    width: 1px;
+    background-color: rgba(255, 255, 255, 0.1);
+    z-index: 0;
+  }
+
+  .onyx-black { background-color: #0A0A0B; }
+  .obsidian-dark { background-color: #121214; }
+  .text-silver-white { color: #F4F4F5; }
+}
