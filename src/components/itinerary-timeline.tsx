@@ -9,7 +9,9 @@ import {
   Calendar, Clock, Footprints, Wallet, Pencil, Check, Trash2, Plus, GripVertical, X,
   Hotel, Plane, Star,
 } from "lucide-react";
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useContext } from "react";
+import { ItineraryContext } from "@/contexts/itinerary-context";
+import { getCurrencySymbol } from "@/lib/itinerary-calculator";
 import {
   DndContext,
   closestCenter,
@@ -246,6 +248,7 @@ function SortableActivity({
   onUpdateStep,
   onDeleteStep,
   showTimestamps,
+  currencySymbol,
 }: {
   id: string;
   stepIndex: number;
@@ -254,6 +257,7 @@ function SortableActivity({
   onUpdateStep: (field: keyof TimelineStep, value: string | number | undefined) => void;
   onDeleteStep: () => void;
   showTimestamps?: boolean;
+  currencySymbol?: string;
 }) {
   const {
     attributes,
@@ -318,7 +322,7 @@ function SortableActivity({
                 <div className="bg-white/5 px-4 py-2 rounded-lg border border-white/10 flex flex-col items-center">
                   <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">Estimated Cost</span>
                   <div className="flex items-center gap-1">
-                    <span className="text-base font-bold text-white">₹</span>
+                    <span className="text-base font-bold text-white">{currencySymbol ?? "₹"}</span>
                     <InlineEdit
                       value={step.cost !== undefined ? String(step.cost) : ""}
                       onSave={(v) => onUpdateStep("cost", v ? Number(v) : undefined)}
@@ -411,6 +415,13 @@ const ItineraryTimeline = ({
   showTimestamps = true,
 }: ItineraryTimelineProps) => {
   const { toast } = useToast();
+
+  // Derive currency symbol from ItineraryContext when available (e.g. inside ClientItineraryEditor).
+  // Falls back to "₹" for standalone/read-only usage (PDF preview, trip cards, etc.).
+  const itineraryCtx = useContext(ItineraryContext);
+  const currencySymbol = itineraryCtx
+    ? getCurrencySymbol(itineraryCtx.state.pricing.currency)
+    : "₹";
   const [isEditMode, setIsEditMode] = useState(false);
   const [activeStepId, setActiveStepId] = useState<string | null>(null);
   // Track which container the dragged item is currently over
@@ -741,6 +752,7 @@ const ItineraryTimeline = ({
                               onUpdateStep={(field, value) => updateStep(dayIndex, stepIndex, field, value)}
                               onDeleteStep={() => deleteStep(dayIndex, stepIndex)}
                               showTimestamps={showTimestamps}
+                              currencySymbol={currencySymbol}
                             />
                           ))}
                         </div>

@@ -42,11 +42,12 @@ interface FinancialTrackerProps {
     enrichedClients: EnrichedClient[];
     userEmail: string;
     userName: string;
+    onOpenFinances?: (tripId: string) => void;
 }
 
 type FinanceTab = 'payments' | 'commissions' | 'invoices' | 'expenses' | 'reports';
 
-export default function FinancialTracker({ enrichedClients, userEmail, userName }: FinancialTrackerProps) {
+export default function FinancialTracker({ enrichedClients, userEmail, userName, onOpenFinances }: FinancialTrackerProps) {
     const [activeFinTab, setActiveFinTab] = useState<FinanceTab>('payments');
     const [financials, setFinancials] = useState<TripFinancial[]>([]);
     const [selectedTripFin, setSelectedTripFin] = useState<TripFinancial | null>(null);
@@ -60,6 +61,65 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName 
         setFinancials(loadFinancialData());
     }, []);
 
+    // ── Helper: extract real cost from itinerary_data ──────────────────────
+    const extractTripCost = (trip: any): number => {
+        if (!trip) return 0;
+        let totalBaseCost = 0;
+        const data = trip.itinerary_data || {};
+
+        // Activity costs
+        const days = data.itinerary || data.days || [];
+        if (Array.isArray(days)) {
+            days.forEach((day: any) => {
+                if (Array.isArray(day.timeline)) {
+                    day.timeline.forEach((item: any) => {
+                        if (typeof item.cost === 'number') totalBaseCost += item.cost;
+                    });
+                }
+            });
+        }
+
+        // Pax counts
+        const pax = {
+            adult: data.pricing?.adultPax || 2,
+            child: data.pricing?.childPax || 0,
+            infant: data.pricing?.infantPax || 0,
+        };
+
+        // Hotel costs
+        if (Array.isArray(data.hotels)) {
+            data.hotels.forEach((h: any) => {
+                if (h.costAdult) totalBaseCost += h.costAdult * pax.adult;
+                if (h.costChild) totalBaseCost += h.costChild * pax.child;
+                if (h.costInfant) totalBaseCost += h.costInfant * pax.infant;
+            });
+        }
+
+        // Flight costs
+        if (Array.isArray(data.flights)) {
+            data.flights.forEach((f: any) => {
+                if (f.costAdult) totalBaseCost += f.costAdult * pax.adult;
+                if (f.costChild) totalBaseCost += f.costChild * pax.child;
+                if (f.costInfant) totalBaseCost += f.costInfant * pax.infant;
+            });
+        }
+
+        // Markup & Tax
+        const pricing = data.pricing || {};
+        const markupValue = pricing.markupValue || 0;
+        const markupType = pricing.markupType || 'percentage';
+        const taxPct = pricing.taxPercentage || 0;
+
+        const markupAmount = markupType === 'percentage'
+            ? (totalBaseCost * markupValue) / 100
+            : markupValue;
+        const costWithMarkup = totalBaseCost + markupAmount;
+        const taxAmount = (costWithMarkup * taxPct) / 100;
+        const finalTotal = costWithMarkup + taxAmount;
+
+        return finalTotal > 0 ? finalTotal : (trip.budget || 0);
+    };
+
     // Auto-create financial records for trips that don't have one
     useEffect(() => {
         const existing = new Set(financials.map(f => f.tripId));
@@ -67,18 +127,22 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName 
         enrichedClients.forEach(client => {
             client.allTrips.forEach((trip: any) => {
                 if (!existing.has(trip.id)) {
+                    const data = trip.itinerary_data || {};
+                    const tripCurrency = (data.pricing?.currency as Currency) || 'INR';
+                    const calculatedCost = extractTripCost(trip);
+
                     newRecords.push({
                         tripId: trip.id,
                         clientId: client.id,
                         clientName: client.name,
                         tripTitle: trip.title || `${trip.starting_location} Trip`,
-                        destination: trip.starting_location + (trip.ending_location ? ` → ${trip.ending_location}` : ''),
-                        clientPrice: trip.budget || 0,
-                        currency: 'INR' as Currency,
+                        destination: trip.destinations || (trip.starting_location + (trip.ending_location ? ` → ${trip.ending_location}` : '')),
+                        clientPrice: calculatedCost,
+                        currency: tripCurrency,
                         expenses: [],
                         payments: [],
                         commissionRate: commissionRate,
-                        commissionAmount: 0,
+                        commissionAmount: calculatedCost * (commissionRate / 100),
                         createdAt: trip.created_at || new Date().toISOString(),
                         updatedAt: new Date().toISOString(),
                     });
@@ -89,6 +153,33 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName 
             const updated = [...financials, ...newRecords];
             setFinancials(updated);
             saveFinancialData(updated);
+        }
+
+        // Also refresh stale records that have clientPrice = 0 (old cached data)
+        const tripMap = new Map<string, any>();
+        enrichedClients.forEach(c => c.allTrips.forEach((t: any) => tripMap.set(t.id, t)));
+
+        let didRefresh = false;
+        const refreshed = (newRecords.length > 0 ? [...financials, ...newRecords] : financials).map(fin => {
+            if (fin.clientPrice > 0) return fin;
+            const trip = tripMap.get(fin.tripId);
+            if (!trip) return fin;
+            const cost = extractTripCost(trip);
+            if (cost <= 0) return fin;
+            didRefresh = true;
+            const data = trip.itinerary_data || {};
+            return {
+                ...fin,
+                clientPrice: cost,
+                currency: (data.pricing?.currency as Currency) || fin.currency,
+                destination: trip.destinations || fin.destination,
+                commissionAmount: cost * (fin.commissionRate / 100),
+                updatedAt: new Date().toISOString(),
+            };
+        });
+        if (didRefresh) {
+            setFinancials(refreshed);
+            saveFinancialData(refreshed);
         }
     }, [enrichedClients]);
 
@@ -270,7 +361,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName 
                         <h3 className="text-sm font-semibold text-gray-300">Payment Tracking</h3>
                     </div>
                     <div className="space-y-3">
-                        {financials.filter(f => f.clientPrice > 0).map(fin => {
+                        {financials.filter(f => true).map(fin => {
                             const totalPaid = fin.payments.reduce((s, p) => s + p.amount, 0);
                             const paidPct = fin.clientPrice > 0 ? (totalPaid / fin.clientPrice * 100) : 0;
                             return (
@@ -324,8 +415,8 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName 
                                 </div>
                             );
                         })}
-                        {financials.filter(f => f.clientPrice > 0).length === 0 && (
-                            <div className="text-center py-12 text-gray-500 text-sm">No trips with budget data to track payments for.</div>
+                        {financials.filter(f => true).length === 0 && (
+                            <div className="text-center py-12 text-gray-500 text-sm">No active trips found. Start organizing a trip to track payments.</div>
                         )}
                     </div>
                 </div>
@@ -339,7 +430,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName 
                         <p className="text-xs text-gray-500">Total: ₹{stats.totalExpenses.toLocaleString()}</p>
                     </div>
                     <div className="space-y-3">
-                        {financials.filter(f => f.clientPrice > 0).map(fin => {
+                        {financials.filter(f => true).map(fin => {
                             const totalExp = fin.expenses.reduce((s, e) => s + e.amount, 0);
                             const margin = fin.clientPrice > 0 ? ((fin.clientPrice - totalExp) / fin.clientPrice * 100) : 0;
                             return (
@@ -430,7 +521,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName 
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
-                                {financials.filter(f => f.clientPrice > 0).map(fin => (
+                                {financials.filter(f => true).map(fin => (
                                     <tr key={fin.tripId} className="hover:bg-white/5 transition-colors">
                                         <td className="p-3 text-gray-300">{fin.clientName}</td>
                                         <td className="p-3 text-gray-500">{fin.tripTitle}</td>
@@ -461,7 +552,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName 
                 <div className="space-y-4">
                     <h3 className="text-sm font-semibold text-gray-300">Invoice Generation</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {financials.filter(f => f.clientPrice > 0).map(fin => {
+                        {financials.filter(f => true).map(fin => {
                             const totalPaid = fin.payments.reduce((s, p) => s + p.amount, 0);
                             const balance = fin.clientPrice - totalPaid;
                             return (
@@ -494,78 +585,10 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName 
                                         size="sm"
                                         className="h-7 text-xs border-white/10 bg-transparent text-gray-400 hover:bg-white/10 w-full"
                                         onClick={() => {
-                                            const invoice = generateInvoice(fin);
-                                            const printWindow = window.open('', '_blank');
-                                            if (printWindow) {
-                                                printWindow.document.write(`
-                                                    <html><head><title>Invoice ${invoice.invoiceNumber}</title>
-                                                    <style>
-                                                        body { font-family: 'Segoe UI', system-ui, sans-serif; padding: 40px; max-width: 800px; margin: 0 auto; color: #1a1a1a; }
-                                                        .header { display: flex; justify-content: space-between; margin-bottom: 40px; border-bottom: 3px solid #7c3aed; padding-bottom: 20px; }
-                                                        .company { font-size: 28px; font-weight: 800; background: linear-gradient(135deg, #7c3aed, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-                                                        .invoice-title { font-size: 24px; color: #7c3aed; font-weight: 700; }
-                                                        .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
-                                                        .meta-section p { margin: 4px 0; font-size: 13px; }
-                                                        .meta-label { font-weight: 600; color: #666; text-transform: uppercase; font-size: 10px; letter-spacing: 1px; }
-                                                        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-                                                        th { background: #f8f4ff; color: #7c3aed; text-align: left; padding: 12px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-                                                        td { padding: 12px; border-bottom: 1px solid #eee; font-size: 14px; }
-                                                        .totals { text-align: right; margin-top: 20px; }
-                                                        .totals p { margin: 6px 0; font-size: 14px; }
-                                                        .total-final { font-size: 22px; font-weight: 800; color: #7c3aed; border-top: 2px solid #7c3aed; padding-top: 10px; margin-top: 10px; }
-                                                        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #999; text-align: center; }
-                                                        @media print { body { padding: 20px; } }
-                                                    </style></head>
-                                                    <body>
-                                                        <div class="header">
-                                                            <div>
-                                                                <div class="company">${invoice.companyName}</div>
-                                                                <p style="color:#666;font-size:13px">${invoice.agentName} · ${invoice.agentEmail}</p>
-                                                            </div>
-                                                            <div style="text-align:right">
-                                                                <div class="invoice-title">INVOICE</div>
-                                                                <p style="color:#666;font-size:13px">${invoice.invoiceNumber}</p>
-                                                            </div>
-                                                        </div>
-                                                        <div class="meta">
-                                                            <div>
-                                                                <p class="meta-label">Bill To</p>
-                                                                <p style="font-weight:600;font-size:16px">${invoice.clientName}</p>
-                                                                <p style="color:#666">${invoice.tripTitle}</p>
-                                                                <p style="color:#666">${invoice.destination}</p>
-                                                            </div>
-                                                            <div style="text-align:right">
-                                                                <p class="meta-label">Invoice Details</p>
-                                                                <p>Date: ${invoice.issuedDate}</p>
-                                                                <p>Due: ${invoice.dueDate}</p>
-                                                                <p>Currency: ${invoice.currency}</p>
-                                                            </div>
-                                                        </div>
-                                                        <table>
-                                                            <thead><tr><th>Description</th><th style="text-align:right">Amount</th></tr></thead>
-                                                            <tbody>
-                                                                ${invoice.items.filter(i => i.amount > 0).map(item => `<tr><td>${item.description}</td><td style="text-align:right">${getCurrencySymbol(invoice.currency)}${item.amount.toLocaleString()}</td></tr>`).join('')}
-                                                            </tbody>
-                                                        </table>
-                                                        <div class="totals">
-                                                            <p>Subtotal: ${getCurrencySymbol(invoice.currency)}${invoice.subtotal.toLocaleString()}</p>
-                                                            <p>Tax (${invoice.taxRate}%): ${getCurrencySymbol(invoice.currency)}${invoice.taxAmount.toLocaleString()}</p>
-                                                            <p>Amount Paid: -${getCurrencySymbol(invoice.currency)}${invoice.amountPaid.toLocaleString()}</p>
-                                                            <p class="total-final">Balance Due: ${getCurrencySymbol(invoice.currency)}${Math.max(0, invoice.balanceDue).toLocaleString()}</p>
-                                                        </div>
-                                                        <div class="footer">
-                                                            <p>Thank you for choosing ${invoice.companyName}!</p>
-                                                            <p>This is a computer-generated invoice.</p>
-                                                        </div>
-                                                    </body></html>
-                                                `);
-                                                printWindow.document.close();
-                                                setTimeout(() => printWindow.print(), 500);
-                                            }
-                                            toast({ title: 'Invoice Generated', description: `Invoice ${invoice.invoiceNumber} opened for printing.` });
+                                            if (onOpenFinances) onOpenFinances(fin.tripId);
                                         }}
                                     >
-                                        <PrintIcon /> <span className="ml-1">Generate Invoice</span>
+                                        <PrintIcon /> <span className="ml-1">Manage Finances & Invoice</span>
                                     </Button>
                                 </div>
                             );
@@ -637,7 +660,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName 
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
-                                    {financials.filter(f => f.clientPrice > 0).map(fin => {
+                                    {financials.filter(f => true).map(fin => {
                                         const totalExp = fin.expenses.reduce((s, e) => s + e.amount, 0);
                                         const profit = fin.clientPrice - totalExp;
                                         const margin = fin.clientPrice > 0 ? (profit / fin.clientPrice * 100) : 0;

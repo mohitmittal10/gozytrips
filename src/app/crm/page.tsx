@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Users, Calendar, MapPin, CheckCircle2, Clock, ArrowRight, Search, Plus, ListFilter, Compass, FileText, Settings, LayoutDashboard, Send, TrendingUp, Activity, CalendarDays, UserPlus, Plane, ArrowUpDown, ChevronLeft, ChevronRight, Download, Columns3, ArrowUp, ArrowDown, GripVertical, Archive, Save, X, Sliders, LayoutGrid, List, History, DollarSign, Trash2 } from "lucide-react";
+import { Users, Calendar, MapPin, CheckCircle2, Clock, ArrowRight, Search, Plus, ListFilter, Compass, FileText, Settings, LayoutDashboard, Send, TrendingUp, Activity, CalendarDays, UserPlus, Plane, ArrowUpDown, ChevronLeft, ChevronRight, Download, Columns3, ArrowUp, ArrowDown, GripVertical, Archive, Save, X, Sliders, LayoutGrid, List, History, DollarSign, Trash2, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Header from "@/components/layout/header";
 import { useClients, type Client } from "@/lib/hooks/use-clients";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
+import { logAuditEvent } from "@/lib/audit-logger";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { TripCard, type SavedItinerary } from "@/components/trip-card";
 import ItineraryTimeline from "@/components/itinerary-timeline";
 import { PdfPreviewEditor } from "@/components/pdf-preview-editor";
@@ -45,6 +47,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
+import { FinancesSheet } from "@/components/finances-sheet";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -62,6 +65,7 @@ interface EnrichedClient extends Client {
     latestRawBudget: number;
     latestContact: string;
     latestTripId?: string;
+    bookedDestinations?: { label: string }[];
     allTrips: any[];
 }
 
@@ -95,6 +99,8 @@ export default function CRMLitePage() {
     const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editingClient, setEditingClient] = useState<Client | null>(null);
+    const [isFinancesOpen, setIsFinancesOpen] = useState(false);
+    const [financesTrip, setFinancesTrip] = useState<SavedItinerary | null>(null);
 
     // Table UX: sorting
     const [sortColumn, setSortColumn] = useState<'name' | 'status' | 'budget' | 'date'>('name');
@@ -300,6 +306,7 @@ export default function CRMLitePage() {
                         ...client,
                         tags: client.tags || [],
                         latestStatus: latestTrip?.status || "No Active Trips",
+                        latestDestination: bookedDestinations.length > 0 ? bookedDestinations.map(d => d.label).join(", ") : "N/A",
                         bookedDestinations: bookedDestinations,
                         latestBudget: totalBookedRevenue > 0 ? `₹${totalBookedRevenue.toLocaleString()}` : (latestCalculatedBudget > 0 ? `₹${latestCalculatedBudget.toLocaleString()}` : "N/A"),
                         latestRawBudget: totalBookedRevenue > 0 ? totalBookedRevenue : latestCalculatedBudget,
@@ -378,6 +385,15 @@ export default function CRMLitePage() {
                 };
             });
 
+            // Audit log (fire-and-forget)
+            if (user) {
+                logAuditEvent(user.id, "STATUS_CHANGE", `Trip status changed to ${statusToSave}`, {
+                    entityType: "itinerary",
+                    entityId: tripId,
+                    metadata: { old_status: "unknown", new_status: statusToSave },
+                });
+            }
+
             toast({
                 title: "Status Updated",
                 description: "The trip status has been successfully changed.",
@@ -408,6 +424,14 @@ export default function CRMLitePage() {
                 tags: []
             });
 
+            // Audit log (fire-and-forget)
+            if (user) {
+                logAuditEvent(user.id, "CREATE_CLIENT", `Client "${newClientName}" was added`, {
+                    entityType: "client",
+                    metadata: { name: newClientName, email: newClientEmail },
+                });
+            }
+
             toast({ title: "Success", description: "Client added successfully." });
             setIsAddClientOpen(false);
             setNewClientName("");
@@ -430,7 +454,7 @@ export default function CRMLitePage() {
             return c.name.toLowerCase().includes(q)
                 || (c.email && c.email.toLowerCase().includes(q))
                 || (c.phone && c.phone.toLowerCase().includes(q))
-                || c.latestDestination.toLowerCase().includes(q)
+                || (c.latestDestination && c.latestDestination.toLowerCase().includes(q))
                 || (c.notes && c.notes.toLowerCase().includes(q));
         }
     );
@@ -460,6 +484,14 @@ export default function CRMLitePage() {
                     allTrips: prev.allTrips.filter(t => t.id !== id)
                 } : null);
             }
+            // Audit log is also recorded by the database trigger, but we add frontend context
+            if (user) {
+                logAuditEvent(user.id, "DELETE_TRIP", `Trip deleted from CRM`, {
+                    entityType: "itinerary",
+                    entityId: id,
+                });
+            }
+
             toast({ title: 'Success', description: 'Trip deleted successfully.' });
         } catch (error: any) {
             toast({ title: 'Error', description: error.message || 'Failed to delete trip', variant: 'destructive' });
@@ -710,6 +742,14 @@ export default function CRMLitePage() {
         const a = document.createElement('a');
         a.href = url; a.download = 'clients_export.csv'; a.click();
         URL.revokeObjectURL(url);
+        // Audit log the export action
+        if (user) {
+            logAuditEvent(user.id, "EXPORT_CSV", `Exported ${targets.length} client(s) to CSV`, {
+                entityType: "client",
+                metadata: { count: targets.length },
+            });
+        }
+
         toast({ title: 'Export', description: `Exported ${targets.length} client(s).` });
     };
 
@@ -910,6 +950,14 @@ export default function CRMLitePage() {
                             >
                                 <Settings className="w-5 h-5" /> Preferences
                             </Button>
+                            <Link href="/security">
+                                <Button
+                                    variant="ghost"
+                                    className="w-full justify-start gap-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5"
+                                >
+                                    <Shield className="w-5 h-5" /> Security & Privacy
+                                </Button>
+                            </Link>
                         </div>
                     </div>
 
@@ -1009,6 +1057,29 @@ export default function CRMLitePage() {
                                 {activeTab === 'templates' ? <FileText className="w-12 h-12 text-gray-600 mb-4" /> : <Settings className="w-12 h-12 text-gray-600 mb-4" />}
                                 <h3 className="text-xl font-medium text-white mb-2">{activeTab === 'templates' ? 'Templates' : 'Settings'}</h3>
                                 <p>This module is currently under development. Check back soon for full AI integration!</p>
+                            </div>
+                        ) : activeTab === 'finance' ? (
+                            <div className="mt-4">
+                                <FinancialTracker
+                                    enrichedClients={enrichedClients}
+                                    userEmail={user?.email || ""}
+                                    userName={userProfile?.full_name || ""}
+                                    onOpenFinances={(tripId) => {
+                                        for (const c of enrichedClients) {
+                                            const trip = c.allTrips.find((t: any) => t.id === tripId);
+                                            if (trip) {
+                                                setFinancesTrip(trip);
+                                                setIsFinancesOpen(true);
+                                                return;
+                                            }
+                                        }
+                                        toast({
+                                            title: "Trip Not Found",
+                                            description: "The trip data could not be located.",
+                                            variant: "destructive"
+                                        });
+                                    }}
+                                />
                             </div>
                         ) : (
                             <>
@@ -1369,7 +1440,7 @@ export default function CRMLitePage() {
                                 </div>)}
 
                                 {/* Table view sections (hidden in kanban mode or archive tab) */}
-                                {!(activeTab === 'trips' && tripsViewMode === 'kanban') && activeTab !== 'archive' && activeTab !== 'dashboard' && (<>
+                                {!(activeTab === 'trips' && tripsViewMode === 'kanban') && activeTab !== 'archive' && activeTab !== 'dashboard' && activeTab !== 'finance' && (<>
                                     {/* Bulk Actions Bar */}
                                     {selectedIds.size > 0 && (
                                         <div className="flex items-center gap-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl animate-in fade-in slide-in-from-top-2">
@@ -1411,9 +1482,7 @@ export default function CRMLitePage() {
                                                 <DropdownMenuContent align="end" className="bg-[#1a1a2e] border-white/10 text-white">
                                                     <DropdownMenuLabel className="text-xs text-gray-400">Toggle Columns</DropdownMenuLabel>
                                                     <DropdownMenuSeparator className="bg-white/10" />
-                                                    <DropdownMenuCheckboxItem checked={visibleColumns.status} onCheckedChange={() => toggleColumn('status')} className="text-xs">Status</DropdownMenuCheckboxItem>
                                                     <DropdownMenuCheckboxItem checked={visibleColumns.destination} onCheckedChange={() => toggleColumn('destination')} className="text-xs">Destination</DropdownMenuCheckboxItem>
-                                                    <DropdownMenuCheckboxItem checked={visibleColumns.budget} onCheckedChange={() => toggleColumn('budget')} className="text-xs">Cost of Trip</DropdownMenuCheckboxItem>
                                                     <DropdownMenuCheckboxItem checked={visibleColumns.lastUpdated} onCheckedChange={() => toggleColumn('lastUpdated')} className="text-xs">Last Updated</DropdownMenuCheckboxItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -1436,19 +1505,11 @@ export default function CRMLitePage() {
                                                         <th className="p-4 font-medium cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('name')}>
                                                             <span className="inline-flex items-center">Client Info <SortIcon col="name" /></span>
                                                         </th>
-                                                        {visibleColumns.status && (
-                                                            <th className="p-4 font-medium cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('status')}>
-                                                                <span className="inline-flex items-center">Status <SortIcon col="status" /></span>
-                                                            </th>
-                                                        )}
+
                                                         {visibleColumns.destination && (
                                                             <th className="p-4 font-medium">Destination</th>
                                                         )}
-                                                        {visibleColumns.budget && (
-                                                            <th className="p-4 font-medium cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('budget')}>
-                                                                <span className="inline-flex items-center">Cost of Trip <SortIcon col="budget" /></span>
-                                                            </th>
-                                                        )}
+
                                                         {visibleColumns.lastUpdated && (
                                                             <th className="p-4 font-medium cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('date')}>
                                                                 <span className="inline-flex items-center">Last Updated <SortIcon col="date" /></span>
@@ -1506,34 +1567,7 @@ export default function CRMLitePage() {
                                                                         </div>
                                                                     </div>
                                                                 </td>
-                                                                {visibleColumns.status && (
-                                                                    <td className="p-4">
-                                                                        {client.latestStatus === "No Active Trips" || !client.latestTripId ? (
-                                                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-500/10 text-gray-400 capitalize">
-                                                                                {client.latestStatus}
-                                                                            </span>
-                                                                        ) : (
-                                                                            <Select
-                                                                                value={client.latestStatus.toLowerCase()}
-                                                                                onValueChange={(val) => handleStatusChange(client.id, client.latestTripId, val)}
-                                                                            >
-                                                                                <SelectTrigger className={`h-8 border-0 shadow-none focus:ring-0 w-[130px] inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${client.latestStatus.toLowerCase() === 'booked' || client.latestStatus.toLowerCase() === 'confirmed' ? 'bg-green-500/10 text-green-400' :
-                                                                                    client.latestStatus.toLowerCase() === 'proposed' || client.latestStatus.toLowerCase() === 'sent' ? 'bg-blue-500/10 text-blue-400' :
-                                                                                        'bg-purple-500/10 text-purple-400'
-                                                                                    }`}>
-                                                                                    <SelectValue />
-                                                                                </SelectTrigger>
-                                                                                <SelectContent>
-                                                                                    <SelectItem value="draft">Draft</SelectItem>
-                                                                                    <SelectItem value="proposed">Proposed</SelectItem>
-                                                                                    <SelectItem value="sent">Sent</SelectItem>
-                                                                                    <SelectItem value="booked">Booked</SelectItem>
-                                                                                    <SelectItem value="rejected">Rejected</SelectItem>
-                                                                                </SelectContent>
-                                                                            </Select>
-                                                                        )}
-                                                                    </td>
-                                                                )}
+
                                                                 {visibleColumns.destination && (
                                                                     <td className="p-4 text-gray-300">
                                                                         <div className="flex flex-col gap-1.5 py-1">
@@ -1550,9 +1584,7 @@ export default function CRMLitePage() {
                                                                         </div>
                                                                     </td>
                                                                 )}
-                                                                {visibleColumns.budget && (
-                                                                    <td className="p-4 text-gray-300">{client.latestBudget}</td>
-                                                                )}
+
                                                                 {visibleColumns.lastUpdated && (
                                                                     <td className="p-4 text-sm text-gray-500">
                                                                         <div className="flex items-center gap-1.5">
@@ -1679,7 +1711,6 @@ export default function CRMLitePage() {
                                                             </div>
                                                             <div className="ml-[22px] space-y-1">
                                                                 <p className="text-[10px] text-gray-500 truncate">{client.latestDestination}</p>
-                                                                {client.latestRawBudget > 0 && <p className="text-[10px] text-gray-400">₹{client.latestRawBudget.toLocaleString()}</p>}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -1718,20 +1749,16 @@ export default function CRMLitePage() {
                                                             <div className={cn("inline-flex w-8 h-8 rounded-full items-center justify-center text-xs font-bold text-white bg-gradient-to-br shrink-0", getAvatarColor(client.name))}>
                                                                 {client.name.charAt(0).toUpperCase()}
                                                             </div>
-                                                            <div className="min-w-0">
+                                                            <div className="min-w-0 flex-1">
                                                                 <p className="font-medium text-white truncate">{client.name}</p>
                                                                 <p className="text-xs text-gray-500">{client.email || 'No email'}</p>
                                                             </div>
-                                                            <span className="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-green-500/10 text-green-400 shrink-0">
-                                                                Completed
-                                                            </span>
                                                         </div>
                                                         <div className="flex items-center gap-4 text-xs text-gray-500">
                                                             <div className="flex items-center gap-1">
                                                                 <Compass className="w-3 h-3" />
                                                                 <span className="truncate max-w-[120px]">{client.latestDestination}</span>
                                                             </div>
-                                                            <span>{client.latestBudget}</span>
                                                             <span className="ml-auto">{client.latestContact}</span>
                                                         </div>
                                                     </div>
@@ -2107,6 +2134,12 @@ export default function CRMLitePage() {
                     </div>
                 </SheetContent>
             </Sheet>
+
+            <FinancesSheet
+                isOpen={isFinancesOpen}
+                onOpenChange={setIsFinancesOpen}
+                trip={financesTrip}
+            />
         </div>
     );
 }

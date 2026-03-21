@@ -23,8 +23,8 @@ import { useToast } from "@/hooks/use-toast";
 import ItineraryTimeline from "../itinerary-timeline";
 import HotelFlightEditor, { type HotelInfo, type FlightInfo } from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
-import type { PricingConfig } from "@/types/pricing";
 import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye, Check, ArrowRight, Plane, Wallet } from "lucide-react";
+import { ItineraryProvider } from "@/contexts/itinerary-context";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UniqueLoading from "@/components/ui/morph-loading";
 import { ShiningText } from "@/components/ui/shining-text";
@@ -455,14 +455,15 @@ const AiArchitect = () => {
       console.log("🔐 User ID from session:", session.user.id);
       console.log("📊 Access Token exists:", !!session.access_token);
 
-      // Insert with error handling
+      // Insert with error handling — get the ID back for trip_line_items seeding
       console.log("📤 Sending insert request to Supabase...");
-      const { data, error } = await supabase
+      const { data: insertedRows, error } = await supabase
         .from("itineraries")
-        .insert([tripData]);
+        .insert([tripData])
+        .select("id");
 
       console.log("📥 Supabase response received");
-      console.log("✅ Data:", data);
+      console.log("✅ Data:", insertedRows);
       console.log("❌ Error:", error);
 
       if (error) {
@@ -482,6 +483,98 @@ const AiArchitect = () => {
       }
 
       console.log("✅ Itinerary saved successfully!");
+
+      // ── Auto-seed trip_line_items so CRM Finance Sheet has data ──────────
+      const savedTripId = insertedRows?.[0]?.id;
+      if (savedTripId) {
+        const pricingCfg = pricing || {};
+        const currency = (pricingCfg as any).currency || "INR";
+        const markupPct = (pricingCfg as any).markupValue || 0;
+        const lineItems: {
+          itinerary_id: string;
+          title: string;
+          category: string;
+          net_cost: number;
+          markup_percentage: number;
+          currency: string;
+        }[] = [];
+
+        // Activities (per-day)
+        if (itinerary?.itinerary) {
+          itinerary.itinerary.forEach((day, dayIdx) => {
+            if (Array.isArray(day.timeline)) {
+              day.timeline.forEach((step: any) => {
+                if (typeof step.cost === "number" && step.cost > 0) {
+                  lineItems.push({
+                    itinerary_id: savedTripId,
+                    title: step.details?.slice(0, 80) || `Day ${dayIdx + 1} Activity`,
+                    category: "activity",
+                    net_cost: step.cost,
+                    markup_percentage: markupPct,
+                    currency,
+                  });
+                }
+              });
+            }
+          });
+        }
+
+        // Hotels
+        const pax = {
+          adult: (pricingCfg as any).adultPax || 2,
+          child: (pricingCfg as any).childPax || 0,
+          infant: (pricingCfg as any).infantPax || 0,
+        };
+        if (hotels.length > 0) {
+          hotels.forEach((h: any) => {
+            const cost =
+              (h.costAdult || 0) * pax.adult +
+              (h.costChild || 0) * pax.child +
+              (h.costInfant || 0) * pax.infant;
+            if (cost > 0) {
+              lineItems.push({
+                itinerary_id: savedTripId,
+                title: h.hotelName || "Hotel Accommodation",
+                category: "hotel",
+                net_cost: cost,
+                markup_percentage: markupPct,
+                currency,
+              });
+            }
+          });
+        }
+
+        // Flights
+        if (flights.length > 0) {
+          flights.forEach((f: any) => {
+            const cost =
+              (f.costAdult || 0) * pax.adult +
+              (f.costChild || 0) * pax.child +
+              (f.costInfant || 0) * pax.infant;
+            if (cost > 0) {
+              lineItems.push({
+                itinerary_id: savedTripId,
+                title: `${f.from || "Dep"} → ${f.to || "Arr"} (${f.airline || "Flight"})`,
+                category: "flight",
+                net_cost: cost,
+                markup_percentage: markupPct,
+                currency,
+              });
+            }
+          });
+        }
+
+        if (lineItems.length > 0) {
+          const { error: liError } = await supabase
+            .from("trip_line_items")
+            .insert(lineItems);
+          if (liError) {
+            console.warn("⚠️ Failed to seed trip_line_items:", liError.message);
+          } else {
+            console.log(`✅ Seeded ${lineItems.length} line items for trip ${savedTripId}`);
+          }
+        }
+      }
 
       toast({
         title: "Success!",
@@ -1185,11 +1278,23 @@ const AiArchitect = () => {
 
                   {itinerary && !isGenerating && (
                     <TabsContent value="pricing" className="m-0 focus-visible:outline-none focus-visible:ring-0">
-                      <PricingModule
-                        pricing={pricing}
-                        onChange={setPricing}
-                        baseCost={baseCost}
-                      />
+                      {/*
+                        Wrap in ItineraryProvider so PricingModule can access the store.
+                        Keyed so it remounts (and resets) when the itinerary changes.
+                        On UPDATE_PRICING dispatch the provider's internal state updates,
+                        which is synced back out via onPricingChange when saving.
+                      */}
+                      <ItineraryProvider
+                        key={JSON.stringify(itinerary?.itinerary?.length)}
+                        initialTrip={{
+                          itinerary: itinerary?.itinerary || [],
+                          hotels,
+                          flights,
+                          pricing: pricing || undefined,
+                        }}
+                      >
+                        <PricingModule />
+                      </ItineraryProvider>
                     </TabsContent>
                   )}
                 </div>

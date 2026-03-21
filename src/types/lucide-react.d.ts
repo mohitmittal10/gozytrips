@@ -62,6 +62,30 @@ declare module 'lucide-react' {
   const Camera: React.FC<IconProps>;
   const ArrowUp: React.FC<IconProps>;
   const ArrowDown: React.FC<IconProps>;
+  const Shield: React.FC<IconProps>;
+  const LogIn: React.FC<IconProps>;
+  const RefreshCw: React.FC<IconProps>;
+  const Server: React.FC<IconProps>;
+  const Key: React.FC<IconProps>;
+  const Database: React.FC<IconProps>;
+  const Globe: React.FC<IconProps>;
+  const Activity: React.FC<IconProps>;
+  const CheckCircle2: React.FC<IconProps>;
+  const UserPlus: React.FC<IconProps>;
+  const FileText: React.FC<IconProps>;
+  const LayoutDashboard: React.FC<IconProps>;
+  const Archive: React.FC<IconProps>;
+  const Compass: React.FC<IconProps>;
+  const ListFilter: React.FC<IconProps>;
+  const Send: React.FC<IconProps>;
+  const TrendingUp: React.FC<IconProps>;
+  const CalendarDays: React.FC<IconProps>;
+  const ArrowUpDown: React.FC<IconProps>;
+  const Columns3: React.FC<IconProps>;
+  const Sliders: React.FC<IconProps>;
+  const LayoutGrid: React.FC<IconProps>;
+  const List: React.FC<IconProps>;
+  const History: React.FC<IconProps>;
   
   export {
     Sparkles,
@@ -116,5 +140,29 @@ declare module 'lucide-react' {
     Camera,
     ArrowUp,
     ArrowDown,
+    Shield,
+    LogIn,
+    RefreshCw,
+    Server,
+    Key,
+    Database,
+    Globe,
+    Activity,
+    CheckCircle2,
+    UserPlus,
+    FileText,
+    LayoutDashboard,
+    Archive,
+    Compass,
+    ListFilter,
+    Send,
+    TrendingUp,
+    CalendarDays,
+    ArrowUpDown,
+    Columns3,
+    Sliders,
+    LayoutGrid,
+    List,
+    History,
   };
 }

@@ -17,7 +17,6 @@ import { type PdfTheme } from '@/components/pdf-template';
 import { PdfPreviewEditor } from '@/components/pdf-preview-editor';
 import { useRouter } from 'next/navigation';
 import { useClients } from '@/lib/hooks/use-clients';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -26,6 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { TripCard } from '@/components/trip-card';
+import { FinancesSheet } from '@/components/finances-sheet';
 
 interface SavedItinerary {
   id: string;
@@ -52,6 +52,7 @@ export default function MyTripsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedTrip, setSelectedTrip] = useState<SavedItinerary | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [showFinances, setShowFinances] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
@@ -320,6 +321,10 @@ export default function MyTripsPage() {
                   setSelectedTrip(trip as any);
                   setShowModal(true);
                 }}
+                onFinances={(trip) => {
+                  setSelectedTrip(trip as any);
+                  setShowFinances(true);
+                }}
                 onDelete={handleDeleteTrip}
                 deletingId={deleting}
               />
@@ -385,6 +390,12 @@ export default function MyTripsPage() {
           />
         </DialogContent>
       </Dialog>
+
+      <FinancesSheet
+        trip={selectedTrip}
+        isOpen={showFinances}
+        onOpenChange={setShowFinances}
+      />
     </div>
   );
 }

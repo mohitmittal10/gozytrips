@@ -33,6 +33,7 @@ interface TripCardProps {
     onToggleFavourite?: (trip: SavedItinerary) => void;
     onDuplicate?: (trip: SavedItinerary) => void;
     onView?: (trip: SavedItinerary) => void;
+    onFinances?: (trip: SavedItinerary) => void;
     onDelete?: (id: string) => void;
     deletingId?: string | null;
 }
@@ -43,6 +44,7 @@ export function TripCard({
     onToggleFavourite,
     onDuplicate,
     onView,
+    onFinances,
     onDelete,
     deletingId
 }: TripCardProps) {
@@ -133,6 +135,20 @@ export function TripCard({
                         >
                             <Eye className="w-4 h-4" />
                             View
+                        </Button>
+                    )}
+                    {onFinances && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onFinances(trip);
+                            }}
+                            className="glass-button border-white/20 flex-1 hover:text-green-400 gap-2"
+                        >
+                            <DollarSign className="w-4 h-4" />
+                            Finances
                         </Button>
                     )}
                     {onDelete && (

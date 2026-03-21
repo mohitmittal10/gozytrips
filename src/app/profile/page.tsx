@@ -8,10 +8,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Shield } from 'lucide-react';
 import Link from 'next/link';
 import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
+import { logAuditEvent } from '@/lib/audit-logger';
+import BackupSettings from '@/components/settings/backup-settings';
 
 export default function ProfilePage() {
   const { user, userProfile, refreshProfile } = useAuth();
@@ -69,6 +71,15 @@ export default function ProfilePage() {
       }
 
       await refreshProfile();
+
+      // Audit log profile update (fire-and-forget)
+      if (user) {
+        logAuditEvent(user.id, 'UPDATE_PROFILE', 'Profile settings updated', {
+          entityType: 'profile',
+          entityId: user.id,
+        });
+      }
+
       toast({
         title: 'Success!',
         description: 'Profile updated successfully.',
@@ -232,6 +243,33 @@ export default function ProfilePage() {
                   {loading ? 'Saving...' : 'Save Profile Changes'}
                 </Button>
               </form>
+            </CardContent>
+          </Card>
+
+          {/* Backup Settings */}
+          {user && userProfile && (
+            <BackupSettings userId={user.id} userProfile={userProfile} />
+          )}
+
+          {/* Security & Privacy Card */}
+          <Card className="glass-main border-white/10">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-green-500/10 rounded-lg">
+                    <Shield className="w-5 h-5 text-green-400" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">Security & Privacy</h3>
+                    <p className="text-sm text-muted-foreground">View encryption status, audit logs, and security settings</p>
+                  </div>
+                </div>
+                <Link href="/security">
+                  <Button variant="outline" className="glass-button">
+                    View Security Center
+                  </Button>
+                </Link>
+              </div>
             </CardContent>
           </Card>
         </div>

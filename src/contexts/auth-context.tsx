@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
 import { useRouter } from 'next/navigation';
+import { logAuditEvent } from '@/lib/audit-logger';
 
 interface UserProfile {
   id: string;
@@ -50,6 +51,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserProfile(null);
       }
       setLoading(false);
+
+      // Log login events (fire-and-forget, outside of the auth lock)
+      if (_event === 'SIGNED_IN' && session?.user) {
+        setTimeout(() => {
+          logAuditEvent(session.user.id, 'LOGIN', 'User signed in', {
+            entityType: 'session',
+            metadata: { provider: session.user.app_metadata?.provider || 'email' },
+          });
+        }, 0);
+      }
     });
 
     // Fallback timeout in case onAuthStateChange doesn't fire
@@ -104,6 +115,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
+      // Log logout before clearing the session
+      if (user) {
+        await logAuditEvent(user.id, 'LOGOUT', 'User signed out', {
+          entityType: 'session',
+        });
+      }
       await supabase.auth.signOut();
       setUser(null);
       setUserProfile(null);

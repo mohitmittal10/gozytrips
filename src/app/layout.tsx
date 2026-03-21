@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ProtectedRoute } from "@/components/protected-route";
+import BackupScheduler from "@/components/settings/backup-scheduler";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ export default function RootLayout({
         <AuthProvider>
           <ProtectedRoute>
             {children}
+            <BackupScheduler />
           </ProtectedRoute>
         </AuthProvider>
         <Toaster />

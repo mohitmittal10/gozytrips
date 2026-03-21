@@ -130,6 +130,62 @@ export type Database = {
           updated_at?: string;
         };
       };
+      trip_line_items: {
+        Row: {
+          id: string;
+          itinerary_id: string;
+          title: string;
+          category: string;
+          net_cost: number;
+          markup_percentage: number;
+          currency: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          itinerary_id: string;
+          title: string;
+          category: string;
+          net_cost?: number;
+          markup_percentage?: number;
+          currency?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          title?: string;
+          category?: string;
+          net_cost?: number;
+          markup_percentage?: number;
+          currency?: string;
+          updated_at?: string;
+        };
+      };
+      audit_logs: {
+        Row: {
+          id: string;
+          user_id: string;
+          action_type: string;
+          entity_type: string | null;
+          entity_id: string | null;
+          description: string;
+          metadata: Record<string, any>;
+          ip_address: string | null;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          action_type: string;
+          entity_type?: string | null;
+          entity_id?: string | null;
+          description: string;
+          metadata?: Record<string, any>;
+          ip_address?: string | null;
+          created_at?: string;
+        };
+        Update: never; // Audit logs are immutable
+      };
     };
   };
 };
