@@ -113,7 +113,7 @@ export function Testimonial() {
                 }}
             >
                 <motion.div
-                    className="rounded-full bg-white shadow-xl border border-black/10 flex items-center justify-center"
+                    className="rounded-full bg-primary shadow-xl shadow-primary/20 border border-primary/20 flex items-center justify-center"
                     animate={{
                         width: isHovered ? 80 : 0,
                         height: isHovered ? 80 : 0,
@@ -122,7 +122,7 @@ export function Testimonial() {
                     transition={{ type: "spring", damping: 20, stiffness: 200 }}
                 >
                     <motion.span
-                        className="text-black text-xs font-medium tracking-wider uppercase"
+                        className="text-white text-xs font-medium tracking-wider uppercase"
                         animate={{ opacity: isHovered ? 1 : 0 }}
                         transition={{ delay: 0.1 }}
                     >

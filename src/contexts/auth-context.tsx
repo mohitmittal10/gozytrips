@@ -6,6 +6,7 @@ import type { User } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
 import { useRouter } from 'next/navigation';
 import { logAuditEvent } from '@/lib/audit-logger';
+import type { AgencySettings } from '@/types/agency-settings';
 
 interface UserProfile {
   id: string;
@@ -25,9 +26,11 @@ interface UserProfile {
 interface AuthContextType {
   user: User | null;
   userProfile: UserProfile | null;
+  agencySettings: AgencySettings | null;
   loading: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
+  refreshSettings: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,6 +38,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [agencySettings, setAgencySettings] = useState<AgencySettings | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const supabase = useMemo(() => createClient(), []);
@@ -49,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user || null);
       if (!session?.user) {
         setUserProfile(null);
+        setAgencySettings(null);
       }
       setLoading(false);
 
@@ -85,6 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (user) {
       fetchUserProfile(user.id);
+      fetchAgencySettings(user.id);
     }
   }, [user]);
 
@@ -94,10 +100,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') {
-        // PGRST116 = no rows found
+      if (error) {
         console.error('Error fetching user profile:', error);
       } else if (data) {
         setUserProfile(data as UserProfile);
@@ -107,9 +112,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const fetchAgencySettings = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('agency_settings')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching agency settings:', error);
+      } else if (data) {
+        setAgencySettings(data as AgencySettings);
+      }
+    } catch (error) {
+      console.error('Error fetching agency settings:', error);
+    }
+  };
+
   const refreshProfile = async () => {
     if (user) {
       await fetchUserProfile(user.id);
+    }
+  };
+
+  const refreshSettings = async () => {
+    if (user) {
+      await fetchAgencySettings(user.id);
     }
   };
 
@@ -124,6 +153,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await supabase.auth.signOut();
       setUser(null);
       setUserProfile(null);
+      setAgencySettings(null);
       router.push('/auth/login');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -131,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userProfile, loading, signOut, refreshProfile }}>
+    <AuthContext.Provider value={{ user, userProfile, agencySettings, loading, signOut, refreshProfile, refreshSettings }}>
       {children}
     </AuthContext.Provider>
   );

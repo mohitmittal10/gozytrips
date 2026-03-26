@@ -15,7 +15,7 @@ interface Feature {
 interface FeatureStepsProps {
     features: Feature[]
     className?: string
-    title?: string
+    title?: React.ReactNode
     autoPlayInterval?: number
     imageHeight?: string
 }
@@ -97,9 +97,9 @@ export function FeatureSteps({
     }, [currentFeature, originalLength])
 
     return (
-        <div className={cn("p-8 md:p-12", className)}>
+        <div className={cn("p-4 md:p-8", className)}>
             <div className="max-w-7xl mx-auto w-full">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-10 text-center bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-500 dark:from-white dark:to-neutral-400">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-center bg-clip-text text-transparent bg-gradient-to-r from-neutral-900 to-neutral-500 dark:from-white dark:to-neutral-400">
                     {title}
                 </h2>
 

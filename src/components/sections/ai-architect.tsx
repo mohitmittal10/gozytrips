@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { useState, useEffect, useRef, useMemo } from "react";
+import { Pencil } from "lucide-react";
 import { generateTravelItinerary } from "@/ai/flows/generate-travel-itinerary";
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
 import { fetchItineraryImages } from "@/ai/flows/fetch-itinerary-images";
@@ -23,9 +24,11 @@ import { useToast } from "@/hooks/use-toast";
 import ItineraryTimeline from "../itinerary-timeline";
 import HotelFlightEditor, { type HotelInfo, type FlightInfo } from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
-import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye, Check, ArrowRight, Plane, Wallet } from "lucide-react";
+import { type PricingConfig } from "@/types/pricing";
+import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye, Check, ArrowRight, ArrowLeft, Plane, Wallet, DollarSign, Settings, Shield, LayoutDashboard } from "lucide-react";
+import Link from "next/link";
+import { CrmSettings } from "@/components/crm-settings";
 import { ItineraryProvider } from "@/contexts/itinerary-context";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import UniqueLoading from "@/components/ui/morph-loading";
 import { ShiningText } from "@/components/ui/shining-text";
 import { Textarea } from "../ui/textarea";
@@ -47,6 +50,16 @@ import {
 } from "@/components/ui/select";
 import { useClients } from "@/lib/hooks/use-clients";
 import { Switch } from "@/components/ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const formSchema = z.object({
   startingLocation: z.string().min(2, "Starting location is required."),
@@ -57,10 +70,6 @@ const formSchema = z.object({
   budget: z.preprocess(
     (val) => (val === "" || val === undefined || val === null ? undefined : val),
     z.coerce.number().int().positive("Budget must be a positive number.").optional()
-  ),
-  walkingDistance: z.preprocess(
-    (val) => (val === "" || val === undefined || val === null ? undefined : val),
-    z.coerce.number().int().positive("Distance must be a positive number.").optional()
   ),
   mustInclude: z.string().optional(),
   avoid: z.string().optional(),
@@ -84,7 +93,7 @@ const formSchema = z.object({
 const aiArchitectSteps = [
   { id: 1, label: "Destinations", fields: ["startingLocation", "destinations", "endingLocation"] as const },
   { id: 2, label: "Dates", fields: ["startDate", "endDate"] as const },
-  { id: 3, label: "Preferences", fields: ["budget", "walkingDistance", "mustInclude", "avoid", "leisureTime", "leisureDay", "travelTimePreference"] as const },
+  { id: 3, label: "Preferences", fields: ["budget", "mustInclude", "avoid", "leisureTime", "leisureDay", "travelTimePreference"] as const },
 ];
 
 const AiArchitect = () => {
@@ -98,7 +107,8 @@ const AiArchitect = () => {
   const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
   const itineraryRef = useRef<HTMLDivElement>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const { user, userProfile } = useAuth();
+  const { user, userProfile, agencySettings } = useAuth();
+  const [showBackConfirm, setShowBackConfirm] = useState(false);
   const supabase = createClient();
   const [hotels, setHotels] = useState<HotelInfo[]>([]);
   const [flights, setFlights] = useState<FlightInfo[]>([]);
@@ -107,9 +117,20 @@ const AiArchitect = () => {
   // CRM fields
   const { clients } = useClients();
   const [selectedClientId, setSelectedClientId] = useState<string>("none");
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("draft");
   const [tripMetadata, setTripMetadata] = useState<any>(null);
   const [showTimestamps, setShowTimestamps] = useState(true);
+  const [activeArchitectTab, setActiveArchitectTab] = useState<'itinerary' | 'flights-hotels' | 'pricing' | 'settings'>('itinerary');
+
+  const currencySymbol = useMemo(() => {
+    const currency = pricing?.currency || agencySettings?.default_currency || 'INR';
+    if (currency === 'INR') return '₹';
+    if (currency === 'USD') return '$';
+    if (currency === 'EUR') return '€';
+    if (currency === 'GBP') return '£';
+    return currency;
+  }, [pricing, agencySettings]);
 
   const loadingTexts = [
     "Analyzing your preferences...",
@@ -139,7 +160,6 @@ const AiArchitect = () => {
       endDate: undefined,
       destinations: "",
       budget: undefined,
-      walkingDistance: undefined,
       mustInclude: "",
       avoid: "",
       leisureTime: false,
@@ -589,7 +609,6 @@ const AiArchitect = () => {
         endDate: undefined,
         destinations: "",
         budget: undefined,
-        walkingDistance: undefined,
         mustInclude: "",
         avoid: "",
         leisureTime: false,
@@ -635,9 +654,9 @@ const AiArchitect = () => {
     }
   };
 
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>, feedback?: string) {
     setIsGenerating(true);
-    setItinerary(null);
+    if (!feedback) setItinerary(null); // Clear for fresh generation, keep for optimization to show transition
     setTripMetadata(values);
     try {
       // Format dates to YYYY-MM-DD
@@ -650,27 +669,52 @@ const AiArchitect = () => {
         startDate: startDateStr,
         endDate: endDateStr,
         destinations: values.destinations,
-        budget: values.budget,
-        walkingDistance: values.walkingDistance,
-        mustInclude: values.mustInclude,
-        avoid: values.avoid,
-        leisureTime: values.leisureTime,
-        leisureDay: values.leisureDay,
+        budget: values.budget ?? undefined,
+        mustInclude: values.mustInclude || "",
+        avoid: values.avoid || "",
+        leisureTime: !!values.leisureTime,
+        leisureDay: values.leisureDay ?? undefined,
         travelTimePreference: values.travelTimePreference,
+        feedback: (typeof feedback === 'string') ? feedback : "",
       });
 
-      // Fetch destination images from Unsplash
+      // Fetch dynamic images from Unsplash for days and activities
       try {
-        const searchTerms = result.itinerary.map(day => day.imageSearchTerm || day.areaFocus);
-        const areaNames = result.itinerary.map(day => day.areaFocus);
-        const imageUrls = await fetchItineraryImages(searchTerms, areaNames);
-        // Merge image URLs into each day
-        result.itinerary = result.itinerary.map((day, i) => ({
+        // 1. Fetch images for each DAY
+        const daySearchTerms = result.itinerary.map(day => day.imageSearchTerm || day.areaFocus);
+        const dayAreaNames = result.itinerary.map(day => day.areaFocus);
+        const dayImageUrls = await fetchItineraryImages(daySearchTerms, dayAreaNames);
+
+        // 2. Fetch images for EACH ACTIVITY (timeline step)
+        // We'll do this in parallel for all activities across all days
+        const activitySteps = result.itinerary.flatMap((day, dIdx) =>
+          day.timeline.map((step, sIdx) => ({
+            dayIndex: dIdx,
+            stepIndex: sIdx,
+            searchTerm: step.imageSearchTerm || step.details.split('.')[0] || day.areaFocus,
+            fallbackArea: day.areaFocus
+          }))
+        );
+
+        const activitySearchTerms = activitySteps.map(s => s.searchTerm);
+        const activityFallbacks = activitySteps.map(s => s.fallbackArea);
+        const activityImageUrls = await fetchItineraryImages(activitySearchTerms, activityFallbacks);
+
+        // 3. Merge EVERYTHING back into the itinerary object
+        result.itinerary = result.itinerary.map((day, dIdx) => ({
           ...day,
-          imageUrl: imageUrls[i] || undefined,
+          imageUrl: dayImageUrls[dIdx] || undefined,
+          timeline: day.timeline.map((step, sIdx) => {
+            // Find the index in the flattened activityImageUrls array
+            const flatIdx = activitySteps.findIndex(as => as.dayIndex === dIdx && as.stepIndex === sIdx);
+            return {
+              ...step,
+              imageUrl: activityImageUrls[flatIdx] || undefined
+            };
+          })
         }));
       } catch (imgError) {
-        console.warn('Failed to fetch destination images, continuing without them:', imgError);
+        console.warn('Failed to fetch dynamic images, continuing with fallbacks:', imgError);
       }
 
       setItinerary(result);
@@ -692,16 +736,16 @@ const AiArchitect = () => {
         <div className={cn("transition-all duration-500 w-full", (isGenerating || itinerary) ? "hidden" : "block")}>
           <div className="text-center mb-16 animate-in fade-in slide-in-from-top-4 duration-1000">
             <h1 className="text-5xl md:text-7xl font-serif font-bold text-white tracking-tighter mb-4 uppercase">
-              Odyssey <span className="text-zinc-600">Luxe</span>
+              Odyssey <span className="text-gradient">Luxe</span>
             </h1>
             <p className="text-zinc-500 text-lg md:text-xl font-medium tracking-wide">
               Your Personal AI Travel Architect
             </p>
           </div>
-          <Card className="liquid-glass glossy-surface border-white/5 shadow-2xl">
+          <Card className="glass-panel rounded-[2.5rem] shadow-2xl border-white/5">
             <CardHeader className="border-b border-white/5">
               <CardTitle className="font-serif text-2xl flex items-center gap-2 text-white uppercase tracking-tight">
-                <Sparkles className="w-6 h-6 text-zinc-400" />
+                <Sparkles className="w-6 h-6 text-primary" />
                 <span>Plan Your Next Escape</span>
               </CardTitle>
             </CardHeader>
@@ -924,7 +968,7 @@ const AiArchitect = () => {
 
                   {/* Step 3: Preferences */}
                   <div className={cn("space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700", currentStep !== 2 && "hidden")}>
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid md:grid-cols-1 gap-6">
                       <FormField
                         control={form.control}
                         name="budget"
@@ -936,23 +980,6 @@ const AiArchitect = () => {
                             <div className="relative group">
                               <FormControl>
                                 <Input type="number" placeholder="Optional, e.g., 10000" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
-                              </FormControl>
-                            </div>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="walkingDistance"
-                        render={({ field }) => (
-                          <FormItem>
-                            <div className="flex items-baseline justify-between mb-2">
-                              <FormLabel className="text-lg font-medium tracking-tight">Max Walking Distance (km/day)</FormLabel>
-                            </div>
-                            <div className="relative group">
-                              <FormControl>
-                                <Input type="number" placeholder="Optional, e.g., 10" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
                               </FormControl>
                             </div>
                             <FormMessage />
@@ -1063,7 +1090,7 @@ const AiArchitect = () => {
                         key="continue-btn"
                         type="button"
                         onClick={handleNext}
-                        className="w-full h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 bg-foreground text-background hover:bg-foreground/90"
+                        className="w-full h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 bg-primary text-white hover:bg-primary/90 rounded-xl"
                       >
                         <span className="flex items-center justify-center gap-2 font-medium">
                           Continue
@@ -1078,7 +1105,7 @@ const AiArchitect = () => {
                         key="submit-btn"
                         type="submit"
                         disabled={isGenerating}
-                        className="w-full h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-foreground/5 bg-foreground text-background hover:bg-foreground/90"
+                        className="w-full h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 bg-primary text-white hover:bg-primary/90 rounded-xl"
                       >
                         <span className="flex items-center justify-center gap-2 font-medium">
                           {isGenerating ? "Crafting Your Journey..." : "Generate Optimized Trip"}
@@ -1116,9 +1143,24 @@ const AiArchitect = () => {
       )}
 
       {(!isGenerating && itinerary) && (
-        <div className="bg-obsidian-dark/40 backdrop-blur-sm border-b border-white/5 py-4 shadow-xl sticky top-20 z-40 mb-10 -mx-4 sm:-mx-6 lg:-mx-8">
+        <div className="bg-obsidian-dark/60 backdrop-blur-md border-b border-white/5 py-3 shadow-xl sticky top-0 z-30 mb-6 -mx-4 sm:-mx-6 lg:-mx-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-4">
             <div className="flex flex-wrap items-center space-x-6">
+              <button
+                onClick={() => {
+                  if (itinerary) {
+                    setShowBackConfirm(true);
+                  } else {
+                    setItinerary(null);
+                    setIsEditing(false);
+                  }
+                }}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-xs font-bold uppercase tracking-widest"
+                title="Return to form"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back
+              </button>
               <div className="flex items-center gap-3">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Client</label>
                 <Select value={selectedClientId} onValueChange={setSelectedClientId}>
@@ -1158,6 +1200,39 @@ const AiArchitect = () => {
                   Time
                 </label>
               </div>
+
+              {/* Edit Itinerary Toggle */}
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                className={cn(
+                  "p-2 rounded-lg transition-all duration-300 flex items-center justify-center",
+                  isEditing 
+                    ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_0_15px_rgba(255,92,51,0.2)]" 
+                    : "bg-white/5 text-zinc-400 border border-white/5 hover:bg-white/10 hover:text-zinc-300"
+                )}
+                title={isEditing ? "Editing Mode Active" : "Edit Itinerary"}
+              >
+                {isEditing ? (
+                  <svg 
+                    width="18" 
+                    height="18" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round" 
+                    className="animate-pulse"
+                  >
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                    <path d="m15 5 4 4"/>
+                    <path d="M9 11c0 2-1 3-3 4-1.5.75-2 2-2 3s.5 2.25 2 3c1 0 1.5-.5 2-1s1-1.5 1-2" stroke="currentColor" fill="currentColor" fillOpacity="0.2" className="animate-bounce" />
+                    <circle cx="6" cy="18" r="1.5" fill="currentColor" />
+                  </svg>
+                ) : (
+                  <Pencil className="w-[18px] h-[18px]" />
+                )}
+              </button>
             </div>
 
             <div className="flex items-center space-x-3">
@@ -1174,7 +1249,7 @@ const AiArchitect = () => {
                 size="sm"
                 onClick={handleSaveItinerary}
                 disabled={isSaving}
-                className="px-6 py-2.5 bg-zinc-100 text-black rounded-lg text-sm font-semibold hover:bg-white transition-all shadow-lg shadow-white/5 flex items-center gap-2 h-10"
+                className="px-6 py-2.5 aurora-gradient text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-2 h-10 border-none"
               >
                 <Save className="w-4 h-4" />
                 {isSaving ? "Saving..." : "Save Itinerary"}
@@ -1186,86 +1261,145 @@ const AiArchitect = () => {
 
       {itinerary && (
         <>
-          <div ref={itineraryRef} className="mt-12">
-            <Tabs defaultValue="itinerary">
-              <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 items-start">
-                {/* Sidebar Summary */}
-                <div className="lg:col-span-3 space-y-6 lg:sticky lg:top-40">
-                  <div className="liquid-glass rounded-2xl p-6 border border-white/5 space-y-8 shadow-2xl">
-                    <div>
-                      <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-600 mb-4 text-center lg:text-left">Journey Summary</h3>
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-zinc-500">Duration</span>
-                          <span className="text-white font-medium">{itinerary.itinerary.length} Days</span>
+          <div ref={itineraryRef} className="mt-0 max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-row gap-6">
+
+              {/* Glassmorphism Icon Sidebar */}
+              <div className="hidden lg:flex flex-col items-center w-16 shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
+                <div className="flex flex-col items-center justify-between h-full py-4 px-2 rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                  {/* Top Navigation */}
+                  <div className="flex flex-col items-center gap-1">
+                    {[
+                      { id: 'itinerary' as const, icon: CalendarIcon, label: 'Timeline' },
+                      { id: 'flights-hotels' as const, icon: Plane, label: 'Logistics & Financials' },
+                      { id: 'pricing' as const, icon: DollarSign, label: 'Financials' },
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => setActiveArchitectTab(item.id)}
+                        className={`relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+                          activeArchitectTab === item.id
+                            ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
+                            : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
+                        }`}
+                        title={item.label}
+                      >
+                        <item.icon className="w-[18px] h-[18px]" />
+                        {/* Tooltip */}
+                        <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                          {item.label}
+                          <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
                         </div>
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-zinc-500">Activities</span>
-                          <span className="text-white font-medium">
-                            {itinerary.itinerary.reduce((acc, day) => acc + day.timeline.length, 0)}
-                          </span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Separator */}
+                  <div className="w-6 h-px bg-white/[0.08] my-2" />
+
+                  {/* Bottom Navigation */}
+                  <div className="flex flex-col items-center gap-1">
+                    <button
+                      onClick={() => setActiveArchitectTab('settings')}
+                      className={`relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+                        activeArchitectTab === 'settings'
+                          ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
+                          : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
+                      }`}
+                      title="Settings"
+                    >
+                      <Settings className="w-[18px] h-[18px]" />
+                      <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                        Settings
+                        <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
+                      </div>
+                    </button>
+                    <Link href="/security">
+                      <button
+                        className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 text-gray-500 hover:text-white hover:bg-white/[0.06]"
+                        title="Security & Privacy"
+                      >
+                        <Shield className="w-[18px] h-[18px]" />
+                        <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                          Security & Privacy
+                          <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
                         </div>
-                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-zinc-500">Budget</span>
-                          <span className="text-white font-medium">{form.getValues("budget") || "Flexible"}</span>
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Sidebar (horizontal scrollable) */}
+              <div className="lg:hidden w-full mb-4 overflow-x-auto scrollbar-none">
+                <div className="flex items-center gap-2 p-2 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl min-w-max">
+                  {[
+                    { id: 'itinerary' as const, icon: CalendarIcon, label: 'Timeline' },
+                    { id: 'flights-hotels' as const, icon: Plane, label: 'Logistics' },
+                    { id: 'pricing' as const, icon: DollarSign, label: 'Financials' },
+                    { id: 'settings' as const, icon: Settings, label: 'Settings' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveArchitectTab(item.id)}
+                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                        activeArchitectTab === item.id
+                          ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
+                          : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
+                      }`}
+                    >
+                      <item.icon className="w-4 h-4" />
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Main Content Area */}
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 items-start">
+                  {/* Main Content (Left) */}
+                  <div className="lg:col-span-8 w-full min-w-0 order-2 lg:order-1">
+
+                    {/* Itinerary Hero */}
+                    <div className="relative rounded-2xl overflow-hidden h-40 shadow-xl group border border-white/10 mb-6">
+                      <img
+                        src={itinerary.itinerary[0]?.imageUrl || "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=2000&auto=format&fit=crop"}
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-[0.5]"
+                        alt="Destination"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+
+                      <div className="absolute bottom-6 left-6 text-white">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="aurora-gradient text-[8px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Active Journey</span>
                         </div>
+                        <h2 className="text-2xl font-extrabold tracking-tighter">Tropical Intelligence: <span className="text-gradient">{itinerary.itinerary[0]?.areaFocus?.split(',')[0] || "Ubud"}</span></h2>
                       </div>
                     </div>
 
-                    <div className="pt-6 border-t border-white/5">
-                      <TabsList className="bg-transparent h-auto p-0 flex flex-col gap-2 items-stretch">
-                        <TabsTrigger value="itinerary" className="nav-glow-item justify-start px-0 py-3 text-zinc-500 data-[state=active]:text-white bg-transparent border-none shadow-none text-xs font-bold uppercase tracking-widest transition-all">
-                          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3 group-data-[state=active]:bg-white group-data-[state=active]:text-black transition-colors">
-                            <CalendarIcon className="w-4 h-4" />
-                          </div>
-                          Timeline
-                        </TabsTrigger>
-                        <TabsTrigger value="flights-hotels" className="nav-glow-item justify-start px-0 py-3 text-zinc-500 data-[state=active]:text-white bg-transparent border-none shadow-none text-xs font-bold uppercase tracking-widest transition-all">
-                          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3">
-                            <Plane className="w-4 h-4" />
-                          </div>
-                          Logistics
-                        </TabsTrigger>
-                        <TabsTrigger value="pricing" className="nav-glow-item justify-start px-0 py-3 text-zinc-500 data-[state=active]:text-white bg-transparent border-none shadow-none text-xs font-bold uppercase tracking-widest transition-all">
-                          <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center mr-3">
-                            <Wallet className="w-4 h-4" />
-                          </div>
-                          Financials
-                        </TabsTrigger>
-                      </TabsList>
-                    </div>
-                  </div>
+                    {/* Tab Content - Timeline */}
+                    {activeArchitectTab === 'itinerary' && (
+                      <div className="relative rounded-2xl border border-white/[0.06] p-4 sm:p-6 backdrop-blur-sm overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(10,10,11,0.9) 0%, rgba(18,18,20,0.95) 50%, rgba(10,10,11,0.9) 100%)' }}>
+                        <ItineraryTimeline
+                          itinerary={itinerary?.itinerary || []}
+                          isLoading={isGenerating}
+                          editable={isEditing}
+                          onEditingChange={setIsEditing}
+                          onItineraryChange={(updatedItinerary) => {
+                            if (itinerary) {
+                              setItinerary({ ...itinerary, itinerary: updatedItinerary });
+                            }
+                          }}
+                          hotels={hotels}
+                          flights={flights}
+                          showTimestamps={showTimestamps}
+                        />
+                      </div>
+                    )}
 
-                  <div className="liquid-glass rounded-xl p-4 border border-white/5 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400">
-                      <AlertCircle className="w-4 h-4" />
-                    </div>
-                    <div className="text-[10px] text-zinc-500 uppercase font-bold tracking-wider leading-relaxed">
-                      AI Architect V2.1 <br /> Liquid Glass Engine
-                    </div>
-                  </div>
-                </div>
-
-                {/* Main Content Area */}
-                <div className="lg:col-span-9 w-full min-w-0">
-                  <TabsContent value="itinerary" className="m-0 focus-visible:outline-none focus-visible:ring-0">
-                    <ItineraryTimeline
-                      itinerary={itinerary?.itinerary || []}
-                      isLoading={isGenerating}
-                      editable={true}
-                      onItineraryChange={(updatedItinerary) => {
-                        if (itinerary) {
-                          setItinerary({ ...itinerary, itinerary: updatedItinerary });
-                        }
-                      }}
-                      hotels={hotels}
-                      flights={flights}
-                      showTimestamps={showTimestamps}
-                    />
-                  </TabsContent>
-
-                  {itinerary && !isGenerating && (
-                    <TabsContent value="flights-hotels" className="m-0 focus-visible:outline-none focus-visible:ring-0">
+                    {/* Tab Content - Logistics (Hotels & Flights) */}
+                    {activeArchitectTab === 'flights-hotels' && !isGenerating && (
                       <HotelFlightEditor
                         hotels={hotels}
                         flights={flights}
@@ -1273,33 +1407,212 @@ const AiArchitect = () => {
                         onHotelsChange={setHotels}
                         onFlightsChange={setFlights}
                       />
-                    </TabsContent>
-                  )}
+                    )}
 
-                  {itinerary && !isGenerating && (
-                    <TabsContent value="pricing" className="m-0 focus-visible:outline-none focus-visible:ring-0">
-                      {/*
-                        Wrap in ItineraryProvider so PricingModule can access the store.
-                        Keyed so it remounts (and resets) when the itinerary changes.
-                        On UPDATE_PRICING dispatch the provider's internal state updates,
-                        which is synced back out via onPricingChange when saving.
-                      */}
+                    {/* Tab Content - Financials (Pricing) */}
+                    {activeArchitectTab === 'pricing' && !isGenerating && (
                       <ItineraryProvider
                         key={JSON.stringify(itinerary?.itinerary?.length)}
                         initialTrip={{
                           itinerary: itinerary?.itinerary || [],
                           hotels,
                           flights,
-                          pricing: pricing || undefined,
+                          pricing: pricing || (agencySettings ? {
+                            currency: agencySettings.default_currency,
+                            markupType: agencySettings.default_markup_type,
+                            markupValue: agencySettings.default_markup_value,
+                            taxPercentage: agencySettings.default_tax_percentage,
+                            adultPax: 2,
+                            childPax: 0,
+                            infantPax: 0,
+                            milestones: [],
+                          } as any : undefined),
                         }}
                       >
                         <PricingModule />
                       </ItineraryProvider>
-                    </TabsContent>
-                  )}
+                    )}
+
+                    {/* Tab Content - Settings */}
+                    {activeArchitectTab === 'settings' && (
+                      <div className="mt-4">
+                        <CrmSettings />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Sidebar Summary (Right) */}
+                  <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-32 order-1 lg:order-2">
+                    <div className="glass-panel rounded-2xl p-3 mb-4 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sticky top-[68px] z-20 bg-obsidian-dark/80 backdrop-blur-lg">
+                      <div>
+                        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-2 block">Journey Summary</h3>
+                        <div className="flex flex-wrap gap-4 sm:gap-8">
+                          <div className="flex flex-col">
+                            <span className="text-[9px] font-black text-primary uppercase tracking-widest mb-0.5">Focus</span>
+                            <span className="text-white text-xs font-bold leading-none">{itinerary?.itinerary[0]?.areaFocus?.split(',')[0] || 'Bali'}</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[9px] font-black text-secondary uppercase tracking-widest mb-0.5">Duration</span>
+                            <span className="text-white text-xs font-bold leading-none">{itinerary?.itinerary.length} Days</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[9px] font-black text-tertiary uppercase tracking-widest mb-0.5">Currency</span>
+                            <span className="text-white text-xs font-bold leading-none">{currencySymbol ?? "₹"}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="liquid-glass p-4 rounded-2xl space-y-4">
+                      <div className="flex justify-between items-center mb-3">
+                        <h3 className="font-extrabold text-white text-base tracking-tight">AI Optimizer</h3>
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
+                          <span className="material-symbols-outlined text-[18px] text-primary" style={{ fontVariationSettings: '"FILL" 1' }}>auto_awesome</span>
+                        </div>
+                      </div>
+                      {/* Optimization Items */}
+                      <div className="space-y-3">
+                        {itinerary?.optimizations && itinerary.optimizations.length > 0 ? (
+                          itinerary.optimizations.map((opt, idx) => (
+                            <div
+                              key={idx}
+                              style={{ animationDelay: `${100 + (idx * 100)}ms` }}
+                              className="bg-white/5 rounded-xl p-3 border border-white/5 transition-all duration-300 hover:bg-white/10 hover:border-primary/30 group cursor-pointer animate-in fade-in slide-in-from-right-4 fill-mode-both"
+                            >
+                              <div className="flex justify-between items-start mb-1">
+                                <p className="text-[9px] uppercase font-black text-primary/70 tracking-[0.2em]">{opt.type}</p>
+                                <span className="text-[9px] font-bold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded leading-none">
+                                  {opt.impact}
+                                </span>
+                              </div>
+                              <p className="text-[11px] font-semibold text-white/90 leading-tight group-hover:text-white transition-colors">
+                                {opt.message}
+                              </p>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="py-8 text-center space-y-2 opacity-50">
+                            <div className="w-10 h-10 rounded-full bg-white/5 mx-auto flex items-center justify-center">
+                              <span className="material-symbols-outlined text-zinc-500">lightbulb</span>
+                            </div>
+                            <p className="text-[10px] font-medium text-zinc-500">Generating smart insights...</p>
+                          </div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => {
+                          if (!itinerary?.optimizations) return;
+                          const feedback = itinerary.optimizations.map(o => `${o.type}: ${o.message}`).join(". ");
+                          onSubmit(form.getValues(), feedback);
+                        }}
+                        disabled={isGenerating || !itinerary}
+                        className={cn(
+                          "w-full py-2.5 rounded-lg aurora-gradient text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 mt-2",
+                          (isGenerating || !itinerary) && "opacity-50 cursor-not-allowed"
+                        )}
+                      >
+                        <span className={cn("material-symbols-outlined text-[16px]", isGenerating && "animate-spin")}>
+                          {isGenerating ? "cycle" : "bolt"}
+                        </span>
+                        {isGenerating ? "Refining..." : "Apply Optimizations"}
+                      </button>
+                    </div>
+
+                    <div className="liquid-glass p-4 rounded-2xl">
+                      <h5 className="text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-4">Client Dossier</h5>
+                      {(() => {
+                        const selectedClient = clients.find(c => c.id === selectedClientId);
+                        if (!selectedClient) {
+                          return (
+                            <div className="flex flex-col items-center justify-center py-4 text-center">
+                              <div className="w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mb-3">
+                                <span className="material-symbols-outlined text-[18px] text-zinc-600">person_off</span>
+                              </div>
+                              <p className="text-[11px] font-bold text-zinc-500">No Client Assigned</p>
+                              <p className="text-[9px] text-zinc-600 mt-0.5">Assign a client from the dropdown above</p>
+                            </div>
+                          );
+                        }
+                        const initials = selectedClient.name
+                          .split(' ')
+                          .map(n => n.charAt(0))
+                          .join('')
+                          .toUpperCase()
+                          .slice(0, 2);
+                        const memberSince = new Date(selectedClient.created_at).getFullYear();
+                        // Parse tags for quick-info cards
+                        const tagList = selectedClient.tags || [];
+                        const dietaryTag = tagList.find(t => /vegan|vegetarian|halal|kosher|gluten|dietary|gf|non.?veg/i.test(t));
+                        const paceTag = tagList.find(t => /relaxed|adventure|luxury|budget|fast|slow|moderate|pace/i.test(t));
+                        return (
+                          <>
+                            <div className="flex items-center gap-4 mb-4">
+                              <div className="relative">
+                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-accent/30 ring-2 ring-primary/40 flex items-center justify-center text-sm font-black text-white">
+                                  {initials}
+                                </div>
+                              </div>
+                              <div className="min-w-0">
+                                <p className="font-extrabold text-white text-base truncate">{selectedClient.name}</p>
+                                <p className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">
+                                  Client since {memberSince}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 mb-3">
+                              {selectedClient.email && (
+                                <div className="p-3 rounded-xl border border-white/5 bg-white/5 flex flex-col justify-center col-span-2">
+                                  <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Email</p>
+                                  <p className="text-[10px] font-bold text-slate-300 truncate">{selectedClient.email}</p>
+                                </div>
+                              )}
+                              {selectedClient.phone && (
+                                <div className="p-3 rounded-xl border border-white/5 bg-white/5 flex flex-col justify-center col-span-2">
+                                  <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Phone</p>
+                                  <p className="text-[10px] font-bold text-slate-300">{selectedClient.phone}</p>
+                                </div>
+                              )}
+                              <div className="p-3 rounded-xl border border-white/5 bg-white/5 flex flex-col justify-center">
+                                <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Dietary</p>
+                                <p className="text-[10px] font-bold text-tertiary">{dietaryTag || "—"}</p>
+                              </div>
+                              <div className="p-3 rounded-xl border border-white/5 bg-white/5 flex flex-col justify-center">
+                                <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest mb-0.5">Pace</p>
+                                <p className="text-[10px] font-bold text-tertiary">{paceTag || "—"}</p>
+                              </div>
+                            </div>
+                            {selectedClient.notes && (
+                              <div className="p-3 rounded-xl border border-white/5 bg-white/5">
+                                <p className="text-[8px] text-slate-500 font-black uppercase tracking-widest mb-1">Notes</p>
+                                <p className="text-[10px] leading-relaxed text-slate-400 line-clamp-3">{selectedClient.notes}</p>
+                              </div>
+                            )}
+                            {tagList.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-3">
+                                {tagList.map((tag, i) => (
+                                  <span key={i} className="px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-[8px] font-bold text-primary uppercase tracking-wider">
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </div>
+
+                    <div className="rounded-2xl overflow-hidden shadow-xl h-32 relative border border-white/10 group cursor-pointer">
+                      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-xsOGndml_s9kwf08ODde8-KMQEdc7hOdy_VXgjwaTro4rMzYGe_9Y4VDhqf54Euy1V_gMHnEZlaZmkrkFT4LJaSjfte0TO0C_djYBte3XZ9j5oNeBFXizpz7mPN63ZZvd0aJWcOfnOwzKMotLKinl68YbvU-x01hJlqVxQYtl9KCj-7-kq0pGahQrUrgTS68l9Ene2wivXgm-sGiTl51WL9YeiNB-Fg3hYziTQDqDWangdgPLTYSv4s8EZiAyo0uFZQY2WHMNJ8" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 brightness-[0.5]" alt="Map Route" />
+                      <div className="absolute inset-0 bg-secondary/10 backdrop-brightness-[0.7]"></div>
+                      <div className="absolute bottom-3 left-3 glass-panel px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border-white/20">
+                        <span className="material-symbols-outlined text-[14px] text-primary" style={{ fontVariationSettings: '"FILL" 1' }}>explore</span>
+                        Tracking
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </Tabs>
+
+            </div>
           </div>
 
           {/* PDF Preview & Export */}
@@ -1320,6 +1633,53 @@ const AiArchitect = () => {
           />
         </>
       )}
+      {/* Back Confirmation Dialog */}
+      <AlertDialog open={showBackConfirm} onOpenChange={setShowBackConfirm}>
+        <AlertDialogContent className="glass-panel border-white/10 bg-black/90 text-white max-w-md">
+          <AlertDialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-full bg-primary/10 text-primary">
+                <AlertCircle className="w-5 h-5" />
+              </div>
+              <AlertDialogTitle className="text-xl font-bold tracking-tight">Unsaved Journey</AlertDialogTitle>
+            </div>
+            <AlertDialogDescription className="text-zinc-400 text-sm leading-relaxed">
+              You're about to return to the architect form. Would you like to save this itinerary first? Unsaved changes in Architect Mode will be permanently lost.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-8 gap-3 sm:gap-0">
+            <div className="flex flex-col sm:flex-row gap-2 w-full">
+              <button
+                onClick={() => {
+                  setItinerary(null);
+                  setIsEditing(false);
+                  setShowBackConfirm(false);
+                }}
+                className="flex-1 px-4 py-2 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-xs font-bold uppercase tracking-widest"
+              >
+                Discard
+              </button>
+              <AlertDialogAction
+                onClick={async () => {
+                  await handleSaveItinerary();
+                  setItinerary(null);
+                  setIsEditing(false);
+                  setShowBackConfirm(false);
+                }}
+                className="flex-1 aurora-gradient border-none text-white text-xs font-bold uppercase tracking-widest h-10"
+              >
+                Save & Exit
+              </AlertDialogAction>
+              <AlertDialogCancel className="sm:hidden text-zinc-500 border-none hover:text-zinc-300 bg-transparent">
+                Cancel
+              </AlertDialogCancel>
+            </div>
+          </AlertDialogFooter>
+          <AlertDialogCancel className="hidden sm:block absolute top-4 right-4 text-zinc-500 border-none hover:text-zinc-300 bg-transparent">
+             <span className="material-symbols-outlined text-[20px]">close</span>
+          </AlertDialogCancel>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 };

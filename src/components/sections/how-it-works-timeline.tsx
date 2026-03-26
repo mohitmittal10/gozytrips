@@ -3,7 +3,7 @@
 import Image from "next/image";
 import React from "react";
 import { Timeline } from "@/components/ui/timeline";
-import { MessageCircle, MapPin, File, Users } from "lucide-react";
+import { Sparkles, MapPin, Zap, Users, Info } from "lucide-react";
 
 export default function HowItWorksTimeline() {
     const images = {
@@ -20,7 +20,7 @@ export default function HowItWorksTimeline() {
                 <div>
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                            <MessageCircle className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                            <Info className="h-6 w-6 text-blue-600 dark:text-blue-400" />
                         </div>
                         <h4 className="text-xl md:text-2xl font-bold text-neutral-800 dark:text-neutral-200">
                             Tell us where you want to go
@@ -74,7 +74,7 @@ export default function HowItWorksTimeline() {
                 <div>
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                            <File className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                            <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
                         </div>
                         <h4 className="text-xl md:text-2xl font-bold text-neutral-800 dark:text-neutral-200">
                             We prepare your PDF
@@ -125,10 +125,10 @@ export default function HowItWorksTimeline() {
     ];
 
     return (
-        <section className="w-full py-4">
+        <section className="w-full py-2 bg-black">
             <Timeline
                 data={data}
-                title="How it works"
+                title={<>How <span className="bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 bg-clip-text text-transparent">it works</span></>}
                 description="Booking your next unforgettable journey is as easy as 1, 2, 3, and 4. Let our AI handle the heavy lifting while you focus on the excitement of travel."
             />
         </section>

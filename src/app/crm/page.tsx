@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Users, Calendar, MapPin, CheckCircle2, Clock, ArrowRight, Search, Plus, ListFilter, Compass, FileText, Settings, LayoutDashboard, Send, TrendingUp, Activity, CalendarDays, UserPlus, Plane, ArrowUpDown, ChevronLeft, ChevronRight, Download, Columns3, ArrowUp, ArrowDown, GripVertical, Archive, Save, X, Sliders, LayoutGrid, List, History, DollarSign, Trash2, Shield } from "lucide-react";
+import { Users, Calendar, MapPin, CheckCircle2, Clock, ArrowRight, Search, Plus, ListFilter, Compass, FileText, Settings, LayoutDashboard, Send, TrendingUp, Activity, CalendarDays, UserPlus, Plane, ArrowUpDown, ChevronLeft, ChevronRight, Download, Columns3, ArrowUp, ArrowDown, GripVertical, Archive, Save, X, Sliders, LayoutGrid, List, History, DollarSign, Trash2, Shield, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Header from "@/components/layout/header";
@@ -48,6 +48,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FinancesSheet } from "@/components/finances-sheet";
+import VendorEnquiry from "@/components/vendor-enquiry";
+import ClientUpdateSuggestions from "@/components/client-update-suggestions";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -56,6 +58,8 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { CrmSettings } from "@/components/crm-settings";
+import { ImportBackupModal } from "@/components/import-backup-modal";
 
 // A combined type taking our client and adding the dynamic trip data
 interface EnrichedClient extends Client {
@@ -890,87 +894,128 @@ export default function CRMLitePage() {
     return (
         <div className="min-h-screen bg-[#0A0A0A] text-white pt-24 pb-12">
             <Header />
-            <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 mt-4">
-                <div className="flex flex-col lg:flex-row gap-8">
+            <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 mt-4">
+                <div className="flex flex-row gap-6">
 
-                    {/* Left Navigation Panel */}
-                    <div className="w-full lg:w-64 shrink-0 space-y-2">
-                        <div className="p-4 glass-main border border-white/10 rounded-xl space-y-2">
-                            <Button
-                                variant="ghost"
-                                className={`w-full justify-start gap-3 rounded-lg ${activeTab === 'dashboard' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                                onClick={() => setActiveTab('dashboard')}
-                            >
-                                <LayoutDashboard className="w-5 h-5" /> Dashboard
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                className={`w-full justify-start gap-3 rounded-lg ${activeTab === 'clients' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                                onClick={() => setActiveTab('clients')}
-                            >
-                                <Users className="w-5 h-5" /> All Clients
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                className={`w-full justify-start gap-3 rounded-lg ${activeTab === 'trips' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                                onClick={() => setActiveTab('trips')}
-                            >
-                                <MapPin className="w-5 h-5" /> Active Trips
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                className={`w-full justify-start gap-3 rounded-lg ${activeTab === 'archive' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                                onClick={() => setActiveTab('archive')}
-                            >
-                                <Archive className="w-5 h-5" /> Archive
-                                {archivedClients.length > 0 && <span className="ml-auto text-xs text-gray-500">{archivedClients.length}</span>}
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                className={`w-full justify-start gap-3 rounded-lg ${activeTab === 'finance' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                                onClick={() => setActiveTab('finance')}
-                            >
-                                <DollarSign className="w-5 h-5" /> Finance
-                            </Button>
-                            <Button
-                                variant="ghost"
-                                className={`w-full justify-start gap-3 rounded-lg ${activeTab === 'templates' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                                onClick={() => setActiveTab('templates')}
-                            >
-                                <FileText className="w-5 h-5" /> Templates
-                            </Button>
-                        </div>
+                    {/* Glassmorphism Icon Sidebar */}
+                    <div className="hidden lg:flex flex-col items-center w-16 shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
+                        <div className="flex flex-col items-center justify-between h-full py-4 px-2 rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                            {/* Top Navigation */}
+                            <div className="flex flex-col items-center gap-1">
+                                {[
+                                    { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+                                    { id: 'clients', icon: Users, label: 'All Clients' },
+                                    { id: 'trips', icon: MapPin, label: 'Active Trips' },
+                                    { id: 'timeline', icon: Calendar, label: 'Timeline' },
+                                    { id: 'finance', icon: DollarSign, label: 'Logistics & Financials' },
+                                    { id: 'edit-itinerary', icon: Compass, label: 'Edit Itinerary' },
+                                    { id: 'enquiry', icon: Mail, label: 'Vendor Enquiry' },
+                                    { id: 'archive', icon: Archive, label: 'Archive' },
+                                ].map((item) => (
+                                    <button
+                                        key={item.id}
+                                        onClick={() => setActiveTab(item.id)}
+                                        className={`relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+                                            activeTab === item.id
+                                                ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
+                                                : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
+                                        }`}
+                                        title={item.label}
+                                    >
+                                        <item.icon className="w-[18px] h-[18px]" />
+                                        {/* Tooltip */}
+                                        <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                                            {item.label}
+                                            <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
+                                        </div>
+                                        {/* Badge for archive */}
+                                        {item.id === 'archive' && archivedClients.length > 0 && (
+                                            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 flex items-center justify-center text-[8px] font-bold bg-purple-500 text-white rounded-full">
+                                                {archivedClients.length}
+                                            </span>
+                                        )}
+                                    </button>
+                                ))}
+                            </div>
 
-                        <div className="p-4 glass-main border border-white/10 rounded-xl space-y-2">
-                            <p className="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Settings</p>
-                            <Button
-                                variant="ghost"
-                                className={`w-full justify-start gap-3 rounded-lg ${activeTab === 'settings' ? 'bg-white/10 text-white' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
-                                onClick={() => setActiveTab('settings')}
-                            >
-                                <Settings className="w-5 h-5" /> Preferences
-                            </Button>
-                            <Link href="/security">
-                                <Button
-                                    variant="ghost"
-                                    className="w-full justify-start gap-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5"
+                            {/* Separator */}
+                            <div className="w-6 h-px bg-white/[0.08] my-2" />
+
+                            {/* Bottom Navigation */}
+                            <div className="flex flex-col items-center gap-1">
+                                <button
+                                    onClick={() => setActiveTab('settings')}
+                                    className={`relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+                                        activeTab === 'settings'
+                                            ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
+                                            : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
+                                    }`}
+                                    title="Settings"
                                 >
-                                    <Shield className="w-5 h-5" /> Security & Privacy
-                                </Button>
-                            </Link>
+                                    <Settings className="w-[18px] h-[18px]" />
+                                    <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                                        Settings
+                                        <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
+                                    </div>
+                                </button>
+                                <Link href="/security">
+                                    <button
+                                        className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 text-gray-500 hover:text-white hover:bg-white/[0.06]"
+                                        title="Security & Privacy"
+                                    >
+                                        <Shield className="w-[18px] h-[18px]" />
+                                        <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                                            Security & Privacy
+                                            <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
+                                        </div>
+                                    </button>
+                                </Link>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Mobile Sidebar (horizontal scrollable) */}
+                    <div className="lg:hidden w-full mb-4 overflow-x-auto scrollbar-none">
+                        <div className="flex items-center gap-2 p-2 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl min-w-max">
+                            {[
+                                { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+                                { id: 'clients', icon: Users, label: 'Clients' },
+                                { id: 'trips', icon: MapPin, label: 'Trips' },
+                                { id: 'timeline', icon: Calendar, label: 'Timeline' },
+                                { id: 'finance', icon: DollarSign, label: 'Financials' },
+                                { id: 'edit-itinerary', icon: Compass, label: 'Edit' },
+                                { id: 'enquiry', icon: Mail, label: 'Enquiry' },
+                                { id: 'archive', icon: Archive, label: 'Archive' },
+                                { id: 'settings', icon: Settings, label: 'Settings' },
+                            ].map((item) => (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setActiveTab(item.id)}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
+                                        activeTab === item.id
+                                            ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
+                                            : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
+                                    }`}
+                                >
+                                    <item.icon className="w-4 h-4" />
+                                    {item.label}
+                                </button>
+                            ))}
                         </div>
                     </div>
 
                     {/* Main Content Area */}
-                    <div className="flex-1 space-y-8">
+                    <div className="flex-1 min-w-0 space-y-8">
 
                         {/* Header Section */}
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
                                 <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-                                    {activeTab === 'dashboard' ? 'CRM Overview' : activeTab === 'clients' ? 'Client Management' : activeTab === 'trips' ? 'Trip Pipeline' : activeTab === 'archive' ? 'Completed Archive' : activeTab === 'finance' ? 'Financial Tracking' : activeTab === 'templates' ? 'Templates' : 'Preferences'}
+                                    {activeTab === 'dashboard' ? 'CRM Overview' : activeTab === 'clients' ? 'Client Management' : activeTab === 'trips' ? 'Trip Pipeline' : activeTab === 'archive' ? 'Completed Archive' : activeTab === 'finance' ? 'Logistics & Financials' : activeTab === 'enquiry' ? 'Vendor Enquiry' : activeTab === 'timeline' ? 'Trip Timeline' : activeTab === 'edit-itinerary' ? 'Edit Itinerary' : 'Preferences'}
                                 </h1>
-                                <p className="text-gray-400 mt-2">Manage your clients, preferences, and active trips.</p>
+                                <p className="text-gray-400 mt-2">
+                                    {activeTab === 'timeline' ? 'View detailed day-by-day timelines for your trips.' : activeTab === 'edit-itinerary' ? 'Edit and manage itineraries for your clients.' : activeTab === 'finance' ? 'Track costs, payments, and financial metrics across all trips.' : 'Manage your clients, preferences, and active trips.'}
+                                </p>
                             </div>
 
                             <Dialog open={isAddClientOpen} onOpenChange={setIsAddClientOpen}>
@@ -1052,11 +1097,189 @@ export default function CRMLitePage() {
                         </div>
 
                         {/* Interactive Views */}
-                        {(activeTab === 'templates' || activeTab === 'settings') ? (
-                            <div className="glass-main border border-white/10 rounded-xl p-16 text-center text-gray-400 flex flex-col items-center justify-center">
-                                {activeTab === 'templates' ? <FileText className="w-12 h-12 text-gray-600 mb-4" /> : <Settings className="w-12 h-12 text-gray-600 mb-4" />}
-                                <h3 className="text-xl font-medium text-white mb-2">{activeTab === 'templates' ? 'Templates' : 'Settings'}</h3>
-                                <p>This module is currently under development. Check back soon for full AI integration!</p>
+                        {activeTab === 'enquiry' ? (
+                            <div className="mt-4">
+                                <VendorEnquiry />
+                            </div>
+                        ) : activeTab === 'settings' ? (
+                            <div className="mt-4">
+                                <CrmSettings />
+                            </div>
+                        ) : activeTab === 'timeline' ? (
+                            <div className="mt-4 space-y-6">
+                                {/* Trip Selector for Timeline */}
+                                {enrichedClients.some(c => c.allTrips.length > 0) ? (
+                                    <>
+                                        {!selectedTripForModal ? (
+                                            <div className="space-y-4">
+                                                <div className="glass-main border border-white/10 rounded-xl p-6">
+                                                    <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
+                                                        <Calendar className="w-4 h-4 text-purple-400" /> Select a Trip to View Timeline
+                                                    </h3>
+                                                    <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+                                                        {enrichedClients.filter(c => c.allTrips.length > 0).map(client => (
+                                                            <div key={client.id} className="space-y-1">
+                                                                <p className="text-[10px] text-gray-500 uppercase tracking-wider px-2 pt-2">{client.name}</p>
+                                                                {client.allTrips.map((trip: any) => {
+                                                                    let label = trip.destinations || trip.title?.replace(/^Trip to\s+/i, '') || trip.starting_location || 'Untitled Trip';
+                                                                    const start = new Date(trip.start_date);
+                                                                    const end = new Date(trip.end_date);
+                                                                    const diffDays = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                                                                    return (
+                                                                        <button
+                                                                            key={trip.id}
+                                                                            onClick={() => { setSelectedTripForModal(trip); }}
+                                                                            className="w-full flex items-center justify-between p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 hover:border-purple-500/30 transition-all group"
+                                                                        >
+                                                                            <div className="flex items-center gap-3 min-w-0">
+                                                                                <Compass className="w-4 h-4 text-purple-400 shrink-0" />
+                                                                                <div className="text-left min-w-0">
+                                                                                    <p className="text-xs font-medium text-white truncate">{label}</p>
+                                                                                    <p className="text-[10px] text-gray-500">{start.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} – {end.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} · {diffDays}D/{diffDays - 1}N</p>
+                                                                                </div>
+                                                                            </div>
+                                                                            <div className="flex items-center gap-2">
+                                                                                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${trip.status === 'booked' || trip.status === 'confirmed' ? 'bg-green-500/10 text-green-400' : trip.status === 'sent' || trip.status === 'proposed' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'}`}>
+                                                                                    {trip.status}
+                                                                                </span>
+                                                                                <ArrowRight className="w-3.5 h-3.5 text-gray-600 group-hover:text-purple-400 transition-colors" />
+                                                                            </div>
+                                                                        </button>
+                                                                    );
+                                                                })}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-4">
+                                                <div className="flex items-center gap-3">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="h-8 text-gray-400 hover:text-white hover:bg-white/10"
+                                                        onClick={() => setSelectedTripForModal(null)}
+                                                    >
+                                                        <ChevronLeft className="w-4 h-4 mr-1" /> Back to Trips
+                                                    </Button>
+                                                    <p className="text-sm text-gray-400">Viewing: <span className="text-white font-medium">{selectedTripForModal?.title || selectedTripForModal?.destinations || 'Trip Timeline'}</span></p>
+                                                </div>
+                                                <div className="flex items-center gap-3">
+                                                    <Select defaultValue="classic" onValueChange={(value) => setSelectedTheme(value as PdfTheme)}>
+                                                        <SelectTrigger className="w-[180px] bg-white/5 border-white/10 text-white">
+                                                            <SelectValue placeholder="Select PDF Format" />
+                                                        </SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="classic">Classic (Default)</SelectItem>
+                                                            <SelectItem value="editorial">Editorial (Magazine)</SelectItem>
+                                                            <SelectItem value="minimalist">Minimalist</SelectItem>
+                                                            <SelectItem value="dark">Dark Mode</SelectItem>
+                                                            <SelectItem value="corporate">Corporate</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <Button onClick={handleDownloadPdf} disabled={!selectedTripForModal} className="bg-white text-black hover:bg-gray-200">
+                                                        <Eye className="mr-2 h-4 w-4" /> Preview & Export
+                                                    </Button>
+                                                </div>
+                                                <div className="glass-main border border-white/10 rounded-xl p-6">
+                                                    <ItineraryTimeline
+                                                        itinerary={selectedTripForModal?.itinerary_data?.itinerary || []}
+                                                        showDecorations={false}
+                                                        hotels={(selectedTripForModal?.itinerary_data as any)?.hotels || []}
+                                                        flights={(selectedTripForModal?.itinerary_data as any)?.flights || []}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <div className="glass-main border border-white/10 rounded-xl p-16 text-center text-gray-400 flex flex-col items-center justify-center">
+                                        <Calendar className="w-12 h-12 text-gray-600 mb-4" />
+                                        <h3 className="text-xl font-medium text-white mb-2">No Trips Yet</h3>
+                                        <p>Create an itinerary in the AI Architect to see the timeline here.</p>
+                                    </div>
+                                )}
+                            </div>
+                        ) : activeTab === 'edit-itinerary' ? (
+                            <div className="mt-4 space-y-6">
+                                {enrichedClients.some(c => c.allTrips.length > 0) ? (
+                                    <div className="space-y-4">
+                                        <div className="glass-main border border-white/10 rounded-xl p-6">
+                                            <h3 className="text-sm font-semibold text-gray-300 mb-4 flex items-center gap-2">
+                                                <Compass className="w-4 h-4 text-purple-400" /> Select a Trip to Edit
+                                            </h3>
+                                            <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-1">
+                                                {enrichedClients.filter(c => c.allTrips.length > 0).map(client => (
+                                                    <div key={client.id} className="space-y-1">
+                                                        <p className="text-[10px] text-gray-500 uppercase tracking-wider px-2 pt-2">{client.name}</p>
+                                                        {client.allTrips.map((trip: any) => {
+                                                            let label = trip.destinations || trip.title?.replace(/^Trip to\s+/i, '') || trip.starting_location || 'Untitled Trip';
+                                                            const start = new Date(trip.start_date);
+                                                            const end = new Date(trip.end_date);
+                                                            const diffDays = Math.ceil(Math.abs(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+                                                            return (
+                                                                <div key={trip.id} className="flex items-center justify-between p-3 rounded-lg bg-white/5 border border-white/5 hover:border-purple-500/30 transition-all group">
+                                                                    <div className="flex items-center gap-3 min-w-0">
+                                                                        <Compass className="w-4 h-4 text-purple-400 shrink-0" />
+                                                                        <div className="min-w-0">
+                                                                            <p className="text-xs font-medium text-white truncate">{label}</p>
+                                                                            <p className="text-[10px] text-gray-500">{start.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} – {end.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })} · {diffDays}D/{diffDays - 1}N</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${trip.status === 'booked' || trip.status === 'confirmed' ? 'bg-green-500/10 text-green-400' : trip.status === 'sent' || trip.status === 'proposed' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'}`}>
+                                                                            {trip.status}
+                                                                        </span>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-7 w-7 text-gray-400 hover:text-white hover:bg-white/10"
+                                                                            onClick={() => { setSelectedTripForModal(trip); setShowModal(true); }}
+                                                                            title="View Itinerary"
+                                                                        >
+                                                                            <Eye className="w-3.5 h-3.5" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-7 w-7 text-gray-400 hover:text-purple-400 hover:bg-purple-500/10"
+                                                                            onClick={() => handleDuplicateTrip(trip)}
+                                                                            title="Open in AI Architect"
+                                                                        >
+                                                                            <ArrowRight className="w-3.5 h-3.5" />
+                                                                        </Button>
+                                                                        <Button
+                                                                            variant="ghost"
+                                                                            size="icon"
+                                                                            className="h-7 w-7 text-gray-500 hover:text-red-400 hover:bg-red-400/10"
+                                                                            onClick={() => handleDeleteTrip(trip.id)}
+                                                                            disabled={deleting === trip.id}
+                                                                            title="Delete Trip"
+                                                                        >
+                                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                                        </Button>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="glass-main border border-white/10 rounded-xl p-16 text-center text-gray-400 flex flex-col items-center justify-center">
+                                        <Compass className="w-12 h-12 text-gray-600 mb-4" />
+                                        <h3 className="text-xl font-medium text-white mb-2">No Itineraries to Edit</h3>
+                                        <p className="mb-4">Create a new itinerary in the AI Architect to get started.</p>
+                                        <Link href="/ai-architect">
+                                            <Button className="bg-gradient-to-r from-purple-500 to-pink-600 text-white border-0 hover:opacity-90">
+                                                <Plus className="w-4 h-4 mr-2" /> Create New Itinerary
+                                            </Button>
+                                        </Link>
+                                    </div>
+                                )}
                             </div>
                         ) : activeTab === 'finance' ? (
                             <div className="mt-4">
@@ -1996,6 +2219,39 @@ export default function CRMLitePage() {
                                     </div>
                                 )}
                             </div>
+
+                            {/* AI Client Update Suggestions */}
+                            {selectedClient.allTrips && selectedClient.allTrips.length > 0 && (() => {
+                                const latestTrip = selectedClient.allTrips[0];
+                                const tripCost = getTripCost(latestTrip);
+                                const startDate = new Date(latestTrip.start_date);
+                                const endDate = new Date(latestTrip.end_date);
+                                const now = new Date();
+                                const daysUntilTrip = Math.ceil((startDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                                const diffDays = Math.ceil(Math.abs(endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+
+                                let destLabel = latestTrip.destinations || "";
+                                if (!destLabel && latestTrip.title) destLabel = latestTrip.title.replace(/^Trip to\s+/i, "");
+                                if (!destLabel) destLabel = latestTrip.starting_location || "Unknown";
+
+                                const hotelNamesList = (latestTrip.itinerary_data?.hotels || [])
+                                    .map((h: any) => h.name).filter(Boolean).join(", ");
+
+                                return (
+                                    <ClientUpdateSuggestions
+                                        clientName={selectedClient.name}
+                                        clientEmail={selectedClient.email}
+                                        tripStatus={latestTrip.status || "draft"}
+                                        destination={destLabel}
+                                        travelDates={`${startDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} - ${endDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}`}
+                                        tripDuration={`${diffDays}D/${diffDays - 1}N`}
+                                        totalCost={tripCost > 0 ? `₹${tripCost.toLocaleString()}` : undefined}
+                                        daysUntilTrip={daysUntilTrip}
+                                        hotelNames={hotelNamesList || undefined}
+                                        hasFlights={(latestTrip.itinerary_data?.flights || []).length > 0}
+                                    />
+                                );
+                            })()}
                         </div>
                     )}
                 </SheetContent>
@@ -2139,6 +2395,11 @@ export default function CRMLitePage() {
                 isOpen={isFinancesOpen}
                 onOpenChange={setIsFinancesOpen}
                 trip={financesTrip}
+            />
+
+            <ImportBackupModal 
+                isDataEmpty={!clientsLoading && !isComputing && clients.length === 0} 
+                onImportSuccess={() => fetchClients()} 
             />
         </div>
     );

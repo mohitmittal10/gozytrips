@@ -47,10 +47,14 @@ const features = [
 
 export function FeatureStepsDemo() {
     return (
-        <section className="py-20 w-full">
+        <section className="py-10 w-full bg-black">
             <FeatureSteps
                 features={features}
-                title="Elevate Your Travel Business"
+                title={(
+                    <>
+                        Elevate Your <span className="bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 bg-clip-text text-transparent">Travel Business</span>
+                    </>
+                )}
                 autoPlayInterval={2000}
                 imageHeight="h-[300px] md:h-[400px]"
             />

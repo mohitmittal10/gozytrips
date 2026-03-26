@@ -20,10 +20,9 @@ const TravelItineraryInputSchema = z.object({
   endDate: z.string().describe('The end date of the trip (YYYY-MM-DD format).'),
   destinations: z.string().describe('A comma-separated list of primary travel destinations to visit.'),
   budget: z.coerce.number().int().positive().optional().describe('The maximum budget per day in INR.'),
-  walkingDistance: z.coerce.number().int().positive().optional().describe('The maximum preferred walking distance per day in kilometers.'),
-  mustInclude: z.string().optional().describe('A comma-separated list of must-see attractions or experiences.'),
-  avoid: z.string().optional().describe('A comma-separated list of things to skip or avoid.'),
-  leisureTime: z.boolean().optional().describe('Whether to deliberately include unstructured leisure/free time.'),
+  mustInclude: z.string().default('').describe('A comma-separated list of must-see attractions or experiences.'),
+  avoid: z.string().default('').describe('A comma-separated list of things to skip or avoid.'),
+  leisureTime: z.boolean().default(false).describe('Whether to deliberately include unstructured leisure/free time.'),
   leisureDay: z.number().optional().describe('The specific day (1-indexed) to schedule the most leisure time. Only applies if leisureTime is true.'),
   travelTimePreference: z.enum([
     "no_preference",
@@ -32,6 +31,7 @@ const TravelItineraryInputSchema = z.object({
     "prefer_afternoon_travel",
     "prefer_night_travel"
   ]).default("no_preference").describe('User preferences for travel timing.'),
+  feedback: z.string().optional().default('').describe('Actionable feedback from a previous optimization pass to refine the itinerary.'),
 });
 export type TravelItineraryInput = z.infer<typeof TravelItineraryInputSchema>;
 
@@ -47,24 +47,34 @@ const TravelItineraryOutputSchema = z.object({
           time: z.string(),
           details: z.string(),
           cost: z.number().optional(),
+          imageSearchTerm: z.string().optional().describe('A specific Unsplash search term for this activity, e.g. "Eiffel Tower", "Statue of Liberty", "Sushi restaurant". Only include if highly relevant and visual.'),
         })
       ),
       dailyStats: z.object({
         totalCost: z.string(),
-        walkingDistance: z.string(),
       }),
     })
   ),
+  optimizations: z.array(
+    z.object({
+      type: z.string().describe('The category of optimization (e.g., "Timing", "Cost", "Experience", "Leisure").'),
+      message: z.string().describe('A concise, actionable optimization tip (max 60 chars).'),
+      impact: z.string().describe('A short description of the benefit (e.g., "+15% Leisure", "Save ₹2,000", "Avoid Crowds").'),
+    })
+  ).describe('A list of 3-4 smart AI optimization insights for the trip.'),
 });
 
 export type TravelItineraryOutput = z.infer<typeof TravelItineraryOutputSchema>;
 
 export async function generateTravelItinerary(input: TravelItineraryInput): Promise<TravelItineraryOutput> {
+  console.log('--- SERVER ACTION: generateTravelItinerary ---');
+  console.log('Input keys:', Object.keys(input));
+  console.log('Input values:', JSON.stringify(input, null, 2));
   return generateTravelItineraryFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'travelItineraryPrompt',
+  name: 'travelItineraryPromptV2',
   model: googleAI.model('gemini-2.5-flash-lite'),
   input: { schema: TravelItineraryInputSchema },
   output: { schema: TravelItineraryOutputSchema },
@@ -75,7 +85,6 @@ const prompt = ai.definePrompt({
   - Departure: {{startingLocation}} on {{startDate}}
   {{#if endingLocation}}- Return: {{endingLocation}} on {{endDate}}{{else}}- Return: {{startingLocation}} on {{endDate}}{{/if}}
   {{#if budget}}- Maximum daily budget: ₹{{budget}}{{/if}}
-  {{#if walkingDistance}}- Maximum walking distance per day: {{walkingDistance}} km{{/if}}
   {{#if mustInclude}}- Must include: {{mustInclude}}{{/if}}
   {{#if avoid}}- Avoid: {{avoid}}{{/if}}
   {{#if leisureTime}}- Please block out a few hours of unstructured free/leisure time{{#if leisureDay}} specifically on Day {{leisureDay}}{{else}} throughout the trip{{/if}}.{{/if}}
@@ -100,25 +109,36 @@ const prompt = ai.definePrompt({
   7. Reserve energy-intensive activities for the morning.
   8. Include travel time between destinations in the itinerary.
 
-  For each timeline step, include: time, details (description), and cost.
+  For each timeline step, include: time, details (description), and cost. 
   
   CRITICAL COST ESTIMATION RULES:
   1. ALL costs must be strictly predicted in Indian Rupees (INR) and represented as an integer (e.g. 500).
   2. You MUST provide highly accurate and realistic real-world price estimates. 
-  3. Do NOT provide vague, arbitrarily high, or "0" costs unless an activity is genuinely free (like a public park). 
-  4. Estimate costs based on ACTUAL average prices for: Entry tickets, Local Transport (cab/auto/metro), and average meal costs at good rated local restaurants.
-  5. If user provides a budget, ensure the daily total aligns beautifully with the daily {{budget}} limit.
+  3. Estimate costs based on ACTUAL average prices for: Entry tickets, Local Transport (cab/auto/metro), and average meal costs at good rated local restaurants.
+  4. If user provides a budget, ensure the daily total aligns beautifully with the daily {{budget}} limit.
 
-  IMPORTANT — For each day, include an 'imageSearchTerm'. This MUST be a real place name or landmark name that would return beautiful travel photos on a stock photo site. Use the format: "[Landmark/Place Name] [City/Region]". 
-  GOOD examples: "Red Fort Delhi", "Hawa Mahal Jaipur", "Marina Beach Chennai", "Munnar tea plantation", "Varanasi ghats", "Goa beach Palolem", "Hampi ruins Karnataka".
-  BAD examples (too vague/descriptive — DO NOT USE): "beautiful morning walk", "explore local culture", "day 1 adventure", "food market", "sunset view".
-  Always use the ACTUAL name of the most iconic place visited that day.
+  CRITICAL IMAGE SEARCH RULES:
+  1. For each DAY, provided a 'imageSearchTerm' (format: "[Landmark/Place Name] [City/Region]"). 
+  2. For EACH TIMELINE STEP (activity), provide an 'imageSearchTerm' that is highly visual and specific to that activity (e.g., "Eiffel Tower", "Sushi restaurant Tokyo", "London Eye"). If a step is vague/generic, just use the place name.
+  
+  CRITICAL OPTIMIZATION RULES:
+  1. Provide 3-4 "Optimization Insights" that add value to the trip.
+  2. Examples: 
+     - "Timing: Shift Morning Temple visit to 07:00 AM (Avoid Crowds)"
+     - "Cost: Group Day 2 activities to save ₹1,200 on transport"
+     - "Leisure: Add a 2-hour gap on Day 3 for spontaneous exploration"
+  
+  GOOD examples for search terms: "Red Fort Delhi", "Hawa Mahal Jaipur", "Marina Beach Chennai", "Munnar tea plantation", "Varanasi ghats", "Goa beach Palolem", "Hampi ruins Karnataka".
+  BAD examples for search terms: "beautiful morning walk", "explore local culture", "day 1 adventure", "food market", "sunset view".
+  REFINEMENT PASS (If applicable):
+  If 'feedback' is provided: {{feedback}}
+  You MUST prioritize applying these specific suggestions to the current itinerary. This is a refinement pass to make the trip even better. Ensure the final result reflects these improvements while maintaining the overall trip structure.
   `,
 });
 
 const generateTravelItineraryFlow = ai.defineFlow(
   {
-    name: 'generateTravelItineraryFlow',
+    name: 'generateTravelItineraryFlowV2',
     inputSchema: TravelItineraryInputSchema,
     outputSchema: TravelItineraryOutputSchema,
   },

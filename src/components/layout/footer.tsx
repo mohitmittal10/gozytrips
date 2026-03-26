@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Logo from "./logo";
 import { Button } from "../ui/button";
-import { Facebook, Instagram, Twitter } from "lucide-react";
+import { Sparkles, Globe, Users } from "lucide-react";
 import { SparklesCore } from "@/components/ui/sparkles";
 
 const Footer = () => {
@@ -37,9 +37,9 @@ const Footer = () => {
         <div className="absolute inset-0 w-full h-full bg-black/50 [mask-image:radial-gradient(350px_200px_at_top,transparent_20%,white)]"></div>
       </div>
 
-      <div className="container relative z-20 mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      <div className="container relative z-20 mx-auto px-4 sm:px-6 lg:px-8 py-10">
         {/* Glow Header Area */}
-        <div className="flex flex-col items-center justify-center mb-16 relative">
+        <div className="flex flex-col items-center justify-center mb-8 relative">
           <h2 className="md:text-6xl text-3xl lg:text-8xl font-bold text-center text-white relative z-20">
             Odyssey Luxe
           </h2>
@@ -92,27 +92,27 @@ const Footer = () => {
             <div className="flex mt-4 space-x-4">
               <Button variant="ghost" size="icon" className="hover:bg-white/10 text-neutral-400 hover:text-white" asChild>
                 <Link href="#" target="_blank" rel="noopener noreferrer">
-                  <Twitter className="h-5 w-5" />
-                  <span className="sr-only">Twitter</span>
+                  <Sparkles className="h-5 w-5" />
+                  <span className="sr-only">Social</span>
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" className="hover:bg-white/10 text-neutral-400 hover:text-white" asChild>
                 <Link href="#" target="_blank" rel="noopener noreferrer">
-                  <Facebook className="h-5 w-5" />
-                  <span className="sr-only">Facebook</span>
+                  <Users className="h-5 w-5" />
+                  <span className="sr-only">Community</span>
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" className="hover:bg-white/10 text-neutral-400 hover:text-white" asChild>
                 <Link href="#" target="_blank" rel="noopener noreferrer">
-                  <Instagram className="h-5 w-5" />
-                  <span className="sr-only">Instagram</span>
+                  <Globe className="h-5 w-5" />
+                  <span className="sr-only">Website</span>
                 </Link>
               </Button>
             </div>
           </div>
         </div>
 
-        <div className="mt-16 pt-8 border-t border-white/10 text-center text-sm text-neutral-500">
+        <div className="mt-10 pt-6 border-t border-white/10 text-center text-sm text-neutral-500">
           <p>&copy; {new Date().getFullYear()} Odyssey Luxe. All rights reserved.</p>
         </div>
       </div>

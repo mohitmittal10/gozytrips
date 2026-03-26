@@ -8,7 +8,7 @@ import { Menu, LogOut, User, MapPin, Users, Home, Info, Sparkles } from "lucide-
 import { cn } from "@/lib/utils";
 import Logo from "./logo";
 import { usePathname } from "next/navigation";
-import { NavBar } from "@/components/ui/tubelight-navbar";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/contexts/auth-context";
 import {
   DropdownMenu,
@@ -41,189 +41,176 @@ const Header = () => {
   const isAiArchitectPage = pathname === '/ai-architect';
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 w-full pointer-events-none p-4 sm:p-6 lg:p-8 flex items-start justify-between">
-      {/* Top Left Logo */}
-      <div className="pointer-events-auto">
+    <nav className={cn(
+      "fixed top-0 w-full z-50 bg-[#020305]/60 backdrop-blur-2xl border-b border-white/5 transition-all duration-500 ease-in-out",
+      scrolled ? "-translate-y-full opacity-0 pointer-events-none" : "translate-y-0 opacity-100"
+    )}>
+      <div className="flex justify-between items-center px-4 sm:px-8 py-3 sm:py-4 max-w-7xl mx-auto">
         <Logo />
-      </div>
+        
+        <div className="hidden md:flex space-x-10 items-center">
+          {navItems.map((item) => (
+            <Link 
+              key={item.name}
+              className={cn(
+                "text-sm tracking-tight transition-colors font-medium",
+                pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url))
+                  ? "text-primary font-bold"
+                  : "text-slate-400 hover:text-white"
+              )} 
+              href={item.url}
+            >
+              {item.name}
+            </Link>
+          ))}
+        </div>
 
-      {/* Floating Center Tubelight Navbar */}
-      <NavBar items={navItems} />
-
-      {/* Top Right Auth Section */}
-      <div className="flex items-center gap-4 pointer-events-auto">
-        {!loading && (
-          <>
-            {user ? (
-              <>
-                {/* Desktop Menu */}
-                <div className="hidden sm:block">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm" className="glass-button border-white/20">
-                        <User className="w-4 h-4 mr-2" />
-                        Account
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="glass-main border-white/10 w-56">
-                      <div className="px-2 py-1.5">
-                        <p className="text-sm font-medium text-foreground">{user.email}</p>
-                        <p className="text-xs text-muted-foreground">Logged in</p>
-                      </div>
-                      <DropdownMenuSeparator className="bg-white/10" />
-                      <DropdownMenuItem asChild>
-                        <Link href="/my-trips" className="cursor-pointer">
-                          <MapPin className="w-4 h-4 mr-2" />
-                          My Trips
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/clients" className="cursor-pointer">
-                          <Users className="w-4 h-4 mr-2" />
-                          Clients
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/profile" className="cursor-pointer">
-                          <User className="w-4 h-4 mr-2" />
-                          Profile Settings
-                        </Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator className="bg-white/10" />
-                      <DropdownMenuItem onClick={signOut} className="cursor-pointer text-red-400 focus:text-red-400">
-                        <LogOut className="w-4 h-4 mr-2" />
-                        Sign Out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-
-                {/* Mobile Menu */}
-                <div className="sm:hidden">
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Menu className="h-6 w-6" />
-                        <span className="sr-only">Open menu</span>
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent side="right" className="glass-main">
-                      <div className="flex flex-col h-full">
-                        <div className="p-4 border-b border-white/10">
-                          <Logo />
+        <div className="flex items-center space-x-4 sm:space-x-6">
+          {!loading && (
+            <>
+              {user ? (
+                <>
+                  <div className="hidden sm:block">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="text-slate-300 text-sm font-medium hover:text-white transition-colors flex items-center gap-2">
+                          <User className="w-4 h-4" /> Account
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="bg-[#0A0A0B] border-white/10 w-56">
+                        <div className="px-2 py-1.5">
+                          <p className="text-sm font-medium text-white">{user.email}</p>
+                          <p className="text-xs text-slate-400">Logged in</p>
                         </div>
-                        <nav className="flex-grow flex flex-col space-y-4 p-4">
-                          {/* Standard Mobile Links */}
-                          <Link href="/" className="text-lg font-medium hover:text-primary transition-colors flex items-center gap-2">
-                            <Home className="w-5 h-5" /> Home
+                        <DropdownMenuSeparator className="bg-white/10" />
+                        <DropdownMenuItem asChild>
+                          <Link href="/my-trips" className="cursor-pointer text-slate-300 hover:text-white hover:bg-white/5">
+                            <MapPin className="w-4 h-4 mr-2" /> My Trips
                           </Link>
-                          <Link href="/ai-architect" className="text-lg font-medium hover:text-primary transition-colors flex items-center gap-2">
-                            <Sparkles className="w-5 h-5" /> AI Architect
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/clients" className="cursor-pointer text-slate-300 hover:text-white hover:bg-white/5">
+                            <Users className="w-4 h-4 mr-2" /> Clients
                           </Link>
-                          <Link href="/crm" className="text-lg font-medium hover:text-primary transition-colors flex items-center gap-2">
-                            <Users className="w-5 h-5" /> CRM
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Link href="/profile" className="cursor-pointer text-slate-300 hover:text-white hover:bg-white/5">
+                            <User className="w-4 h-4 mr-2" /> Profile Settings
                           </Link>
-                          <Link href="/#about" className="text-lg font-medium hover:text-primary transition-colors flex items-center gap-2">
-                            <Info className="w-5 h-5" /> Why Us?
-                          </Link>
-                        </nav>
-                        <div className="p-4 border-t border-white/10 space-y-2">
-                          <p className="text-sm text-foreground/80">{user.email}</p>
-                          <Link href="/my-trips">
-                            <Button variant="outline" className="w-full glass-button border-white/20 justify-start">
-                              <MapPin className="w-4 h-4 mr-2" />
-                              My Trips
-                            </Button>
-                          </Link>
-                          <Link href="/clients">
-                            <Button variant="outline" className="w-full glass-button border-white/20 justify-start">
-                              <Users className="w-4 h-4 mr-2" />
-                              Clients
-                            </Button>
-                          </Link>
-                          <Link href="/profile">
-                            <Button variant="outline" className="w-full glass-button border-white/20 justify-start">
-                              <User className="w-4 h-4 mr-2" />
-                              Profile
-                            </Button>
-                          </Link>
-                          <Button onClick={signOut} variant="destructive" className="w-full justify-start">
-                            <LogOut className="w-4 h-4 mr-2" />
-                            Sign Out
-                          </Button>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator className="bg-white/10" />
+                        <DropdownMenuItem onClick={signOut} className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-400">
+                          <LogOut className="w-4 h-4 mr-2" /> Sign Out
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                  {/* Mobile Menu */}
+                  <div className="md:hidden">
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <button className="text-slate-300 hover:text-white p-2">
+                          <Menu className="h-5 w-5" />
+                        </button>
+                      </SheetTrigger>
+                      <SheetContent side="right" className="bg-[#020305] border-l border-white/10 p-0 w-72">
+                        <div className="flex flex-col h-full">
+                          <div className="p-6 border-b border-white/10">
+                            <Logo />
+                          </div>
+                          <nav className="flex-grow flex flex-col space-y-6 p-6">
+                            {navItems.map((item) => (
+                              <Link 
+                                key={item.name}
+                                href={item.url} 
+                                className="text-lg font-medium text-slate-300 hover:text-white transition-colors flex items-center gap-3"
+                              >
+                                <item.icon className="w-5 h-5 text-primary" /> {item.name}
+                              </Link>
+                            ))}
+                          </nav>
+                          <div className="p-6 border-t border-white/10 space-y-4">
+                            <p className="text-xs text-slate-400 truncate">{user.email}</p>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Link href="/my-trips">
+                                <button className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-slate-300 flex justify-center border border-white/5">
+                                  Trips
+                                </button>
+                              </Link>
+                              <Link href="/clients">
+                                <button className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-slate-300 flex justify-center border border-white/5">
+                                  Clients
+                                </button>
+                              </Link>
+                            </div>
+                            <button onClick={signOut} className="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm font-medium border border-red-500/20 transition-colors flex items-center justify-center gap-2">
+                              <LogOut className="w-4 h-4" /> Sign Out
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    </SheetContent>
-                  </Sheet>
-                </div>
-              </>
-            ) : (
-              <>
-                {/* Not Logged In - Desktop */}
-                <div className="hidden sm:flex gap-3">
-                  <Link href="/auth/login">
-                    <Button variant="outline" size="sm" className="glass-button border-white/20">
+                      </SheetContent>
+                    </Sheet>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Link href="/auth/login" className="hidden sm:block">
+                    <button className="text-slate-300 text-sm font-medium hover:text-white transition-colors">
                       Sign In
-                    </Button>
+                    </button>
                   </Link>
                   <Link href="/auth/signup">
-                    <Button size="sm" className="glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-0">
+                    <button className="bg-primary text-white px-5 sm:px-7 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-extrabold glow-button transform hover:scale-105 active:scale-95 transition-all">
                       Sign Up
-                    </Button>
+                    </button>
                   </Link>
-                </div>
-
-                {/* Not Logged In - Mobile */}
-                <div className="sm:hidden">
-                  <Sheet>
-                    <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Menu className="h-6 w-6" />
-                        <span className="sr-only">Open menu</span>
-                      </Button>
-                    </SheetTrigger>
-                    <SheetContent side="right" className="glass-main">
-                      <div className="flex flex-col h-full">
-                        <div className="p-4 border-b border-white/10">
-                          <Logo />
+                  {/* Mobile Menu */}
+                  <div className="md:hidden">
+                    <Sheet>
+                      <SheetTrigger asChild>
+                        <button className="text-slate-300 hover:text-white p-2">
+                          <Menu className="h-5 w-5" />
+                        </button>
+                      </SheetTrigger>
+                      <SheetContent side="right" className="bg-[#020305] border-l border-white/10 p-0 w-72">
+                        <div className="flex flex-col h-full">
+                          <div className="p-6 border-b border-white/10">
+                            <Logo />
+                          </div>
+                          <nav className="flex-grow flex flex-col space-y-6 p-6">
+                            {navItems.map((item) => (
+                              <Link 
+                                key={item.name}
+                                href={item.url} 
+                                className="text-lg font-medium text-slate-300 hover:text-white transition-colors flex items-center gap-3"
+                              >
+                                <item.icon className="w-5 h-5 text-primary" /> {item.name}
+                              </Link>
+                            ))}
+                          </nav>
+                          <div className="p-6 border-t border-white/10 space-y-3">
+                            <Link href="/auth/login" className="block w-full">
+                              <button className="w-full py-2.5 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-white font-medium border border-white/10 transition-colors">
+                                Sign In
+                              </button>
+                            </Link>
+                            <Link href="/auth/signup" className="block w-full">
+                              <button className="w-full py-2.5 bg-primary text-white rounded-lg text-sm font-bold glow-button transition-colors">
+                                Sign Up
+                              </button>
+                            </Link>
+                          </div>
                         </div>
-                        <nav className="flex-grow flex flex-col space-y-4 p-4">
-                          {/* Standard Mobile Links */}
-                          <Link href="/" className="text-lg font-medium hover:text-primary transition-colors flex items-center gap-2">
-                            <Home className="w-5 h-5" /> Home
-                          </Link>
-                          <Link href="/ai-architect" className="text-lg font-medium hover:text-primary transition-colors flex items-center gap-2">
-                            <Sparkles className="w-5 h-5" /> AI Architect
-                          </Link>
-                          <Link href="/crm" className="text-lg font-medium hover:text-primary transition-colors flex items-center gap-2">
-                            <Users className="w-5 h-5" /> CRM
-                          </Link>
-                          <Link href="/#about" className="text-lg font-medium hover:text-primary transition-colors flex items-center gap-2">
-                            <Info className="w-5 h-5" /> Why Us?
-                          </Link>
-                        </nav>
-                        <div className="p-4 border-t border-white/10 space-y-2">
-                          <Link href="/auth/login">
-                            <Button variant="outline" className="w-full glass-button border-white/20">
-                              Sign In
-                            </Button>
-                          </Link>
-                          <Link href="/auth/signup">
-                            <Button className="w-full glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-0">
-                              Sign Up
-                            </Button>
-                          </Link>
-                        </div>
-                      </div>
-                    </SheetContent>
-                  </Sheet>
-                </div>
-              </>
-            )}
-          </>
-        )}
+                      </SheetContent>
+                    </Sheet>
+                  </div>
+                </>
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </header>
+    </nav>
   );
 };
 

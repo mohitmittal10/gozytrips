@@ -223,7 +223,7 @@ export default function MyTripsPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background">
+    <div className="flex flex-col min-h-screen bg-[#05070a] bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.08),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,92,51,0.08),transparent_50%)]">
       <Header />
       <main className="flex-grow container mx-auto px-4 py-20">
         <div className="mb-8">

@@ -4,6 +4,8 @@ import {ai} from '@/ai/genkit';
 
 // Import flows to register them with the Genkit system.
 import '@/ai/flows/generate-travel-itinerary';
+import '@/ai/flows/generate-vendor-enquiry';
+import '@/ai/flows/generate-client-update';
 
 // Extend Vercel serverless function timeout (default is 10s, too short for AI calls)
 export const maxDuration = 60;

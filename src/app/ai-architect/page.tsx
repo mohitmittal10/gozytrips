@@ -1,15 +1,15 @@
 import AiArchitect from "@/components/sections/ai-architect";
 import Header from "@/components/layout/header";
 
-// Extend Vercel serverless function timeout for AI generation
-export const maxDuration = 60;
-
 export default function AiArchitectPage() {
     return (
-        <div className="ai-architect-page flex flex-col min-h-screen bg-black">
+        <div className="font-body text-on-surface antialiased min-h-screen bg-[#05070a] bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.08),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,92,51,0.08),transparent_50%)]">
             <Header />
-            <main className="flex-grow pt-24">
-                <AiArchitect />
+
+            <main className="min-h-screen">
+                <div className="pt-[72px] pb-4 backdrop-blur-[2px]">
+                    <AiArchitect />
+                </div>
             </main>
         </div>
     );

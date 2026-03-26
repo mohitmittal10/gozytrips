@@ -55,10 +55,10 @@ export const HeroParallax = ({
         springConfig
     );
     return (
-        <div className="overflow-hidden w-full h-[300vh]">
+        <div className="overflow-hidden w-full h-[300vh] bg-black">
             <div
                 ref={ref}
-                className="h-full pt-0 pb-40 antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d]"
+                className="h-full pt-0 pb-20 antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d]"
             >
                 <Header />
                 <motion.div
@@ -70,7 +70,7 @@ export const HeroParallax = ({
                     }}
                     className=""
                 >
-                    <motion.div className="flex flex-row-reverse space-x-reverse space-x-20 mb-20">
+                    <motion.div className="flex flex-row-reverse space-x-reverse space-x-20 mb-10">
                         {firstRow.map((product) => (
                             <ProductCard
                                 product={product}
@@ -105,11 +105,11 @@ export const HeroParallax = ({
 
 export const Header = () => {
     return (
-        <div className="max-w-7xl absolute top-32 md:top-48 left-0 right-0 mx-auto px-4 w-full z-20 pointer-events-none">
-            <h1 className="text-2xl md:text-7xl font-bold dark:text-white pointer-events-auto">
-                Curated journeys <br /> that inspire.
+        <div className="max-w-7xl absolute top-20 md:top-32 left-0 right-0 mx-auto px-4 w-full z-20 pointer-events-none">
+            <h1 className="text-2xl md:text-7xl font-bold text-white pointer-events-auto">
+                Curated journeys <br /> that <span className="bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 bg-clip-text text-transparent">inspire.</span>
             </h1>
-            <p className="max-w-2xl text-base md:text-xl mt-8 dark:text-neutral-200">
+            <p className="max-w-2xl text-base md:text-xl mt-4 text-zinc-400">
                 We craft breathtaking itineraries with the most exquisite destinations and tailored experiences.
                 We are a team of passionate travel architects and local experts that love to build amazing adventures.
             </p>

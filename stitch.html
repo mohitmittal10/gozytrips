@@ -1,0 +1,349 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>LuxeTravel AI - Midnight Edition</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#ff5c33", // Orange/Coral from SCREEN_26
+              "secondary": "#7c3aed", // Violet from SCREEN_26
+              "tertiary": "#ec4899", // Pink from SCREEN_26
+              "on-surface": "#eceef0", 
+              "surface": "#0a0c12", // Surface dark from SCREEN_26
+              "background": "#05070a", // Midnight black from SCREEN_26
+            },
+            fontFamily: {
+              "headline": ["Plus Jakarta Sans"],
+              "body": ["Plus Jakarta Sans"],
+              "label": ["Plus Jakarta Sans"]
+            },
+            borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #05070a;
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(124, 58, 237, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(255, 92, 51, 0.08) 0%, transparent 50%);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+        .glass-panel:hover {
+            border: 1px solid rgba(255, 92, 51, 0.2);
+            box-shadow: 0 0 20px rgba(255, 92, 51, 0.1);
+        }
+        .timeline-line::before {
+            content: '';
+            position: absolute;
+            left: 19px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, transparent, #7c3aed 15%, #ec4899 85%, transparent);
+            opacity: 0.3;
+        }
+        .aurora-gradient {
+            background: linear-gradient(135deg, #ff5c33 0%, #ec4899 50%, #7c3aed 100%);
+            background-size: 200% 200%;
+            animation: gradient-shift 10s ease infinite;
+        }
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .text-gradient {
+            background: linear-gradient(to right, #ff5c33, #ec4899, #7c3aed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .active-day-glow {
+            box-shadow: 0 0 30px rgba(236, 72, 153, 0.2), inset 0 0 10px rgba(236, 72, 153, 0.1);
+            border-color: rgba(236, 72, 153, 0.4);
+            background: rgba(236, 72, 153, 0.05);
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="font-body text-on-surface antialiased min-h-screen">
+<!-- SideNavBar -->
+<aside class="h-screen w-64 fixed left-0 top-0 glass-panel border-r border-white/5 flex flex-col p-6 space-y-4 z-40 rounded-none">
+<div class="mb-10 px-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 aurora-gradient rounded-xl flex items-center justify-center text-white shadow-lg">
+<span class="material-symbols-outlined" data-icon="auto_awesome" style="font-variation-settings: &quot;FILL&quot; 1;">auto_awesome</span>
+</div>
+<div>
+<h1 class="text-sm font-extrabold text-white leading-none" style="">Concierge Portal</h1>
+<p class="text-[10px] font-bold text-primary uppercase tracking-widest mt-1" style="">Tropical Elite</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-white hover:bg-white/5 transition-all rounded-xl text-sm font-semibold" href="#" style="">
+<span class="material-symbols-outlined text-[20px]" data-icon="dashboard" style="">dashboard</span>
+            Dashboard
+        </a>
+<a class="flex items-center gap-3 px-4 py-2.5 bg-white/5 text-primary rounded-xl shadow-sm border border-white/5 text-sm font-bold" href="#" style="">
+<span class="material-symbols-outlined text-[20px]" data-icon="flight_takeoff" style="">flight_takeoff</span>
+            Active Trips
+        </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-white transition-all text-sm font-semibold" href="#" style="">
+<span class="material-symbols-outlined text-[20px]" data-icon="edit_note" style="">edit_note</span>
+            Drafts
+        </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-white transition-all text-sm font-semibold" href="#" style="">
+<span class="material-symbols-outlined text-[20px]" data-icon="inventory_2" style="">inventory_2</span>
+            Archive
+        </a>
+<a class="flex items-center gap-3 px-4 py-2.5 text-slate-400 hover:text-white transition-all text-sm font-semibold" href="#" style="">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings" style="">settings</span>
+            Settings
+        </a>
+</nav>
+<div class="mt-auto">
+<button class="w-full aurora-gradient text-white py-3.5 rounded-2xl font-bold flex items-center justify-center gap-2 active:scale-95 transition-all text-sm shadow-xl" style="">
+<span class="material-symbols-outlined text-sm" data-icon="bolt" style="font-variation-settings: &quot;FILL&quot; 1;">bolt</span>
+            AI Optimizer
+        </button>
+</div>
+</aside>
+<main class="ml-64 min-h-screen">
+<!-- TopAppBar -->
+<header class="fixed top-0 right-0 left-64 z-30 bg-slate-950/40 backdrop-blur-2xl h-16 border-b border-white/5">
+<div class="flex justify-between items-center px-8 h-full max-w-[1600px] mx-auto">
+<div class="flex items-center gap-10">
+<span class="text-xl font-black tracking-tight text-white" style="">LuxeTravel <span class="text-gradient" style="">AI</span></span>
+<nav class="hidden lg:flex items-center gap-8 text-xs font-bold uppercase tracking-wider">
+<a class="text-primary border-b-2 border-primary pb-1" href="#" style="">Itineraries</a>
+<a class="text-slate-400 hover:text-white transition-colors" href="#" style="">Clients</a>
+<a class="text-slate-400 hover:text-white transition-colors" href="#" style="">Destinations</a>
+<a class="text-slate-400 hover:text-white transition-colors" href="#" style="">Analytics</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[18px]" data-icon="search" style="">search</span>
+<input class="pl-10 pr-4 py-1.5 bg-slate-900/50 border border-white/10 rounded-full text-xs focus:ring-2 focus:ring-primary/20 w-48 transition-all text-slate-200 outline-none" placeholder="Find..." type="text">
+</div>
+<button class="p-2 text-slate-400 hover:bg-white/5 rounded-full transition-all" style="">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications" style="">notifications</span>
+</button>
+<div class="h-8 w-8 rounded-full overflow-hidden border border-white/10 shadow-sm ring-2 ring-primary/20">
+<img class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBl_7-bSSRAyjuv9hlOLnXWHb_cITbKTCVrgAwSwKZc4QC9blfONEuDjvhq193FKjxV8pofex9FzdyOurmrikl_5137JlntFqiDvp1gYptVE8I5xEd8AVslYvDLTmAVLl5kCVkp6OWvzCo35HAw26GOEMQWFcgdAgTOiq1wLHlLUPPz3NZKow7kpsmdLRitzO4NDnay3Yco2IlUnaCH8TG55XYux2RVM1EhdP-hYr56oqReTA_dqfQOlL_ipiUV8zo1pAtX1dj0kvs" style="">
+</div>
+</div>
+</div>
+</header>
+<!-- Itinerary Hero -->
+<section class="pt-24 px-8 pb-4">
+<div class="relative rounded-3xl overflow-hidden h-72 shadow-2xl group border border-white/10">
+<img class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-[0.5]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBTSRmDTDy7at01s8BOdd37aTGcHN_h0llr1ZvxG_i4lGC56x_YSm331RWcKRdLLC2NQeDzCJ3HmtN8JKzMsgA4wlkYDslvUPUJTIK8h9Pn6K43AviXkgXZydUAklJULzZLU8AnHB57w1g6MfcWR0WN-x8OcBssl8ct1T_ezJ09FuAnrQJitZ6rhm1FlcZEYzphvhFirjpAFStfVTkfkABA-EflS98U-c5w64QRSdJK6_V5nMB3RCHsqcYca7VsxEwBX4g6r8Lds_k" style="">
+<div class="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
+<div class="absolute bottom-10 left-10 text-white">
+<div class="flex items-center gap-3 mb-4">
+<span class="aurora-gradient text-[10px] font-black px-4 py-1.5 rounded-full uppercase tracking-widest shadow-lg" style="">Active Journey</span>
+<span class="text-white/80 text-xs font-semibold" style="">• 7 Days in Bali</span>
+</div>
+<h2 class="text-5xl font-extrabold tracking-tighter mb-2" style="">Tropical Intelligence: <br><span class="text-gradient" style="">Ubud &amp; Seminyak</span></h2>
+<p class="text-slate-300 max-w-lg text-sm leading-relaxed font-light" style="">Spiritual wellness meets high-gloss luxury.</p>
+</div>
+<div class="absolute top-8 right-10">
+<button class="bg-white/10 backdrop-blur-md border border-white/10 text-white px-6 py-3 rounded-full text-[11px] font-black uppercase tracking-widest flex items-center gap-2 hover:bg-white/20 transition-all" style="">
+<span class="material-symbols-outlined text-[18px]" data-icon="share" style="">share</span>
+                    Export
+                </button>
+</div>
+</div>
+</section>
+<!-- Trip Timeline / Day Selector -->
+<section class="px-8 mb-8">
+<div class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar">
+<button class="flex-shrink-0 glass-panel p-5 rounded-2xl w-44 text-left transition-all group" style="">
+<p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-primary transition-colors" style="">Day 01</p>
+<p class="text-sm font-bold text-white/90" style="">Arrival &amp; Bliss</p>
+</button>
+<button class="flex-shrink-0 glass-panel p-5 rounded-2xl w-44 text-left transition-all group" style="">
+<p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-primary transition-colors" style="">Day 02</p>
+<p class="text-sm font-bold text-white/90" style="">Coastal Drift</p>
+</button>
+<button class="flex-shrink-0 glass-panel p-5 rounded-2xl w-44 text-left transition-all group" style="">
+<p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-primary transition-colors" style="">Day 03</p>
+<p class="text-sm font-bold text-white/90" style="">Jungle Pulse</p>
+</button>
+<button class="flex-shrink-0 glass-panel p-5 rounded-2xl w-44 text-left active-day-glow relative overflow-hidden group border-tertiary/40" style="">
+<p class="text-[9px] font-black text-tertiary uppercase tracking-widest mb-1 relative z-10" style="">Day 04</p>
+<p class="text-sm font-black text-white relative z-10" style="">Cultural Immersion</p>
+</button>
+<button class="flex-shrink-0 glass-panel p-5 rounded-2xl w-44 text-left transition-all group opacity-40" style="">
+<p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-primary transition-colors" style="">Day 05</p>
+<p class="text-sm font-bold text-white/90" style="">Zen Wellness</p>
+</button>
+<button class="flex-shrink-0 glass-panel p-5 rounded-2xl w-44 text-left transition-all group opacity-40" style="">
+<p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-primary transition-colors" style="">Day 06</p>
+<p class="text-sm font-bold text-white/90" style="">Secret Shores</p>
+</button>
+<button class="flex-shrink-0 glass-panel p-5 rounded-2xl w-44 text-left transition-all group opacity-40" style="">
+<p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1 group-hover:text-primary transition-colors" style="">Day 07</p>
+<p class="text-sm font-bold text-white/90" style="">Departure</p>
+</button>
+</div>
+</section>
+<div class="px-8 grid grid-cols-12 gap-8 pb-20">
+<!-- Timeline Section -->
+<div class="col-span-12 lg:col-span-8">
+<div class="flex items-center justify-between mb-8">
+<h3 class="text-3xl font-extrabold text-white tracking-tight" style="">Day 04: <span class="text-gradient" style="">Cultural Immersions</span></h3>
+<div class="flex gap-1.5 p-1 bg-white/5 backdrop-blur-xl rounded-full border border-white/5">
+<button class="px-6 py-2 bg-primary text-white rounded-full text-[10px] font-extrabold uppercase tracking-widest shadow-lg" style="">Client</button>
+<button class="px-6 py-2 hover:bg-white/5 text-slate-400 rounded-full text-[10px] font-extrabold uppercase tracking-widest transition-all" style="">status</button>
+<button class="px-6 py-2 hover:bg-white/5 text-slate-400 rounded-full text-[10px] font-extrabold uppercase tracking-widest transition-all" style="">time stamp</button>
+</div>
+</div>
+<div class="relative timeline-line space-y-10 pl-10">
+<!-- Activity Card 1 -->
+<div class="relative">
+<div class="absolute -left-[31px] top-6 w-6 h-6 bg-background border-[5px] border-secondary rounded-full z-10 shadow-[0_0_15px_rgba(124,58,237,0.4)]"></div>
+<div class="glass-panel p-7 rounded-2xl flex gap-8 items-center group transition-all">
+<div class="w-36 h-36 rounded-xl overflow-hidden flex-shrink-0 shadow-2xl border border-white/5">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-[0.8]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJiPn4eismUVB00WYiOc6tbHE2zPGQePWzp4135rK-DkG6-Y4po3eVl2MW3NQ81qC-BnUSywYqkHP_thdANYv5nG4DAYD3VDFFkfLkJ21C8iDPGbV3A4tH8_OVBqBfArRzP2GUGcqLOvO3z9vDyeBXKekLYaVWRFtoSh7JnAoV-cqjeC_ZnhVIXJXHzH-vlXICfqM72qRUHwvJIa06wEdqQw21Jym3sgMrKbSighNpziBU0WJ_LxmpuhdD7e9GmOzvnV-pww1Sjpg" style="">
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-3">
+<span class="text-[11px] font-black text-primary tracking-widest uppercase" style="">08:00 — 10:30 AM</span>
+<span class="bg-primary/20 text-primary border border-primary/30 px-4 py-1 rounded-full text-[10px] font-black shadow-lg" style="">$45</span>
+</div>
+<h4 class="text-2xl font-extrabold text-white mb-2" style="">Pura Tirta Empul Ritual</h4>
+<p class="text-slate-400 text-sm leading-relaxed mb-5 font-light" style="">Private purification ceremony at the holy water temple with a master priest.</p>
+<div class="flex items-center gap-6">
+<span class="flex items-center gap-2 text-[11px] font-black text-secondary uppercase" style=""><span class="material-symbols-outlined text-[18px]" data-icon="location_on" style="">location_on</span> Tampaksiring</span>
+<span class="flex items-center gap-2 text-[11px] font-black text-tertiary uppercase" style=""><span class="material-symbols-outlined text-[18px]" data-icon="auto_awesome" style="font-variation-settings: &quot;FILL&quot; 1;">auto_awesome</span> AI Pick</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Activity Card 2 -->
+<div class="relative">
+<div class="absolute -left-[31px] top-6 w-6 h-6 bg-background border-[5px] border-primary rounded-full z-10 shadow-[0_0_15px_rgba(255,92,51,0.4)]"></div>
+<div class="glass-panel p-7 rounded-2xl flex gap-8 items-center group transition-all">
+<div class="w-36 h-36 rounded-xl overflow-hidden flex-shrink-0 shadow-2xl border border-white/5">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-[0.8]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDTSv7n9_WoZD8dtUYA64KzEQ3DR4VV61Y84X4bS0ZwKXEmbvlnJ5XbNfC0Xz-0aMoz8-NIH2QWSukkpDrVzKGrEC0sB3RFWreCMCHpSiHoCHT7svARWoHZxJK7hDr7mc2cXq_vwcF5TIfh9ChjRgJdiGegkeYS_OPC9eOGrBZGQMtdD64BmYRKDpZVMULcwowoi2Cv_NqSlYaAOgq61dv5GcBzextaGEPKqDB9I7TX_AKdGLw3_KifkQF9Wy-p2tbyowqwUDTMd3E" style="">
+</div>
+<div class="flex-1">
+<div class="flex justify-between items-start mb-3">
+<span class="text-[11px] font-black text-primary tracking-widest uppercase" style="">11:00 — 12:30 PM</span>
+<span class="bg-primary/20 text-primary border border-primary/30 px-4 py-1 rounded-full text-[10px] font-black shadow-lg" style="">$12</span>
+</div>
+<h4 class="text-2xl font-extrabold text-white mb-2" style="">Alchemy Boutique Brunch</h4>
+<p class="text-slate-400 text-sm leading-relaxed mb-5 font-light" style="">Plant-based excellence. World-class smoothie bowls and raw chocolate.</p>
+<div class="flex items-center gap-6">
+<span class="flex items-center gap-2 text-[11px] font-black text-secondary uppercase" style=""><span class="material-symbols-outlined text-[18px]" data-icon="restaurant" style="">restaurant</span> Ubud</span>
+<span class="flex items-center gap-2 text-[11px] font-black text-tertiary uppercase" style=""><span class="material-symbols-outlined text-[18px]" data-icon="eco" style="">eco</span> Sustainable</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Sidebar Insights Section -->
+<div class="col-span-12 lg:col-span-4 space-y-8">
+<!-- AI Insights Panel -->
+<div class="glass-panel rounded-[2.5rem] p-10 text-white relative overflow-hidden group">
+<div class="absolute -top-10 -right-10 opacity-[0.03] group-hover:opacity-[0.07] transition-opacity">
+<span class="material-symbols-outlined text-[200px]" data-icon="psychology" style="font-variation-settings: &quot;FILL&quot; 1;">psychology</span>
+</div>
+<div class="flex items-center gap-4 mb-10 relative z-10">
+<div class="p-3 aurora-gradient rounded-2xl shadow-xl">
+<span class="material-symbols-outlined text-white" data-icon="auto_awesome" style="font-variation-settings: &quot;FILL&quot; 1;">auto_awesome</span>
+</div>
+<div>
+<h4 class="text-xs font-black uppercase tracking-[0.3em] text-primary" style="">AI Optimizer</h4>
+<p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest" style="">Active Insight</p>
+</div>
+</div>
+<div class="space-y-5 relative z-10">
+<div class="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/5 group/card hover:bg-white/10 transition-all">
+<p class="text-[10px] font-black text-tertiary uppercase tracking-[0.2em] mb-2" style="">Timing Suggestion</p>
+<p class="text-sm text-slate-200 font-medium leading-relaxed" style="">Leave 15 mins early for the Golden Hour at the temple.</p>
+</div>
+<div class="bg-white/5 backdrop-blur-xl p-6 rounded-2xl border border-white/5 flex justify-between items-center group/card hover:bg-white/10 transition-all">
+<div>
+<p class="text-[10px] font-black text-tertiary uppercase tracking-[0.2em] mb-2" style="">Weather</p>
+<p class="text-sm text-slate-200 font-medium" style="">70% Shower chance @ 4PM</p>
+</div>
+<span class="material-symbols-outlined text-slate-400" data-icon="umbrella" style="">umbrella</span>
+</div>
+<div class="aurora-gradient p-7 rounded-2xl shadow-2xl relative overflow-hidden">
+<div class="absolute inset-0 bg-black/10"></div>
+<p class="text-[10px] font-black text-white/90 uppercase tracking-[0.2em] mb-2 relative z-10" style="">Spend Forecast</p>
+<div class="flex items-baseline gap-3 relative z-10">
+<span class="text-4xl font-black text-white" style="">$132</span>
+<span class="text-[10px] text-white/70 font-bold uppercase tracking-widest" style="">Today's Est.</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Client Card -->
+<div class="glass-panel p-8 rounded-[2.5rem]">
+<h5 class="text-[10px] font-black text-primary uppercase tracking-[0.3em] mb-8" style="">Client Dossier</h5>
+<div class="flex items-center gap-6 mb-8">
+<div class="relative">
+<img class="w-16 h-16 rounded-full object-cover ring-2 ring-primary/40 p-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDCegkXZtzeKOsKy5pmxx6JJn3TDv0k6EbcZBSISf0VhUdTgrf8Y_AgC5G5S59giKfifhkBFhBwJRIFpi7jlUAd1YzleCFR85FFnqg6Ydg2wVl1LyPM4H3GiMQG3wm4-3eGlKImGoIGvwfivTAyXY_Ch7a_59EAoGBUl9KS-Og3JopUljKD4_EB1uMUKeWtfrryLhDKwLBfAdy7NxVqGr1G8ECuehOYUHIJKaP1CUb2KhMnOScti4kX4cEAIvJJIRFapg_03Tk7dfo" style="">
+<div class="absolute -bottom-1 -right-1 w-6 h-6 bg-primary text-white text-[10px] flex items-center justify-center rounded-full font-black shadow-lg" style="">P</div>
+</div>
+<div>
+<p class="font-extrabold text-white text-lg" style="">Elena Rodriguez</p>
+<p class="text-[11px] font-bold text-slate-500 tracking-widest uppercase" style="">Premium • Since 2021</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="p-5 rounded-2xl border border-white/5 bg-white/5 group hover:bg-white/10 transition-all">
+<p class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1.5" style="">Dietary</p>
+<p class="text-xs font-bold text-tertiary" style="">Vegan / GF</p>
+</div>
+<div class="p-5 rounded-2xl border border-white/5 bg-white/5 group hover:bg-white/10 transition-all">
+<p class="text-[10px] text-slate-500 font-black uppercase tracking-widest mb-1.5" style="">Pace</p>
+<p class="text-xs font-bold text-tertiary" style="">Relaxed</p>
+</div>
+</div>
+</div>
+<!-- Map Widget -->
+<div class="rounded-[2.5rem] overflow-hidden shadow-2xl h-52 relative border border-white/10 group">
+<img class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 brightness-[0.5]" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-xsOGndml_s9kwf08ODde8-KMQEdc7hOdy_VXgjwaTro4rMzYGe_9Y4VDhqf54Euy1V_gMHnEZlaZmkrkFT4LJaSjfte0TO0C_djYBte3XZ9j5oNeBFXizpz7mPN63ZZvd0aJWcOfnOwzKMotLKinl68YbvU-x01hJlqVxQYtl9KCj-7-kq0pGahQrUrgTS68l9Ene2wivXgm-sGiTl51WL9YeiNB-Fg3hYziTQDqDWangdgPLTYSv4s8EZiAyo0uFZQY2WHMNJ8" style="">
+<div class="absolute inset-0 bg-secondary/10 backdrop-brightness-[0.7]"></div>
+<div class="absolute bottom-6 left-6 glass-panel px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest flex items-center gap-3 border-white/20" style="">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="explore" style="font-variation-settings: &quot;FILL&quot; 1;">explore</span>
+                    Live Tracking
+                </div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button -->
+<button class="fixed bottom-10 right-10 w-16 h-16 aurora-gradient text-white rounded-2xl shadow-[0_15px_40px_-10px_rgba(255,92,51,0.5)] flex items-center justify-center hover:scale-110 active:scale-95 transition-all z-50 group" style="">
+<span class="material-symbols-outlined text-3xl group-hover:rotate-90 transition-transform duration-300" data-icon="add" style="">add</span>
+</button>
+</body></html>

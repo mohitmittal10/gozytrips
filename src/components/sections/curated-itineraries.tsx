@@ -31,15 +31,15 @@ const ITINERARY_ITEMS: FocusRailItem[] = [
 
 export default function CuratedItineraries() {
     return (
-        <section className="w-full">
-            <div className="mx-auto max-w-7xl px-4 pt-16 pb-4 text-center">
-                <p className="text-xs font-medium uppercase tracking-[0.3em] text-emerald-400 mb-3">
+        <section className="w-full bg-black">
+            <div className="mx-auto max-w-7xl px-4 pt-10 pb-2 text-center">
+                <p className="text-xs font-medium uppercase tracking-[0.3em] text-emerald-400 mb-1">
                     Curated by GozyTrips
                 </p>
                 <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                    PDF Itinerary Formats
+                    <span className="bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 bg-clip-text text-transparent">PDF</span> Itinerary Formats
                 </h2>
-                <p className="mt-4 text-neutral-400 max-w-xl mx-auto">
+                <p className="mt-2 text-neutral-400 max-w-xl mx-auto">
                     Drag, scroll, or use the arrows to preview our professionally designed PDF travel itinerary formats.
                 </p>
             </div>

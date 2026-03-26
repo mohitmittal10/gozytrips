@@ -37,15 +37,22 @@ import { Button } from "@/components/ui/button";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type DayData = TravelItineraryOutput["itinerary"][number];
-type TimelineStep = DayData["timeline"][number];
+type DayData = Omit<TravelItineraryOutput["itinerary"][number], "dailyStats"> & { 
+  imageUrl?: string;
+  dailyStats: { 
+    totalCost: string;
+    walkingDistance?: string;
+  };
+};
+type TimelineStep = DayData["timeline"][number] & { imageUrl?: string };
 
 type ItineraryTimelineProps = {
-  itinerary: TravelItineraryOutput["itinerary"];
+  itinerary: DayData[];
   isLoading?: boolean;
   showDecorations?: boolean;
   editable?: boolean;
   onItineraryChange?: (itinerary: TravelItineraryOutput["itinerary"]) => void;
+  onEditingChange?: (editing: boolean) => void;
   hotels?: HotelInfo[];
   flights?: FlightInfo[];
   showTimestamps?: boolean;
@@ -55,15 +62,15 @@ type ItineraryTimelineProps = {
 
 function FlightBanner({ flight }: { flight: FlightInfo }) {
   return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-sm">
-      <Plane className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 border border-primary/20 text-sm">
+      <Plane className="w-4 h-4 text-primary flex-shrink-0" />
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-emerald-400">
+          <span className="font-semibold text-primary">
             {flight.airline} {flight.flightNumber}
           </span>
           {flight.pnr && (
-            <span className="text-xs bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded">PNR: {flight.pnr}</span>
+            <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">PNR: {flight.pnr}</span>
           )}
         </div>
         <div className="text-foreground/70 text-xs mt-0.5">
@@ -83,19 +90,19 @@ function FlightBanner({ flight }: { flight: FlightInfo }) {
 function HotelBanner({ hotel }: { hotel: HotelInfo }) {
   const hasImages = hotel.imageUrls && hotel.imageUrls.length > 0;
   return (
-    <div className="flex flex-col gap-4 px-5 py-4 rounded-xl bg-blue-500/10 border border-blue-500/20 text-sm overflow-hidden">
+    <div className="flex flex-col gap-4 px-5 py-4 rounded-xl bg-secondary/10 border border-secondary/20 text-sm overflow-hidden">
       <div className="flex items-start gap-4">
-        <Hotel className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+        <Hotel className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-blue-400 text-base">{hotel.name || "Hotel"}</span>
+            <span className="font-semibold text-secondary text-base">{hotel.name || "Hotel"}</span>
             <span className="flex items-center gap-0.5">
               {Array.from({ length: hotel.starRating }, (_, i) => (
                 <Star key={i} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
               ))}
             </span>
             {hotel.bookingRef && (
-              <span className="text-xs bg-blue-500/20 text-blue-300 px-2 py-0.5 rounded-md font-medium">Ref: {hotel.bookingRef}</span>
+              <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-md font-medium">Ref: {hotel.bookingRef}</span>
             )}
           </div>
           <div className="text-foreground/70 text-xs mt-1">
@@ -116,7 +123,7 @@ function HotelBanner({ hotel }: { hotel: HotelInfo }) {
               src={url}
               alt={`Hotel ${idx + 1}`}
               className={cn(
-                "w-full object-cover rounded-lg shadow-sm border border-blue-500/10",
+                "w-full object-cover rounded-lg shadow-sm border border-secondary/10",
                 hotel.imageUrls!.length === 1 ? "h-64 sm:h-80" : "h-40 sm:h-48"
               )}
             />
@@ -152,6 +159,7 @@ function InlineEdit({
   inputClassName,
   multiline = false,
   placeholder = "Enter text...",
+  onEditStart,
 }: {
   value: string;
   onSave: (val: string) => void;
@@ -159,6 +167,7 @@ function InlineEdit({
   inputClassName?: string;
   multiline?: boolean;
   placeholder?: string;
+  onEditStart?: () => void;
 }) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -195,7 +204,10 @@ function InlineEdit({
     return (
       <span
         className={cn("group/edit cursor-pointer inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-colors hover:bg-primary/10", className)}
-        onClick={() => setEditing(true)}
+        onClick={() => {
+          if (onEditStart) onEditStart();
+          setEditing(true);
+        }}
         title="Click to edit"
       >
         <span className="flex-1">{value}</span>
@@ -247,6 +259,7 @@ function SortableActivity({
   isEditable,
   onUpdateStep,
   onDeleteStep,
+  onEditingChange,
   showTimestamps,
   currencySymbol,
 }: {
@@ -256,6 +269,7 @@ function SortableActivity({
   isEditable: boolean;
   onUpdateStep: (field: keyof TimelineStep, value: string | number | undefined) => void;
   onDeleteStep: () => void;
+  onEditingChange?: (editing: boolean) => void;
   showTimestamps?: boolean;
   currencySymbol?: string;
 }) {
@@ -275,62 +289,83 @@ function SortableActivity({
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative pl-8 group/step">
-      <div className="absolute left-0 top-2 w-10 h-10 rounded-full bg-onyx-black/80 backdrop-blur-md border border-zinc-700 flex items-center justify-center font-bold text-zinc-300 z-10 transition-transform group-hover:scale-110 shadow-lg shadow-black/50">
-        {stepIndex + 1}
-      </div>
+    <div ref={setNodeRef} style={style} className="relative group/step">
+      <div className={cn(
+        "absolute -left-[31px] top-6 w-6 h-6 bg-background rounded-full z-10 transition-transform group-hover/step:scale-110",
+        stepIndex % 3 === 0 ? "border-[5px] border-primary shadow-[0_0_15px_rgba(255,92,51,0.4)]" : 
+        stepIndex % 3 === 1 ? "border-[5px] border-accent shadow-[0_0_15px_rgba(236,72,153,0.4)]" :
+        "border-[5px] border-secondary shadow-[0_0_15px_rgba(124,58,237,0.4)]"
+      )}></div>
 
       <div className="flex items-start gap-2">
         {/* Drag handle */}
         {isEditable && (
           <button
-            className="mt-1 cursor-grab active:cursor-grabbing text-primary/30 hover:text-primary/70 transition-colors opacity-0 group-hover/step:opacity-100"
+            className="mt-6 cursor-grab active:cursor-grabbing text-primary/30 hover:text-primary/70 transition-colors opacity-0 group-hover/step:opacity-100"
             {...attributes}
             {...listeners}
             tabIndex={-1}
             aria-label="Drag to reorder"
           >
-            <GripVertical className="w-4 h-4" />
+            <span className="material-symbols-outlined text-[20px]">drag_indicator</span>
           </button>
         )}
 
         <div className="flex-1 min-w-0">
-            <div className="liquid-glass glossy-surface rounded-lg p-6 shadow-lg border border-white/5 hover:border-white/20 transition-all">
-              <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-2">
-                    {showTimestamps !== false ? (
-                      <InlineEdit
-                        value={step.time}
-                        onSave={(v) => onUpdateStep("time", v)}
-                        className="text-sm font-bold text-zinc-500 mb-1 block"
-                        inputClassName="text-sm font-bold"
-                        placeholder="e.g. 08:00 AM"
-                      />
-                    ) : (
-                      <div className="text-sm font-bold text-zinc-500 mb-1 block opacity-0">-</div>
-                    )}
-                  </div>
-                  <InlineEdit
-                    value={step.details}
-                    onSave={(v) => onUpdateStep("details", v)}
-                    className="text-zinc-500 leading-relaxed text-sm block"
-                    multiline
-                    placeholder="Activity description..."
-                  />
-                </div>
-                <div className="bg-white/5 px-4 py-2 rounded-lg border border-white/10 flex flex-col items-center">
-                  <span className="text-[10px] text-zinc-600 font-bold uppercase tracking-tighter">Estimated Cost</span>
-                  <div className="flex items-center gap-1">
-                    <span className="text-base font-bold text-white">{currencySymbol ?? "₹"}</span>
+            <div className="glass-panel p-2 sm:p-3 rounded-xl flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center group/card transition-all">
+              <div className="hidden sm:flex w-14 h-14 rounded-md overflow-hidden flex-shrink-0 shadow-lg border border-white/5 bg-zinc-900/50">
+                {/* Fallback image with Unsplash ID depending on step Index so they are visually unique and pretty */}
+                <img 
+                  className="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700 brightness-[0.8]" 
+                  src={step.imageUrl || `https://images.unsplash.com/photo-${1542104595 + (stepIndex * 1500)}?q=80&w=1000&auto=format&fit=crop`} 
+                  alt="Activity"
+                />
+              </div>
+              
+              <div className="flex-1 w-full min-w-0">
+                <div className="flex justify-between items-start mb-2">
+                  {showTimestamps !== false ? (
+                    <InlineEdit
+                      value={step.time}
+                      onSave={(v) => onUpdateStep("time", v)}
+                      onEditStart={() => onEditingChange?.(true)}
+                      className="text-[10px] font-black text-primary tracking-widest uppercase block mt-0.5"
+                      inputClassName="text-[10px] font-black"
+                      placeholder="e.g. 08:00 AM"
+                    />
+                  ) : <div className="text-[10px] font-black text-primary tracking-widest uppercase opacity-0 mt-0.5">-</div>}
+                  
+                  <div className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-[9px] font-black shadow-lg flex items-center gap-1">
+                    <span>{currencySymbol ?? "₹"}</span>
                     <InlineEdit
                       value={step.cost !== undefined ? String(step.cost) : ""}
                       onSave={(v) => onUpdateStep("cost", v ? Number(v) : undefined)}
-                      className="text-base font-bold text-white min-w-[3rem]"
-                      inputClassName="text-base font-bold"
+                      onEditStart={() => onEditingChange?.(true)}
+                      className="min-w-[1.5rem]"
+                      inputClassName="text-[9px]"
                       placeholder="0"
                     />
                   </div>
+                </div>
+                
+                <InlineEdit
+                  value={step.details}
+                  onSave={(v) => onUpdateStep("details", v)}
+                  onEditStart={() => onEditingChange?.(true)}
+                  className="text-slate-300 text-[13px] leading-tight mb-2 font-medium block"
+                  multiline
+                  placeholder="Activity description..."
+                />
+
+                <div className="flex items-center gap-3">
+                  <span className="flex items-center gap-1 text-[8px] font-black text-secondary uppercase tracking-tighter">
+                    <span className="material-symbols-outlined text-[14px]">location_on</span>
+                    {step.details.split('at')[1]?.trim().split(' ')[0] || "Ubud"}
+                  </span>
+                  <span className="flex items-center gap-1 text-[8px] font-black text-accent uppercase tracking-tighter">
+                    <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: '"FILL" 1' }}>auto_awesome</span>
+                    Pick
+                  </span>
                 </div>
               </div>
             </div>
@@ -343,7 +378,7 @@ function SortableActivity({
             className="mt-1 text-red-400/50 hover:text-red-400 transition-colors opacity-0 group-hover/step:opacity-100"
             title="Delete activity"
           >
-            <Trash2 className="w-4 h-4" />
+            <span className="material-symbols-outlined text-[18px]">delete</span>
           </button>
         )}
       </div>
@@ -410,6 +445,7 @@ const ItineraryTimeline = ({
   showDecorations = true,
   editable = false,
   onItineraryChange,
+  onEditingChange,
   hotels = [],
   flights = [],
   showTimestamps = true,
@@ -422,7 +458,6 @@ const ItineraryTimeline = ({
   const currencySymbol = itineraryCtx
     ? getCurrencySymbol(itineraryCtx.state.pricing.currency)
     : "₹";
-  const [isEditMode, setIsEditMode] = useState(false);
   const [activeStepId, setActiveStepId] = useState<string | null>(null);
   // Track which container the dragged item is currently over
   const [overDayIndex, setOverDayIndex] = useState<number | null>(null);
@@ -444,6 +479,7 @@ const ItineraryTimeline = ({
   );
 
   const updateStep = (dayIndex: number, stepIndex: number, field: keyof TimelineStep, value: string | number | undefined) => {
+    if (onEditingChange) onEditingChange(true);
     updateItinerary((days) => {
       days[dayIndex].timeline[stepIndex] = {
         ...days[dayIndex].timeline[stepIndex],
@@ -455,6 +491,7 @@ const ItineraryTimeline = ({
 
   const deleteStep = (dayIndex: number, stepIndex: number) => {
     const deleted = itinerary[dayIndex].timeline[stepIndex];
+    if (onEditingChange) onEditingChange(true);
     updateItinerary((days) => {
       days[dayIndex].timeline.splice(stepIndex, 1);
       return days;
@@ -480,6 +517,7 @@ const ItineraryTimeline = ({
   };
 
   const addStep = (dayIndex: number, insertAt?: number) => {
+    if (onEditingChange) onEditingChange(true);
     updateItinerary((days) => {
       const newStep: TimelineStep = { time: "12:00 PM", details: "New activity — click to edit" };
       const idx = insertAt ?? days[dayIndex].timeline.length;
@@ -489,6 +527,7 @@ const ItineraryTimeline = ({
   };
 
   const updateDayField = (dayIndex: number, field: "areaFocus" | "date", value: string) => {
+    if (onEditingChange) onEditingChange(true);
     updateItinerary((days) => {
       (days[dayIndex] as Record<string, unknown>)[field] = value;
       return days;
@@ -496,13 +535,15 @@ const ItineraryTimeline = ({
   };
 
   const updateDailyStat = (dayIndex: number, field: "totalCost" | "walkingDistance", value: string) => {
+    if (onEditingChange) onEditingChange(true);
     updateItinerary((days) => {
-      days[dayIndex].dailyStats[field] = value;
+      (days[dayIndex].dailyStats as any)[field] = value;
       return days;
     });
   };
 
   const addDay = () => {
+    if (onEditingChange) onEditingChange(true);
     updateItinerary((days) => {
       const lastDay = days[days.length - 1];
       const newDay: DayData = {
@@ -511,7 +552,7 @@ const ItineraryTimeline = ({
         areaFocus: "New Area — click to edit",
         imageSearchTerm: "",
         timeline: [{ time: "9:00 AM", details: "First activity — click to edit" }],
-        dailyStats: { totalCost: "₹0", walkingDistance: "0 km" },
+        dailyStats: { totalCost: "₹0" },
       };
       days.push(newDay);
       return days;
@@ -520,6 +561,7 @@ const ItineraryTimeline = ({
 
   const deleteDay = (dayIndex: number) => {
     if (itinerary.length <= 1) return;
+    if (onEditingChange) onEditingChange(true);
     const deleted = itinerary[dayIndex];
     updateItinerary((days) => {
       days.splice(dayIndex, 1);
@@ -558,6 +600,7 @@ const ItineraryTimeline = ({
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveStepId(event.active.id as string);
+    if (onEditingChange) onEditingChange(true);
   };
 
   const handleDragOver = (event: DragOverEvent) => {
@@ -566,15 +609,31 @@ const ItineraryTimeline = ({
 
     const activeId = active.id as string;
     const overId = over.id as string;
+    if (activeId === overId) return;
 
     const activeParsed = parseStepId(activeId);
     const overParsed = parseStepId(overId);
 
-    if (!activeParsed) return;
+    if (!activeParsed || !overParsed) return;
 
     // Figure out which day we're over
-    if (overParsed) {
-      setOverDayIndex(overParsed.dayIndex);
+    setOverDayIndex(overParsed.dayIndex);
+
+    // If different day or different position, move it in real-time for visual feedback
+    if (activeParsed.dayIndex !== overParsed.dayIndex || activeParsed.stepIndex !== overParsed.stepIndex) {
+      updateItinerary((days) => {
+        if (activeParsed.dayIndex === overParsed.dayIndex) {
+          days[activeParsed.dayIndex].timeline = arrayMove(
+            days[activeParsed.dayIndex].timeline,
+            activeParsed.stepIndex,
+            overParsed.stepIndex
+          );
+        } else {
+          const [movedStep] = days[activeParsed.dayIndex].timeline.splice(activeParsed.stepIndex, 1);
+          days[overParsed.dayIndex].timeline.splice(overParsed.stepIndex, 0, movedStep);
+        }
+        return days;
+      });
     }
   };
 
@@ -627,34 +686,32 @@ const ItineraryTimeline = ({
 
   return (
     <div className="relative w-full max-w-5xl mx-auto py-4">
-      {/* Edit mode toggle */}
-      {editable && (
-        <div className="flex justify-end mb-6 sticky top-20 z-30">
-          <Button
-            variant={isEditMode ? "default" : "outline"}
-            size="sm"
-            onClick={() => setIsEditMode(!isEditMode)}
-            className={cn(
-              "gap-2 transition-all shadow-lg",
-              isEditMode
-                ? "bg-gradient-to-r from-emerald-500 to-green-500 hover:from-emerald-600 hover:to-green-600 text-white border-0"
-                : "glass-button border-primary/30 text-primary hover:bg-primary/10"
-            )}
+      {/* Horizontal Day Selector */}
+      <div className="flex gap-4 overflow-x-auto pb-8 mb-10 mt-2 snap-x">
+        {itinerary.map((day, dIdx) => (
+          <button
+            key={dIdx}
+            onClick={() => {
+              document.getElementById(`day-container-${dIdx}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
+            className="flex-shrink-0 liquid-glass p-5 rounded-[1.5rem] w-44 text-left transition-all group hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/50 snap-start"
           >
-            {isEditMode ? (
-              <>
-                <Check className="w-4 h-4" />
-                Done Editing
-              </>
-            ) : (
-              <>
-                <Pencil className="w-4 h-4" />
-                Edit Itinerary
-              </>
-            )}
-          </Button>
-        </div>
-      )}
+            <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1 transition-colors">
+              Day {String(dIdx + 1).padStart(2, '0')}
+            </p>
+            <p className="text-sm font-bold text-white/90 truncate">{day.areaFocus}</p>
+          </button>
+        ))}
+        {editable && (
+          <button
+            onClick={addDay}
+            className="flex-shrink-0 p-5 rounded-[1.5rem] w-44 text-left transition-all border-2 border-dashed border-white/10 hover:border-primary/40 hover:bg-white/5 flex flex-col justify-center items-center gap-2 text-zinc-500 hover:text-primary snap-start"
+          >
+            <Plus className="w-6 h-6" />
+            <span className="text-xs font-bold uppercase tracking-widest">Add Day</span>
+          </button>
+        )}
+      </div>
 
       <DndContext
         sensors={sensors}
@@ -663,67 +720,61 @@ const ItineraryTimeline = ({
         onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
-        <div className="space-y-16">
-          {showDecorations && (
-            <div className="absolute left-5 sm:left-9 top-4 h-[calc(100%-2rem)] w-1 bg-primary/20" />
-          )}
+        <div className="space-y-6">
+
 
           {itinerary.map((day, dayIndex) => {
             const dayStepIds = day.timeline.map((_, stepIdx) => stepId(dayIndex, stepIdx));
             return (
               <div
+                id={`day-container-${dayIndex}`}
                 key={`day-${dayIndex}`}
                 className={cn(
                   "relative flex items-start gap-6 sm:gap-12",
                   dayIndex % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse"
                 )}
               >
-                <div className="relative flex-shrink-0">
-                  {showDecorations && (
-                    <div className="bg-background ring-4 ring-primary rounded-full p-2 absolute -left-1.5 top-0 z-10 sm:left-9 sm:-translate-x-1/2">
-                      <Calendar className="w-8 h-8 text-primary" />
-                    </div>
-                  )}
-                </div>
+
                 <div className="flex-1">
                   <Card className={cn(
-                    "glass-card ai-architect-page-card overflow-hidden transition-all",
-                    isEditMode && "ring-1 ring-primary/20"
+                    "glass-panel rounded-3xl overflow-hidden transition-all shadow-2xl border-white/5",
+                    editable && "ring-1 ring-primary/20"
                   )}>
                     <CardHeader className="bg-obsidian-dark/40 border-b border-white/5">
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-4">
-                          <div className="bg-zinc-800 p-3 rounded-lg text-white shadow-xl">
-                            <Calendar className="w-6 h-6" />
-                          </div>
                           <div>
-                            {isEditMode ? (
+                            {editable ? (
                               <>
                                 <InlineEdit
                                   value={day.date}
                                   onSave={(v) => updateDayField(dayIndex, "date", v)}
+                                  onEditStart={() => onEditingChange?.(true)}
                                   className="text-xs font-bold text-zinc-500 uppercase tracking-widest"
                                   inputClassName="text-xs"
                                 />
-                                <InlineEdit
-                                  value={day.areaFocus}
-                                  onSave={(v) => updateDayField(dayIndex, "areaFocus", v)}
-                                  className="text-4xl font-serif font-bold text-white tracking-tight block"
-                                  inputClassName="text-3xl font-bold"
-                                  placeholder="Area focus..."
-                                />
+                                <div className="flex items-baseline gap-2">
+                                  <span className="text-4xl font-extrabold text-white tracking-tight">Day {day.day}:</span>
+                                  <InlineEdit
+                                    value={day.areaFocus}
+                                    onSave={(v) => updateDayField(dayIndex, "areaFocus", v)}
+                                    onEditStart={() => onEditingChange?.(true)}
+                                    className="text-4xl font-extrabold text-white tracking-tight block"
+                                    inputClassName="text-3xl font-bold"
+                                    placeholder="Area focus..."
+                                  />
+                                </div>
                               </>
                             ) : (
-                              <>
-                                <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">{day.date}</p>
-                                <CardTitle className="text-4xl font-serif font-bold text-white tracking-tight">{day.areaFocus}</CardTitle>
-                              </>
+                              <h3 className="text-xl font-extrabold text-white tracking-tight">
+                                Day {String(day.day).padStart(2, '0')}: <span className="text-gradient">{day.areaFocus}</span>
+                              </h3>
                             )}
                           </div>
                         </div>
 
                         {/* Delete day button */}
-                        {isEditMode && itinerary.length > 1 && (
+                        {editable && itinerary.length > 1 && (
                           <button
                             onClick={() => deleteDay(dayIndex)}
                             className="ml-2 p-1.5 rounded-lg text-red-400/50 hover:text-red-400 hover:bg-red-400/10 transition-colors"
@@ -735,22 +786,23 @@ const ItineraryTimeline = ({
                       </div>
                     </CardHeader>
 
-                    <CardContent className="py-10">
+                    <CardContent className="py-3 sm:py-4 font-body">
                       <SortableContext
                         items={dayStepIds}
                         strategy={verticalListSortingStrategy}
-                        disabled={!isEditMode}
+                        disabled={!editable}
                       >
-                        <div className="space-y-6">
+                        <div className="relative timeline-line space-y-3 pl-4 sm:pl-10">
                           {day.timeline.map((step, stepIndex) => (
                             <SortableActivity
                               key={stepId(dayIndex, stepIndex)}
                               id={stepId(dayIndex, stepIndex)}
                               stepIndex={stepIndex}
                               step={step}
-                              isEditable={isEditMode}
+                              isEditable={editable}
                               onUpdateStep={(field, value) => updateStep(dayIndex, stepIndex, field, value)}
                               onDeleteStep={() => deleteStep(dayIndex, stepIndex)}
+                              onEditingChange={onEditingChange}
                               showTimestamps={showTimestamps}
                               currencySymbol={currencySymbol}
                             />
@@ -759,29 +811,33 @@ const ItineraryTimeline = ({
                       </SortableContext>
 
                       {/* Add activity button */}
-                      {isEditMode && (
+                      {editable && (
                         <AddActivityButton onClick={() => addStep(dayIndex)} />
                       )}
                     </CardContent>
 
-                    <CardFooter className="mt-6 ml-0 sm:ml-12 p-0 bg-transparent border-none">
-                      <div className="w-full p-4 liquid-glass rounded-lg flex justify-between items-center text-sm font-medium border border-white/5">
-                        <div className="flex items-center gap-4">
+                    <CardFooter 
+                      className="mt-1 ml-0 sm:ml-12 p-0 bg-transparent border-none"
+                      style={{ borderLeftWidth: "24px", paddingLeft: "24px", paddingRight: "24px", marginBottom: "10px", marginRight: "10px" }}
+                    >
+                      <div className="w-full py-1.5 px-0 bg-transparent flex justify-between items-center text-[10px] font-medium border-none">
+                        <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1 text-zinc-500">
-                             <Footprints className="w-4 h-4 text-zinc-400" />
-                             {isEditMode ? (
+                             <Footprints className="w-3.5 h-3.5 text-zinc-400" />
+                             {editable ? (
                                 <InlineEdit
-                                  value={day.dailyStats.walkingDistance}
+                                  value={day.dailyStats.walkingDistance || ""}
                                   onSave={(v) => updateDailyStat(dayIndex, "walkingDistance", v)}
-                                  className="text-xs"
-                                  inputClassName="text-xs"
+                                  onEditStart={() => onEditingChange?.(true)}
+                                  className="text-[10px]"
+                                  inputClassName="text-[10px]"
                                 />
                              ) : <span>{day.dailyStats.walkingDistance} Walk</span>}
                           </div>
                         </div>
                         <div className="text-zinc-300 font-bold">
                            Total Day {day.day}: <span className="text-white">
-                             {isEditMode ? (
+                             {editable ? (
                                 <InlineEdit
                                   value={day.dailyStats.totalCost}
                                   onSave={(v) => updateDailyStat(dayIndex, "totalCost", v)}
@@ -809,13 +865,7 @@ const ItineraryTimeline = ({
       {/* Global Flights & Accommodations Summary */}
       {(flights.length > 0 || hotels.length > 0) && (
         <div className="relative flex items-start gap-6 sm:gap-12 mt-16 sm:flex-row">
-          <div className="relative flex-shrink-0">
-            {showDecorations && (
-              <div className="bg-background ring-4 ring-primary rounded-full p-2 absolute -left-1.5 top-0 z-10 sm:left-9 sm:-translate-x-1/2">
-                <Plane className="w-8 h-8 text-primary" />
-              </div>
-            )}
-          </div>
+
           <div className="flex-1">
             <Card className="glass-card overflow-hidden">
               <CardHeader className="bg-white/5">
@@ -849,7 +899,7 @@ const ItineraryTimeline = ({
       )}
 
       {/* Add day button */}
-      {isEditMode && (
+      {editable && (
         <div className="mt-8 flex justify-center">
           <button
             onClick={addDay}
