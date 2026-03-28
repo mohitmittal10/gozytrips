@@ -186,6 +186,47 @@ export type Database = {
         };
         Update: never; // Audit logs are immutable
       };
+      standalone_bookings: {
+        Row: {
+          id: string;
+          user_id: string;
+          client_id: string | null;
+          title: string;
+          service_type: 'flight' | 'cab' | 'bus' | 'train' | 'hotel';
+          status: 'draft' | 'quoted' | 'confirmed' | 'cancelled';
+          booking_details: Record<string, any>;
+          net_cost: number | null;
+          markup_percentage: number | null;
+          currency: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          client_id?: string | null;
+          title: string;
+          service_type: 'flight' | 'cab' | 'bus' | 'train' | 'hotel';
+          status?: 'draft' | 'quoted' | 'confirmed' | 'cancelled';
+          booking_details?: Record<string, any>;
+          net_cost?: number | null;
+          markup_percentage?: number | null;
+          currency?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          client_id?: string | null;
+          title?: string;
+          service_type?: 'flight' | 'cab' | 'bus' | 'train' | 'hotel';
+          status?: 'draft' | 'quoted' | 'confirmed' | 'cancelled';
+          booking_details?: Record<string, any>;
+          net_cost?: number | null;
+          markup_percentage?: number | null;
+          currency?: string | null;
+          updated_at?: string;
+        };
+      };
     };
   };
 };

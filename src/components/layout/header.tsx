@@ -137,7 +137,7 @@ const Header = () => {
                                   Trips
                                 </button>
                               </Link>
-                              <Link href="/clients">
+                              <Link href="/clients" className="col-span-2">
                                 <button className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-lg text-sm text-slate-300 flex justify-center border border-white/5">
                                   Clients
                                 </button>

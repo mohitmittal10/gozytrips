@@ -56,6 +56,7 @@ type ItineraryTimelineProps = {
   hotels?: HotelInfo[];
   flights?: FlightInfo[];
   showTimestamps?: boolean;
+  showPrices?: boolean;
 };
 
 // ── Hotel & Flight Display Blocks ──────────────────────────────────────────────
@@ -261,6 +262,7 @@ function SortableActivity({
   onDeleteStep,
   onEditingChange,
   showTimestamps,
+  showPrices,
   currencySymbol,
 }: {
   id: string;
@@ -271,6 +273,7 @@ function SortableActivity({
   onDeleteStep: () => void;
   onEditingChange?: (editing: boolean) => void;
   showTimestamps?: boolean;
+  showPrices?: boolean;
   currencySymbol?: string;
 }) {
   const {
@@ -335,17 +338,19 @@ function SortableActivity({
                     />
                   ) : <div className="text-[10px] font-black text-primary tracking-widest uppercase opacity-0 mt-0.5">-</div>}
                   
-                  <div className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-[9px] font-black shadow-lg flex items-center gap-1">
-                    <span>{currencySymbol ?? "₹"}</span>
-                    <InlineEdit
-                      value={step.cost !== undefined ? String(step.cost) : ""}
-                      onSave={(v) => onUpdateStep("cost", v ? Number(v) : undefined)}
-                      onEditStart={() => onEditingChange?.(true)}
-                      className="min-w-[1.5rem]"
-                      inputClassName="text-[9px]"
-                      placeholder="0"
-                    />
-                  </div>
+                  {showPrices !== false && (
+                    <div className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-[9px] font-black shadow-lg flex items-center gap-1">
+                      <span>{currencySymbol ?? "₹"}</span>
+                      <InlineEdit
+                        value={step.cost !== undefined ? String(step.cost) : ""}
+                        onSave={(v) => onUpdateStep("cost", v ? Number(v) : undefined)}
+                        onEditStart={() => onEditingChange?.(true)}
+                        className="min-w-[1.5rem]"
+                        inputClassName="text-[9px]"
+                        placeholder="0"
+                      />
+                    </div>
+                  )}
                 </div>
                 
                 <InlineEdit
@@ -357,16 +362,7 @@ function SortableActivity({
                   placeholder="Activity description..."
                 />
 
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1 text-[8px] font-black text-secondary uppercase tracking-tighter">
-                    <span className="material-symbols-outlined text-[14px]">location_on</span>
-                    {step.details.split('at')[1]?.trim().split(' ')[0] || "Ubud"}
-                  </span>
-                  <span className="flex items-center gap-1 text-[8px] font-black text-accent uppercase tracking-tighter">
-                    <span className="material-symbols-outlined text-[14px]" style={{ fontVariationSettings: '"FILL" 1' }}>auto_awesome</span>
-                    Pick
-                  </span>
-                </div>
+                  {/* Removed location and picker tags */}
               </div>
             </div>
         </div>
@@ -449,6 +445,7 @@ const ItineraryTimeline = ({
   hotels = [],
   flights = [],
   showTimestamps = true,
+  showPrices = true,
 }: ItineraryTimelineProps) => {
   const { toast } = useToast();
 
@@ -804,6 +801,7 @@ const ItineraryTimeline = ({
                               onDeleteStep={() => deleteStep(dayIndex, stepIndex)}
                               onEditingChange={onEditingChange}
                               showTimestamps={showTimestamps}
+                              showPrices={showPrices}
                               currencySymbol={currencySymbol}
                             />
                           ))}

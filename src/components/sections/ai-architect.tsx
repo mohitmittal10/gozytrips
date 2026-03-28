@@ -25,7 +25,7 @@ import ItineraryTimeline from "../itinerary-timeline";
 import HotelFlightEditor, { type HotelInfo, type FlightInfo } from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
 import { type PricingConfig } from "@/types/pricing";
-import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye, Check, ArrowRight, ArrowLeft, Plane, Wallet, DollarSign, Settings, Shield, LayoutDashboard } from "lucide-react";
+import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye, Check, ArrowRight, ArrowLeft, Plane, Wallet, DollarSign, Settings, Shield, LayoutDashboard, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { CrmSettings } from "@/components/crm-settings";
 import { ItineraryProvider } from "@/contexts/itinerary-context";
@@ -36,6 +36,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "../ui/colla
 import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { MorphingSquare } from "@/components/ui/morphing-square";
 import { format } from "date-fns";
 import { useAuth } from "@/contexts/auth-context";
 import { createClient } from "@/lib/supabase/client";
@@ -122,6 +123,9 @@ const AiArchitect = () => {
   const [tripMetadata, setTripMetadata] = useState<any>(null);
   const [showTimestamps, setShowTimestamps] = useState(true);
   const [activeArchitectTab, setActiveArchitectTab] = useState<'itinerary' | 'flights-hotels' | 'pricing' | 'settings'>('itinerary');
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+  const [optimizationCount, setOptimizationCount] = useState(0);
+  const [showPrices, setShowPrices] = useState(true);
 
   const currencySymbol = useMemo(() => {
     const currency = pricing?.currency || agencySettings?.default_currency || 'INR';
@@ -656,25 +660,77 @@ const AiArchitect = () => {
 
   async function onSubmit(values: z.infer<typeof formSchema>, feedback?: string) {
     setIsGenerating(true);
-    if (!feedback) setItinerary(null); // Clear for fresh generation, keep for optimization to show transition
-    setTripMetadata(values);
+    if (!feedback) {
+      setItinerary(null); // Clear for fresh generation, keep for optimization to show transition
+      setOptimizationCount(0);
+    }
+
+    // Fallback to tripMetadata if form values are incomplete (e.g. manual optimization call)
+    let effectiveValues = values;
+    if (feedback && (!values.startDate || !values.endDate) && tripMetadata) {
+      console.log("ðŸ”„ Using trip metadata fallback during optimization due to empty form fields");
+      effectiveValues = {
+        ...tripMetadata,
+        ...values,
+        startDate: values.startDate || tripMetadata.startDate,
+        endDate: values.endDate || tripMetadata.endDate,
+        startingLocation: values.startingLocation || tripMetadata.startingLocation,
+        destinations: values.destinations || tripMetadata.destinations,
+      };
+    }
+
+    setTripMetadata(effectiveValues);
+
     try {
+      let { startDate, endDate } = effectiveValues;
+
+      // Ensure they're Date objects if they came from tripMetadata (which might be parsed from JSON strings)
+      if (startDate && !(startDate instanceof Date)) {
+        startDate = new Date(startDate);
+      }
+      if (endDate && !(endDate instanceof Date)) {
+        endDate = new Date(endDate);
+      }
+
+      // Robust check for valid dates before formatting
+      if (!startDate || !(startDate instanceof Date) || isNaN(startDate.getTime())) {
+        console.error("âŒ Invalid start date in onSubmit:", startDate);
+        toast({
+          variant: "destructive",
+          title: "Date Error",
+          description: "Invalid start date. Please ensure a valid date is selected.",
+        });
+        setIsGenerating(false);
+        return;
+      }
+
+      if (!endDate || !(endDate instanceof Date) || isNaN(endDate.getTime())) {
+        console.error("âŒ Invalid end date in onSubmit:", endDate);
+        toast({
+          variant: "destructive",
+          title: "Date Error",
+          description: "Invalid end date. Please ensure a valid date is selected.",
+        });
+        setIsGenerating(false);
+        return;
+      }
+
       // Format dates to YYYY-MM-DD
-      const startDateStr = format(values.startDate, "yyyy-MM-dd");
-      const endDateStr = format(values.endDate, "yyyy-MM-dd");
+      const startDateStr = format(startDate, "yyyy-MM-dd");
+      const endDateStr = format(endDate, "yyyy-MM-dd");
 
       const result = await generateTravelItinerary({
-        startingLocation: values.startingLocation,
-        endingLocation: values.endingLocation || values.startingLocation,
+        startingLocation: effectiveValues.startingLocation,
+        endingLocation: effectiveValues.endingLocation || effectiveValues.startingLocation,
         startDate: startDateStr,
         endDate: endDateStr,
-        destinations: values.destinations,
-        budget: values.budget ?? undefined,
-        mustInclude: values.mustInclude || "",
-        avoid: values.avoid || "",
-        leisureTime: !!values.leisureTime,
-        leisureDay: values.leisureDay ?? undefined,
-        travelTimePreference: values.travelTimePreference,
+        destinations: effectiveValues.destinations,
+        budget: effectiveValues.budget ?? undefined,
+        mustInclude: effectiveValues.mustInclude || "",
+        avoid: effectiveValues.avoid || "",
+        leisureTime: !!effectiveValues.leisureTime,
+        leisureDay: effectiveValues.leisureDay ?? undefined,
+        travelTimePreference: effectiveValues.travelTimePreference,
         feedback: (typeof feedback === 'string') ? feedback : "",
       });
 
@@ -1131,7 +1187,7 @@ const AiArchitect = () => {
         </div>
       </div>
 
-      {isGenerating && (
+      {isGenerating && !itinerary && (
         <div className="max-w-5xl mx-auto mt-8">
           <Card className="ai-architect-page-card py-24 flex flex-col items-center justify-center min-h-[400px] space-y-12">
             <UniqueLoading variant="morph" size="lg" />
@@ -1200,32 +1256,43 @@ const AiArchitect = () => {
                   Time
                 </label>
               </div>
+              <div className="flex items-center space-x-2 px-2 py-1 rounded-md border border-white/5 bg-black/20">
+                <Switch
+                  id="show-prices"
+                  checked={showPrices}
+                  onCheckedChange={setShowPrices}
+                  className="scale-75 origin-right"
+                />
+                <label htmlFor="show-prices" className="text-[10px] font-bold uppercase text-zinc-600 select-none whitespace-nowrap">
+                  Price
+                </label>
+              </div>
 
               {/* Edit Itinerary Toggle */}
               <button
                 onClick={() => setIsEditing(!isEditing)}
                 className={cn(
                   "p-2 rounded-lg transition-all duration-300 flex items-center justify-center",
-                  isEditing 
-                    ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_0_15px_rgba(255,92,51,0.2)]" 
+                  isEditing
+                    ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_0_15px_rgba(255,92,51,0.2)]"
                     : "bg-white/5 text-zinc-400 border border-white/5 hover:bg-white/10 hover:text-zinc-300"
                 )}
                 title={isEditing ? "Editing Mode Active" : "Edit Itinerary"}
               >
                 {isEditing ? (
-                  <svg 
-                    width="18" 
-                    height="18" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     className="animate-pulse"
                   >
-                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                    <path d="m15 5 4 4"/>
+                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
+                    <path d="m15 5 4 4" />
                     <path d="M9 11c0 2-1 3-3 4-1.5.75-2 2-2 3s.5 2.25 2 3c1 0 1.5-.5 2-1s1-1.5 1-2" stroke="currentColor" fill="currentColor" fillOpacity="0.2" className="animate-bounce" />
                     <circle cx="6" cy="18" r="1.5" fill="currentColor" />
                   </svg>
@@ -1264,94 +1331,122 @@ const AiArchitect = () => {
           <div ref={itineraryRef} className="mt-0 max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-row gap-6">
 
-              {/* Glassmorphism Icon Sidebar */}
-              <div className="hidden lg:flex flex-col items-center w-16 shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
-                <div className="flex flex-col items-center justify-between h-full py-4 px-2 rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+              {/* Expandable Glassmorphism Sidebar */}
+              <div className={cn(
+                "hidden lg:flex flex-col shrink-0 sticky top-24 self-start h-[calc(100vh-120px)] transition-all duration-300 z-40",
+                isSidebarExpanded ? "w-64" : "w-16"
+              )}>
+                <div className="flex flex-col items-center h-full py-4 px-2 rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                  {/* Back Button */}
+                  <button
+                    onClick={() => {
+                      if (isEditing) setShowBackConfirm(true);
+                      else {
+                        setItinerary(null);
+                        setCurrentStep(0);
+                      }
+                    }}
+                    className={cn(
+                      "group relative flex items-center transition-all duration-200 text-zinc-500 hover:text-white mb-2",
+                      isSidebarExpanded ? "w-full px-4 gap-3 h-10" : "justify-center w-10 h-10"
+                    )}
+                    title={isSidebarExpanded ? undefined : "Back to Form"}
+                  >
+                    <ArrowLeft className={cn(isSidebarExpanded ? "w-3.5 h-3.5" : "w-4 h-4")} />
+                    {isSidebarExpanded && <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Back</span>}
+                    
+                    {!isSidebarExpanded && (
+                      <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                        Back to Form
+                        <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
+                      </div>
+                    )}
+                  </button>
+
+                  <div className={cn("w-8 h-px bg-white/5 my-2 mx-auto", isSidebarExpanded && "w-full px-4")} />
+
                   {/* Top Navigation */}
-                  <div className="flex flex-col items-center gap-1">
+                  <div className="flex flex-col items-center gap-1 w-full">
                     {[
                       { id: 'itinerary' as const, icon: CalendarIcon, label: 'Timeline' },
-                      { id: 'flights-hotels' as const, icon: Plane, label: 'Logistics & Financials' },
+                      { id: 'flights-hotels' as const, icon: Plane, label: 'Logistics' },
                       { id: 'pricing' as const, icon: DollarSign, label: 'Financials' },
                     ].map((item) => (
                       <button
                         key={item.id}
                         onClick={() => setActiveArchitectTab(item.id)}
-                        className={`relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+                        className={cn(
+                          "relative group flex items-center rounded-xl transition-all duration-200",
+                          isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10",
                           activeArchitectTab === item.id
                             ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
                             : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
-                        }`}
-                        title={item.label}
+                        )}
+                        title={isSidebarExpanded ? undefined : item.label}
                       >
-                        <item.icon className="w-[18px] h-[18px]" />
-                        {/* Tooltip */}
-                        <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
-                          {item.label}
-                          <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
-                        </div>
+                        <item.icon className={cn(isSidebarExpanded ? "w-4 h-4" : "w-[18px] h-[18px]")} />
+                        {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>}
+                        
+                        {!isSidebarExpanded && (
+                          <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                            {item.label}
+                            <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
+                          </div>
+                        )}
                       </button>
                     ))}
                   </div>
 
-                  {/* Separator */}
-                  <div className="w-6 h-px bg-white/[0.08] my-2" />
+                  <div className="flex-grow" />
 
-                  {/* Bottom Navigation */}
-                  <div className="flex flex-col items-center gap-1">
+                  {/* Bottom Toggle & Settings */}
+                  <div className="flex flex-col items-center gap-1 w-full">
                     <button
                       onClick={() => setActiveArchitectTab('settings')}
-                      className={`relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+                      className={cn(
+                        "relative group flex items-center rounded-xl transition-all duration-200",
+                        isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10",
                         activeArchitectTab === 'settings'
                           ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
                           : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
-                      }`}
-                      title="Settings"
+                      )}
+                      title={isSidebarExpanded ? undefined : "Settings"}
                     >
-                      <Settings className="w-[18px] h-[18px]" />
-                      <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
-                        Settings
-                        <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
-                      </div>
-                    </button>
-                    <Link href="/security">
-                      <button
-                        className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 text-gray-500 hover:text-white hover:bg-white/[0.06]"
-                        title="Security & Privacy"
-                      >
-                        <Shield className="w-[18px] h-[18px]" />
+                      <Settings className={cn(isSidebarExpanded ? "w-4 h-4" : "w-[18px] h-[18px]")} />
+                      {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap">Settings</span>}
+                      
+                      {!isSidebarExpanded && (
                         <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
-                          Security & Privacy
+                          Settings
                           <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
                         </div>
-                      </button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-
-              {/* Mobile Sidebar (horizontal scrollable) */}
-              <div className="lg:hidden w-full mb-4 overflow-x-auto scrollbar-none">
-                <div className="flex items-center gap-2 p-2 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl min-w-max">
-                  {[
-                    { id: 'itinerary' as const, icon: CalendarIcon, label: 'Timeline' },
-                    { id: 'flights-hotels' as const, icon: Plane, label: 'Logistics' },
-                    { id: 'pricing' as const, icon: DollarSign, label: 'Financials' },
-                    { id: 'settings' as const, icon: Settings, label: 'Settings' },
-                  ].map((item) => (
-                    <button
-                      key={item.id}
-                      onClick={() => setActiveArchitectTab(item.id)}
-                      className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
-                        activeArchitectTab === item.id
-                          ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
-                          : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
-                      }`}
-                    >
-                      <item.icon className="w-4 h-4" />
-                      {item.label}
+                      )}
                     </button>
-                  ))}
+
+                    <button
+                      onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+                      className={cn(
+                        "relative group flex items-center transition-all duration-200 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-xl mt-1",
+                        isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10"
+                      )}
+                      title={isSidebarExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
+                    >
+                      {isSidebarExpanded ? (
+                        <>
+                          <ChevronLeft className="w-4 h-4" />
+                          <span className="text-sm font-medium">Collapse</span>
+                        </>
+                      ) : (
+                        <>
+                          <ChevronRight className="w-[18px] h-[18px]" />
+                          <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                            Expand Sidebar
+                            <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
+                          </div>
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -1374,7 +1469,7 @@ const AiArchitect = () => {
                         <div className="flex items-center gap-2 mb-2">
                           <span className="aurora-gradient text-[8px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Active Journey</span>
                         </div>
-                        <h2 className="text-2xl font-extrabold tracking-tighter">Tropical Intelligence: <span className="text-gradient">{itinerary.itinerary[0]?.areaFocus?.split(',')[0] || "Ubud"}</span></h2>
+                        <h2 className="text-2xl font-extrabold tracking-tighter">Tropical Intelligence: <span className="text-gradient">{itinerary.itinerary[0]?.areaFocus?.split(',')[0]}</span></h2>
                       </div>
                     </div>
 
@@ -1394,6 +1489,7 @@ const AiArchitect = () => {
                           hotels={hotels}
                           flights={flights}
                           showTimestamps={showTimestamps}
+                          showPrices={showPrices}
                         />
                       </div>
                     )}
@@ -1449,7 +1545,7 @@ const AiArchitect = () => {
                         <div className="flex flex-wrap gap-4 sm:gap-8">
                           <div className="flex flex-col">
                             <span className="text-[9px] font-black text-primary uppercase tracking-widest mb-0.5">Focus</span>
-                            <span className="text-white text-xs font-bold leading-none">{itinerary?.itinerary[0]?.areaFocus?.split(',')[0] || 'Bali'}</span>
+                            <span className="text-white text-xs font-bold leading-none">{itinerary?.itinerary[0]?.areaFocus?.split(',')[0]}</span>
                           </div>
                           <div className="flex flex-col">
                             <span className="text-[9px] font-black text-secondary uppercase tracking-widest mb-0.5">Duration</span>
@@ -1465,9 +1561,6 @@ const AiArchitect = () => {
                     <div className="liquid-glass p-4 rounded-2xl space-y-4">
                       <div className="flex justify-between items-center mb-3">
                         <h3 className="font-extrabold text-white text-base tracking-tight">AI Optimizer</h3>
-                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center animate-pulse">
-                          <span className="material-symbols-outlined text-[18px] text-primary" style={{ fontVariationSettings: '"FILL" 1' }}>auto_awesome</span>
-                        </div>
                       </div>
                       {/* Optimization Items */}
                       <div className="space-y-3">
@@ -1500,20 +1593,25 @@ const AiArchitect = () => {
                       </div>
                       <button
                         onClick={() => {
-                          if (!itinerary?.optimizations) return;
+                          if (!itinerary?.optimizations || optimizationCount >= 3) return;
                           const feedback = itinerary.optimizations.map(o => `${o.type}: ${o.message}`).join(". ");
                           onSubmit(form.getValues(), feedback);
+                          setOptimizationCount(prev => prev + 1);
                         }}
-                        disabled={isGenerating || !itinerary}
+                        disabled={isGenerating || !itinerary || optimizationCount >= 3}
                         className={cn(
                           "w-full py-2.5 rounded-lg aurora-gradient text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 mt-2",
-                          (isGenerating || !itinerary) && "opacity-50 cursor-not-allowed"
+                          (isGenerating || !itinerary || optimizationCount >= 3) && "opacity-50 cursor-not-allowed"
                         )}
                       >
-                        <span className={cn("material-symbols-outlined text-[16px]", isGenerating && "animate-spin")}>
-                          {isGenerating ? "cycle" : "bolt"}
-                        </span>
-                        {isGenerating ? "Refining..." : "Apply Optimizations"}
+                        {isGenerating ? (
+                          <MorphingSquare className="w-4 h-4 bg-white" message="Refining..." messagePlacement="right" />
+                        ) : (
+                          <>
+                            <span className="material-symbols-outlined text-[16px]">bolt</span>
+                            {optimizationCount >= 3 ? "Optimization Limit Reached" : `Apply Optimizations (${optimizationCount}/3)`}
+                          </>
+                        )}
                       </button>
                     </div>
 
@@ -1676,7 +1774,7 @@ const AiArchitect = () => {
             </div>
           </AlertDialogFooter>
           <AlertDialogCancel className="hidden sm:block absolute top-4 right-4 text-zinc-500 border-none hover:text-zinc-300 bg-transparent">
-             <span className="material-symbols-outlined text-[20px]">close</span>
+            <span className="material-symbols-outlined text-[20px]">close</span>
           </AlertDialogCancel>
         </AlertDialogContent>
       </AlertDialog>

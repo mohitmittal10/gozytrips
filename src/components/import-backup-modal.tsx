@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CloudDownload, Rocket, Loader2, AlertCircle, HardDrive } from "lucide-react";
+import { CloudDownload, Rocket, Loader2, AlertCircle, HardDrive, Upload } from "lucide-react";
 import { BackupService } from "@/lib/backup-service";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -14,10 +14,22 @@ import { useRouter } from "next/navigation";
 interface ImportBackupModalProps {
   isDataEmpty: boolean;
   onImportSuccess: () => void;
+  isOpen?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function ImportBackupModal({ isDataEmpty, onImportSuccess }: ImportBackupModalProps) {
-  const [isOpen, setIsOpen] = useState(false);
+export function ImportBackupModal({ isDataEmpty, onImportSuccess, isOpen: externalOpen, onOpenChange }: ImportBackupModalProps) {
+  const [internalIsOpen, setInternalIsOpen] = useState(false);
+  const isOpen = externalOpen !== undefined ? externalOpen : internalIsOpen;
+  
+  const setIsOpen = (open: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(open);
+    } else {
+      setInternalIsOpen(open);
+    }
+  };
+
   const [step, setStep] = useState<"welcome" | "loading" | "list" | "importing" | "error" | "success">("welcome");
   const [backups, setBackups] = useState<any[]>([]);
   const [selectedBackupId, setSelectedBackupId] = useState<string | null>(null);
@@ -146,8 +158,55 @@ export function ImportBackupModal({ isDataEmpty, onImportSuccess }: ImportBackup
             </Button>
             <Button variant="outline" className="h-24 flex flex-col gap-2 border-primary/50 hover:bg-primary/5" onClick={handleConnectGoogle}>
               <CloudDownload className="h-6 w-6 text-blue-500" />
-              <span>Restore Backup</span>
+              <span>Drive Backup</span>
             </Button>
+            <div className="col-span-2">
+              <Button variant="outline" className="w-full h-16 flex flex-row items-center justify-center gap-3 border-dashed hover:bg-muted/50 transition-all group" onClick={() => document.getElementById('local-backup-upload')?.click()}>
+                <div className="p-2 bg-purple-500/10 rounded-lg group-hover:bg-purple-500/20 transition-colors">
+                  <Upload className="h-5 w-5 text-purple-400" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-white">Upload Local JSON</p>
+                  <p className="text-[10px] text-gray-500">Import a .json backup file from your computer</p>
+                </div>
+              </Button>
+              <input 
+                id="local-backup-upload" 
+                type="file" 
+                accept=".json" 
+                className="hidden" 
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  
+                  setStep("loading");
+                  try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+                    
+                    setStep("importing");
+                    await BackupService.restoreBackup(data);
+                    
+                    setStep("success");
+                    toast({
+                      title: "Import Successful",
+                      description: "Your local data has been restored.",
+                    });
+                    
+                    localStorage.setItem("hasSeenBackupPrompt", "true");
+                    onImportSuccess();
+                    
+                    setTimeout(() => {
+                      setIsOpen(false);
+                    }, 3000);
+                  } catch (err: any) {
+                    console.error("Local restore error", err);
+                    setErrorMessage(err.message || "Failed to parse or restore local backup.");
+                    setStep("error");
+                  }
+                }}
+              />
+            </div>
           </div>
         )}
 

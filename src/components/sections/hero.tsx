@@ -1,9 +1,19 @@
-"use client"
+"use client";
 
+import { motion, AnimatePresence } from "framer-motion";
 import { TypingText } from "@/components/ui/typing-text";
 import { Sparkles, ArrowRight, Activity, MapPin, Zap, Globe, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
+
+const ITINERARIES = [
+    { id: 1, name: "Amalfi Coast Drift", type: "4 Guests • 12 Days", price: "$42,500", status: "In Progress", color: "purple" },
+    { id: 2, name: "Icelandic Aurora", type: "2 Guests • 7 Days", price: "$18,200", status: "Drafting", color: "indigo" },
+    { id: 3, name: "Tokyo Neon Nights", type: "2 Guests • 5 Days", price: "$12,400", status: "In Progress", color: "violet" },
+    { id: 4, name: "Serengeti Safari", type: "4 Guests • 10 Days", price: "$28,900", status: "Drafting", color: "purple" },
+    { id: 5, name: "Parisian Romance", type: "2 Guests • 4 Days", price: "$15,600", status: "In Progress", color: "indigo" },
+    { id: 6, name: "Swiss Alps Retreat", type: "2 Guests • 8 Days", price: "$32,100", status: "Drafting", color: "violet" },
+];
 
 const Hero = () => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -171,63 +181,90 @@ const Hero = () => {
                     <div className="absolute -inset-10 bg-gradient-to-tr from-purple-600/10 to-indigo-600/10 rounded-full blur-[100px] opacity-40 group-hover:opacity-60 transition-opacity duration-700"></div>
                     <div className="grid grid-cols-12 gap-2 md:gap-3 relative max-w-[420px] ml-auto">
                         {/* Main Card */}
-                        <div className="col-span-12 rounded-xl md:rounded-2xl p-4 md:p-5 transform transition-all duration-700 hover:-translate-y-1.5 border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl">
-                            <div className="flex justify-between items-center mb-2.5 md:mb-3">
+                        <div className="col-span-12 rounded-xl md:rounded-2xl p-4 md:p-5 border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl h-[280px] overflow-hidden flex flex-col relative">
+                            <div className="flex justify-between items-center mb-4 shrink-0 relative z-20">
                                 <h3 className="font-extrabold text-base md:text-lg text-white tracking-tight">Active Itineraries</h3>
                                 <div className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
                                     <Activity className="w-3 h-3 md:w-3.5 md:h-3.5 text-purple-400" />
                                 </div>
                             </div>
                             
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between p-2.5 md:p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-purple-500/20 transition-all cursor-default group/item">
-                                    <div className="flex items-center space-x-2.5 md:space-x-3">
-                                        <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center shadow-lg shadow-purple-500/20">
-                                            <MapPin className="text-white w-4 h-4" />
+                            {/* Infinite Scroll Container */}
+                            <div className="relative flex-grow overflow-hidden">
+                                <motion.div 
+                                    className="space-y-3"
+                                    animate={{
+                                        y: [0, -480] // Roughly height of 6 items (each ~80px)
+                                    }}
+                                    transition={{
+                                        duration: 20,
+                                        repeat: Infinity,
+                                        ease: "linear"
+                                    }}
+                                >
+                                    {[...ITINERARIES, ...ITINERARIES].map((item, index) => (
+                                        <div key={`${item.id}-${index}`} className="flex items-center justify-between p-2.5 md:p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-purple-500/20 transition-all cursor-default group/item h-[70px]">
+                                            <div className="flex items-center space-x-2.5 md:space-x-3">
+                                                <div className={`w-8 h-8 md:w-9 md:h-9 rounded-lg bg-gradient-to-br ${item.color === 'purple' ? 'from-purple-500 to-violet-600 shadow-purple-500/20' : item.color === 'indigo' ? 'from-indigo-500 to-violet-500' : 'from-violet-500 to-purple-600'} flex items-center justify-center shadow-lg`}>
+                                                    <MapPin className="text-white w-4 h-4" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold text-white text-xs md:text-sm group-hover/item:text-purple-100 transition-colors whitespace-nowrap">{item.name}</div>
+                                                    <div className="text-[9px] md:text-[10px] text-zinc-600 font-medium mt-0.5">{item.type}</div>
+                                                </div>
+                                            </div>
+                                            <div className="text-right whitespace-nowrap">
+                                                <div className="text-sm md:text-base font-black text-white">{item.price}</div>
+                                                <div className={`text-[7px] md:text-[8px] uppercase tracking-[0.2em] font-black ${item.color === 'indigo' ? 'text-indigo-400' : 'text-purple-400'} mt-1`}>{item.status}</div>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <div className="font-bold text-white text-xs md:text-sm group-hover/item:text-purple-100 transition-colors">Amalfi Coast Drift</div>
-                                            <div className="text-[9px] md:text-[10px] text-zinc-600 font-medium mt-0.5">4 Guests • 12 Days</div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-sm md:text-base font-black text-white">$42,500</div>
-                                        <div className="text-[7px] md:text-[8px] uppercase tracking-[0.2em] font-black text-purple-400 mt-1">In Progress</div>
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-between p-2.5 md:p-3 rounded-xl bg-white/[0.03] border border-white/[0.05] hover:bg-white/[0.06] hover:border-indigo-500/20 transition-all cursor-default group/item">
-                                    <div className="flex items-center space-x-2.5 md:space-x-3">
-                                        <div className="w-8 h-8 md:w-9 md:h-9 rounded-lg bg-gradient-to-br from-indigo-500/30 to-violet-500/30 border border-indigo-500/30 flex items-center justify-center">
-                                            <MapPin className="text-indigo-300 w-4 h-4" />
-                                        </div>
-                                        <div>
-                                            <div className="font-bold text-white text-xs md:text-sm group-hover/item:text-indigo-100 transition-colors">Icelandic Aurora</div>
-                                            <div className="text-[9px] md:text-[10px] text-zinc-600 font-medium mt-0.5">2 Guests • 7 Days</div>
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-sm md:text-base font-black text-white">$18,200</div>
-                                        <div className="text-[7px] md:text-[8px] uppercase tracking-[0.2em] font-black text-indigo-400 mt-1">Drafting</div>
-                                    </div>
-                                </div>
+                                    ))}
+                                </motion.div>
+                                
+                                {/* Fade gradients for infinite look */}
+                                <div className="absolute top-0 left-0 right-0 h-8 bg-gradient-to-b from-black/20 to-transparent z-10 pointer-events-none" />
+                                <div className="absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-black/20 to-transparent z-10 pointer-events-none" />
                             </div>
                         </div>
 
                         {/* Insight Card */}
                         <div className="col-span-12 md:col-span-7 rounded-xl md:rounded-2xl p-3.5 md:p-4 transform transition-all duration-700 hover:-translate-y-1 delay-75 border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl">
-                            <h4 className="text-[7px] md:text-[8px] font-black text-purple-400 uppercase tracking-[0.3em] mb-1.5 md:mb-2">AI Insight</h4>
+                            <h4 className="text-[7px] md:text-[8px] font-black text-purple-400 uppercase tracking-[0.3em] mb-1.5 md:mb-2 text-gradient">AI Insight</h4>
                             <div className="text-xl md:text-2xl font-black text-white mb-1 md:mb-1.5 tracking-tighter">84% Match</div>
                             <p className="text-[10px] md:text-xs text-zinc-500 leading-relaxed font-light">Private Heli-Tour over the Swiss Alps suggested based on preference for alpine luxury.</p>
                         </div>
 
                         {/* Stats Card */}
-                        <div className="col-span-12 md:col-span-5 bg-gradient-to-br from-purple-600 to-violet-700 rounded-xl md:rounded-2xl p-3.5 md:p-4 shadow-2xl shadow-purple-500/10 flex flex-col justify-between relative overflow-hidden group/card transform transition-all duration-700 hover:-translate-y-1 delay-150">
-                            <div className="absolute inset-0 bg-black/10 opacity-0 group-hover/card:opacity-100 transition-opacity"></div>
+                        <div className="col-span-12 md:col-span-5 bg-gradient-to-br from-purple-600 via-violet-700 to-indigo-800 rounded-xl md:rounded-2xl p-3.5 md:p-4 shadow-2xl shadow-purple-500/10 flex flex-col justify-between relative overflow-hidden group/card transform transition-all duration-700 hover:-translate-y-1 delay-150 border border-white/10 animate-gradient-slow">
+                            <motion.div 
+                                className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(168,85,247,0.3),transparent)]"
+                                animate={{
+                                    scale: [1, 1.2, 1],
+                                    opacity: [0.3, 0.5, 0.3],
+                                }}
+                                transition={{
+                                    duration: 4,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                            />
                             <div className="absolute -right-4 -top-4 w-20 h-20 bg-white/[0.08] rounded-full blur-2xl group-hover/card:scale-150 transition-transform duration-700"></div>
-                            <TrendingUp className="text-white/80 w-4 h-4 md:w-5 md:h-5 relative z-10 mb-3 md:mb-0" />
+                            
+                            <motion.div
+                                animate={{ y: [0, -2, 0] }}
+                                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                            >
+                                <TrendingUp className="text-white/80 w-4 h-4 md:w-5 md:h-5 relative z-10 mb-3 md:mb-0" />
+                            </motion.div>
+                            
                             <div className="text-white relative z-10">
-                                <div className="text-xl md:text-2xl font-black tracking-tighter">+24%</div>
+                                <motion.div 
+                                    className="text-xl md:text-2xl font-black tracking-tighter"
+                                    animate={{ scale: [1, 1.05, 1] }}
+                                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                >
+                                    +24%
+                                </motion.div>
                                 <div className="text-[7px] md:text-[8px] uppercase font-black tracking-widest opacity-70">Conversion Rate</div>
                             </div>
                         </div>

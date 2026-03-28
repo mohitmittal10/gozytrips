@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Users, Calendar, MapPin, CheckCircle2, Clock, ArrowRight, Search, Plus, ListFilter, Compass, FileText, Settings, LayoutDashboard, Send, TrendingUp, Activity, CalendarDays, UserPlus, Plane, ArrowUpDown, ChevronLeft, ChevronRight, Download, Columns3, ArrowUp, ArrowDown, GripVertical, Archive, Save, X, Sliders, LayoutGrid, List, History, DollarSign, Trash2, Shield, Mail } from "lucide-react";
+import { Users, Calendar, MapPin, CheckCircle2, Clock, ArrowRight, Search, Plus, ListFilter, Compass, FileText, Settings, LayoutDashboard, Send, TrendingUp, Activity, CalendarDays, UserPlus, Plane, ArrowUpDown, ChevronLeft, ChevronRight, Download, Columns3, ArrowUp, ArrowDown, GripVertical, Archive, Save, X, Sliders, LayoutGrid, List, History, DollarSign, Trash2, Shield, Mail, Ticket, Car, Bus, Hotel, Train, CloudDownload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Header from "@/components/layout/header";
@@ -11,16 +11,19 @@ import { useAuth } from "@/contexts/auth-context";
 import { logAuditEvent } from "@/lib/audit-logger";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { TripCard, type SavedItinerary } from "@/components/trip-card";
-import ItineraryTimeline from "@/components/itinerary-timeline";
-import { PdfPreviewEditor } from "@/components/pdf-preview-editor";
+import type { SavedItinerary } from "@/components/trip-card";
+import dynamic from "next/dynamic";
+const ItineraryTimeline = dynamic(() => import("@/components/itinerary-timeline"), { ssr: false });
+const PdfPreviewEditor = dynamic(() => import("@/components/pdf-preview-editor").then(mod => mod.PdfPreviewEditor), { ssr: false });
 import { type PdfTheme } from "@/components/pdf-template";
 import { ClientDialog } from "@/components/client-dialog";
 import { getAvatarColor, cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import FinancialTracker from "@/components/financial-tracker";
+const FinancialTracker = dynamic(() => import("@/components/financial-tracker"), { ssr: false });
 import { Eye } from "lucide-react";
 import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
+const StandaloneBookingDialog = dynamic(() => import("@/components/standalone-bookings/booking-dialog").then(mod => mod.StandaloneBookingDialog), { ssr: false });
+import type { BookingServiceType } from '@/types/standalone-bookings';
 import {
     Select,
     SelectContent,
@@ -47,9 +50,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FinancesSheet } from "@/components/finances-sheet";
-import VendorEnquiry from "@/components/vendor-enquiry";
-import ClientUpdateSuggestions from "@/components/client-update-suggestions";
+const FinancesSheet = dynamic(() => import("@/components/finances-sheet").then(mod => mod.FinancesSheet), { ssr: false });
+const VendorEnquiry = dynamic(() => import("@/components/vendor-enquiry"), { ssr: false });
+const ClientUpdateSuggestions = dynamic(() => import("@/components/client-update-suggestions"), { ssr: false });
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -58,8 +61,8 @@ import {
     DropdownMenuLabel,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { CrmSettings } from "@/components/crm-settings";
-import { ImportBackupModal } from "@/components/import-backup-modal";
+const CrmSettings = dynamic(() => import("@/components/crm-settings").then(mod => mod.CrmSettings), { ssr: false });
+const ImportBackupModal = dynamic(() => import("@/components/import-backup-modal").then(mod => mod.ImportBackupModal), { ssr: false });
 
 // A combined type taking our client and adding the dynamic trip data
 interface EnrichedClient extends Client {
@@ -105,6 +108,16 @@ export default function CRMLitePage() {
     const [editingClient, setEditingClient] = useState<Client | null>(null);
     const [isFinancesOpen, setIsFinancesOpen] = useState(false);
     const [financesTrip, setFinancesTrip] = useState<SavedItinerary | null>(null);
+
+    // Sidebar Expansion State
+    const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+    // Standalone Bookings State
+    const [bookings, setBookings] = useState<any[]>([]);
+    const [bookingsLoading, setBookingsLoading] = useState(true);
+    const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+    const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
 
     // Table UX: sorting
     const [sortColumn, setSortColumn] = useState<'name' | 'status' | 'budget' | 'date'>('name');
@@ -263,6 +276,18 @@ export default function CRMLitePage() {
                     .order("updated_at", { ascending: false });
 
                 if (error) throw error;
+
+                // Also fetch standalone bookings
+                const { data: standaloneData, error: standaloneError } = await supabase
+                    .from('standalone_bookings')
+                    .select('*')
+                    .eq('user_id', user.id)
+                    .order('created_at', { ascending: false });
+
+                if (!standaloneError) {
+                    setBookings(standaloneData || []);
+                }
+                setBookingsLoading(false);
 
                 const combined = clients.map((client) => {
                     const clientTrips = itineraries?.filter(it => it.client_id === client.id) || [];
@@ -451,17 +476,84 @@ export default function CRMLitePage() {
     }
 
     // Multi-field search: name, email, phone, destination, notes
-    let filteredClients = enrichedClients.filter(
-        (c) => {
-            if (!searchQuery) return true;
-            const q = searchQuery.toLowerCase();
-            return c.name.toLowerCase().includes(q)
-                || (c.email && c.email.toLowerCase().includes(q))
-                || (c.phone && c.phone.toLowerCase().includes(q))
-                || (c.latestDestination && c.latestDestination.toLowerCase().includes(q))
-                || (c.notes && c.notes.toLowerCase().includes(q));
+    const filteredClients = useMemo(() => {
+        return enrichedClients.filter(
+            (c) => {
+                if (!searchQuery) return true;
+                const q = searchQuery.toLowerCase();
+                return c.name.toLowerCase().includes(q)
+                    || (c.email && c.email.toLowerCase().includes(q))
+                    || (c.phone && c.phone.toLowerCase().includes(q))
+                    || (c.latestDestination && c.latestDestination.toLowerCase().includes(q))
+                    || (c.notes && c.notes.toLowerCase().includes(q));
+            }
+        );
+    }, [enrichedClients, searchQuery]);
+
+    const displayClients = useMemo(() => {
+        let result = filteredClients;
+
+        // Dashboard: no extra filtering — it's an overview showing everything
+
+        // All Clients: filter by client activity
+        if (activeTab === 'clients') {
+            if (clientsActivityFilter === "has_trips") {
+                result = result.filter(c => c.allTrips.length > 0);
+            } else if (clientsActivityFilter === "no_trips") {
+                result = result.filter(c => c.allTrips.length === 0);
+            } else if (clientsActivityFilter === "new_this_month") {
+                const now = new Date();
+                result = result.filter(c => {
+                    const created = new Date(c.created_at);
+                    return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+                });
+            }
+            if (clientsTagFilter !== "all") {
+                result = result.filter(c => c.tags && c.tags.includes(clientsTagFilter));
+            }
         }
-    );
+
+        // Active Trips: only show clients with active trips, then filter by pipeline stage
+        if (activeTab === 'trips') {
+            result = result.filter(c =>
+                c.latestStatus.toLowerCase() !== "no active trips" &&
+                c.latestStatus.toLowerCase() !== "completed" &&
+                c.latestStatus.toLowerCase() !== "rejected"
+            );
+            if (tripsPipelineFilter !== "all") {
+                result = result.filter(c => c.latestStatus.toLowerCase() === tripsPipelineFilter.toLowerCase() || (c.latestStatus.toLowerCase() === 'confirmed' && tripsPipelineFilter.toLowerCase() === 'booked'));
+            }
+        }
+
+        // Date range filter (on latest trip dates)
+        if (dateFrom) {
+            const from = new Date(dateFrom);
+            result = result.filter(c => {
+                const tripDate = c.allTrips[0]?.start_date;
+                return tripDate && new Date(tripDate) >= from;
+            });
+        }
+        if (dateTo) {
+            const to = new Date(dateTo);
+            to.setHours(23, 59, 59);
+            result = result.filter(c => {
+                const tripDate = c.allTrips[0]?.start_date;
+                return tripDate && new Date(tripDate) <= to;
+            });
+        }
+
+        // Budget range filter
+        if (budgetMin) {
+            const min = parseFloat(budgetMin);
+            result = result.filter(c => (c.latestRawBudget || 0) >= min);
+        }
+        if (budgetMax) {
+            const max = parseFloat(budgetMax);
+            result = result.filter(c => (c.latestRawBudget || 0) <= max);
+        }
+
+        return result;
+    }, [filteredClients, activeTab, clientsActivityFilter, clientsTagFilter, tripsPipelineFilter, dateFrom, dateTo, budgetMin, budgetMax]);
 
     const handleDeleteTrip = async (id: string) => {
         setDeleting(id);
@@ -551,68 +643,7 @@ export default function CRMLitePage() {
         setIsPreviewOpen(true);
     };
 
-    let displayClients = filteredClients;
-
     const uniqueTags = Array.from(new Set(clients.flatMap(c => c.tags || []))).sort();
-
-    // Dashboard: no extra filtering — it's an overview showing everything
-
-    // All Clients: filter by client activity
-    if (activeTab === 'clients') {
-        if (clientsActivityFilter === "has_trips") {
-            displayClients = displayClients.filter(c => c.allTrips.length > 0);
-        } else if (clientsActivityFilter === "no_trips") {
-            displayClients = displayClients.filter(c => c.allTrips.length === 0);
-        } else if (clientsActivityFilter === "new_this_month") {
-            const now = new Date();
-            displayClients = displayClients.filter(c => {
-                const created = new Date(c.created_at);
-                return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-            });
-        }
-        if (clientsTagFilter !== "all") {
-            displayClients = displayClients.filter(c => c.tags && c.tags.includes(clientsTagFilter));
-        }
-    }
-
-    // Active Trips: only show clients with active trips, then filter by pipeline stage
-    if (activeTab === 'trips') {
-        displayClients = displayClients.filter(c =>
-            c.latestStatus.toLowerCase() !== "no active trips" &&
-            c.latestStatus.toLowerCase() !== "completed" &&
-            c.latestStatus.toLowerCase() !== "rejected"
-        );
-        if (tripsPipelineFilter !== "all") {
-            displayClients = displayClients.filter(c => c.latestStatus.toLowerCase() === tripsPipelineFilter.toLowerCase() || (c.latestStatus.toLowerCase() === 'confirmed' && tripsPipelineFilter.toLowerCase() === 'booked'));
-        }
-    }
-
-    // Date range filter (on latest trip dates)
-    if (dateFrom) {
-        const from = new Date(dateFrom);
-        displayClients = displayClients.filter(c => {
-            const tripDate = c.allTrips[0]?.start_date;
-            return tripDate && new Date(tripDate) >= from;
-        });
-    }
-    if (dateTo) {
-        const to = new Date(dateTo);
-        to.setHours(23, 59, 59);
-        displayClients = displayClients.filter(c => {
-            const tripDate = c.allTrips[0]?.start_date;
-            return tripDate && new Date(tripDate) <= to;
-        });
-    }
-
-    // Budget range filter
-    if (budgetMin) {
-        const min = parseFloat(budgetMin);
-        displayClients = displayClients.filter(c => (c.latestRawBudget || 0) >= min);
-    }
-    if (budgetMax) {
-        const max = parseFloat(budgetMax);
-        displayClients = displayClients.filter(c => (c.latestRawBudget || 0) <= max);
-    }
 
     // Completed / Archive clients
     const archivedClients = enrichedClients.filter(c =>
@@ -898,39 +929,60 @@ export default function CRMLitePage() {
                 <div className="flex flex-row gap-6">
 
                     {/* Glassmorphism Icon Sidebar */}
-                    <div className="hidden lg:flex flex-col items-center w-16 shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)]">
+                    <div className={cn(
+                        "hidden lg:flex flex-col shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)] transition-all duration-300 z-40",
+                        isSidebarExpanded ? "w-64" : "w-16"
+                    )}>
                         <div className="flex flex-col items-center justify-between h-full py-4 px-2 rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                             {/* Top Navigation */}
-                            <div className="flex flex-col items-center gap-1">
+                            <div className={cn("flex flex-col gap-2 w-full", isSidebarExpanded ? "px-2" : "items-center")}>
                                 {[
                                     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
                                     { id: 'clients', icon: Users, label: 'All Clients' },
                                     { id: 'trips', icon: MapPin, label: 'Active Trips' },
+                                    { id: 'bookings', icon: Ticket, label: 'Standalone Bookings' },
                                     { id: 'timeline', icon: Calendar, label: 'Timeline' },
                                     { id: 'finance', icon: DollarSign, label: 'Logistics & Financials' },
                                     { id: 'edit-itinerary', icon: Compass, label: 'Edit Itinerary' },
                                     { id: 'enquiry', icon: Mail, label: 'Vendor Enquiry' },
+                                    { id: 'data-import', icon: CloudDownload, label: 'Data Import' },
                                     { id: 'archive', icon: Archive, label: 'Archive' },
                                 ].map((item) => (
                                     <button
                                         key={item.id}
-                                        onClick={() => setActiveTab(item.id)}
-                                        className={`relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+                                        onClick={() => {
+                                            if (item.id === 'data-import') {
+                                                setIsImportModalOpen(true);
+                                            } else {
+                                                setActiveTab(item.id);
+                                            }
+                                        }}
+                                        className={cn(
+                                            "relative group flex items-center rounded-xl transition-all duration-200",
+                                            isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10",
                                             activeTab === item.id
                                                 ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
                                                 : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
-                                        }`}
-                                        title={item.label}
+                                        )}
+                                        title={isSidebarExpanded ? undefined : item.label}
                                     >
-                                        <item.icon className="w-[18px] h-[18px]" />
-                                        {/* Tooltip */}
-                                        <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
-                                            {item.label}
-                                            <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
-                                        </div>
+                                        <item.icon className={cn(isSidebarExpanded ? "w-4 h-4" : "w-[18px] h-[18px]")} />
+                                        {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap overflow-hidden text-ellipsis">{item.label}</span>}
+                                        
+                                        {/* Tooltip (Collapsed ONLY) */}
+                                        {!isSidebarExpanded && (
+                                            <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                                                {item.label}
+                                                <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
+                                            </div>
+                                        )}
+                                        
                                         {/* Badge for archive */}
                                         {item.id === 'archive' && archivedClients.length > 0 && (
-                                            <span className="absolute -top-0.5 -right-0.5 w-4 h-4 flex items-center justify-center text-[8px] font-bold bg-purple-500 text-white rounded-full">
+                                            <span className={cn(
+                                                "absolute flex items-center justify-center text-[8px] font-bold bg-purple-500 text-white rounded-full transition-all",
+                                                isSidebarExpanded ? "right-3 top-1/2 -translate-y-1/2 w-5 h-5" : "-top-0.5 -right-0.5 w-4 h-4"
+                                            )}>
                                                 {archivedClients.length}
                                             </span>
                                         )}
@@ -938,38 +990,53 @@ export default function CRMLitePage() {
                                 ))}
                             </div>
 
-                            {/* Separator */}
-                            <div className="w-6 h-px bg-white/[0.08] my-2" />
-
                             {/* Bottom Navigation */}
-                            <div className="flex flex-col items-center gap-1">
+                            <div className={cn("flex flex-col gap-2 w-full mt-2", isSidebarExpanded ? "px-2" : "items-center")}>
                                 <button
                                     onClick={() => setActiveTab('settings')}
-                                    className={`relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 ${
+                                    className={cn(
+                                        "relative group flex items-center rounded-xl transition-all duration-200",
+                                        isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10",
                                         activeTab === 'settings'
                                             ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
                                             : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
-                                    }`}
-                                    title="Settings"
+                                    )}
+                                    title={isSidebarExpanded ? undefined : "Settings"}
                                 >
-                                    <Settings className="w-[18px] h-[18px]" />
-                                    <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
-                                        Settings
-                                        <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
-                                    </div>
-                                </button>
-                                <Link href="/security">
-                                    <button
-                                        className="relative group flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 text-gray-500 hover:text-white hover:bg-white/[0.06]"
-                                        title="Security & Privacy"
-                                    >
-                                        <Shield className="w-[18px] h-[18px]" />
+                                    <Settings className={cn(isSidebarExpanded ? "w-4 h-4" : "w-[18px] h-[18px]")} />
+                                    {isSidebarExpanded && <span className="text-sm font-medium">Settings</span>}
+                                    {!isSidebarExpanded && (
                                         <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
-                                            Security & Privacy
+                                            Settings
                                             <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
                                         </div>
-                                    </button>
-                                </Link>
+                                    )}
+                                </button>
+                                
+                                {/* Sidebar Toggle Button */}
+                                <button
+                                    onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
+                                    className={cn(
+                                        "relative group flex items-center rounded-xl transition-all duration-200 text-gray-500 hover:text-white hover:bg-white/[0.06]",
+                                        isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10"
+                                    )}
+                                    title={isSidebarExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
+                                >
+                                    {isSidebarExpanded ? (
+                                        <>
+                                            <ChevronLeft className="w-4 h-4" />
+                                            <span className="text-sm font-medium">Collapse</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <ChevronRight className="w-[18px] h-[18px]" />
+                                            <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                                                Expand Sidebar
+                                                <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
+                                            </div>
+                                        </>
+                                    )}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -981,16 +1048,24 @@ export default function CRMLitePage() {
                                 { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
                                 { id: 'clients', icon: Users, label: 'Clients' },
                                 { id: 'trips', icon: MapPin, label: 'Trips' },
+                                { id: 'bookings', icon: Ticket, label: 'Bookings' },
                                 { id: 'timeline', icon: Calendar, label: 'Timeline' },
                                 { id: 'finance', icon: DollarSign, label: 'Financials' },
                                 { id: 'edit-itinerary', icon: Compass, label: 'Edit' },
                                 { id: 'enquiry', icon: Mail, label: 'Enquiry' },
+                                { id: 'data-import', icon: CloudDownload, label: 'Import' },
                                 { id: 'archive', icon: Archive, label: 'Archive' },
                                 { id: 'settings', icon: Settings, label: 'Settings' },
                             ].map((item) => (
                                 <button
                                     key={item.id}
-                                    onClick={() => setActiveTab(item.id)}
+                                    onClick={() => {
+                                        if (item.id === 'data-import') {
+                                            setIsImportModalOpen(true);
+                                        } else {
+                                            setActiveTab(item.id);
+                                        }
+                                    }}
                                     className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                                         activeTab === item.id
                                             ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
@@ -1011,17 +1086,17 @@ export default function CRMLitePage() {
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div>
                                 <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-600">
-                                    {activeTab === 'dashboard' ? 'CRM Overview' : activeTab === 'clients' ? 'Client Management' : activeTab === 'trips' ? 'Trip Pipeline' : activeTab === 'archive' ? 'Completed Archive' : activeTab === 'finance' ? 'Logistics & Financials' : activeTab === 'enquiry' ? 'Vendor Enquiry' : activeTab === 'timeline' ? 'Trip Timeline' : activeTab === 'edit-itinerary' ? 'Edit Itinerary' : 'Preferences'}
+                                    {activeTab === 'dashboard' ? 'CRM Overview' : activeTab === 'clients' ? 'Client Management' : activeTab === 'trips' ? 'Trip Pipeline' : activeTab === 'bookings' ? 'Standalone Bookings' : activeTab === 'archive' ? 'Completed Archive' : activeTab === 'finance' ? 'Logistics & Financials' : activeTab === 'enquiry' ? 'Vendor Enquiry' : activeTab === 'timeline' ? 'Trip Timeline' : activeTab === 'edit-itinerary' ? 'Edit Itinerary' : 'Preferences'}
                                 </h1>
                                 <p className="text-gray-400 mt-2">
-                                    {activeTab === 'timeline' ? 'View detailed day-by-day timelines for your trips.' : activeTab === 'edit-itinerary' ? 'Edit and manage itineraries for your clients.' : activeTab === 'finance' ? 'Track costs, payments, and financial metrics across all trips.' : 'Manage your clients, preferences, and active trips.'}
+                                    {activeTab === 'timeline' ? 'View detailed day-by-day timelines for your trips.' : activeTab === 'bookings' ? 'Manage individual flights, cabs, buses, trains, and hotels.' : activeTab === 'edit-itinerary' ? 'Edit and manage itineraries for your clients.' : activeTab === 'finance' ? 'Track costs, payments, and financial metrics across all trips.' : 'Manage your clients, preferences, and active trips.'}
                                 </p>
                             </div>
 
                             <Dialog open={isAddClientOpen} onOpenChange={setIsAddClientOpen}>
                                 <DialogTrigger asChild>
-                                    <Button className="bg-white text-black hover:bg-gray-200">
-                                        <Plus className="w-4 h-4 mr-2" /> Add New Client
+                                    <Button className="px-6 py-2.5 aurora-gradient text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 h-10 border-none">
+                                        <Plus className="w-4 h-4" /> Add New Client
                                     </Button>
                                 </DialogTrigger>
                                 <DialogContent className="bg-[#0A0A0A] border border-white/10 text-white sm:max-w-[425px]">
@@ -1088,7 +1163,7 @@ export default function CRMLitePage() {
                                         <Button variant="outline" onClick={() => setIsAddClientOpen(false)} className="border-white/10 bg-transparent text-gray-300 hover:bg-white/5 hover:text-white">
                                             Cancel
                                         </Button>
-                                        <Button onClick={handleAddClient} disabled={isAddingClient} className="bg-gradient-to-r from-purple-500 to-pink-600 text-white border-0 hover:opacity-90 transition-opacity">
+                                        <Button onClick={handleAddClient} disabled={isAddingClient} className="px-6 py-2.5 aurora-gradient text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 h-10 border-none">
                                             {isAddingClient ? "Adding..." : "Add Client"}
                                         </Button>
                                     </DialogFooter>
@@ -1100,6 +1175,111 @@ export default function CRMLitePage() {
                         {activeTab === 'enquiry' ? (
                             <div className="mt-4">
                                 <VendorEnquiry />
+                            </div>
+                        ) : activeTab === 'bookings' ? (
+                            <div className="mt-4">
+                                <div className="flex justify-end mb-6">
+                                    <Button
+                                        onClick={() => setIsBookingDialogOpen(true)}
+                                        className="px-6 py-2.5 aurora-gradient text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 h-10 border-none"
+                                    >
+                                        <Plus className="w-4 h-4" /> New Booking
+                                    </Button>
+                                </div>
+
+                                {bookingsLoading ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {[1, 2, 3].map((i) => (
+                                            <div key={i} className="glass-main border border-white/10 rounded-xl p-6 h-32 animate-pulse" />
+                                        ))}
+                                    </div>
+                                ) : bookings.length === 0 ? (
+                                    <div className="glass-main border border-white/10 rounded-xl p-16 text-center text-gray-400 flex flex-col items-center justify-center">
+                                        <Ticket className="w-12 h-12 text-gray-600 mb-4" />
+                                        <h3 className="text-xl font-medium text-white mb-2">No Standalone Bookings</h3>
+                                        <p className="mb-4">Create a quick booking for a cab, flight, or hotel independent of a full trip.</p>
+                                        <Button onClick={() => setIsBookingDialogOpen(true)} className="px-6 py-2.5 aurora-gradient text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 h-10 border-none">
+                                            Create First Booking
+                                        </Button>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {bookings.map((booking) => {
+                                            const getIcon = (type: string) => {
+                                                switch (type) {
+                                                    case 'flight': return <Plane className="w-5 h-5 text-blue-400" />;
+                                                    case 'cab': return <Car className="w-5 h-5 text-yellow-400" />;
+                                                    case 'bus': return <Bus className="w-5 h-5 text-green-400" />;
+                                                    case 'train': return <Train className="w-5 h-5 text-orange-400" />;
+                                                    case 'hotel': return <Hotel className="w-5 h-5 text-purple-400" />;
+                                                    default: return <Ticket className="w-5 h-5 text-gray-400" />;
+                                                }
+                                            };
+                                            return (
+                                                <div key={booking.id} className="glass-main border border-white/10 rounded-xl p-5 hover:bg-white/[0.04] transition-all group relative overflow-hidden">
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    <div className="flex items-center justify-between mb-3 relative">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="p-2 bg-white/5 rounded-lg">
+                                                                {getIcon(booking.service_type)}
+                                                            </div>
+                                                            <div>
+                                                                <h4 className="font-semibold text-white leading-tight">{booking.title}</h4>
+                                                                <p className="text-[10px] text-gray-500 uppercase tracking-wider">{booking.service_type}</p>
+                                                            </div>
+                                                        </div>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-8 w-8 text-gray-600 hover:text-red-400 hover:bg-red-400/10"
+                                                            onClick={async () => {
+                                                                if (!confirm('Are you sure you want to delete this booking?')) return;
+                                                                const { error } = await supabase.from('standalone_bookings').delete().eq('id', booking.id);
+                                                                if (!error) {
+                                                                    setBookings(prev => prev.filter(b => b.id !== booking.id));
+                                                                    toast({ title: 'Deleted', description: 'Booking removed.' });
+                                                                }
+                                                            }}
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </Button>
+                                                    </div>
+                                                    <div className="space-y-2 relative">
+                                                        <div className="flex items-center justify-between text-xs">
+                                                            <span className="text-gray-500">Net Cost</span>
+                                                            <span className="text-gray-300">₹{(booking.net_cost || 0).toLocaleString()}</span>
+                                                        </div>
+                                                        <div className="flex items-center justify-between text-xs">
+                                                            <span className="text-gray-500">Markup</span>
+                                                            <span className="text-purple-400">{booking.markup_percentage}%</span>
+                                                        </div>
+                                                        <div className="pt-2 border-t border-white/5 flex items-center justify-between">
+                                                            <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full ${booking.status === 'confirmed' ? 'bg-green-500/10 text-green-400' : 'bg-purple-500/10 text-purple-400'}`}>
+                                                                {booking.status}
+                                                            </span>
+                                                            <span className="text-sm font-bold text-white">
+                                                                ₹{Math.round((booking.net_cost || 0) * (1 + (booking.markup_percentage || 0) / 100)).toLocaleString()}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                                
+                                <StandaloneBookingDialog 
+                                    isOpen={isBookingDialogOpen} 
+                                    onClose={() => setIsBookingDialogOpen(false)} 
+                                    onBookingCreated={async () => {
+                                        const { data } = await supabase
+                                            .from('standalone_bookings')
+                                            .select('*')
+                                            .eq('user_id', user.id)
+                                            .order('created_at', { ascending: false });
+                                        setBookings(data || []);
+                                    }} 
+                                />
                             </div>
                         ) : activeTab === 'settings' ? (
                             <div className="mt-4">
@@ -1178,8 +1358,8 @@ export default function CRMLitePage() {
                                                             <SelectItem value="corporate">Corporate</SelectItem>
                                                         </SelectContent>
                                                     </Select>
-                                                    <Button onClick={handleDownloadPdf} disabled={!selectedTripForModal} className="bg-white text-black hover:bg-gray-200">
-                                                        <Eye className="mr-2 h-4 w-4" /> Preview & Export
+                                                    <Button onClick={handleDownloadPdf} disabled={!selectedTripForModal} className="px-6 py-2.5 aurora-gradient text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 h-10 border-none">
+                                                        <Eye className="h-4 w-4" /> Preview & Export
                                                     </Button>
                                                 </div>
                                                 <div className="glass-main border border-white/10 rounded-xl p-6">
@@ -1274,8 +1454,8 @@ export default function CRMLitePage() {
                                         <h3 className="text-xl font-medium text-white mb-2">No Itineraries to Edit</h3>
                                         <p className="mb-4">Create a new itinerary in the AI Architect to get started.</p>
                                         <Link href="/ai-architect">
-                                            <Button className="bg-gradient-to-r from-purple-500 to-pink-600 text-white border-0 hover:opacity-90">
-                                                <Plus className="w-4 h-4 mr-2" /> Create New Itinerary
+                                            <Button className="px-6 py-2.5 aurora-gradient text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 h-10 border-none">
+                                                <Plus className="w-4 h-4" /> Create New Itinerary
                                             </Button>
                                         </Link>
                                     </div>
@@ -1328,7 +1508,10 @@ export default function CRMLitePage() {
                                                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 <div className="flex items-center justify-between">
                                                     <div>
-                                                        <p className="text-sm text-gray-400 font-medium">Active Trips</p>
+                                                        <div className="flex items-center gap-2">
+                                                            <p className="text-sm text-gray-400 font-medium">Active Trips</p>
+                                                            <Badge variant="outline" className="text-[10px] px-1 py-0 border-blue-500/30 text-blue-400 h-4">{bookings.length} Bookings</Badge>
+                                                        </div>
                                                         <p className="text-3xl font-bold mt-1">{isComputing ? "..." : activeTripsCount}</p>
                                                     </div>
                                                     <div className="p-3 bg-blue-500/20 rounded-lg">
@@ -1356,7 +1539,10 @@ export default function CRMLitePage() {
                                                 <div className="flex items-center justify-between">
                                                     <div>
                                                         <p className="text-sm text-gray-400 font-medium">Booked Revenue</p>
-                                                        <p className="text-3xl font-bold mt-1">{isComputing ? "..." : `₹${bookedRevenue.toLocaleString()}`}</p>
+                                                        <p className="text-3xl font-bold mt-1">
+                                                            {isComputing ? "..." : `₹${Math.round(bookedRevenue + bookings.reduce((acc, b) => acc + (b.net_cost || 0) * (1 + (b.markup_percentage || 0) / 100), 0)).toLocaleString()}`}
+                                                        </p>
+                                                        <p className="text-[10px] text-gray-500 mt-0.5">Incl. Standalone Bookings</p>
                                                     </div>
                                                     <div className="p-3 bg-green-500/20 rounded-lg">
                                                         <CheckCircle2 className="w-6 h-6 text-green-400" />
@@ -1425,7 +1611,7 @@ export default function CRMLitePage() {
                                         {/* Upcoming Deadlines + Activity Feed Row */}
                                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                             {/* Upcoming Deadlines */}
-                                            <div className="glass-main border border-white/10 rounded-xl p-6">
+                                            <div className="glass-main border border-white/10 rounded-xl p-6 flex flex-col h-full">
                                                 <div className="flex items-center justify-between mb-4">
                                                     <div className="flex items-center gap-2">
                                                         <CalendarDays className="w-4 h-4 text-blue-400" />
@@ -1443,7 +1629,7 @@ export default function CRMLitePage() {
                                                         ))}
                                                     </div>
                                                 </div>
-                                                <div className="space-y-2 max-h-[200px] overflow-y-auto pr-1">
+                                                <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1 flex-1 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                                                     {upcomingTrips.length === 0 ? (
                                                         <p className="text-xs text-gray-500 text-center py-4">No trips departing in the next {deadlineRange} days.</p>
                                                     ) : (
@@ -2400,6 +2586,8 @@ export default function CRMLitePage() {
             <ImportBackupModal 
                 isDataEmpty={!clientsLoading && !isComputing && clients.length === 0} 
                 onImportSuccess={() => fetchClients()} 
+                isOpen={isImportModalOpen}
+                onOpenChange={setIsImportModalOpen}
             />
         </div>
     );

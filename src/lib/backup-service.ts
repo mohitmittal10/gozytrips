@@ -11,15 +11,21 @@ export class BackupService {
     if (!user) throw new Error('Not authenticated');
 
     // Fetch all related data
-    const [clientsRes, tripsRes, itinerariesRes, auditLogsRes, profileRes, settingsRes, tripLineItemsRes] = await Promise.all([
+    const [clientsRes, tripsRes, itinerariesRes, auditLogsRes, profileRes, settingsRes, tripLineItemsRes, standaloneBookingsRes] = await Promise.all([
       supabase.from('clients').select('*').eq('user_id', user.id),
       supabase.from('trips').select('*').eq('user_id', user.id),
       supabase.from('itineraries').select('*').eq('user_id', user.id),
       supabase.from('audit_logs').select('*').eq('user_id', user.id),
       supabase.from('user_profiles').select('*').eq('id', user.id),
       supabase.from('agency_settings').select('*').eq('user_id', user.id),
-      supabase.from('trip_line_items').select('*').eq('user_id', user.id)
+      supabase.from('trip_line_items').select('*, itineraries!inner(user_id)').eq('itineraries.user_id', user.id),
+      supabase.from('standalone_bookings').select('*').eq('user_id', user.id)
     ]);
+
+    // Clean up the joined data from trip_line_items if needed, or just let it be.
+    // Actually, the simplest way is to get all itineraries first and then their items.
+    // But since we are in Promise.all, I'll stick to a valid query.
+    // Note: Suapbase supports !inner for filtering on joined tables.
 
     const backupData = {
       version: '1.1',
@@ -32,7 +38,8 @@ export class BackupService {
         audit_logs: auditLogsRes.data || [],
         user_profiles: profileRes.data || [],
         agency_settings: settingsRes.data || [],
-        trip_line_items: tripLineItemsRes.data || []
+        trip_line_items: tripLineItemsRes.data || [],
+        standalone_bookings: standaloneBookingsRes.data || []
       }
     };
 
@@ -220,9 +227,24 @@ export class BackupService {
 
     // 5. Process trip_line_items (Finances)
     const mappedTripLineItems = (dataToRestore.trip_line_items || []).map((tl: any) => {
-      const newId = getTargetId(tl.id);
-      const mapped = { ...tl, id: newId, user_id: user.id };
-      if ('itinerary_id' in tl) mapped.itinerary_id = resolveForeignKey(tl.itinerary_id);
+      return {
+        id: getTargetId(tl.id),
+        itinerary_id: resolveForeignKey(tl.itinerary_id),
+        title: tl.title,
+        category: tl.category,
+        net_cost: tl.net_cost,
+        markup_percentage: tl.markup_percentage,
+        currency: tl.currency,
+        created_at: tl.created_at,
+        updated_at: tl.updated_at
+      };
+    });
+
+    // 6. Process standalone_bookings
+    const mappedStandaloneBookings = (dataToRestore.standalone_bookings || []).map((sb: any) => {
+      const newId = getTargetId(sb.id);
+      const mapped = { ...sb, id: newId, user_id: user.id };
+      if ('client_id' in sb) mapped.client_id = resolveForeignKey(sb.client_id);
       return mapped;
     });
 
@@ -251,6 +273,7 @@ export class BackupService {
         await upsertInChunks('itineraries', mappedItineraries);
         await upsertInChunks('trip_line_items', mappedTripLineItems);
         await upsertInChunks('audit_logs', mappedAuditLogs);
+        await upsertInChunks('standalone_bookings', mappedStandaloneBookings);
 
         // Core single-row settings data that matches exactly with user UUID
         if (dataToRestore.user_profiles && dataToRestore.user_profiles.length > 0) {
@@ -264,7 +287,7 @@ export class BackupService {
         if (dataToRestore.agency_settings && dataToRestore.agency_settings.length > 0) {
             // agency_settings has a random uuid 'id' but a UNIQUE 'user_id'. 
             // We strip out the old 'id' completely so Supabase only uses 'user_id' for ON CONFLICT DO UPDATE
-            const { id, ...settingsRest } = dataToRestore.agency_settings[0];
+            const { id, agent_signature, ...settingsRest } = dataToRestore.agency_settings[0];
             const settings = { ...settingsRest, user_id: user.id };
             const { error } = await supabase.from('agency_settings').upsert(settings, { onConflict: 'user_id' });
             if (error) throw new Error(`Failed to restore agency settings: ${error.message}`);
