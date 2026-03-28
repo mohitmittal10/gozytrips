@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from "react";
-import { Users, Calendar, MapPin, CheckCircle2, Clock, ArrowRight, Search, Plus, ListFilter, Compass, FileText, Settings, LayoutDashboard, Send, TrendingUp, Activity, CalendarDays, UserPlus, Plane, ArrowUpDown, ChevronLeft, ChevronRight, Download, Columns3, ArrowUp, ArrowDown, GripVertical, Archive, Save, X, Sliders, LayoutGrid, List, History, DollarSign, Trash2, Shield, Mail, Ticket, Car, Bus, Hotel, Train, CloudDownload } from "lucide-react";
+import { Users, Calendar, MapPin, CheckCircle2, Clock, ArrowRight, Search, Plus, ListFilter, Compass, FileText, Settings, LayoutDashboard, Send, TrendingUp, Activity, CalendarDays, UserPlus, Plane, ArrowUpDown, ChevronLeft, ChevronRight, Download, Columns3, ArrowUp, ArrowDown, GripVertical, Archive, Save, X, Sliders, LayoutGrid, List, History, DollarSign, Trash2, Shield, Mail, Ticket, Car, Bus, Hotel, Train, CloudDownload, BarChart3, Percent, Timer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Header from "@/components/layout/header";
@@ -21,7 +21,13 @@ import { getAvatarColor, cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 const FinancialTracker = dynamic(() => import("@/components/financial-tracker"), { ssr: false });
 import { Eye } from "lucide-react";
-import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, Tooltip, ResponsiveContainer, BarChart, Bar, YAxis } from "recharts";
+import {
+    isBookedTripStatus,
+    computeTopDestinations,
+    computeSeasonalityDepartures,
+    computeDurationBuckets,
+} from "@/lib/crm-dashboard-metrics";
 const StandaloneBookingDialog = dynamic(() => import("@/components/standalone-bookings/booking-dialog").then(mod => mod.StandaloneBookingDialog), { ssr: false });
 import type { BookingServiceType } from '@/types/standalone-bookings';
 import {
@@ -116,6 +122,15 @@ export default function CRMLitePage() {
     // Standalone Bookings State
     const [bookings, setBookings] = useState<any[]>([]);
     const [bookingsLoading, setBookingsLoading] = useState(true);
+    /** Aggregated from trip_line_items (booked trips) + standalone_bookings net/markup — for dashboard margin */
+    const [dashboardFinanceRollup, setDashboardFinanceRollup] = useState({
+        tripLineNet: 0,
+        tripLineMarkup: 0,
+        tripLineGross: 0,
+        standaloneNet: 0,
+        standaloneMarkup: 0,
+        standaloneGross: 0,
+    });
     const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
     const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
 
@@ -268,6 +283,15 @@ export default function CRMLitePage() {
             setIsComputing(true);
 
             try {
+                setDashboardFinanceRollup({
+                    tripLineNet: 0,
+                    tripLineMarkup: 0,
+                    tripLineGross: 0,
+                    standaloneNet: 0,
+                    standaloneMarkup: 0,
+                    standaloneGross: 0,
+                });
+
                 // Fetch all itineraries for this user
                 const { data: itineraries, error } = await supabase
                     .from("itineraries")
@@ -288,6 +312,51 @@ export default function CRMLitePage() {
                     setBookings(standaloneData || []);
                 }
                 setBookingsLoading(false);
+
+                const bookedItineraryIds = (itineraries || [])
+                    .filter((t: { status?: string }) => isBookedTripStatus(t.status))
+                    .map((t: { id: string }) => t.id);
+
+                let tripLineNet = 0;
+                let tripLineMarkup = 0;
+                let tripLineGross = 0;
+                const LINE_CHUNK = 60;
+                for (let i = 0; i < bookedItineraryIds.length; i += LINE_CHUNK) {
+                    const slice = bookedItineraryIds.slice(i, i + LINE_CHUNK);
+                    const { data: lineItems, error: lineErr } = await supabase
+                        .from("trip_line_items")
+                        .select("net_cost, markup_percentage")
+                        .in("itinerary_id", slice);
+                    if (!lineErr && lineItems) {
+                        lineItems.forEach((item: { net_cost?: number; markup_percentage?: number }) => {
+                            const net = Number(item.net_cost) || 0;
+                            const m = Number(item.markup_percentage) || 0;
+                            tripLineNet += net;
+                            tripLineMarkup += net * (m / 100);
+                            tripLineGross += net * (1 + m / 100);
+                        });
+                    }
+                }
+
+                let standaloneNet = 0;
+                let standaloneMarkup = 0;
+                let standaloneGross = 0;
+                (standaloneData || []).forEach((b: { net_cost?: number | null; markup_percentage?: number | null }) => {
+                    const net = Number(b.net_cost) || 0;
+                    const m = Number(b.markup_percentage) || 0;
+                    standaloneNet += net;
+                    standaloneMarkup += net * (m / 100);
+                    standaloneGross += net * (1 + m / 100);
+                });
+
+                setDashboardFinanceRollup({
+                    tripLineNet,
+                    tripLineMarkup,
+                    tripLineGross,
+                    standaloneNet,
+                    standaloneMarkup,
+                    standaloneGross,
+                });
 
                 const combined = clients.map((client) => {
                     const clientTrips = itineraries?.filter(it => it.client_id === client.id) || [];
@@ -914,6 +983,91 @@ export default function CRMLitePage() {
 
     const recentActivity = allActivity.slice(0, 15);
     const unreadActivitiesCount = allActivity.filter(a => a.time.getTime() > lastViewedActivity).length;
+
+    const allBookedTrips = useMemo(() => {
+        const list: any[] = [];
+        enrichedClients.forEach((c) => {
+            c.allTrips.forEach((t: any) => {
+                if (isBookedTripStatus(t.status)) list.push(t);
+            });
+        });
+        return list;
+    }, [enrichedClients]);
+
+    const newClientsThisMonth = useMemo(() => {
+        const now = new Date();
+        return clients.filter((c) => {
+            const created = new Date(c.created_at);
+            return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+        }).length;
+    }, [clients]);
+
+    const repeatClientStats = useMemo(() => {
+        let repeat = 0;
+        for (const c of enrichedClients) {
+            const nTrips = c.allTrips.filter((t: any) => isBookedTripStatus(t.status)).length;
+            const nStandalone = bookings.filter((b) => b.client_id === c.id).length;
+            if (nTrips + nStandalone >= 2) repeat++;
+        }
+        const total = enrichedClients.length;
+        return { repeat, pct: total > 0 ? Math.round((repeat / total) * 100) : 0 };
+    }, [enrichedClients, bookings]);
+
+    const avgBookedTripValue = useMemo(() => {
+        if (allBookedTrips.length === 0) return 0;
+        const sum = allBookedTrips.reduce((acc, t) => acc + getTripCost(t), 0);
+        return sum / allBookedTrips.length;
+    }, [allBookedTrips]);
+
+    const packageVsStandaloneMix = useMemo(() => {
+        const packageRev = allBookedTrips.reduce((acc, t) => acc + getTripCost(t), 0);
+        const standaloneRev = bookings.reduce(
+            (acc, b) => acc + (Number(b.net_cost) || 0) * (1 + (Number(b.markup_percentage) || 0) / 100),
+            0
+        );
+        const total = packageRev + standaloneRev;
+        return {
+            packageRev,
+            standaloneRev,
+            packagePct: total > 0 ? Math.round((packageRev / total) * 100) : 0,
+            standalonePct: total > 0 ? Math.round((standaloneRev / total) * 100) : 0,
+        };
+    }, [allBookedTrips, bookings]);
+
+    const blendedMarginPct = useMemo(() => {
+        const m = dashboardFinanceRollup.tripLineMarkup + dashboardFinanceRollup.standaloneMarkup;
+        const g = dashboardFinanceRollup.tripLineGross + dashboardFinanceRollup.standaloneGross;
+        if (g <= 0) return null;
+        return Math.round((m / g) * 100);
+    }, [dashboardFinanceRollup]);
+
+    const topDestinationsChart = useMemo(() => computeTopDestinations(allBookedTrips, 8), [allBookedTrips]);
+    const seasonalityChart = useMemo(() => computeSeasonalityDepartures(allBookedTrips, 12), [allBookedTrips]);
+    const durationBucketsChart = useMemo(() => computeDurationBuckets(allBookedTrips), [allBookedTrips]);
+
+    const departureCalendarStats = useMemo(() => {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = now.getMonth();
+        const startThis = new Date(y, m, 1);
+        const endThis = new Date(y, m + 1, 0, 23, 59, 59, 999);
+        const startNext = new Date(y, m + 1, 1);
+        const endNext = new Date(y, m + 2, 0, 23, 59, 59, 999);
+        let thisMonth = 0;
+        let nextMonth = 0;
+        for (const t of allBookedTrips) {
+            const sd = new Date(t.start_date);
+            if (Number.isNaN(sd.getTime())) continue;
+            if (sd >= startThis && sd <= endThis) thisMonth++;
+            else if (sd >= startNext && sd <= endNext) nextMonth++;
+        }
+        return { thisMonth, nextMonth };
+    }, [allBookedTrips]);
+
+    const durationMax = useMemo(
+        () => Math.max(1, ...durationBucketsChart.map((r) => r.count)),
+        [durationBucketsChart]
+    );
 
     const handleOpenActivitySheet = () => {
         setIsActivitySheetOpen(true);
@@ -1547,6 +1701,223 @@ export default function CRMLitePage() {
                                                     <div className="p-3 bg-green-500/20 rounded-lg">
                                                         <CheckCircle2 className="w-6 h-6 text-green-400" />
                                                     </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Business insights — new clients, repeat rate, unit economics, margin estimate */}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                            <div className="glass-main border border-white/10 rounded-xl p-6 relative overflow-hidden group">
+                                                <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm text-gray-400 font-medium">New Clients (month)</p>
+                                                        <p className="text-3xl font-bold mt-1">{clientsLoading ? "..." : newClientsThisMonth}</p>
+                                                        <p className="text-xs text-gray-500 mt-0.5">Created this calendar month</p>
+                                                    </div>
+                                                    <div className="p-3 bg-cyan-500/20 rounded-lg">
+                                                        <UserPlus className="w-6 h-6 text-cyan-400" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="glass-main border border-white/10 rounded-xl p-6 relative overflow-hidden group">
+                                                <div className="absolute inset-0 bg-gradient-to-br from-rose-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm text-gray-400 font-medium">Repeat Clients</p>
+                                                        <p className="text-3xl font-bold mt-1">{isComputing ? "..." : `${repeatClientStats.pct}%`}</p>
+                                                        <p className="text-xs text-gray-500 mt-0.5">{repeatClientStats.repeat} with 2+ trips/bookings</p>
+                                                    </div>
+                                                    <div className="p-3 bg-rose-500/20 rounded-lg">
+                                                        <Percent className="w-6 h-6 text-rose-400" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="glass-main border border-white/10 rounded-xl p-6 relative overflow-hidden group">
+                                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm text-gray-400 font-medium">Avg Package Trip</p>
+                                                        <p className="text-3xl font-bold mt-1">{isComputing ? "..." : `₹${Math.round(avgBookedTripValue).toLocaleString()}`}</p>
+                                                        <p className="text-xs text-gray-500 mt-0.5">Booked and confirmed itineraries</p>
+                                                    </div>
+                                                    <div className="p-3 bg-indigo-500/20 rounded-lg">
+                                                        <Plane className="w-6 h-6 text-indigo-400" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="glass-main border border-white/10 rounded-xl p-6 relative overflow-hidden group">
+                                                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                <div className="flex items-center justify-between">
+                                                    <div>
+                                                        <p className="text-sm text-gray-400 font-medium">Est. Markup %</p>
+                                                        <p className="text-3xl font-bold mt-1">
+                                                            {isComputing ? "..." : blendedMarginPct == null ? "—" : `${blendedMarginPct}%`}
+                                                        </p>
+                                                        <p className="text-[10px] text-gray-500 mt-0.5">Of gross from line items + standalone</p>
+                                                    </div>
+                                                    <div className="p-3 bg-emerald-500/20 rounded-lg">
+                                                        <DollarSign className="w-6 h-6 text-emerald-400" />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Package vs standalone + departures this/next month */}
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                            <div className="glass-main border border-white/10 rounded-xl p-6 lg:col-span-2">
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <BarChart3 className="w-4 h-4 text-amber-400" />
+                                                    <h3 className="text-sm font-semibold text-gray-300">Revenue mix</h3>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mb-3">Package itineraries vs standalone bookings (same basis as Booked Revenue)</p>
+                                                <div className="space-y-3">
+                                                    <div>
+                                                        <div className="flex justify-between text-xs mb-1">
+                                                            <span className="text-gray-400">Packages</span>
+                                                            <span className="text-white font-medium">₹{Math.round(packageVsStandaloneMix.packageRev).toLocaleString()} ({packageVsStandaloneMix.packagePct}%)</span>
+                                                        </div>
+                                                        <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full bg-gradient-to-r from-purple-500 to-violet-500 rounded-full transition-all duration-500"
+                                                                style={{ width: `${packageVsStandaloneMix.packagePct}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex justify-between text-xs mb-1">
+                                                            <span className="text-gray-400">Standalone</span>
+                                                            <span className="text-white font-medium">₹{Math.round(packageVsStandaloneMix.standaloneRev).toLocaleString()} ({packageVsStandaloneMix.standalonePct}%)</span>
+                                                        </div>
+                                                        <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                                                            <div
+                                                                className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-500"
+                                                                style={{ width: `${packageVsStandaloneMix.standalonePct}%` }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="glass-main border border-white/10 rounded-xl p-6 flex flex-col justify-center">
+                                                <div className="flex items-center gap-2 mb-3">
+                                                    <Timer className="w-4 h-4 text-sky-400" />
+                                                    <h3 className="text-sm font-semibold text-gray-300">Departures</h3>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mb-4">Booked trips by start month</p>
+                                                <div className="grid grid-cols-2 gap-3">
+                                                    <div className="rounded-lg bg-white/5 p-4 text-center border border-white/10">
+                                                        <p className="text-[10px] uppercase tracking-wider text-gray-500">This month</p>
+                                                        <p className="text-2xl font-bold text-white mt-1">{departureCalendarStats.thisMonth}</p>
+                                                    </div>
+                                                    <div className="rounded-lg bg-white/5 p-4 text-center border border-white/10">
+                                                        <p className="text-[10px] uppercase tracking-wider text-gray-500">Next month</p>
+                                                        <p className="text-2xl font-bold text-white mt-1">{departureCalendarStats.nextMonth}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Top destinations, seasonality, duration */}
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                            <div className="glass-main border border-white/10 rounded-xl p-6">
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <MapPin className="w-4 h-4 text-orange-400" />
+                                                    <h3 className="text-sm font-semibold text-gray-300">Top destinations</h3>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mb-2">From booked package trips</p>
+                                                <div className="h-[220px]">
+                                                    {topDestinationsChart.length === 0 ? (
+                                                        <p className="text-xs text-gray-500 text-center py-8">No booked trips yet.</p>
+                                                    ) : (
+                                                        <ResponsiveContainer width="100%" height="100%">
+                                                            <BarChart
+                                                                data={topDestinationsChart}
+                                                                layout="vertical"
+                                                                margin={{ top: 4, right: 8, left: 4, bottom: 4 }}
+                                                                cursor={{ fill: "rgba(255,255,255,0.035)" }}
+                                                            >
+                                                                <XAxis type="number" hide />
+                                                                <YAxis type="category" dataKey="name" width={88} tick={{ fill: "#9ca3af", fontSize: 10 }} axisLine={false} tickLine={false} />
+                                                                <Tooltip
+                                                                    cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                                                                    contentStyle={{ backgroundColor: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#fff", fontSize: 12 }}
+                                                                    formatter={(v: number) => [v, "Trips"]}
+                                                                />
+                                                                <Bar
+                                                                    dataKey="count"
+                                                                    fill="#a855f7"
+                                                                    radius={[0, 4, 4, 0]}
+                                                                    barSize={14}
+                                                                    activeBar={{
+                                                                        fill: "rgba(196, 181, 253, 0.42)",
+                                                                        stroke: "rgba(233, 213, 255, 0.35)",
+                                                                        strokeWidth: 1,
+                                                                    }}
+                                                                />
+                                                            </BarChart>
+                                                        </ResponsiveContainer>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="glass-main border border-white/10 rounded-xl p-6">
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <Calendar className="w-4 h-4 text-violet-400" />
+                                                    <h3 className="text-sm font-semibold text-gray-300">Departures by month</h3>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mb-2">Booked trips by departure month (last 12 months)</p>
+                                                <div className="h-[220px]">
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <BarChart
+                                                            data={seasonalityChart}
+                                                            margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+                                                            cursor={{ fill: "rgba(255,255,255,0.035)" }}
+                                                        >
+                                                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#6b7280", fontSize: 9 }} interval={0} angle={-35} textAnchor="end" height={48} />
+                                                            <Tooltip
+                                                                cursor={{ fill: "rgba(255,255,255,0.04)" }}
+                                                                contentStyle={{ backgroundColor: "#1a1a2e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "8px", color: "#fff", fontSize: 12 }}
+                                                                formatter={(v: number) => [v, "Trips"]}
+                                                            />
+                                                            <Bar
+                                                                dataKey="count"
+                                                                fill="#8b5cf6"
+                                                                radius={[4, 4, 0, 0]}
+                                                                activeBar={{
+                                                                    fill: "rgba(167, 139, 250, 0.4)",
+                                                                    stroke: "rgba(221, 214, 254, 0.45)",
+                                                                    strokeWidth: 1,
+                                                                }}
+                                                            />
+                                                        </BarChart>
+                                                    </ResponsiveContainer>
+                                                </div>
+                                            </div>
+                                            <div className="glass-main border border-white/10 rounded-xl p-6">
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <Clock className="w-4 h-4 text-teal-400" />
+                                                    <h3 className="text-sm font-semibold text-gray-300">Trip length (calendar days)</h3>
+                                                </div>
+                                                <p className="text-xs text-gray-500 mb-3">
+                                                    Trip span from start date to end date, grouped by length in <span className="text-gray-400">days</span>.
+                                                </p>
+                                                <div className="space-y-2">
+                                                    {durationBucketsChart.map((row) => (
+                                                        <div key={row.name} className="flex items-center gap-2">
+                                                            <span className="text-[10px] text-gray-400 w-[5.75rem] shrink-0 text-right leading-tight">{row.name}</span>
+                                                            <div className="flex-1 bg-white/5 rounded-full h-5 overflow-hidden min-w-0">
+                                                                <div
+                                                                    className="h-full bg-gradient-to-r from-slate-600 via-violet-600 to-fuchsia-500 rounded-full flex items-center justify-end pr-2 transition-all duration-500"
+                                                                    style={{ width: `${Math.max((row.count / durationMax) * 100, row.count > 0 ? 10 : 0)}%` }}
+                                                                >
+                                                                    {row.count > 0 && (
+                                                                        <span className="text-[10px] font-semibold text-white tabular-nums">
+                                                                            {row.count}&nbsp;{row.count === 1 ? "trip" : "trips"}
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
                                             </div>
                                         </div>
