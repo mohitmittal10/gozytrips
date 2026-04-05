@@ -86,6 +86,8 @@ declare module 'lucide-react' {
   const LayoutGrid: React.FC<IconProps>;
   const List: React.FC<IconProps>;
   const History: React.FC<IconProps>;
+  const Car: React.FC<IconProps>;
+  const Bus: React.FC<IconProps>;
   
   export {
     Sparkles,
@@ -164,5 +166,7 @@ declare module 'lucide-react' {
     LayoutGrid,
     List,
     History,
+    Car,
+    Bus,
   };
 }

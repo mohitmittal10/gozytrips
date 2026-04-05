@@ -22,7 +22,7 @@ import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary
 import { fetchItineraryImages } from "@/ai/flows/fetch-itinerary-images";
 import { useToast } from "@/hooks/use-toast";
 import ItineraryTimeline from "../itinerary-timeline";
-import HotelFlightEditor, { type HotelInfo, type FlightInfo } from "@/components/hotel-flight-editor";
+import HotelFlightEditor, { type HotelInfo, type FlightInfo, type CabInfo, type BusInfo } from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
 import { type PricingConfig } from "@/types/pricing";
 import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye, Check, ArrowRight, ArrowLeft, Plane, Wallet, DollarSign, Settings, Shield, LayoutDashboard, ChevronLeft, ChevronRight } from "lucide-react";
@@ -113,6 +113,8 @@ const AiArchitect = () => {
   const supabase = createClient();
   const [hotels, setHotels] = useState<HotelInfo[]>([]);
   const [flights, setFlights] = useState<FlightInfo[]>([]);
+  const [cabs, setCabs] = useState<any[]>([]);
+  const [buses, setBuses] = useState<any[]>([]);
   const [pricing, setPricing] = useState<PricingConfig | undefined>(undefined);
 
   // CRM fields
@@ -189,6 +191,10 @@ const AiArchitect = () => {
       if (savedHotels) setHotels(JSON.parse(savedHotels));
       const savedFlights = localStorage.getItem("travelFlights");
       if (savedFlights) setFlights(JSON.parse(savedFlights));
+      const savedCabs = localStorage.getItem("travelCabs");
+      if (savedCabs) setCabs(JSON.parse(savedCabs));
+      const savedBuses = localStorage.getItem("travelBuses");
+      if (savedBuses) setBuses(JSON.parse(savedBuses));
       const savedPricing = localStorage.getItem("travelPricing");
       if (savedPricing) setPricing(JSON.parse(savedPricing));
     } catch (error) {
@@ -239,15 +245,17 @@ const AiArchitect = () => {
     try {
       localStorage.setItem("travelHotels", JSON.stringify(hotels));
       localStorage.setItem("travelFlights", JSON.stringify(flights));
+      localStorage.setItem("travelCabs", JSON.stringify(cabs));
+      localStorage.setItem("travelBuses", JSON.stringify(buses));
       if (pricing) {
         localStorage.setItem("travelPricing", JSON.stringify(pricing));
       } else {
         localStorage.removeItem("travelPricing");
       }
     } catch (error) {
-      console.error("Failed to save hotels/flights/pricing to local storage", error);
+      console.error("Failed to save hotels/flights/cabs/buses/pricing to local storage", error);
     }
-  }, [hotels, flights, pricing]);
+  }, [hotels, flights, cabs, buses, pricing]);
 
   const baseCost = useMemo(() => {
     let cost = 0;
@@ -281,6 +289,18 @@ const AiArchitect = () => {
       if (h.costAdult) cost += h.costAdult * pax.adult;
       if (h.costChild) cost += h.costChild * pax.child;
       if (h.costInfant) cost += h.costInfant * pax.infant;
+    });
+
+    // Cabs cost
+    cabs.forEach(c => {
+      if (c.totalCost) cost += c.totalCost;
+    });
+
+    // Buses cost
+    buses.forEach(b => {
+      if (b.costAdult) cost += b.costAdult * pax.adult;
+      if (b.costChild) cost += b.costChild * pax.child;
+      if (b.costInfant) cost += b.costInfant * pax.infant;
     });
 
     return cost;
@@ -472,7 +492,7 @@ const AiArchitect = () => {
         budget: values.budget || null,
         client_id: selectedClientId === "none" ? null : selectedClientId,
         status: selectedStatus,
-        itinerary_data: { ...itinerary, hotels, flights, pricing },
+        itinerary_data: { ...itinerary, hotels, flights, cabs, buses, pricing },
       };
 
       console.log("💾 Preparing to save to Supabase:", tripData);
@@ -578,8 +598,44 @@ const AiArchitect = () => {
             if (cost > 0) {
               lineItems.push({
                 itinerary_id: savedTripId,
-                title: `${f.from || "Dep"} → ${f.to || "Arr"} (${f.airline || "Flight"})`,
+                title: `${f.departureAirport || "Dep"} → ${f.arrivalAirport || "Arr"} (${f.airline || f.flightNumber || "Flight"})`,
                 category: "flight",
+                net_cost: cost,
+                markup_percentage: markupPct,
+                currency,
+              });
+            }
+          });
+        }
+
+        // Cabs
+        if (cabs.length > 0) {
+          cabs.forEach((c: CabInfo) => {
+            if (c.totalCost && c.totalCost > 0) {
+              lineItems.push({
+                itinerary_id: savedTripId,
+                title: `Cab: ${c.route || "Local Travel"} (${c.vehicleType || "Cab"})`,
+                category: "transport",
+                net_cost: c.totalCost,
+                markup_percentage: markupPct,
+                currency,
+              });
+            }
+          });
+        }
+
+        // Tourist Bus
+        if (buses.length > 0) {
+          buses.forEach((b: BusInfo) => {
+            const cost =
+              (b.costAdult || 0) * pax.adult +
+              (b.costChild || 0) * pax.child +
+              (b.costInfant || 0) * pax.infant;
+            if (cost > 0) {
+              lineItems.push({
+                itinerary_id: savedTripId,
+                title: `Bus: ${b.route || "Travel"} (${b.busType || "Bus"})`,
+                category: "transport",
                 net_cost: cost,
                 markup_percentage: markupPct,
                 currency,
@@ -625,6 +681,8 @@ const AiArchitect = () => {
       setTripMetadata(null);
       setHotels([]);
       setFlights([]);
+      setCabs([]);
+      setBuses([]);
       setPricing(undefined);
       setSelectedClientId("none");
       setSelectedStatus("draft");
@@ -787,25 +845,25 @@ const AiArchitect = () => {
   }
 
   return (
-    <section id="ai-architect" className="container mx-auto px-4 sm:px-6 lg:px-8 pt-8">
-      <div className="max-w-5xl mx-auto">
+    <section id="ai-architect" className="w-full mx-auto px-3 sm:px-4 md:px-6 lg:px-8 pt-4 sm:pt-6 lg:pt-8 overflow-x-hidden">
+      <div className="w-full max-w-5xl mx-auto">
         <div className={cn("transition-all duration-500 w-full", (isGenerating || itinerary) ? "hidden" : "block")}>
-          <div className="text-center mb-16 animate-in fade-in slide-in-from-top-4 duration-1000">
-            <h1 className="text-5xl md:text-7xl font-serif font-bold text-white tracking-tighter mb-4 uppercase">
+          <div className="text-center mb-8 sm:mb-12 md:mb-16 animate-in fade-in slide-in-from-top-4 duration-1000">
+            <h1 className="font-serif font-bold text-white tracking-tighter mb-3 sm:mb-4 uppercase" style={{ fontSize: 'clamp(2rem, 6vw, 4.5rem)' }}>
               Odyssey <span className="text-gradient">Luxe</span>
             </h1>
-            <p className="text-zinc-500 text-lg md:text-xl font-medium tracking-wide">
+            <p className="text-zinc-500 font-medium tracking-wide" style={{ fontSize: 'clamp(0.875rem, 2vw, 1.25rem)' }}>
               Your Personal AI Travel Architect
             </p>
           </div>
-          <Card className="glass-panel rounded-[2.5rem] shadow-2xl border-white/5">
-            <CardHeader className="border-b border-white/5">
-              <CardTitle className="font-serif text-2xl flex items-center gap-2 text-white uppercase tracking-tight">
-                <Sparkles className="w-6 h-6 text-primary" />
+          <Card className="glass-panel rounded-xl sm:rounded-2xl md:rounded-[2.5rem] shadow-2xl border-white/5">
+            <CardHeader className="border-b border-white/5 px-4 sm:px-6">
+              <CardTitle className="font-serif flex items-center gap-2 text-white uppercase tracking-tight" style={{ fontSize: 'clamp(1.125rem, 2.5vw, 1.5rem)' }}>
+                <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-primary flex-shrink-0" />
                 <span>Plan Your Next Escape</span>
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-8">
+            <CardContent className="pt-6 sm:pt-8 px-4 sm:px-6">
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
@@ -825,7 +883,7 @@ const AiArchitect = () => {
                   }}
                 >
                   {/* Steps Indicator & Progress Bar */}
-                  <div className="mb-10 flex items-center justify-center gap-3">
+                  <div className="mb-6 sm:mb-10 flex items-center justify-center gap-2 sm:gap-3">
                     {aiArchitectSteps.map((step, index) => (
                       <div key={step.id} className="flex items-center gap-3">
                         <button
@@ -852,7 +910,7 @@ const AiArchitect = () => {
                           )}
                         </button>
                         {index < aiArchitectSteps.length - 1 && (
-                          <div className="relative h-[1.5px] w-12 sm:w-16">
+                          <div className="relative h-[1.5px] w-6 sm:w-12 md:w-16">
                             <div className="absolute inset-0 bg-[rgba(207,207,207,0.4)]" />
                             <div
                               className="absolute inset-0 bg-foreground/30 transition-all duration-700 ease-out origin-left"
@@ -885,7 +943,7 @@ const AiArchitect = () => {
                           </div>
                           <div className="relative group">
                             <FormControl>
-                              <Input placeholder="e.g., New Delhi, India" autoFocus {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                              <Input placeholder="e.g., New Delhi, India" autoFocus {...field} className="h-12 sm:h-14 text-sm sm:text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
                             </FormControl>
                           </div>
                           <FormMessage />
@@ -902,7 +960,7 @@ const AiArchitect = () => {
                           </div>
                           <div className="relative group">
                             <FormControl>
-                              <Input placeholder="e.g., Paris, Rome, Florence" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                              <Input placeholder="e.g., Paris, Rome, Florence" {...field} className="h-12 sm:h-14 text-sm sm:text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
                             </FormControl>
                           </div>
                           <FormMessage />
@@ -919,7 +977,7 @@ const AiArchitect = () => {
                           </div>
                           <div className="relative group">
                             <FormControl>
-                              <Input placeholder="Leave empty to return to starting location" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                              <Input placeholder="Leave empty to return to starting location" {...field} className="h-12 sm:h-14 text-sm sm:text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
                             </FormControl>
                           </div>
                           <FormMessage />
@@ -1035,7 +1093,7 @@ const AiArchitect = () => {
                             </div>
                             <div className="relative group">
                               <FormControl>
-                                <Input type="number" placeholder="Optional, e.g., 10000" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                                <Input type="number" placeholder="Optional, e.g., 10000" {...field} className="h-12 sm:h-14 text-sm sm:text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
                               </FormControl>
                             </div>
                             <FormMessage />
@@ -1043,7 +1101,7 @@ const AiArchitect = () => {
                         )}
                       />
                     </div>
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <FormField
                         control={form.control}
                         name="mustInclude"
@@ -1075,7 +1133,7 @@ const AiArchitect = () => {
                         )}
                       />
                     </div>
-                    <div className="grid md:grid-cols-2 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                       <FormField
                         control={form.control}
                         name="leisureTime"
@@ -1101,7 +1159,7 @@ const AiArchitect = () => {
                             </div>
                             <div className="relative group">
                               <FormControl>
-                                <Input type="number" placeholder="Optional, e.g., 2" {...field} className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
+                                <Input type="number" placeholder="Optional, e.g., 2" {...field} className="h-12 sm:h-14 text-sm sm:text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
                               </FormControl>
                             </div>
                             <FormMessage />
@@ -1120,7 +1178,7 @@ const AiArchitect = () => {
                             </div>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl>
-                                <SelectTrigger className="h-14 text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur">
+                                <SelectTrigger className="h-12 sm:h-14 text-sm sm:text-base transition-all duration-500 border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur">
                                   <SelectValue placeholder="Select a travel preference" />
                                 </SelectTrigger>
                               </FormControl>
@@ -1146,7 +1204,7 @@ const AiArchitect = () => {
                         key="continue-btn"
                         type="button"
                         onClick={handleNext}
-                        className="w-full h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 bg-primary text-white hover:bg-primary/90 rounded-xl"
+                        className="w-full h-11 sm:h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 bg-primary text-white hover:bg-primary/90 rounded-xl min-h-[44px]"
                       >
                         <span className="flex items-center justify-center gap-2 font-medium">
                           Continue
@@ -1161,7 +1219,7 @@ const AiArchitect = () => {
                         key="submit-btn"
                         type="submit"
                         disabled={isGenerating}
-                        className="w-full h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 bg-primary text-white hover:bg-primary/90 rounded-xl"
+                        className="w-full h-11 sm:h-12 group relative transition-all duration-300 hover:shadow-lg hover:shadow-primary/20 bg-primary text-white hover:bg-primary/90 rounded-xl min-h-[44px]"
                       >
                         <span className="flex items-center justify-center gap-2 font-medium">
                           {isGenerating ? "Crafting Your Journey..." : "Generate Optimized Trip"}
@@ -1199,9 +1257,9 @@ const AiArchitect = () => {
       )}
 
       {(!isGenerating && itinerary) && (
-        <div className="bg-obsidian-dark/60 backdrop-blur-md border-b border-white/5 py-3 shadow-xl sticky top-0 z-30 mb-6 -mx-4 sm:-mx-6 lg:-mx-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-4">
-            <div className="flex flex-wrap items-center space-x-6">
+        <div className="bg-obsidian-dark/60 backdrop-blur-md border-b border-white/5 py-2 sm:py-3 shadow-xl sticky top-0 z-30 mb-4 sm:mb-6 -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8">
+          <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-2 sm:gap-4">
+            <div className="flex flex-wrap items-center gap-2 sm:gap-4 md:space-x-6">
               <button
                 onClick={() => {
                   if (itinerary) {
@@ -1211,16 +1269,16 @@ const AiArchitect = () => {
                     setIsEditing(false);
                   }
                 }}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-xs font-bold uppercase tracking-widest"
+                className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-[10px] sm:text-xs font-bold uppercase tracking-widest min-h-[44px] sm:min-h-0"
                 title="Return to form"
               >
                 <ArrowLeft className="w-4 h-4" />
                 Back
               </button>
-              <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 sm:gap-3">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Client</label>
                 <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-                  <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-sm font-medium focus:ring-zinc-700 h-9 min-w-[180px]">
+                  <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-zinc-700 h-9 min-w-[140px] sm:min-w-[180px]">
                     <SelectValue placeholder="No Client Assigned" />
                   </SelectTrigger>
                   <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
@@ -1231,10 +1289,10 @@ const AiArchitect = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 sm:gap-3">
                 <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Status</label>
                 <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                  <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-sm font-medium focus:ring-zinc-700 h-9">
+                  <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-zinc-700 h-9">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
@@ -1245,25 +1303,25 @@ const AiArchitect = () => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="flex items-center space-x-2 px-2 py-1 rounded-md border border-white/5 bg-black/20">
+              <div className="flex items-center space-x-1.5 sm:space-x-2 px-1.5 sm:px-2 py-1 rounded-md border border-white/5 bg-black/20">
                 <Switch
                   id="show-timestamps"
                   checked={showTimestamps}
                   onCheckedChange={setShowTimestamps}
                   className="scale-75 origin-right"
                 />
-                <label htmlFor="show-timestamps" className="text-[10px] font-bold uppercase text-zinc-600 select-none whitespace-nowrap">
+                <label htmlFor="show-timestamps" className="text-[9px] sm:text-[10px] font-bold uppercase text-zinc-600 select-none whitespace-nowrap">
                   Time
                 </label>
               </div>
-              <div className="flex items-center space-x-2 px-2 py-1 rounded-md border border-white/5 bg-black/20">
+              <div className="flex items-center space-x-1.5 sm:space-x-2 px-1.5 sm:px-2 py-1 rounded-md border border-white/5 bg-black/20">
                 <Switch
                   id="show-prices"
                   checked={showPrices}
                   onCheckedChange={setShowPrices}
                   className="scale-75 origin-right"
                 />
-                <label htmlFor="show-prices" className="text-[10px] font-bold uppercase text-zinc-600 select-none whitespace-nowrap">
+                <label htmlFor="show-prices" className="text-[9px] sm:text-[10px] font-bold uppercase text-zinc-600 select-none whitespace-nowrap">
                   Price
                 </label>
               </div>
@@ -1302,24 +1360,24 @@ const AiArchitect = () => {
               </button>
             </div>
 
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 sm:space-x-3">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleDownloadPdf}
-                className="px-5 py-2.5 bg-white/5 border border-white/10 text-zinc-300 rounded-lg text-sm font-semibold hover:bg-white/10 transition-all flex items-center gap-2 h-10"
+                className="px-3 sm:px-5 py-2 sm:py-2.5 bg-white/5 border border-white/10 text-zinc-300 rounded-lg text-xs sm:text-sm font-semibold hover:bg-white/10 transition-all flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 min-h-[44px] sm:min-h-0"
               >
                 <Eye className="w-4 h-4" />
-                Preview
+                <span className="hidden xs:inline">Preview</span>
               </Button>
               <Button
                 size="sm"
                 onClick={handleSaveItinerary}
                 disabled={isSaving}
-                className="px-6 py-2.5 aurora-gradient text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-2 h-10 border-none"
+                className="px-3 sm:px-6 py-2 sm:py-2.5 aurora-gradient text-white rounded-lg text-xs sm:text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 border-none min-h-[44px] sm:min-h-0"
               >
                 <Save className="w-4 h-4" />
-                {isSaving ? "Saving..." : "Save Itinerary"}
+                {isSaving ? "Saving..." : "Save"}
               </Button>
             </div>
           </div>
@@ -1328,8 +1386,64 @@ const AiArchitect = () => {
 
       {itinerary && (
         <>
-          <div ref={itineraryRef} className="mt-0 max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex flex-row gap-6">
+          <div ref={itineraryRef} className="mt-0 w-full max-w-[1500px] mx-auto px-0 sm:px-2 md:px-4 lg:px-8">
+            {/* Mobile Tab Bar - shown on screens below lg */}
+            <div className="lg:hidden flex items-center gap-1 p-1.5 mb-4 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl overflow-x-auto hide-scrollbar">
+              {[
+                { id: 'itinerary' as const, icon: CalendarIcon, label: 'Timeline' },
+                { id: 'flights-hotels' as const, icon: Plane, label: 'Logistics' },
+                { id: 'pricing' as const, icon: DollarSign, label: 'Financials' },
+                { id: 'settings' as const, icon: Settings, label: 'Settings' },
+              ].map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveArchitectTab(item.id)}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg transition-all duration-200 whitespace-nowrap flex-1 min-w-[70px] min-h-[44px]",
+                    activeArchitectTab === item.id
+                      ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
+                      : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
+                  )}
+                >
+                  <item.icon className="w-4 h-4 flex-shrink-0" />
+                  <span className="text-[10px] sm:text-xs font-medium">{item.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Mobile Client/Status selectors - shown only on mobile */}
+            <div className="sm:hidden flex flex-col gap-2 mb-4">
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 w-12 flex-shrink-0">Client</label>
+                <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+                  <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs font-medium focus:ring-zinc-700 h-9 flex-1">
+                    <SelectValue placeholder="No Client" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+                    <SelectItem value="none">No Client</SelectItem>
+                    {clients.map((client) => (
+                      <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 w-12 flex-shrink-0">Status</label>
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs font-medium focus:ring-zinc-700 h-9 flex-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="sent">Sent</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="flex flex-row gap-4 lg:gap-6">
 
               {/* Expandable Glassmorphism Sidebar */}
               <div className={cn(
@@ -1451,13 +1565,13 @@ const AiArchitect = () => {
               </div>
 
               {/* Main Content Area */}
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-col lg:grid lg:grid-cols-12 gap-6 items-start">
+              <div className="flex-1 min-w-0 overflow-x-hidden">
+                <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 sm:gap-6 items-start">
                   {/* Main Content (Left) */}
                   <div className="lg:col-span-8 w-full min-w-0 order-2 lg:order-1">
 
                     {/* Itinerary Hero */}
-                    <div className="relative rounded-2xl overflow-hidden h-40 shadow-xl group border border-white/10 mb-6">
+                    <div className="relative rounded-xl sm:rounded-2xl overflow-hidden h-28 sm:h-36 md:h-40 shadow-xl group border border-white/10 mb-4 sm:mb-6">
                       <img
                         src={itinerary.itinerary[0]?.imageUrl || "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=2000&auto=format&fit=crop"}
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-[0.5]"
@@ -1465,17 +1579,17 @@ const AiArchitect = () => {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent"></div>
 
-                      <div className="absolute bottom-6 left-6 text-white">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="aurora-gradient text-[8px] font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-lg">Active Journey</span>
+                      <div className="absolute bottom-3 sm:bottom-6 left-3 sm:left-6 right-3 sm:right-6 text-white">
+                        <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                          <span className="aurora-gradient text-[7px] sm:text-[8px] font-black px-2 sm:px-3 py-0.5 sm:py-1 rounded-full uppercase tracking-widest shadow-lg">Active Journey</span>
                         </div>
-                        <h2 className="text-2xl font-extrabold tracking-tighter">Tropical Intelligence: <span className="text-gradient">{itinerary.itinerary[0]?.areaFocus?.split(',')[0]}</span></h2>
+                        <h2 className="font-extrabold tracking-tighter" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.5rem)' }}>Tropical Intelligence: <span className="text-gradient">{itinerary.itinerary[0]?.areaFocus?.split(',')[0]}</span></h2>
                       </div>
                     </div>
 
                     {/* Tab Content - Timeline */}
                     {activeArchitectTab === 'itinerary' && (
-                      <div className="relative rounded-2xl border border-white/[0.06] p-4 sm:p-6 backdrop-blur-sm overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(10,10,11,0.9) 0%, rgba(18,18,20,0.95) 50%, rgba(10,10,11,0.9) 100%)' }}>
+                      <div className="relative rounded-xl sm:rounded-2xl border border-white/[0.06] p-2 sm:p-4 md:p-6 backdrop-blur-sm overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(10,10,11,0.9) 0%, rgba(18,18,20,0.95) 50%, rgba(10,10,11,0.9) 100%)' }}>
                         <ItineraryTimeline
                           itinerary={itinerary?.itinerary || []}
                           isLoading={isGenerating}
@@ -1488,6 +1602,8 @@ const AiArchitect = () => {
                           }}
                           hotels={hotels}
                           flights={flights}
+                          cabs={cabs}
+                          buses={buses}
                           showTimestamps={showTimestamps}
                           showPrices={showPrices}
                         />
@@ -1499,9 +1615,13 @@ const AiArchitect = () => {
                       <HotelFlightEditor
                         hotels={hotels}
                         flights={flights}
+                        cabs={cabs}
+                        buses={buses}
                         totalDays={itinerary.itinerary.length}
                         onHotelsChange={setHotels}
                         onFlightsChange={setFlights}
+                        onCabsChange={setCabs}
+                        onBusesChange={setBuses}
                       />
                     )}
 
@@ -1513,6 +1633,8 @@ const AiArchitect = () => {
                           itinerary: itinerary?.itinerary || [],
                           hotels,
                           flights,
+                          cabs,
+                          buses,
                           pricing: pricing || (agencySettings ? {
                             currency: agencySettings.default_currency,
                             markupType: agencySettings.default_markup_type,
@@ -1537,12 +1659,12 @@ const AiArchitect = () => {
                     )}
                   </div>
 
-                  {/* Sidebar Summary (Right) */}
-                  <div className="lg:col-span-4 space-y-4 lg:sticky lg:top-32 order-1 lg:order-2">
-                    <div className="glass-panel rounded-2xl p-3 mb-4 shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 sticky top-[68px] z-20 bg-obsidian-dark/80 backdrop-blur-lg">
-                      <div>
+                  {/* Sidebar Summary (Right) — full-width on mobile, column on lg+ */}
+                  <div className="w-[100vw] -ml-3 sm:-ml-2 md:-ml-4 lg:ml-0 lg:w-auto lg:col-span-4 space-y-3 sm:space-y-4 lg:sticky lg:top-24 order-1 lg:order-2 self-start px-3 sm:px-2 md:px-4 lg:px-0">
+                    <div className="glass-panel rounded-xl sm:rounded-2xl p-3 mb-3 sm:mb-4 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 bg-obsidian-dark/80 backdrop-blur-lg border border-white/5">
+                      <div className="w-full sm:w-auto">
                         <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-2 block">Journey Summary</h3>
-                        <div className="flex flex-wrap gap-4 sm:gap-8">
+                        <div className="flex flex-wrap gap-3 sm:gap-4 md:gap-8">
                           <div className="flex flex-col">
                             <span className="text-[9px] font-black text-primary uppercase tracking-widest mb-0.5">Focus</span>
                             <span className="text-white text-xs font-bold leading-none">{itinerary?.itinerary[0]?.areaFocus?.split(',')[0]}</span>
@@ -1552,8 +1674,25 @@ const AiArchitect = () => {
                             <span className="text-white text-xs font-bold leading-none">{itinerary?.itinerary.length} Days</span>
                           </div>
                           <div className="flex flex-col">
-                            <span className="text-[9px] font-black text-tertiary uppercase tracking-widest mb-0.5">Currency</span>
-                            <span className="text-white text-xs font-bold leading-none">{currencySymbol ?? "₹"}</span>
+                            <span className="text-[9px] font-black text-tertiary uppercase tracking-widest mb-1.5">Status</span>
+                            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/5 border border-white/5 transition-all">
+                              <div className={cn(
+                                "w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]",
+                                selectedStatus === 'draft' && "bg-zinc-400 shadow-zinc-400/20",
+                                selectedStatus === 'sent' && "bg-primary shadow-primary/20",
+                                selectedStatus === 'confirmed' && "bg-emerald-400 shadow-emerald-500/20",
+                                selectedStatus === 'rejected' && "bg-rose-400 shadow-rose-500/20"
+                              )} />
+                              <span className={cn(
+                                "text-[10px] font-black uppercase tracking-wider leading-none",
+                                selectedStatus === 'draft' && "text-zinc-400",
+                                selectedStatus === 'sent' && "text-primary",
+                                selectedStatus === 'confirmed' && "text-emerald-400",
+                                selectedStatus === 'rejected' && "text-rose-400"
+                              )}>
+                                {selectedStatus}
+                              </span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -1698,14 +1837,6 @@ const AiArchitect = () => {
                       })()}
                     </div>
 
-                    <div className="rounded-2xl overflow-hidden shadow-xl h-32 relative border border-white/10 group cursor-pointer">
-                      <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-xsOGndml_s9kwf08ODde8-KMQEdc7hOdy_VXgjwaTro4rMzYGe_9Y4VDhqf54Euy1V_gMHnEZlaZmkrkFT4LJaSjfte0TO0C_djYBte3XZ9j5oNeBFXizpz7mPN63ZZvd0aJWcOfnOwzKMotLKinl68YbvU-x01hJlqVxQYtl9KCj-7-kq0pGahQrUrgTS68l9Ene2wivXgm-sGiTl51WL9YeiNB-Fg3hYziTQDqDWangdgPLTYSv4s8EZiAyo0uFZQY2WHMNJ8" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 brightness-[0.5]" alt="Map Route" />
-                      <div className="absolute inset-0 bg-secondary/10 backdrop-brightness-[0.7]"></div>
-                      <div className="absolute bottom-3 left-3 glass-panel px-4 py-1.5 rounded-full text-[9px] font-black uppercase tracking-widest flex items-center gap-2 border-white/20">
-                        <span className="material-symbols-outlined text-[14px] text-primary" style={{ fontVariationSettings: '"FILL" 1' }}>explore</span>
-                        Tracking
-                      </div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -1733,7 +1864,7 @@ const AiArchitect = () => {
       )}
       {/* Back Confirmation Dialog */}
       <AlertDialog open={showBackConfirm} onOpenChange={setShowBackConfirm}>
-        <AlertDialogContent className="glass-panel border-white/10 bg-black/90 text-white max-w-md">
+        <AlertDialogContent className="glass-panel border-white/10 bg-black/90 text-white max-w-[calc(100vw-2rem)] sm:max-w-md mx-auto">
           <AlertDialogHeader>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-2 rounded-full bg-primary/10 text-primary">

@@ -1,0 +1,549 @@
+/* =====================================================
+   CRM Page — Responsive Styles (Mobile-First)
+   Breakpoints:
+     Mobile portrait:   320px – 480px  (base)
+     Mobile landscape:  481px – 767px
+     Tablet portrait:   768px – 1024px
+     Tablet landscape:  1025px – 1279px
+     Desktop:           1280px – 1919px
+     Wide/4K:           1920px+
+   ===================================================== */
+
+/* ─── Base / Mobile portrait (320px – 480px) ────────── */
+
+.crm-page {
+  min-height: 100vh;
+  background-color: #0A0A0A;
+  color: #fff;
+  padding-top: 5rem; /* 80px accounts for fixed header */
+  padding-bottom: 2rem;
+  overflow-x: clip; /* clip instead of hidden to allow position: sticky to work on children */
+}
+
+.crm-container {
+  width: 100%;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.crm-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Page heading */
+.crm-page-title {
+  font-size: clamp(1.5rem, 5vw, 2.5rem);
+  font-weight: 700;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(to right, #a78bfa, #db2777);
+  line-height: 1.2;
+}
+
+.crm-page-subtitle {
+  color: #9ca3af;
+  margin-top: 0.5rem;
+  font-size: clamp(0.8rem, 2vw, 0.95rem);
+}
+
+/* Main content area */
+.crm-main-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.crm-main-content > .space-y-8 > * + * {
+  margin-top: 1.25rem;
+}
+
+/* ─── Mobile Sidebar (horizontal scrolling nav) ──────── */
+.crm-mobile-nav {
+  width: 100%;
+  margin-bottom: 0.75rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.crm-mobile-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.crm-mobile-nav-inner {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(24px);
+  min-width: max-content;
+}
+
+.crm-mobile-nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: all 0.2s;
+  min-height: 44px; /* Touch target compliance */
+}
+
+/* ─── Header Section ─────────────────────────────────── */
+.crm-header-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.crm-header-section .crm-add-btn {
+  width: 100%;
+  min-height: 44px;
+}
+
+/* ─── Dashboard Metric Cards ─────────────────────────── */
+.crm-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.625rem;
+}
+
+.crm-metrics-grid .metric-card {
+  padding: 0.75rem;
+}
+
+.crm-metrics-grid .metric-value {
+  font-size: clamp(1.125rem, 3vw, 1.5rem);
+  font-weight: 700;
+}
+
+.crm-metrics-grid .metric-label {
+  font-size: clamp(0.65rem, 1.5vw, 0.75rem);
+}
+
+/* ─── Dashboard Charts Grid ──────────────────────────── */
+.crm-charts-3col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.crm-charts-2col {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.crm-charts-rev-mix {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.crm-charts-rev-mix > :first-child {
+  grid-column: 1 / -1;
+}
+
+/* ─── Search & Filters ───────────────────────────────── */
+.crm-search-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.crm-filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.crm-advanced-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.crm-advanced-filters input[type="date"],
+.crm-advanced-filters input[type="number"] {
+  min-height: 44px; /* Touch target */
+  font-size: 0.75rem;
+}
+
+/* ─── Data Table ─────────────────────────────────────── */
+.crm-table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.crm-table-wrapper table {
+  width: 100%;
+  min-width: 520px; /* Ensures readability with horizontal scroll */
+  text-align: left;
+  border-collapse: collapse;
+}
+
+.crm-table-wrapper th,
+.crm-table-wrapper td {
+  padding: 0.625rem 0.5rem;
+  font-size: clamp(0.7rem, 1.5vw, 0.875rem);
+}
+
+/* ─── Kanban Board ───────────────────────────────────── */
+.crm-kanban-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.crm-kanban-col {
+  min-height: 200px;
+}
+
+/* ─── Booking Cards ──────────────────────────────────── */
+.crm-booking-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+/* ─── Archive Grid ───────────────────────────────────── */
+.crm-archive-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+/* ─── Buttons & Touch Targets ────────────────────────── */
+.crm-page button:not([role="checkbox"]):not(.h-7):not(.h-8):not([data-state]),
+.crm-page a,
+.crm-page [role="button"]:not([role="checkbox"]) {
+  min-height: 36px;
+}
+
+/* Apply 44px touch targets only on true mobile */
+@media (pointer: coarse) {
+  .crm-page button:not([role="checkbox"]):not(.h-7):not(.h-8):not([data-state]),
+  .crm-page a,
+  .crm-page [role="button"]:not([role="checkbox"]),
+  .crm-page input,
+  .crm-page select {
+    min-height: 44px;
+  }
+}
+
+/* Ensure checkboxes keep their intended square shape */
+.crm-page button[role="checkbox"] {
+  min-height: unset;
+}
+
+/* ─── Empty State Containers ─────────────────────────── */
+.crm-page .crm-empty-state {
+  padding: 2.5rem 1rem;
+}
+
+/* ─── Pagination ─────────────────────────────────────── */
+.crm-pagination {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Departures Grid ────────────────────────────────── */
+.crm-departures-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* =====================================================
+   Mobile Landscape  (min-width: 481px)
+   ===================================================== */
+@media (min-width: 481px) {
+  .crm-container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .crm-metrics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .crm-header-section {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .crm-header-section .crm-add-btn {
+    width: auto;
+  }
+
+  .crm-search-row {
+    flex-direction: row;
+  }
+
+  .crm-booking-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .crm-pagination {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+
+/* =====================================================
+   Tablet Portrait  (min-width: 768px)
+   ===================================================== */
+@media (min-width: 768px) {
+  .crm-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .crm-main-content > .space-y-8 > * + * {
+    margin-top: 1.5rem;
+  }
+
+  .crm-charts-2col {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .crm-charts-rev-mix {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .crm-charts-rev-mix > :first-child {
+    grid-column: 1 / -1;
+  }
+
+  .crm-kanban-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .crm-archive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Chart panels - responsive padding */
+  .crm-charts-3col .glass-main,
+  .crm-charts-2col .glass-main {
+    padding: 1rem;
+  }
+}
+
+/* =====================================================
+   Tablet Landscape  (min-width: 1025px)
+   ===================================================== */
+@media (min-width: 1025px) {
+  .crm-layout {
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+
+  .crm-charts-3col {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .crm-charts-rev-mix {
+    grid-template-columns: 2fr 1fr;
+  }
+
+  .crm-charts-rev-mix > :first-child {
+    grid-column: span 1;
+  }
+
+  .crm-booking-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Chart panels - larger padding on desktop */
+  .crm-charts-3col .glass-main,
+  .crm-charts-2col .glass-main {
+    padding: 1.5rem;
+  }
+}
+
+/* =====================================================
+   Desktop  (min-width: 1280px)
+   ===================================================== */
+@media (min-width: 1280px) {
+  .crm-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .crm-main-content > .space-y-8 > * + * {
+    margin-top: 2rem;
+  }
+
+  .crm-metrics-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .crm-kanban-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* =====================================================
+   Wide / 4K  (min-width: 1920px)
+   ===================================================== */
+@media (min-width: 1920px) {
+  .crm-container {
+    max-width: 1800px;
+  }
+}
+
+/* =====================================================
+   Cross-Cutting Responsive Utilities
+   ===================================================== */
+
+/* Prevent horizontal overflow from long text */
+.crm-page {
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Charts: ensure min-height on mobile */
+.crm-charts-3col [class*="h-["],
+.crm-charts-2col [class*="h-["] {
+  min-height: 120px;
+}
+
+/* Dashboard chart panels - responsive padding on mobile */
+.crm-charts-3col > .glass-main,
+.crm-charts-2col > .glass-main,
+.crm-charts-rev-mix > .glass-main {
+  padding: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .crm-charts-3col > .glass-main,
+  .crm-charts-2col > .glass-main,
+  .crm-charts-rev-mix > .glass-main {
+    padding: 1.25rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .crm-charts-3col > .glass-main,
+  .crm-charts-2col > .glass-main,
+  .crm-charts-rev-mix > .glass-main {
+    padding: 1.5rem;
+  }
+}
+
+/* Empty state containers - smaller padding on mobile */
+.crm-page .glass-main.p-16,
+.crm-page .p-16 {
+  padding: 2rem 1rem;
+}
+
+@media (min-width: 768px) {
+  .crm-page .glass-main.p-16,
+  .crm-page .p-16 {
+    padding: 4rem;
+  }
+}
+
+/* Activity Sheet - responsive width */
+.crm-page ~ [data-state="open"] [class*="SheetContent"],
+.crm-page ~ div [class*="w-[400px]"] {
+  width: 100%;
+  max-width: 100vw;
+}
+
+@media (min-width: 540px) {
+  .crm-page ~ [data-state="open"] [class*="SheetContent"],
+  .crm-page ~ div [class*="w-[400px]"] {
+    width: 540px;
+    max-width: 540px;
+  }
+}
+
+/* Dialogs/Modals - full-screen on mobile */
+@media (max-width: 639px) {
+  [role="dialog"] > div {
+    max-width: 100vw !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+  }
+}
+
+/* Make filter selects wrap properly on mobile */
+@media (max-width: 480px) {
+  .crm-filter-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .crm-filter-actions > * {
+    width: 100%;
+  }
+
+  .crm-filter-actions button,
+  .crm-filter-actions [data-radix-select-trigger] {
+    width: 100%;
+  }
+
+  .crm-advanced-filters {
+    gap: 0.375rem;
+  }
+
+  .crm-advanced-filters > div {
+    flex: 1 1 100%;
+  }
+}
+
+/* Table toolbar responsive */
+@media (max-width: 480px) {
+  .crm-page .flex.items-center.justify-between {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+}
+
+/* Ensure chart containers don't overflow */
+.crm-page .recharts-responsive-container {
+  max-width: 100%;
+}
+
+/* Responsive text sizes for metric values on metric cards */
+.crm-metrics-grid .text-xl {
+  font-size: clamp(1.125rem, 3vw, 1.25rem);
+}
+
+.crm-metrics-grid .text-xs {
+  font-size: clamp(0.625rem, 1.5vw, 0.75rem);
+}
+
+/* Kanban cards - better touch interaction */
+@media (pointer: coarse) {
+  .crm-kanban-grid .p-3 {
+    padding: 0.875rem;
+  }
+}

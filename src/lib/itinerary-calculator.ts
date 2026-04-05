@@ -35,7 +35,7 @@ export function getCurrencySymbol(currency: Currency): string {
  *  - hotel costs (adult + child + infant)
  *  - flight costs (adult + child + infant)
  */
-export function calcBaseCost(state: Pick<ItineraryState, "itinerary" | "hotels" | "flights">): number {
+export function calcBaseCost(state: Pick<ItineraryState, "itinerary" | "hotels" | "flights" | "cabs" | "buses">): number {
   let cost = 0;
 
   // Activity / timeline step costs
@@ -58,6 +58,18 @@ export function calcBaseCost(state: Pick<ItineraryState, "itinerary" | "hotels" 
     if (f.costAdult) cost += Number(f.costAdult) || 0;
     if (f.costChild) cost += Number(f.costChild) || 0;
     if (f.costInfant) cost += Number(f.costInfant) || 0;
+  }
+
+  // Cab costs
+  for (const c of state.cabs || []) {
+    if (c.totalCost) cost += Number(c.totalCost) || 0;
+  }
+
+  // Bus costs
+  for (const b of state.buses || []) {
+    if (b.costAdult) cost += Number(b.costAdult) || 0;
+    if (b.costChild) cost += Number(b.costChild) || 0;
+    if (b.costInfant) cost += Number(b.costInfant) || 0;
   }
 
   return cost;
@@ -108,7 +120,7 @@ export interface MilestoneAmount extends PaymentMilestone {
  * Call via useItineraryPricing() to get memoised results in React.
  */
 export function calcPricingBreakdown(
-  state: Pick<ItineraryState, "itinerary" | "hotels" | "flights" | "pricing">
+  state: Pick<ItineraryState, "itinerary" | "hotels" | "flights" | "cabs" | "buses" | "pricing">
 ): PricingBreakdown {
   const { pricing } = state;
 

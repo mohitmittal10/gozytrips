@@ -1,13 +1,13 @@
 "use client";
 
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
-import type { HotelInfo, FlightInfo } from "@/components/hotel-flight-editor";
+import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from "@/components/hotel-flight-editor";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import {
   Calendar, Clock, Footprints, Wallet, Pencil, Check, Trash2, Plus, GripVertical, X,
-  Hotel, Plane, Star,
+  Hotel, Plane, Star, Car, Bus
 } from "lucide-react";
 import { useState, useRef, useEffect, useCallback, useContext } from "react";
 import { ItineraryContext } from "@/contexts/itinerary-context";
@@ -55,6 +55,8 @@ type ItineraryTimelineProps = {
   onEditingChange?: (editing: boolean) => void;
   hotels?: HotelInfo[];
   flights?: FlightInfo[];
+  cabs?: CabInfo[];
+  buses?: BusInfo[];
   showTimestamps?: boolean;
   showPrices?: boolean;
 };
@@ -131,6 +133,50 @@ function HotelBanner({ hotel }: { hotel: HotelInfo }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function CabBanner({ cab }: { cab: CabInfo }) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-sm">
+      <Car className="w-4 h-4 text-orange-500 flex-shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-semibold text-orange-500">
+            {cab.vehicleType || "Cab"} {cab.route && `— ${cab.route}`}
+          </span>
+          {cab.bookingRef && (
+            <span className="text-xs bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded">Ref: {cab.bookingRef}</span>
+          )}
+        </div>
+        <div className="text-foreground/70 text-xs mt-0.5">
+          {cab.pickupTime && <span>Pickup: {cab.pickupTime} • </span>}
+          {cab.driverName && <span>{cab.driverName} ({cab.driverContact})</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BusBanner({ bus }: { bus: BusInfo }) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-sm">
+      <Bus className="w-4 h-4 text-yellow-500 flex-shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="font-semibold text-yellow-500">
+            {bus.busType || "Tourist Bus"} {bus.route && `— ${bus.route}`}
+          </span>
+          {bus.pnr && (
+            <span className="text-xs bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">PNR: {bus.pnr}</span>
+          )}
+        </div>
+        <div className="text-foreground/70 text-xs mt-0.5">
+          {bus.reportingTime && <span>Reporting: {bus.reportingTime} • </span>}
+          {bus.departureTime && <span>Departure: {bus.departureTime}</span>}
+        </div>
+      </div>
     </div>
   );
 }
@@ -444,6 +490,8 @@ const ItineraryTimeline = ({
   onEditingChange,
   hotels = [],
   flights = [],
+  cabs = [],
+  buses = [],
   showTimestamps = true,
   showPrices = true,
 }: ItineraryTimelineProps) => {
@@ -860,14 +908,14 @@ const ItineraryTimeline = ({
         </DragOverlay>
       </DndContext>
 
-      {/* Global Flights & Accommodations Summary */}
-      {(flights.length > 0 || hotels.length > 0) && (
+      {/* Global Logistics Summary */}
+      {(flights.length > 0 || hotels.length > 0 || cabs.length > 0 || buses.length > 0) && (
         <div className="relative flex items-start gap-6 sm:gap-12 mt-16 sm:flex-row">
 
           <div className="flex-1">
             <Card className="glass-card overflow-hidden">
               <CardHeader className="bg-white/5">
-                <CardTitle className="font-headline text-3xl text-primary">Flights & Accommodations</CardTitle>
+                <CardTitle className="font-headline text-3xl text-primary">Travel Logistics Summary</CardTitle>
               </CardHeader>
               <CardContent className="py-6 space-y-8">
                 {flights.length > 0 && (
@@ -886,6 +934,26 @@ const ItineraryTimeline = ({
                     <div className="space-y-2">
                       {hotels.map(hotel => (
                         <HotelBanner key={hotel.id} hotel={hotel} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {cabs.length > 0 && (
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg text-foreground/80">Cabs / Private Transport</h4>
+                    <div className="space-y-2">
+                      {cabs.map(cab => (
+                        <CabBanner key={cab.id} cab={cab} />
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {buses.length > 0 && (
+                  <div className="space-y-4">
+                    <h4 className="font-semibold text-lg text-foreground/80">Tourist Bus Details</h4>
+                    <div className="space-y-2">
+                      {buses.map(bus => (
+                        <BusBanner key={bus.id} bus={bus} />
                       ))}
                     </div>
                   </div>

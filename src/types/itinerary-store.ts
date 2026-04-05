@@ -6,7 +6,7 @@
  */
 
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
-import type { HotelInfo, FlightInfo } from "@/components/hotel-flight-editor";
+import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from "@/components/hotel-flight-editor";
 import type { PricingConfig } from "@/types/pricing";
 import { defaultPricingConfig } from "@/types/pricing";
 
@@ -26,6 +26,12 @@ export interface ItineraryState {
 
   /** Flight bookings */
   flights: FlightInfo[];
+
+  /** Cab bookings */
+  cabs: CabInfo[];
+
+  /** Tourist Bus bookings */
+  buses: BusInfo[];
 
   /** All pricing configuration: pax, currency, markup, tax, milestones */
   pricing: PricingConfig;
@@ -53,6 +59,8 @@ export type ItineraryAction =
   | { type: "ADD_FLIGHT"; payload: FlightInfo }
   | { type: "UPDATE_FLIGHT"; payload: { index: number; flight: FlightInfo } }
   | { type: "REMOVE_FLIGHT"; payload: { index: number } }
+  | { type: "SET_CABS"; payload: CabInfo[] }
+  | { type: "SET_BUSES"; payload: BusInfo[] }
   | { type: "UPDATE_PRICING"; payload: Partial<PricingConfig> }
   | { type: "MARK_CLEAN" };
 
@@ -74,6 +82,8 @@ export function createDefaultState(
     itinerary: [],
     hotels: [],
     flights: [],
+    cabs: [],
+    buses: [],
     pricing: defaultPricingConfig,
     isDirty: false,
     validationErrors: [],

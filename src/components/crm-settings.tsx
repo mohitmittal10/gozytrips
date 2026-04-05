@@ -115,29 +115,29 @@ export function CrmSettings() {
   const updateAgency = (field: string, value: any) => setAgencyData(prev => ({ ...prev, [field]: value }));
 
   return (
-    <div className="space-y-6 max-w-4xl pb-10">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <div className="p-3 bg-white/5 rounded-xl border border-white/10 text-gray-300">
-            <Settings className="w-6 h-6" />
+    <div className="space-y-4 sm:space-y-6 w-full max-w-4xl pb-10 overflow-x-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="p-2 sm:p-3 bg-white/5 rounded-xl border border-white/10 text-gray-300 flex-shrink-0">
+            <Settings className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div>
-            <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">Agency Settings</h2>
-            <p className="text-sm text-gray-500">Configure your agency's globally applied details and financials.</p>
+          <div className="min-w-0">
+            <h2 className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400" style={{ fontSize: 'clamp(1.125rem, 2.5vw, 1.5rem)' }}>Agency Settings</h2>
+            <p className="text-xs sm:text-sm text-gray-500 truncate">Configure your agency's globally applied details and financials.</p>
           </div>
         </div>
         <Button
           onClick={handleSave}
           disabled={isLoading}
-          className="bg-white text-black hover:bg-gray-200 px-8 disabled:opacity-50"
+          className="aurora-gradient text-white px-6 sm:px-8 rounded-lg font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 disabled:opacity-50 border-none w-full sm:w-auto min-h-[44px] flex-shrink-0"
         >
           {isLoading ? (
-            <span className="flex items-center gap-2">
-              <span className="animate-spin w-4 h-4 border-2 border-black/30 border-t-black rounded-full" />
+            <span className="flex items-center justify-center gap-2">
+              <span className="animate-spin w-4 h-4 border-2 border-white/30 border-t-white rounded-full" />
               Saving...
             </span>
           ) : (
-            <span className="flex items-center gap-2">
+            <span className="flex items-center justify-center gap-2">
               <Save className="w-4 h-4" /> Save Settings
             </span>
           )}
@@ -145,10 +145,10 @@ export function CrmSettings() {
       </div>
 
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="bg-white/5 border border-white/10 mb-6">
-          <TabsTrigger value="profile" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Agency Profile</TabsTrigger>
-          <TabsTrigger value="financials" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Costing Defaults</TabsTrigger>
-          <TabsTrigger value="legal" className="data-[state=active]:bg-white/10 data-[state=active]:text-white">Legal & Compliance</TabsTrigger>
+        <TabsList className="bg-white/5 border border-white/10 mb-4 sm:mb-6 w-full flex overflow-x-auto hide-scrollbar">
+          <TabsTrigger value="profile" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4"><Building2 className="w-3.5 h-3.5 mr-1.5 sm:hidden flex-shrink-0" /><span className="hidden sm:inline">Agency </span>Profile</TabsTrigger>
+          <TabsTrigger value="financials" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4"><DollarSign className="w-3.5 h-3.5 mr-1.5 sm:hidden flex-shrink-0" /><span className="hidden sm:inline">Costing </span>Defaults</TabsTrigger>
+          <TabsTrigger value="legal" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4"><Gavel className="w-3.5 h-3.5 mr-1.5 sm:hidden flex-shrink-0" /><span className="hidden sm:inline">Legal & </span>Compliance</TabsTrigger>
         </TabsList>
         
         {/* Agency Profile Tab */}
@@ -161,34 +161,34 @@ export function CrmSettings() {
               </div>
               <CardDescription className="text-gray-500">This information will be displayed on client-facing documents.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5 col-span-2">
+            <CardContent className="space-y-4 px-3 sm:px-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="space-y-1.5 sm:col-span-2">
                   <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Company Name</Label>
-                  <Input value={profileData.company_name} onChange={(e) => updateProfile('company_name', e.target.value)} className="bg-white/5 border-white/10 text-white" />
+                  <Input value={profileData.company_name} onChange={(e) => updateProfile('company_name', e.target.value)} className="bg-white/5 border-white/10 text-white h-10 sm:h-9 text-sm" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Business Email</Label>
-                  <Input type="email" value={profileData.business_email} onChange={(e) => updateProfile('business_email', e.target.value)} className="bg-white/5 border-white/10 text-white" />
+                  <Input type="email" value={profileData.business_email} onChange={(e) => updateProfile('business_email', e.target.value)} className="bg-white/5 border-white/10 text-white h-10 sm:h-9 text-sm" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Business Phone</Label>
-                  <Input type="tel" value={profileData.business_phone} onChange={(e) => updateProfile('business_phone', e.target.value)} className="bg-white/5 border-white/10 text-white" />
+                  <Input type="tel" value={profileData.business_phone} onChange={(e) => updateProfile('business_phone', e.target.value)} className="bg-white/5 border-white/10 text-white h-10 sm:h-9 text-sm" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Website URL</Label>
-                  <Input type="url" value={profileData.website} onChange={(e) => updateProfile('website', e.target.value)} className="bg-white/5 border-white/10 text-white" />
+                  <Input type="url" value={profileData.website} onChange={(e) => updateProfile('website', e.target.value)} className="bg-white/5 border-white/10 text-white h-10 sm:h-9 text-sm" />
                 </div>
                 <div className="space-y-1.5">
                   <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Brand Color (Hex)</Label>
-                  <div className="flex items-center gap-3">
-                    <Input type="color" value={profileData.brand_color} onChange={(e) => updateProfile('brand_color', e.target.value)} className="h-10 w-16 p-1 bg-white/5 border-white/10" />
-                    <Input type="text" value={profileData.brand_color} onChange={(e) => updateProfile('brand_color', e.target.value)} className="bg-white/5 border-white/10 text-white flex-1" />
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Input type="color" value={profileData.brand_color} onChange={(e) => updateProfile('brand_color', e.target.value)} className="h-10 w-12 sm:w-16 p-1 bg-white/5 border-white/10 flex-shrink-0" />
+                    <Input type="text" value={profileData.brand_color} onChange={(e) => updateProfile('brand_color', e.target.value)} className="bg-white/5 border-white/10 text-white flex-1 h-10 sm:h-9 text-sm" />
                   </div>
                 </div>
-                <div className="space-y-1.5 col-span-2">
+                <div className="space-y-1.5 sm:col-span-2">
                   <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Agent Email Signature</Label>
-                  <Textarea value={agencyData.agent_signature} onChange={(e) => updateAgency('agent_signature', e.target.value)} className="bg-white/5 border-white/10 text-white min-h-[100px]" placeholder="Warm Regards,&#10;Agent Name&#10;Company" />
+                  <Textarea value={agencyData.agent_signature} onChange={(e) => updateAgency('agent_signature', e.target.value)} className="bg-white/5 border-white/10 text-white min-h-[100px] text-sm" placeholder="Warm Regards,&#10;Agent Name&#10;Company" />
                 </div>
               </div>
             </CardContent>
@@ -205,11 +205,11 @@ export function CrmSettings() {
               </div>
               <CardDescription className="text-gray-500">Set the default markup, tax rate, and currency for new itineraries.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4 max-w-xl">
+            <CardContent className="space-y-4 px-3 sm:px-6">
               <div className="space-y-1.5">
                 <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Default Currency</Label>
                 <Select value={agencyData.default_currency} onValueChange={(v) => updateAgency('default_currency', v)}>
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white h-9">
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 sm:h-9 w-full text-sm">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -221,9 +221,9 @@ export function CrmSettings() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Default Markup</Label>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <Select value={agencyData.default_markup_type} onValueChange={(v) => updateAgency('default_markup_type', v)}>
-                    <SelectTrigger className="w-40 bg-white/5 border-white/10 text-white h-9">
+                    <SelectTrigger className="w-full sm:w-40 bg-white/5 border-white/10 text-white h-10 sm:h-9 text-sm flex-shrink-0">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -231,12 +231,12 @@ export function CrmSettings() {
                       <SelectItem value="flat">Flat Fee</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Input type="number" min={0} value={agencyData.default_markup_value} onChange={(e) => updateAgency('default_markup_value', Number(e.target.value))} className="bg-white/5 border-white/10 text-white flex-1" />
+                  <Input type="number" min={0} value={agencyData.default_markup_value} onChange={(e) => updateAgency('default_markup_value', Number(e.target.value))} className="bg-white/5 border-white/10 text-white flex-1 h-10 sm:h-9 text-sm" />
                 </div>
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Default Tax (%)</Label>
-                <Input type="number" min={0} max={100} value={agencyData.default_tax_percentage} onChange={(e) => updateAgency('default_tax_percentage', Number(e.target.value))} className="bg-white/5 border-white/10 text-white" />
+                <Input type="number" min={0} max={100} value={agencyData.default_tax_percentage} onChange={(e) => updateAgency('default_tax_percentage', Number(e.target.value))} className="bg-white/5 border-white/10 text-white h-10 sm:h-9 text-sm" />
               </div>
             </CardContent>
           </Card>
@@ -252,10 +252,10 @@ export function CrmSettings() {
               </div>
               <CardDescription className="text-gray-500">Configure your banking details, tax ID, and terms and conditions.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-1.5 max-w-xl">
+            <CardContent className="space-y-4 px-3 sm:px-6">
+              <div className="space-y-1.5">
                 <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">GST / Tax ID Number</Label>
-                <Input value={agencyData.gst_number} onChange={(e) => updateAgency('gst_number', e.target.value)} placeholder="e.g. 29GGGGG1314R9Z6" className="bg-white/5 border-white/10 text-white text-sm" />
+                <Input value={agencyData.gst_number} onChange={(e) => updateAgency('gst_number', e.target.value)} placeholder="e.g. 29GGGGG1314R9Z6" className="bg-white/5 border-white/10 text-white text-sm h-10 sm:h-9" />
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Bank Details & UPI</Label>
@@ -263,7 +263,7 @@ export function CrmSettings() {
               </div>
               <div className="space-y-1.5">
                 <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Terms & Conditions</Label>
-                <Textarea value={agencyData.terms_conditions} onChange={(e) => updateAgency('terms_conditions', e.target.value)} placeholder="1. 50% advance payment required.&#10;2. Cancellations within 7 days are non-refundable." className="bg-white/5 border-white/10 text-white min-h-[150px] text-sm" />
+                <Textarea value={agencyData.terms_conditions} onChange={(e) => updateAgency('terms_conditions', e.target.value)} placeholder="1. 50% advance payment required.&#10;2. Cancellations within 7 days are non-refundable." className="bg-white/5 border-white/10 text-white min-h-[120px] sm:min-h-[150px] text-sm" />
               </div>
             </CardContent>
           </Card>

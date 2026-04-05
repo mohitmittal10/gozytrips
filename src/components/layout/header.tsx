@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
 import { Menu, LogOut, User, MapPin, Users, Home, Info, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "./logo";
@@ -114,6 +114,8 @@ const Header = () => {
                         </button>
                       </SheetTrigger>
                       <SheetContent side="right" className="bg-[#020305] border-l border-white/10 p-0 w-72">
+                        <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                        <SheetDescription className="sr-only">Main navigation and account options</SheetDescription>
                         <div className="flex flex-col h-full">
                           <div className="p-6 border-b border-white/10">
                             <Logo />
@@ -173,6 +175,8 @@ const Header = () => {
                         </button>
                       </SheetTrigger>
                       <SheetContent side="right" className="bg-[#020305] border-l border-white/10 p-0 w-72">
+                        <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                        <SheetDescription className="sr-only">Site navigation links</SheetDescription>
                         <div className="flex flex-col h-full">
                           <div className="p-6 border-b border-white/10">
                             <Logo />

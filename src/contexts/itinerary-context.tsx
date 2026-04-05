@@ -17,7 +17,7 @@ import type {
 } from "@/types/itinerary-store";
 import { createDefaultState } from "@/types/itinerary-store";
 import { validateItineraryState } from "@/lib/itinerary-validator";
-import type { HotelInfo, FlightInfo } from "@/components/hotel-flight-editor";
+import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from "@/components/hotel-flight-editor";
 import type { PricingConfig } from "@/types/pricing";
 
 // ── Context ────────────────────────────────────────────────────────────────────
@@ -120,6 +120,12 @@ function itineraryReducer(state: ItineraryState, action: ItineraryAction): Itine
     case "MARK_CLEAN":
       return { ...state, isDirty: false };
 
+    case "SET_CABS":
+      return withValidation({ ...state, cabs: action.payload, isDirty: true });
+
+    case "SET_BUSES":
+      return withValidation({ ...state, buses: action.payload, isDirty: true });
+
     default:
       return state;
   }
@@ -135,6 +141,8 @@ interface ItineraryProviderProps {
     itinerary?: DayData[];
     hotels?: HotelInfo[];
     flights?: FlightInfo[];
+    cabs?: CabInfo[];
+    buses?: BusInfo[];
     pricing?: PricingConfig;
   } | null;
 }
@@ -144,7 +152,13 @@ export function ItineraryProvider({ children, initialTrip }: ItineraryProviderPr
     itinerary: initialTrip?.itinerary ?? [],
     hotels: initialTrip?.hotels ?? [],
     flights: initialTrip?.flights ?? [],
-    pricing: initialTrip?.pricing ?? createDefaultState().pricing,
+    cabs: initialTrip?.cabs ?? [],
+    buses: initialTrip?.buses ?? [],
+    pricing: {
+      ...createDefaultState().pricing,
+      ...initialTrip?.pricing,
+      milestones: initialTrip?.pricing?.milestones ?? createDefaultState().pricing.milestones,
+    },
     isDirty: false,
   });
 

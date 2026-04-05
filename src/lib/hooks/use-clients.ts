@@ -16,12 +16,13 @@ export interface Client {
   updated_at: string;
 }
 
+const supabase = createClient();
+
 export function useClients() {
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
-  const supabase = createClient();
 
   const fetchClients = useCallback(async () => {
     if (!user) return;
@@ -49,11 +50,14 @@ export function useClients() {
     } finally {
       setLoading(false);
     }
-  }, [user, supabase]);
+  }, [user?.id]);
 
+  // Fetch once on mount when user is available
   useEffect(() => {
-    fetchClients();
-  }, [fetchClients]);
+    if (user) {
+      fetchClients();
+    }
+  }, [user?.id]); // Only re-fetch if the user identity changes
 
   const createClientAction = async (newClient: Omit<Client, 'id' | 'user_id' | 'created_at' | 'updated_at'>) => {
     if (!user) throw new Error("Must be logged in to create a client");

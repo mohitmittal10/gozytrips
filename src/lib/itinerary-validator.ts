@@ -39,9 +39,9 @@ export function validateItineraryState(state: ItineraryState): string[] {
   }
 
   // ── Milestones ────────────────────────────────────────────────────────────────
-  if (pricing.milestones.length > 0) {
+  if (pricing?.milestones && pricing.milestones.length > 0) {
     const totalMilestonePercent = pricing.milestones.reduce(
-      (sum, m) => sum + (m.percentage || 0),
+      (sum, m) => sum + (m?.percentage || 0),
       0
     );
     if (totalMilestonePercent > 100) {
@@ -50,10 +50,10 @@ export function validateItineraryState(state: ItineraryState): string[] {
       );
     }
     for (const m of pricing.milestones) {
-      if (m.percentage < 0) {
+      if (m && m.percentage < 0) {
         errors.push(`Milestone "${m.name}" has a negative percentage.`);
       }
-      if (!m.name.trim()) {
+      if (m && !m.name?.trim()) {
         errors.push("A payment milestone has no name.");
       }
     }

@@ -122,7 +122,7 @@ const DURATION_BUCKETS = [
 ] as const;
 
 export function computeDurationBuckets(bookedTrips: Record<string, any>[]): CountRow[] {
-  const counts = DURATION_BUCKETS.map((b) => ({ label: b.label, count: 0 }));
+  const counts = DURATION_BUCKETS.map((b) => ({ name: b.label, count: 0 }));
   for (const trip of bookedTrips) {
     const days = tripDurationDays(trip);
     if (days == null) continue;
