@@ -21,47 +21,62 @@ export const getTripCost = (trip: any): number => {
 
     let totalBaseCost = 0;
     const data = trip.itinerary_data || {};
+    const pricing = data.pricing || {};
 
-    const itineraryDays = data.itinerary || data.days || [];
-    if (Array.isArray(itineraryDays)) {
-        itineraryDays.forEach((day: any) => {
-            if (Array.isArray(day.timeline)) {
-                day.timeline.forEach((item: any) => {
-                    if (typeof item.cost === 'number') {
-                        totalBaseCost += item.cost;
-                    }
-                });
-            } else if (day.dailyStats?.totalCost) {
-                const costStr = day.dailyStats.totalCost.toString();
-                const costNum = parseInt(costStr.replace(/[^\d]/g, ''), 10);
-                totalBaseCost += isNaN(costNum) ? 0 : costNum;
+    // 1. Calculate Base Cost based on Mode
+    if (pricing.costingType === 'manual') {
+        const manualOptions = pricing.manualOptions || [];
+        const totalPax = (pricing.adultPax || 0) + (pricing.childPax || 0) + (pricing.infantPax || 0);
+        
+        manualOptions.forEach((item: any) => {
+            const amount = Number(item.amount) || 0;
+            if (item.type === 'per-person') {
+                totalBaseCost += amount * totalPax;
+            } else {
+                totalBaseCost += amount;
             }
         });
+    } else {
+        // Automatic Logic
+        const itineraryDays = data.itinerary || data.days || [];
+        if (Array.isArray(itineraryDays)) {
+            itineraryDays.forEach((day: any) => {
+                if (Array.isArray(day.timeline)) {
+                    day.timeline.forEach((item: any) => {
+                        if (typeof item.cost === 'number') {
+                            totalBaseCost += item.cost;
+                        }
+                    });
+                } else if (day.dailyStats?.totalCost) {
+                    const costStr = day.dailyStats.totalCost.toString();
+                    const costNum = parseInt(costStr.replace(/[^\d]/g, ''), 10);
+                    totalBaseCost += isNaN(costNum) ? 0 : costNum;
+                }
+            });
+        }
+
+        const pax = {
+            adult: pricing.adultPax || 2,
+            child: pricing.childPax || 0,
+            infant: pricing.infantPax || 0
+        };
+
+        if (Array.isArray(data.hotels)) {
+            data.hotels.forEach((h: any) => {
+                if (h.costAdult) totalBaseCost += h.costAdult * pax.adult;
+                if (h.costChild) totalBaseCost += h.costChild * pax.child;
+                if (h.costInfant) totalBaseCost += h.costInfant * pax.infant;
+            });
+        }
+
+        if (Array.isArray(data.flights)) {
+            data.flights.forEach((f: any) => {
+                if (f.costAdult) totalBaseCost += f.costAdult * pax.adult;
+                if (f.costChild) totalBaseCost += f.costChild * pax.child;
+                if (f.costInfant) totalBaseCost += f.costInfant * pax.infant;
+            });
+        }
     }
-
-    const pax = {
-        adult: data.pricing?.adultPax || 2,
-        child: data.pricing?.childPax || 0,
-        infant: data.pricing?.infantPax || 0
-    };
-
-    if (Array.isArray(data.hotels)) {
-        data.hotels.forEach((h: any) => {
-            if (h.costAdult) totalBaseCost += h.costAdult * pax.adult;
-            if (h.costChild) totalBaseCost += h.costChild * pax.child;
-            if (h.costInfant) totalBaseCost += h.costInfant * pax.infant;
-        });
-    }
-
-    if (Array.isArray(data.flights)) {
-        data.flights.forEach((f: any) => {
-            if (f.costAdult) totalBaseCost += f.costAdult * pax.adult;
-            if (f.costChild) totalBaseCost += f.costChild * pax.child;
-            if (f.costInfant) totalBaseCost += f.costInfant * pax.infant;
-        });
-    }
-
-    const pricing = data.pricing || {};
     const markupValue = pricing.markupValue || 0;
     const markupType = pricing.markupType || 'percentage';
     const taxPercentage = pricing.taxPercentage || 0;

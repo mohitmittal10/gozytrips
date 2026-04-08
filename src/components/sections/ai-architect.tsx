@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
-import { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Pencil } from "lucide-react";
 import { generateTravelItinerary } from "@/ai/flows/generate-travel-itinerary";
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
@@ -25,10 +25,12 @@ import ItineraryTimeline from "../itinerary-timeline";
 import HotelFlightEditor, { type HotelInfo, type FlightInfo, type CabInfo, type BusInfo } from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
 import { type PricingConfig } from "@/types/pricing";
-import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye, Check, ArrowRight, ArrowLeft, Plane, Wallet, DollarSign, Settings, Shield, LayoutDashboard, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronDown, Sparkles, Calendar as CalendarIcon, Save, AlertCircle, Eye, Check, ArrowRight, ArrowLeft, Plane, Wallet, DollarSign, Settings, Shield, LayoutDashboard, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { generateTripId } from "@/types/financial";
 import Link from "next/link";
 import { CrmSettings } from "@/components/crm-settings";
 import { ItineraryProvider } from "@/contexts/itinerary-context";
+import { useItinerary } from "@/hooks/use-itinerary";
 import UniqueLoading from "@/components/ui/morph-loading";
 import { ShiningText } from "@/components/ui/shining-text";
 import { Textarea } from "../ui/textarea";
@@ -126,8 +128,10 @@ const AiArchitect = () => {
   const [showTimestamps, setShowTimestamps] = useState(true);
   const [activeArchitectTab, setActiveArchitectTab] = useState<'itinerary' | 'flights-hotels' | 'pricing' | 'settings'>('itinerary');
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
-  const [optimizationCount, setOptimizationCount] = useState(0);
   const [showPrices, setShowPrices] = useState(true);
+  const [isPricingDirty, setIsPricingDirty] = useState(false);
+  const [optimizationCount, setOptimizationCount] = useState(0);
+  const [currentTripId, setCurrentTripId] = useState<string | null>(null);
 
   const currencySymbol = useMemo(() => {
     const currency = pricing?.currency || agencySettings?.default_currency || 'INR';
@@ -197,6 +201,8 @@ const AiArchitect = () => {
       if (savedBuses) setBuses(JSON.parse(savedBuses));
       const savedPricing = localStorage.getItem("travelPricing");
       if (savedPricing) setPricing(JSON.parse(savedPricing));
+      const savedOptimizationCount = localStorage.getItem("optimizationCount");
+      if (savedOptimizationCount) setOptimizationCount(parseInt(savedOptimizationCount, 10));
     } catch (error) {
       console.error("Failed to load itinerary from local storage", error);
     }
@@ -223,39 +229,46 @@ const AiArchitect = () => {
 
 
 
-  // Save itinerary to localStorage whenever it changes
+  // Debounced Save to localStorage (Prevents lag on every state change)
   useEffect(() => {
-    try {
-      if (itinerary) {
-        localStorage.setItem("travelItinerary", JSON.stringify(itinerary));
-      } else {
-        localStorage.removeItem("travelItinerary");
-        localStorage.removeItem("travelMetadata");
-      }
-      if (tripMetadata) {
-        localStorage.setItem("travelMetadata", JSON.stringify(tripMetadata));
-      }
-    } catch (error) {
-      console.error("Failed to save itinerary to local storage", error);
-    }
-  }, [itinerary, tripMetadata]);
+    const saveTimer = setTimeout(() => {
+      try {
+        if (itinerary) {
+          localStorage.setItem("travelItinerary", JSON.stringify(itinerary));
+          localStorage.setItem("optimizationCount", optimizationCount.toString());
+        } else {
+          localStorage.removeItem("travelItinerary");
+          localStorage.removeItem("travelMetadata");
+          localStorage.removeItem("optimizationCount");
+        }
+        
+        if (tripMetadata) {
+          localStorage.setItem("travelMetadata", JSON.stringify(tripMetadata));
+        }
 
-  // Save hotels/flights to localStorage
-  useEffect(() => {
-    try {
-      localStorage.setItem("travelHotels", JSON.stringify(hotels));
-      localStorage.setItem("travelFlights", JSON.stringify(flights));
-      localStorage.setItem("travelCabs", JSON.stringify(cabs));
-      localStorage.setItem("travelBuses", JSON.stringify(buses));
-      if (pricing) {
-        localStorage.setItem("travelPricing", JSON.stringify(pricing));
-      } else {
-        localStorage.removeItem("travelPricing");
+        localStorage.setItem("travelHotels", JSON.stringify(hotels));
+        localStorage.setItem("travelFlights", JSON.stringify(flights));
+        localStorage.setItem("travelCabs", JSON.stringify(cabs));
+        localStorage.setItem("travelBuses", JSON.stringify(buses));
+        
+        if (pricing) {
+          localStorage.setItem("travelPricing", JSON.stringify(pricing));
+        } else {
+          localStorage.removeItem("travelPricing");
+        }
+        
+        if (selectedClientId !== "none") {
+          localStorage.setItem('draft_client_id', selectedClientId);
+        }
+        localStorage.setItem('draft_status', selectedStatus);
+
+      } catch (error) {
+        console.error("Failed to sync state to local storage", error);
       }
-    } catch (error) {
-      console.error("Failed to save hotels/flights/cabs/buses/pricing to local storage", error);
-    }
-  }, [hotels, flights, cabs, buses, pricing]);
+    }, 1000); // 1 second debounce
+
+    return () => clearTimeout(saveTimer);
+  }, [itinerary, tripMetadata, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus]);
 
   const baseCost = useMemo(() => {
     let cost = 0;
@@ -311,33 +324,32 @@ const AiArchitect = () => {
     setIsPreviewOpen(true);
   };
 
-  const handleSaveItinerary = async () => {
-    console.log("🔍 handleSaveItinerary called");
-
-    // Pre-validation checks
-    if (!user) {
-      console.warn("❌ No user found in auth context");
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Please sign in to save your itinerary.",
-      });
-      return;
-    }
-
-    if (!itinerary) {
-      console.warn("❌ No itinerary found");
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No itinerary to save. Please generate one first.",
-      });
-      return;
-    }
-
+  const handleSaveItinerary = async (pricingOverride?: PricingConfig) => {
+    console.log("🔍 handleSaveItinerary called", { pricingOverride: !!pricingOverride, currentTripId });
     setIsSaving(true);
 
     try {
+      // Pre-validation checks
+      if (!user) {
+        console.warn("❌ No user found in auth context");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Please sign in to save your itinerary.",
+        });
+        return;
+      }
+
+      if (!itinerary) {
+        console.warn("❌ No itinerary found");
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "No itinerary to save. Please generate one first.",
+        });
+        return;
+      }
+
       console.log("📝 Getting form values...");
       let values = form.getValues();
 
@@ -362,7 +374,6 @@ const AiArchitect = () => {
           title: "Error",
           description: "Please select a start date.",
         });
-        setIsSaving(false);
         return;
       }
 
@@ -373,7 +384,6 @@ const AiArchitect = () => {
           title: "Error",
           description: "Please select an end date.",
         });
-        setIsSaving(false);
         return;
       }
 
@@ -385,7 +395,6 @@ const AiArchitect = () => {
           title: "Error",
           description: "Please enter a starting location.",
         });
-        setIsSaving(false);
         return;
       }
 
@@ -396,7 +405,6 @@ const AiArchitect = () => {
           title: "Error",
           description: "Please enter destinations.",
         });
-        setIsSaving(false);
         return;
       }
 
@@ -422,7 +430,6 @@ const AiArchitect = () => {
           title: "Error",
           description: "Invalid start date. Please select a valid date.",
         });
-        setIsSaving(false);
         return;
       }
 
@@ -433,7 +440,6 @@ const AiArchitect = () => {
           title: "Error",
           description: "Invalid end date. Please select a valid date.",
         });
-        setIsSaving(false);
         return;
       }
 
@@ -444,7 +450,6 @@ const AiArchitect = () => {
           title: "Error",
           description: "End date must be after start date.",
         });
-        setIsSaving(false);
         return;
       }
 
@@ -463,7 +468,6 @@ const AiArchitect = () => {
           title: "Authentication Error",
           description: "Failed to verify session. Please try signing in again.",
         });
-        setIsSaving(false);
         return;
       }
 
@@ -474,14 +478,45 @@ const AiArchitect = () => {
           title: "Authentication Error",
           description: "Your session has expired. Please sign in again.",
         });
-        setIsSaving(false);
         return;
       }
 
       console.log("✅ Session verified. User ID:", session.user.id);
 
+      const pricingCfg = pricingOverride || pricing || {};
+      const markupValue = (pricingCfg as any).markupValue || 0;
+      const markupType = (pricingCfg as any).markupType || 'percentage';
+      const taxPct = (pricingCfg as any).taxPercentage || 0;
+      const paxInfo = {
+        adult: (pricingCfg as any).adultPax || 2,
+        child: (pricingCfg as any).childPax || 0,
+        infant: (pricingCfg as any).infantPax || 0,
+      };
+
+      // Calculate total base cost for client_price
+      let totalBaseCost = 0;
+      if (itinerary?.itinerary) {
+        itinerary.itinerary.forEach(day => {
+          if (day.timeline) day.timeline.forEach((step: any) => { if (step.cost) totalBaseCost += step.cost; });
+        });
+      }
+      hotels.forEach(h => {
+        totalBaseCost += (h.costAdult || 0) * paxInfo.adult + (h.costChild || 0) * paxInfo.child + (h.costInfant || 0) * paxInfo.infant;
+      });
+      flights.forEach(f => {
+        totalBaseCost += (f.costAdult || 0) * paxInfo.adult + (f.costChild || 0) * paxInfo.child + (f.costInfant || 0) * paxInfo.infant;
+      });
+      cabs.forEach(c => { if (c.totalCost) totalBaseCost += c.totalCost; });
+      buses.forEach(b => {
+        totalBaseCost += (b.costAdult || 0) * paxInfo.adult + (b.costChild || 0) * paxInfo.child + (b.costInfant || 0) * paxInfo.infant;
+      });
+
+      const markupAmount = markupType === 'percentage' ? (totalBaseCost * markupValue) / 100 : markupValue;
+      const costWithMarkup = totalBaseCost + markupAmount;
+      const clientPrice = costWithMarkup + (costWithMarkup * taxPct) / 100;
+
       const tripData = {
-        user_id: session.user.id, // Use the freshly verified session user ID
+        user_id: session.user.id,
         title: `Trip to ${values.destinations}`,
         description: values.mustInclude ? `Must include: ${values.mustInclude}` : null,
         starting_location: values.startingLocation,
@@ -492,46 +527,52 @@ const AiArchitect = () => {
         budget: values.budget || null,
         client_id: selectedClientId === "none" ? null : selectedClientId,
         status: selectedStatus,
-        itinerary_data: { ...itinerary, hotels, flights, cabs, buses, pricing },
+        itinerary_data: { ...itinerary, hotels, flights, cabs, buses, pricing: pricingCfg },
+        // New columns
+        client_price: clientPrice,
+        markup_value: markupValue,
+        markup_type: markupType,
+        tax_percentage: taxPct,
+        adult_pax: paxInfo.adult,
+        child_pax: paxInfo.child,
+        infant_pax: paxInfo.infant,
+        costing_type: (pricingCfg as any).costingType || 'automatic',
+        commission_rate: 0, // Default to 0, will be updated in Finance tab
+        commission_amount: 0,
       };
 
-      console.log("💾 Preparing to save to Supabase:", tripData);
-      console.log("🔐 User ID from session:", session.user.id);
-      console.log("📊 Access Token exists:", !!session.access_token);
+      let activeTripId = currentTripId;
 
-      // Insert with error handling — get the ID back for trip_line_items seeding
-      console.log("📤 Sending insert request to Supabase...");
-      const { data: insertedRows, error } = await supabase
-        .from("itineraries")
-        .insert([tripData])
-        .select("id");
+      if (activeTripId) {
+        console.log("update existing itinerary:", activeTripId);
+        const { error } = await supabase
+          .from("itineraries")
+          .update(tripData)
+          .eq("id", activeTripId);
 
-      console.log("📥 Supabase response received");
-      console.log("✅ Data:", insertedRows);
-      console.log("❌ Error:", error);
+        if (error) throw error;
 
-      if (error) {
-        console.error("🚨 Supabase error details:", {
-          code: error.code,
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-        });
-        toast({
-          variant: "destructive",
-          title: "Database Error",
-          description: `${error.message}${error.hint ? " - " + error.hint : ""}`,
-        });
-        setIsSaving(false);
-        return;
+        // Clear existing line items to prevent duplicates before re-seeding
+        console.log("🧹 Clearing old line items for:", activeTripId);
+        await supabase.from("trip_line_items").delete().eq("itinerary_id", activeTripId);
+      } else {
+        console.log("📤 Inserting new itinerary...");
+        const newTripId = generateTripId();
+        const { data: insertedRows, error } = await supabase
+          .from("itineraries")
+          .insert([{ ...tripData, trip_id: newTripId }])
+          .select("id");
+
+        if (error) throw error;
+        activeTripId = insertedRows?.[0]?.id || null;
+        if (activeTripId) setCurrentTripId(activeTripId);
       }
 
-      console.log("✅ Itinerary saved successfully!");
+      console.log("📥 Itinerary operation complete. Trip ID:", activeTripId);
 
       // ── Auto-seed trip_line_items so CRM Finance Sheet has data ──────────
-      const savedTripId = insertedRows?.[0]?.id;
-      if (savedTripId) {
-        const pricingCfg = pricing || {};
+      if (activeTripId) {
+        const pricingCfg = pricingOverride || pricing || {};
         const currency = (pricingCfg as any).currency || "INR";
         const markupPct = (pricingCfg as any).markupValue || 0;
         const lineItems: {
@@ -550,7 +591,7 @@ const AiArchitect = () => {
               day.timeline.forEach((step: any) => {
                 if (typeof step.cost === "number" && step.cost > 0) {
                   lineItems.push({
-                    itinerary_id: savedTripId,
+                    itinerary_id: activeTripId!,
                     title: step.details?.slice(0, 80) || `Day ${dayIdx + 1} Activity`,
                     category: "activity",
                     net_cost: step.cost,
@@ -564,20 +605,15 @@ const AiArchitect = () => {
         }
 
         // Hotels
-        const pax = {
-          adult: (pricingCfg as any).adultPax || 2,
-          child: (pricingCfg as any).childPax || 0,
-          infant: (pricingCfg as any).infantPax || 0,
-        };
         if (hotels.length > 0) {
           hotels.forEach((h: any) => {
             const cost =
-              (h.costAdult || 0) * pax.adult +
-              (h.costChild || 0) * pax.child +
-              (h.costInfant || 0) * pax.infant;
+              (h.costAdult || 0) * paxInfo.adult +
+              (h.costChild || 0) * paxInfo.child +
+              (h.costInfant || 0) * paxInfo.infant;
             if (cost > 0) {
               lineItems.push({
-                itinerary_id: savedTripId,
+                itinerary_id: activeTripId!,
                 title: h.hotelName || "Hotel Accommodation",
                 category: "hotel",
                 net_cost: cost,
@@ -592,12 +628,12 @@ const AiArchitect = () => {
         if (flights.length > 0) {
           flights.forEach((f: any) => {
             const cost =
-              (f.costAdult || 0) * pax.adult +
-              (f.costChild || 0) * pax.child +
-              (f.costInfant || 0) * pax.infant;
+              (f.costAdult || 0) * paxInfo.adult +
+              (f.costChild || 0) * paxInfo.child +
+              (f.costInfant || 0) * paxInfo.infant;
             if (cost > 0) {
               lineItems.push({
-                itinerary_id: savedTripId,
+                itinerary_id: activeTripId!,
                 title: `${f.departureAirport || "Dep"} → ${f.arrivalAirport || "Arr"} (${f.airline || f.flightNumber || "Flight"})`,
                 category: "flight",
                 net_cost: cost,
@@ -613,7 +649,7 @@ const AiArchitect = () => {
           cabs.forEach((c: CabInfo) => {
             if (c.totalCost && c.totalCost > 0) {
               lineItems.push({
-                itinerary_id: savedTripId,
+                itinerary_id: activeTripId!,
                 title: `Cab: ${c.route || "Local Travel"} (${c.vehicleType || "Cab"})`,
                 category: "transport",
                 net_cost: c.totalCost,
@@ -628,12 +664,12 @@ const AiArchitect = () => {
         if (buses.length > 0) {
           buses.forEach((b: BusInfo) => {
             const cost =
-              (b.costAdult || 0) * pax.adult +
-              (b.costChild || 0) * pax.child +
-              (b.costInfant || 0) * pax.infant;
+              (b.costAdult || 0) * paxInfo.adult +
+              (b.costChild || 0) * paxInfo.child +
+              (b.costInfant || 0) * paxInfo.infant;
             if (cost > 0) {
               lineItems.push({
-                itinerary_id: savedTripId,
+                itinerary_id: activeTripId!,
                 title: `Bus: ${b.route || "Travel"} (${b.busType || "Bus"})`,
                 category: "transport",
                 net_cost: cost,
@@ -651,7 +687,7 @@ const AiArchitect = () => {
           if (liError) {
             console.warn("⚠️ Failed to seed trip_line_items:", liError.message);
           } else {
-            console.log(`✅ Seeded ${lineItems.length} line items for trip ${savedTripId}`);
+            console.log(`✅ Seeded ${lineItems.length} line items`);
           }
         }
       }
@@ -660,35 +696,6 @@ const AiArchitect = () => {
         title: "Success!",
         description: "Your itinerary has been saved to your trips.",
       });
-
-      // Reset the form and clear itinerary from local state after successful save
-      form.reset({
-        startingLocation: "",
-        endingLocation: "",
-        startDate: undefined,
-        endDate: undefined,
-        destinations: "",
-        budget: undefined,
-        mustInclude: "",
-        avoid: "",
-        leisureTime: false,
-        leisureDay: undefined,
-        travelTimePreference: "no_preference",
-      });
-
-      console.log("🔄 Form reset complete");
-      setItinerary(null);
-      setTripMetadata(null);
-      setHotels([]);
-      setFlights([]);
-      setCabs([]);
-      setBuses([]);
-      setPricing(undefined);
-      setSelectedClientId("none");
-      setSelectedStatus("draft");
-      localStorage.removeItem('draft_client_id');
-      localStorage.removeItem('draft_status');
-      localStorage.removeItem('travelMetadata');
 
     } catch (error) {
       console.error("💥 Catch block error:", error);
@@ -700,9 +707,42 @@ const AiArchitect = () => {
         description: errorMessage,
       });
     } finally {
-      console.log("🏁 Finally block - setting isSaving to false");
       setIsSaving(false);
     }
+  };
+
+  const handleCreateNew = () => {
+    form.reset({
+      startingLocation: "",
+      endingLocation: "",
+      startDate: undefined,
+      endDate: undefined,
+      destinations: "",
+      budget: undefined,
+      mustInclude: "",
+      avoid: "",
+      leisureTime: false,
+      leisureDay: undefined,
+      travelTimePreference: "no_preference",
+    });
+
+    setItinerary(null);
+    setTripMetadata(null);
+    setHotels([]);
+    setFlights([]);
+    setCabs([]);
+    setBuses([]);
+    setPricing(undefined);
+    setCurrentTripId(null);
+    setSelectedClientId("none");
+    setSelectedStatus("draft");
+    setIsEditing(false);
+    setCurrentStep(0);
+    setOptimizationCount(0);
+    localStorage.removeItem('draft_client_id');
+    localStorage.removeItem('draft_status');
+    localStorage.removeItem('travelMetadata');
+    localStorage.removeItem('optimizationCount');
   };
 
 
@@ -1360,25 +1400,34 @@ const AiArchitect = () => {
               </button>
             </div>
 
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleDownloadPdf}
-                className="px-3 sm:px-5 py-2 sm:py-2.5 bg-white/5 border border-white/10 text-zinc-300 rounded-lg text-xs sm:text-sm font-semibold hover:bg-white/10 transition-all flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 min-h-[44px] sm:min-h-0"
-              >
-                <Eye className="w-4 h-4" />
-                <span className="hidden xs:inline">Preview</span>
-              </Button>
-              <Button
-                size="sm"
-                onClick={handleSaveItinerary}
-                disabled={isSaving}
-                className="px-3 sm:px-6 py-2 sm:py-2.5 aurora-gradient text-white rounded-lg text-xs sm:text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 border-none min-h-[44px] sm:min-h-0"
-              >
-                <Save className="w-4 h-4" />
-                {isSaving ? "Saving..." : "Save"}
-              </Button>
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCreateNew}
+                  className="px-3 sm:px-5 py-2 sm:py-2.5 bg-white/5 border border-white/10 text-zinc-300 rounded-lg text-xs sm:text-sm font-semibold hover:bg-white/10 transition-all flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 min-h-[44px] sm:min-h-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span className="hidden xs:inline">Create New</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleDownloadPdf}
+                  className="px-3 sm:px-5 py-2 sm:py-2.5 bg-white/5 border border-white/10 text-zinc-300 rounded-lg text-xs sm:text-sm font-semibold hover:bg-white/10 transition-all flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 min-h-[44px] sm:min-h-0"
+                >
+                  <Eye className="w-4 h-4" />
+                  <span className="hidden xs:inline">Preview</span>
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSaveItinerary}
+                  disabled={isSaving}
+                  className="px-3 sm:px-6 py-2 sm:py-2.5 aurora-gradient text-white rounded-lg text-xs sm:text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 border-none min-h-[44px] sm:min-h-0"
+                >
+                  <Save className="w-4 h-4" />
+                  {isSaving ? "Saving..." : "Save"}
+                </Button>
             </div>
           </div>
         </div>
@@ -1590,7 +1639,7 @@ const AiArchitect = () => {
                     {/* Tab Content - Timeline */}
                     {activeArchitectTab === 'itinerary' && (
                       <div className="relative rounded-xl sm:rounded-2xl border border-white/[0.06] p-2 sm:p-4 md:p-6 backdrop-blur-sm overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(10,10,11,0.9) 0%, rgba(18,18,20,0.95) 50%, rgba(10,10,11,0.9) 100%)' }}>
-                        <ItineraryTimeline
+                        <MemoizedItineraryTimeline
                           itinerary={itinerary?.itinerary || []}
                           isLoading={isGenerating}
                           editable={isEditing}
@@ -1612,7 +1661,7 @@ const AiArchitect = () => {
 
                     {/* Tab Content - Logistics (Hotels & Flights) */}
                     {activeArchitectTab === 'flights-hotels' && !isGenerating && (
-                      <HotelFlightEditor
+                      <MemoizedHotelFlightEditor
                         hotels={hotels}
                         flights={flights}
                         cabs={cabs}
@@ -1647,7 +1696,8 @@ const AiArchitect = () => {
                           } as any : undefined),
                         }}
                       >
-                        <PricingModule />
+                        <PricingSync onChange={setPricing} />
+                        <MemoizedPricingModule onSave={handleSaveItinerary} isSaving={isSaving} />
                       </ItineraryProvider>
                     )}
 
@@ -1912,5 +1962,24 @@ const AiArchitect = () => {
     </section>
   );
 };
+
+const PricingSync = React.memo(({ onChange }: { onChange: (pricing: PricingConfig) => void }) => {
+  const { pricing } = useItinerary();
+  const lastPricingRef = useRef<string>(JSON.stringify(pricing));
+  
+  useEffect(() => {
+    const currentPricingStr = JSON.stringify(pricing);
+    if (lastPricingRef.current !== currentPricingStr) {
+      onChange(pricing);
+      lastPricingRef.current = currentPricingStr;
+    }
+  }, [pricing, onChange]);
+  
+  return null;
+});
+
+const MemoizedItineraryTimeline = React.memo(ItineraryTimeline);
+const MemoizedHotelFlightEditor = React.memo(HotelFlightEditor);
+const MemoizedPricingModule = React.memo(PricingModule);
 
 export default AiArchitect;

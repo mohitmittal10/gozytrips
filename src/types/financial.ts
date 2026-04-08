@@ -2,7 +2,9 @@ import { Currency } from './pricing';
 
 // Financial record for a single trip
 export interface TripFinancial {
-    tripId: string;
+    id?: string;                 // Database primary key (UUID)
+    itineraryId: string;         // Link to itinerary
+    tripId: string;              // Human readable ID (e.g. GT-1001)
     clientId: string;
     clientName: string;
     tripTitle: string;
@@ -22,6 +24,15 @@ export interface TripFinancial {
     commissionRate: number;      // percentage
     commissionAmount: number;    // calculated
 
+    // Pricing Config (Promoted from JSON blob)
+    markupValue: number;
+    markupType: 'percentage' | 'flat';
+    taxPercentage: number;
+    adultPax: number;
+    childPax: number;
+    infantPax: number;
+    costingType: 'automatic' | 'manual';
+
     // Dates
     createdAt: string;
     updatedAt: string;
@@ -29,6 +40,7 @@ export interface TripFinancial {
 
 export interface Payment {
     id: string;
+    itineraryId: string;         // Link to itinerary
     amount: number;
     date: string;
     method: 'bank_transfer' | 'cash' | 'upi' | 'card' | 'other';
@@ -39,6 +51,7 @@ export interface Payment {
 
 export interface Expense {
     id: string;
+    itineraryId: string;         // Link to itinerary
     category: 'hotel' | 'flight' | 'transport' | 'activity' | 'visa' | 'insurance' | 'food' | 'guide' | 'other';
     vendor: string;
     description: string;
@@ -66,6 +79,12 @@ export interface InvoiceData {
     agentName: string;
     agentEmail: string;
     companyName: string;
+}
+
+// Helper to generate human-readable Trip ID (GT-XXXX)
+export function generateTripId(): string {
+    const sequence = Math.floor(1000 + Math.random() * 9000);
+    return `GT-${sequence}`;
 }
 
 // Helper to generate unique IDs

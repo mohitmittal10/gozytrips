@@ -9,6 +9,14 @@ export type PaymentMilestone = {
   dueDate: string; // e.g., "At booking", "15 days before departure"
 };
 
+export type ManualCostItem = {
+  id: string;
+  name: string;
+  amount: number;
+  type: "per-person" | "total";
+  category: "Flight" | "Hotel" | "Transport" | "Activity" | "Visa" | "Insurance" | "Other";
+};
+
 export type PricingConfig = {
   currency: Currency;
   markupType: 'percentage' | 'flat';
@@ -30,6 +38,10 @@ export type PricingConfig = {
   };
 
   milestones: PaymentMilestone[];
+
+  // Costing Mode
+  costingType: 'automatic' | 'manual';
+  manualOptions: ManualCostItem[];
 };
 
 export const defaultPricingConfig: PricingConfig = {
@@ -51,4 +63,6 @@ export const defaultPricingConfig: PricingConfig = {
     { id: '1', name: 'Advance', percentage: 30, dueDate: 'At booking' },
     { id: '2', name: 'Final Payment', percentage: 70, dueDate: '15 days before departure' },
   ],
+  costingType: 'automatic',
+  manualOptions: [],
 };

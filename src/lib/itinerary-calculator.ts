@@ -35,7 +35,24 @@ export function getCurrencySymbol(currency: Currency): string {
  *  - hotel costs (adult + child + infant)
  *  - flight costs (adult + child + infant)
  */
-export function calcBaseCost(state: Pick<ItineraryState, "itinerary" | "hotels" | "flights" | "cabs" | "buses">): number {
+export function calcBaseCost(state: Pick<ItineraryState, "itinerary" | "hotels" | "flights" | "cabs" | "buses" | "pricing">): number {
+  const { pricing } = state;
+
+  if (pricing?.costingType === "manual") {
+    let manualCost = 0;
+    const totalPax = (pricing.adultPax || 0) + (pricing.childPax || 0) + (pricing.infantPax || 0);
+    
+    for (const item of pricing.manualOptions || []) {
+      const amount = Number(item.amount) || 0;
+      if (item.type === "per-person") {
+        manualCost += amount * totalPax;
+      } else {
+        manualCost += amount;
+      }
+    }
+    return manualCost;
+  }
+
   let cost = 0;
 
   // Activity / timeline step costs

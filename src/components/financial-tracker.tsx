@@ -19,6 +19,7 @@ import {
     generateId, getCurrencySymbol, loadFinancialData, saveFinancialData,
 } from "@/types/financial";
 import type { Currency } from "@/types/pricing";
+import { createClient } from "@/lib/supabase/client";
 
 // Icons - using simple SVG to avoid lucide-react import issues
 const DollarIcon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
@@ -54,12 +55,160 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
     const [showAddPayment, setShowAddPayment] = useState(false);
     const [showAddExpense, setShowAddExpense] = useState(false);
     const [commissionRate, setCommissionRate] = useState(10);
+    const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
+    const supabase = createClient();
 
-    // Load financial data
+    // ── Data Loading & Migration ──────────────────────────────────────────
+    const fetchFinancials = async () => {
+        setIsLoading(true);
+        try {
+            // 1. Fetch all relevant itineraries for the user
+            const { data: itineraries, error: itError } = await supabase
+                .from("itineraries")
+                .select("*")
+                .order('created_at', { ascending: false });
+
+            if (itError) throw itError;
+
+            // 2. Fetch all payments and expenses
+            const { data: payments, error: pError } = await supabase.from("trip_payments").select("*");
+            const { data: expenses, error: eError } = await supabase.from("trip_expenses").select("*");
+
+            if (pError) throw pError;
+            if (eError) throw eError;
+
+            // 3. Map to TripFinancial interface
+            const mappedFinancials: TripFinancial[] = (itineraries || []).map(it => {
+                const itPayments: Payment[] = (payments || [])
+                    .filter(p => p.itinerary_id === it.id)
+                    .map(p => ({
+                        id: p.id,
+                        itineraryId: p.itinerary_id,
+                        amount: p.amount,
+                        date: p.date,
+                        method: p.method as any,
+                        type: p.type as any,
+                        reference: p.reference || "",
+                        notes: p.notes || "",
+                    }));
+
+                const itExpenses: Expense[] = (expenses || [])
+                    .filter(e => e.itinerary_id === it.id)
+                    .map(e => ({
+                        id: e.id,
+                        itineraryId: e.itinerary_id,
+                        category: e.category as any,
+                        vendor: e.vendor || "",
+                        description: e.description || "",
+                        amount: e.amount,
+                        date: e.date,
+                        isPaid: e.is_paid,
+                    }));
+
+                return {
+                    id: it.id,
+                    itineraryId: it.id,
+                    tripId: it.trip_id || `GT-${it.id.slice(0, 4).toUpperCase()}`,
+                    clientId: it.client_id || "",
+                    clientName: enrichedClients.find(c => c.id === it.client_id)?.name || "Unknown Client",
+                    tripTitle: it.title,
+                    destination: it.destinations,
+                    clientPrice: it.client_price || 0,
+                    currency: (it.itinerary_data?.pricing?.currency as Currency) || "INR",
+                    expenses: itExpenses,
+                    payments: itPayments,
+                    commissionRate: it.commission_rate || 0,
+                    commissionAmount: it.commission_amount || 0,
+                    markupValue: it.markup_value || 0,
+                    markupType: it.markup_type || 'percentage',
+                    taxPercentage: it.tax_percentage || 0,
+                    adultPax: it.adult_pax || 2,
+                    childPax: it.child_pax || 0,
+                    infantPax: it.infant_pax || 0,
+                    costingType: it.costing_type || 'automatic',
+                    createdAt: it.created_at,
+                    updatedAt: it.updated_at,
+                };
+            });
+
+            setFinancials(mappedFinancials);
+
+            // 4. Check for localStorage migration
+            const localData = loadFinancialData();
+            if (localData.length > 0) {
+                console.log("📦 Found legacy localStorage data. Starting migration...");
+                await migrateLocalStorageToSupabase(localData, mappedFinancials);
+            }
+
+        } catch (error) {
+            console.error("Error fetching financials:", error);
+            toast({ title: "Error", description: "Failed to load financial records.", variant: "destructive" });
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const migrateLocalStorageToSupabase = async (localData: TripFinancial[], dbData: TripFinancial[]) => {
+        let migrationCount = 0;
+        const dbItineraryIds = new Set(dbData.map(d => d.itineraryId));
+
+        for (const item of localData) {
+            // Only migrate if the itinerary exists in DB and doesn't have financial data yet
+            // We use tripId (GT-XXXX) to match if possible, or itineraryId
+            const matchingDbItem = dbData.find(d => d.itineraryId === item.itineraryId || d.tripId === item.tripId);
+            
+            if (matchingDbItem && matchingDbItem.payments.length === 0 && matchingDbItem.expenses.length === 0) {
+                // Migrate payments
+                if (item.payments.length > 0) {
+                    const payData = item.payments.map(p => ({
+                        itinerary_id: matchingDbItem.itineraryId,
+                        amount: p.amount,
+                        date: p.date,
+                        method: p.method,
+                        type: p.type,
+                        reference: p.reference,
+                        notes: p.notes
+                    }));
+                    await supabase.from("trip_payments").insert(payData);
+                }
+
+                // Migrate expenses
+                if (item.expenses.length > 0) {
+                    const expData = item.expenses.map(e => ({
+                        itinerary_id: matchingDbItem.itineraryId,
+                        category: e.category,
+                        vendor: e.vendor,
+                        description: e.description,
+                        amount: e.amount,
+                        date: e.date,
+                        is_paid: e.isPaid
+                    }));
+                    await supabase.from("trip_expenses").insert(expData);
+                }
+
+                // Update itinerary columns
+                await supabase.from("itineraries").update({
+                    commission_rate: item.commissionRate,
+                    commission_amount: item.commissionAmount,
+                    // We don't overwrite client_price if DB has one, but fallback if 0
+                    client_price: matchingDbItem.clientPrice || item.clientPrice
+                }).eq("id", matchingDbItem.itineraryId);
+
+                migrationCount++;
+            }
+        }
+
+        if (migrationCount > 0) {
+            toast({ title: "Migration Complete", description: `Successfully synced ${migrationCount} records from local storage.` });
+            localStorage.removeItem('crm_financial_data'); // Clear after successful migration
+            fetchFinancials(); // Reload from DB
+        }
+    };
+
     useEffect(() => {
-        setFinancials(loadFinancialData());
-    }, []);
+        fetchFinancials();
+    }, [enrichedClients]);
 
     // ── Helper: extract real cost from itinerary_data ──────────────────────
     const extractTripCost = (trip: any): number => {
@@ -120,75 +269,30 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
         return finalTotal > 0 ? finalTotal : (trip.budget || 0);
     };
 
-    // Auto-create financial records for trips that don't have one
-    useEffect(() => {
-        const existing = new Set(financials.map(f => f.tripId));
-        const newRecords: TripFinancial[] = [];
-        enrichedClients.forEach(client => {
-            client.allTrips.forEach((trip: any) => {
-                if (!existing.has(trip.id)) {
-                    const data = trip.itinerary_data || {};
-                    const tripCurrency = (data.pricing?.currency as Currency) || 'INR';
-                    const calculatedCost = extractTripCost(trip);
+    const updateFinancial = async (itineraryId: string, updates: Partial<TripFinancial>) => {
+        try {
+            // Map camelCase to snake_case for DB
+            const dbUpdates: any = {};
+            if (updates.commissionRate !== undefined) dbUpdates.commission_rate = updates.commissionRate;
+            if (updates.commissionAmount !== undefined) dbUpdates.commission_amount = updates.commissionAmount;
+            if (updates.clientPrice !== undefined) dbUpdates.client_price = updates.clientPrice;
+            if (updates.tripId !== undefined) dbUpdates.trip_id = updates.tripId;
 
-                    newRecords.push({
-                        tripId: trip.id,
-                        clientId: client.id,
-                        clientName: client.name,
-                        tripTitle: trip.title || `${trip.starting_location} Trip`,
-                        destination: trip.destinations || (trip.starting_location + (trip.ending_location ? ` → ${trip.ending_location}` : '')),
-                        clientPrice: calculatedCost,
-                        currency: tripCurrency,
-                        expenses: [],
-                        payments: [],
-                        commissionRate: commissionRate,
-                        commissionAmount: calculatedCost * (commissionRate / 100),
-                        createdAt: trip.created_at || new Date().toISOString(),
-                        updatedAt: new Date().toISOString(),
-                    });
-                }
-            });
-        });
-        if (newRecords.length > 0) {
-            const updated = [...financials, ...newRecords];
+            if (Object.keys(dbUpdates).length > 0) {
+                const { error } = await supabase.from("itineraries").update(dbUpdates).eq("id", itineraryId);
+                if (error) throw error;
+            }
+
+            // Sync local state
+            const updated = financials.map(f => f.itineraryId === itineraryId ? { ...f, ...updates, updatedAt: new Date().toISOString() } : f);
             setFinancials(updated);
-            saveFinancialData(updated);
-        }
-
-        // Also refresh stale records that have clientPrice = 0 (old cached data)
-        const tripMap = new Map<string, any>();
-        enrichedClients.forEach(c => c.allTrips.forEach((t: any) => tripMap.set(t.id, t)));
-
-        let didRefresh = false;
-        const refreshed = (newRecords.length > 0 ? [...financials, ...newRecords] : financials).map(fin => {
-            if (fin.clientPrice > 0) return fin;
-            const trip = tripMap.get(fin.tripId);
-            if (!trip) return fin;
-            const cost = extractTripCost(trip);
-            if (cost <= 0) return fin;
-            didRefresh = true;
-            const data = trip.itinerary_data || {};
-            return {
-                ...fin,
-                clientPrice: cost,
-                currency: (data.pricing?.currency as Currency) || fin.currency,
-                destination: trip.destinations || fin.destination,
-                commissionAmount: cost * (fin.commissionRate / 100),
-                updatedAt: new Date().toISOString(),
-            };
-        });
-        if (didRefresh) {
-            setFinancials(refreshed);
-            saveFinancialData(refreshed);
-        }
-    }, [enrichedClients]);
-
-    const updateFinancial = (tripId: string, updates: Partial<TripFinancial>) => {
-        const updated = financials.map(f => f.tripId === tripId ? { ...f, ...updates, updatedAt: new Date().toISOString() } : f);
-        setFinancials(updated);
-        saveFinancialData(updated);
-        if (selectedTripFin?.tripId === tripId) {
-            setSelectedTripFin(prev => prev ? { ...prev, ...updates } : null);
+            
+            if (selectedTripFin?.itineraryId === itineraryId) {
+                setSelectedTripFin(prev => prev ? { ...prev, ...updates } : null);
+            }
+        } catch (error) {
+            console.error("Error updating financial:", error);
+            toast({ title: "Error", description: "Failed to update record.", variant: "destructive" });
         }
     };
 
@@ -234,34 +338,72 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
         });
     }, [financials]);
 
-    const addPayment = (tripId: string, payment: Omit<Payment, 'id'>) => {
-        const fin = financials.find(f => f.tripId === tripId);
-        if (!fin) return;
-        const newPayment = { ...payment, id: generateId() };
-        updateFinancial(tripId, { payments: [...fin.payments, newPayment] });
-        toast({ title: 'Payment Recorded', description: `₹${payment.amount.toLocaleString()} payment recorded.` });
-        setShowAddPayment(false);
+    const addPayment = async (itineraryId: string, payment: Omit<Payment, 'id'>) => {
+        try {
+            const { data, error } = await supabase.from("trip_payments").insert([{
+                itinerary_id: itineraryId,
+                amount: payment.amount,
+                date: payment.date,
+                method: payment.method,
+                type: payment.type,
+                reference: payment.reference,
+                notes: payment.notes
+            }]).select();
+
+            if (error) throw error;
+
+            toast({ title: 'Payment Recorded', description: `₹${payment.amount.toLocaleString()} payment recorded.` });
+            setShowAddPayment(false);
+            fetchFinancials(); // Refresh all to keep stats synced
+        } catch (error) {
+            console.error("Error adding payment:", error);
+            toast({ title: "Error", description: "Failed to record payment.", variant: "destructive" });
+        }
     };
 
-    const deletePayment = (tripId: string, paymentId: string) => {
-        const fin = financials.find(f => f.tripId === tripId);
-        if (!fin) return;
-        updateFinancial(tripId, { payments: fin.payments.filter(p => p.id !== paymentId) });
+    const deletePayment = async (itineraryId: string, paymentId: string) => {
+        try {
+            const { error } = await supabase.from("trip_payments").delete().eq("id", paymentId);
+            if (error) throw error;
+            fetchFinancials();
+        } catch (error) {
+            console.error("Error deleting payment:", error);
+            toast({ title: "Error", description: "Failed to delete payment.", variant: "destructive" });
+        }
     };
 
-    const addExpense = (tripId: string, expense: Omit<Expense, 'id'>) => {
-        const fin = financials.find(f => f.tripId === tripId);
-        if (!fin) return;
-        const newExpense = { ...expense, id: generateId() };
-        updateFinancial(tripId, { expenses: [...fin.expenses, newExpense] });
-        toast({ title: 'Expense Added', description: `₹${expense.amount.toLocaleString()} expense recorded.` });
-        setShowAddExpense(false);
+    const addExpense = async (itineraryId: string, expense: Omit<Expense, 'id'>) => {
+        try {
+            const { data, error } = await supabase.from("trip_expenses").insert([{
+                itinerary_id: itineraryId,
+                category: expense.category,
+                vendor: expense.vendor,
+                description: expense.description,
+                amount: expense.amount,
+                date: expense.date,
+                is_paid: expense.isPaid
+            }]).select();
+
+            if (error) throw error;
+
+            toast({ title: 'Expense Added', description: `₹${expense.amount.toLocaleString()} expense recorded.` });
+            setShowAddExpense(false);
+            fetchFinancials();
+        } catch (error) {
+            console.error("Error adding expense:", error);
+            toast({ title: "Error", description: "Failed to record expense.", variant: "destructive" });
+        }
     };
 
-    const deleteExpense = (tripId: string, expenseId: string) => {
-        const fin = financials.find(f => f.tripId === tripId);
-        if (!fin) return;
-        updateFinancial(tripId, { expenses: fin.expenses.filter(e => e.id !== expenseId) });
+    const deleteExpense = async (itineraryId: string, expenseId: string) => {
+        try {
+            const { error } = await supabase.from("trip_expenses").delete().eq("id", expenseId);
+            if (error) throw error;
+            fetchFinancials();
+        } catch (error) {
+            console.error("Error deleting expense:", error);
+            toast({ title: "Error", description: "Failed to delete expense.", variant: "destructive" });
+        }
     };
 
     const generateInvoice = (fin: TripFinancial): InvoiceData => {
@@ -665,7 +807,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                                         const profit = fin.clientPrice - totalExp;
                                         const margin = fin.clientPrice > 0 ? (profit / fin.clientPrice * 100) : 0;
                                         return (
-                                            <tr key={fin.tripId} className="hover:bg-white/5">
+                                            <tr key={fin.itineraryId} className="hover:bg-white/5">
                                                 <td className="p-2">
                                                     <p className="text-gray-300">{fin.clientName}</p>
                                                     <p className="text-gray-600">{fin.tripTitle}</p>
@@ -742,7 +884,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                         <Button variant="outline" className="border-white/10 text-gray-400 hover:bg-white/10" onClick={() => setShowAddPayment(false)}>Cancel</Button>
                         <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => {
                             if (!selectedTripFin || !payAmt) return;
-                            addPayment(selectedTripFin.tripId, {
+                            addPayment(selectedTripFin.itineraryId, {
                                 amount: parseFloat(payAmt),
                                 date: new Date().toISOString(),
                                 method: payMethod,
@@ -801,13 +943,13 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                         <Button variant="outline" className="border-white/10 text-gray-400 hover:bg-white/10" onClick={() => setShowAddExpense(false)}>Cancel</Button>
                         <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => {
                             if (!selectedTripFin || !expAmt) return;
-                            addExpense(selectedTripFin.tripId, {
+                            addExpense(selectedTripFin.itineraryId, {
+                                amount: parseFloat(expAmt),
+                                date: new Date().toISOString(),
                                 category: expCat,
                                 vendor: expVendor,
                                 description: expDesc,
-                                amount: parseFloat(expAmt),
-                                date: new Date().toISOString(),
-                                isPaid: false,
+                                isPaid: true,
                             });
                         }}>Add Expense</Button>
                     </DialogFooter>
