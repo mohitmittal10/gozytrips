@@ -906,7 +906,7 @@ const AiArchitect = () => {
             <CardContent className="pt-6 sm:pt-8 px-4 sm:px-6">
               <Form {...form}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  onSubmit={form.handleSubmit((values) => onSubmit(values))}
                   className="space-y-8"
                   onKeyDown={(e) => {
                     if (
@@ -1421,7 +1421,7 @@ const AiArchitect = () => {
                 </Button>
                 <Button
                   size="sm"
-                  onClick={handleSaveItinerary}
+                  onClick={() => handleSaveItinerary()}
                   disabled={isSaving}
                   className="px-3 sm:px-6 py-2 sm:py-2.5 aurora-gradient text-white rounded-lg text-xs sm:text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 border-none min-h-[44px] sm:min-h-0"
                 >
@@ -1622,7 +1622,7 @@ const AiArchitect = () => {
                     {/* Itinerary Hero */}
                     <div className="relative rounded-xl sm:rounded-2xl overflow-hidden h-28 sm:h-36 md:h-40 shadow-xl group border border-white/10 mb-4 sm:mb-6">
                       <img
-                        src={itinerary.itinerary[0]?.imageUrl || "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=2000&auto=format&fit=crop"}
+                        src={(itinerary.itinerary[0] as any)?.imageUrl || "https://images.unsplash.com/photo-1544644181-1484b3fdfc62?q=80&w=2000&auto=format&fit=crop"}
                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 brightness-[0.5]"
                         alt="Destination"
                       />
