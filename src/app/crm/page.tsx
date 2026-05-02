@@ -95,6 +95,8 @@ import { FinanceView } from "./components/FinanceView";
 import { EnquiryView } from "./components/EnquiryView";
 import { EditItineraryView } from "./components/EditItineraryView";
 import { ClientProfileSheet } from "./components/ClientProfileSheet";
+import { TripsView } from "./components/TripsView";
+import { TripDetailSheet, type FlatTrip } from "./components/TripDetailSheet";
 
 
 // A combined type taking our client and adding the dynamic trip data
@@ -122,6 +124,9 @@ export default function CRMLitePage() {
 
     // View Client Sheet State
     const [selectedClient, setSelectedClient] = useState<EnrichedClient | null>(null);
+
+    // View Trip Sheet State (Trips tab)
+    const [selectedFlatTrip, setSelectedFlatTrip] = useState<FlatTrip | null>(null);
 
     const router = useRouter();
     const [deleting, setDeleting] = useState<string | null>(null);
@@ -654,6 +659,11 @@ export default function CRMLitePage() {
             });
         }
 
+        // Also update the flat trip sheet if open
+        if (selectedFlatTrip && selectedFlatTrip.id === tripId) {
+            setSelectedFlatTrip(prev => prev ? { ...prev, status: statusToSave } : null);
+        }
+
         try {
             await updateItineraryStatus(tripId, statusToSave, supabase, user.id, oldStatus);
 
@@ -675,7 +685,7 @@ export default function CRMLitePage() {
                 logAuditEvent(user.id, "STATUS_CHANGE", `Trip status changed to ${statusToSave}`, {
                     entityType: "itinerary",
                     entityId: tripId,
-                    metadata: { old_status: "unknown", new_status: statusToSave },
+                    metadata: { old_status: oldStatus, new_status: statusToSave },
                 });
             }
 
@@ -685,6 +695,16 @@ export default function CRMLitePage() {
             });
         } catch (err: any) {
             console.error("Failed to update status:", err);
+            // Revert optimistic update on failure
+            setEnrichedClients(prev => prev.map(c => {
+                if (c.id === clientId) {
+                    const revertedTrips = c.allTrips.map(t =>
+                        t.id === tripId ? { ...t, status: oldStatus } : t
+                    );
+                    return { ...c, latestStatus: oldStatus, allTrips: revertedTrips };
+                }
+                return c;
+            }));
             toast({
                 variant: "destructive",
                 title: "Error",
@@ -692,6 +712,20 @@ export default function CRMLitePage() {
             });
         }
     };
+
+    /**
+     * Status change handler for the Trips tab flat view — resolves clientId from enrichedClients.
+     */
+    const handleTripStatusChange = useCallback(async (tripId: string, newStatus: string) => {
+        const ownerClient = enrichedClients.find(c => c.allTrips.some(t => t.id === tripId));
+        if (!ownerClient) {
+            toast({ variant: "destructive", title: "Error", description: "Could not find the trip's client." });
+            return;
+        }
+        await handleStatusChange(ownerClient.id, tripId, newStatus);
+    }, [enrichedClients]);
+
+
 
     const handleAddClient = async () => {
         if (!newClientName.trim()) {
@@ -912,6 +946,14 @@ export default function CRMLitePage() {
             setIsRefreshing(false);
         }
     };
+
+    /**
+     * Duplicate handler that accepts a FlatTrip (used from TripDetailSheet).
+     * Defined after handleDuplicateTrip to avoid temporal dead zone.
+     */
+    const handleDuplicateFlatTrip = useCallback(async (flatTrip: FlatTrip) => {
+        await handleDuplicateTrip(flatTrip as unknown as SavedItinerary);
+    }, [handleDuplicateTrip]);
 
     const handleDownloadPdf = () => {
         if (!selectedTripForModal) return;
@@ -1322,7 +1364,6 @@ export default function CRMLitePage() {
                             )}
                             {activeTab === 'edit-itinerary' && (
                                 <EditItineraryView
-                                    enrichedClients={enrichedClients}
                                     itineraryStatuses={itineraryStatuses}
                                     setSelectedTripForModal={setSelectedTripForModal}
                                     setShowModal={setShowModal}
@@ -1577,14 +1618,18 @@ export default function CRMLitePage() {
                                             setSelectedClient={setSelectedClient}
                                             getAvatarColor={getAvatarColor}
                                         />
-                                    ) : (activeTab === 'trips' && tripsViewMode === 'kanban') ? (
-                                        <KanbanView
-                                             kanbanColumns={kanbanColumns}
-                                             itineraryStatuses={itineraryStatuses}
-                                             handleStatusChange={handleStatusChange}
-                                             setSelectedClient={setSelectedClient}
-                                             getAvatarColor={getAvatarColor}
-                                         />
+                                    ) : activeTab === 'trips' ? (
+                                        /* Trips tab: show individual trips, not clients */
+                                        <TripsView
+                                            enrichedClients={enrichedClients}
+                                            tripsPipelineFilter={tripsPipelineFilter}
+                                            searchQuery={searchQuery}
+                                            viewMode={tripsViewMode}
+                                            itineraryStatuses={itineraryStatuses}
+                                            loading={clientsLoading || isComputing}
+                                            onTripClick={setSelectedFlatTrip}
+                                            onStatusChange={handleTripStatusChange}
+                                        />
                                     ) : (
                                         <CRMTableView
                                             clients={paginatedClients}
@@ -1630,6 +1675,24 @@ export default function CRMLitePage() {
                 setSelectedTripForModal={setSelectedTripForModal}
                 getAvatarColor={getAvatarColor}
                 getTripCost={getTripCost}
+            />
+
+            {/* Trip Detail Sheet — opened from Trips tab */}
+            <TripDetailSheet
+                trip={selectedFlatTrip}
+                onClose={() => setSelectedFlatTrip(null)}
+                itineraryStatuses={itineraryStatuses}
+                onStatusChange={handleTripStatusChange}
+                onViewItinerary={(flatTrip) => {
+                    setSelectedTripForModal(flatTrip as unknown as SavedItinerary);
+                    setShowModal(true);
+                }}
+                onDuplicate={handleDuplicateFlatTrip}
+                onDelete={async (tripId) => {
+                    await handleDeleteTrip(tripId);
+                    setSelectedFlatTrip(null);
+                }}
+                deleting={deleting}
             />
 
             {/* Modal for viewing itinerary */}
