@@ -1,6 +1,8 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
+import { getCurrencySymbol } from "@/types/financial";
+import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";
 import { useClients } from "@/lib/hooks/use-clients";
@@ -171,7 +173,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                                             {trip.budget && (
                                                 <div className="flex items-center gap-2 text-foreground/80">
                                                     <DollarSign className="w-4 h-4 text-green-400" />
-                                                    <span>₹{trip.budget} per day</span>
+                                                    <span>{getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}{trip.budget} per day</span>
                                                 </div>
                                             )}
                                         </div>
@@ -203,8 +205,8 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                 isOpen={isEditorOpen}
                 onOpenChange={setIsEditorOpen}
                 trip={selectedItinerary}
-                onSave={async (id, data, status) => {
-                    await updateItineraryData(id, data, status);
+                onSave={async (id, data, status, theme) => {
+                    await updateItineraryData(id, data, status, theme);
                     setIsEditorOpen(false);
                 }}
                 clientName={client?.name}

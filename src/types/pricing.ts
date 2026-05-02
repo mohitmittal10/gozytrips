@@ -1,6 +1,6 @@
-export type Currency = 'USD' | 'EUR' | 'GBP' | 'INR' | 'AUD' | 'CAD' | 'SGD' | 'AED';
-
-export type PricingTier = 'Standard' | 'Premium' | 'Luxury';
+export type Currency = string; // e.g. 'USD' | 'EUR' | 'GBP' | 'INR' | 'AUD' | 'CAD' | 'SGD' | 'AED'
+export const DEFAULT_CURRENCY: Currency = 'INR';
+export type PricingTier = string; // e.g. 'Standard' | 'Premium' | 'Luxury'
 
 export type PaymentMilestone = {
   id: string;
@@ -14,7 +14,7 @@ export type ManualCostItem = {
   name: string;
   amount: number;
   type: "per-person" | "total";
-  category: "Flight" | "Hotel" | "Transport" | "Activity" | "Visa" | "Insurance" | "Other";
+  category: string; // e.g. "Flight" | "Hotel" | "Transport" | "Activity" | "Visa" | "Insurance" | "Other";
 };
 
 export type PricingConfig = {
@@ -45,7 +45,7 @@ export type PricingConfig = {
 };
 
 export const defaultPricingConfig: PricingConfig = {
-  currency: 'INR',
+  currency: DEFAULT_CURRENCY,
   markupType: 'percentage',
   markupValue: 15,
   taxPercentage: 0,

@@ -25,7 +25,7 @@ export function useBaseCostCalculator({
     let cost = 0;
 
     // Activities cost
-    if (itinerary) {
+    if (itinerary && Array.isArray(itinerary.itinerary)) {
       itinerary.itinerary.forEach((day: any) => {
         if (day.timeline) {
           day.timeline.forEach((step: any) => {

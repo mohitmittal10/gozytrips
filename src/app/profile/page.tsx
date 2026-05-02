@@ -14,6 +14,7 @@ import Header from '@/components/layout/header';
 import Footer from '@/components/layout/footer';
 import { logAuditEvent } from '@/lib/audit-logger';
 import BackupSettings from '@/components/settings/backup-settings';
+import { useFormDraft } from '@/hooks/use-form-draft';
 
 export default function ProfilePage() {
   const { user, userProfile, refreshProfile } = useAuth();
@@ -28,6 +29,41 @@ export default function ProfilePage() {
   const [businessPhone, setBusinessPhone] = useState('');
   const [website, setWebsite] = useState('');
   const [brandColor, setBrandColor] = useState('#0066cc');
+
+  const { saveDraft, clearDraft } = useFormDraft(
+    "profile",
+    {
+      fullName: userProfile?.full_name || '',
+      bio: userProfile?.bio || '',
+      companyName: userProfile?.company_name || '',
+      businessEmail: userProfile?.business_email || '',
+      businessPhone: userProfile?.business_phone || '',
+      website: userProfile?.website || '',
+      brandColor: userProfile?.brand_color || '#0066cc',
+    },
+    (draftData) => {
+      if (draftData.fullName !== undefined) setFullName(draftData.fullName);
+      if (draftData.bio !== undefined) setBio(draftData.bio);
+      if (draftData.companyName !== undefined) setCompanyName(draftData.companyName);
+      if (draftData.businessEmail !== undefined) setBusinessEmail(draftData.businessEmail);
+      if (draftData.businessPhone !== undefined) setBusinessPhone(draftData.businessPhone);
+      if (draftData.website !== undefined) setWebsite(draftData.website);
+      if (draftData.brandColor !== undefined) setBrandColor(draftData.brandColor);
+    }
+  );
+
+  // Save draft whenever any field changes
+  useEffect(() => {
+    saveDraft({
+      fullName,
+      bio,
+      companyName,
+      businessEmail,
+      businessPhone,
+      website,
+      brandColor,
+    });
+  }, [fullName, bio, companyName, businessEmail, businessPhone, website, brandColor, saveDraft]);
 
   useEffect(() => {
     if (userProfile) {
@@ -70,6 +106,7 @@ export default function ProfilePage() {
         return;
       }
 
+      await clearDraft();
       await refreshProfile();
 
       // Audit log profile update (fire-and-forget)

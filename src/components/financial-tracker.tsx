@@ -16,10 +16,40 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
     type TripFinancial, type Payment, type Expense, type InvoiceData,
-    generateId, getCurrencySymbol, loadFinancialData, saveFinancialData,
+    getCurrencySymbol,
 } from "@/types/financial";
 import type { Currency } from "@/types/pricing";
+import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/contexts/auth-context";
+
+// Fallback defaults if DB is not populated
+const DEFAULT_PAYMENT_METHODS = [
+    { value: 'bank_transfer', label: 'Bank Transfer' },
+    { value: 'upi', label: 'UPI' },
+    { value: 'card', label: 'Card' },
+    { value: 'cash', label: 'Cash' },
+    { value: 'other', label: 'Other' },
+];
+
+const DEFAULT_PAYMENT_TYPES = [
+    { value: 'advance', label: 'Advance' },
+    { value: 'partial', label: 'Partial' },
+    { value: 'balance', label: 'Balance' },
+    { value: 'final', label: 'Final' },
+];
+
+const DEFAULT_EXPENSE_CATEGORIES = [
+    { value: 'hotel', label: 'Hotel' },
+    { value: 'flight', label: 'Flight' },
+    { value: 'transport', label: 'Transport' },
+    { value: 'activity', label: 'Activity' },
+    { value: 'visa', label: 'Visa' },
+    { value: 'insurance', label: 'Insurance' },
+    { value: 'food', label: 'Food' },
+    { value: 'guide', label: 'Guide' },
+    { value: 'other', label: 'Other' },
+];
 
 // Icons - using simple SVG to avoid lucide-react import issues
 const DollarIcon = () => <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
@@ -57,7 +87,42 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
     const [commissionRate, setCommissionRate] = useState(10);
     const [isLoading, setIsLoading] = useState(true);
     const { toast } = useToast();
+    const { agencySettings } = useAuth();
     const supabase = createClient();
+    const [referenceOptions, setReferenceOptions] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchOptions = async () => {
+            const { data } = await supabase
+                .from('reference_options')
+                .select('*')
+                .eq('is_active', true)
+                .order('sort_order');
+            if (data) setReferenceOptions(data);
+        };
+        fetchOptions();
+    }, []);
+
+    useEffect(() => {
+        if (agencySettings?.default_commission_rate !== undefined && agencySettings?.default_commission_rate !== null) {
+            setCommissionRate(Number(agencySettings.default_commission_rate));
+        }
+    }, [agencySettings]);
+
+    const paymentMethods = useMemo(() => {
+        const opts = referenceOptions.filter(o => o.scope === 'payment_method');
+        return opts.length > 0 ? opts.map(o => ({ value: o.value, label: o.label })) : DEFAULT_PAYMENT_METHODS;
+    }, [referenceOptions]);
+
+    const paymentTypes = useMemo(() => {
+        const opts = referenceOptions.filter(o => o.scope === 'payment_type');
+        return opts.length > 0 ? opts.map(o => ({ value: o.value, label: o.label })) : DEFAULT_PAYMENT_TYPES;
+    }, [referenceOptions]);
+
+    const expenseCategories = useMemo(() => {
+        const opts = referenceOptions.filter(o => o.scope === 'expense_category');
+        return opts.length > 0 ? opts.map(o => ({ value: o.value, label: o.label })) : DEFAULT_EXPENSE_CATEGORIES;
+    }, [referenceOptions]);
 
     // ── Data Loading & Migration ──────────────────────────────────────────
     const fetchFinancials = async () => {
@@ -109,13 +174,13 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                 return {
                     id: it.id,
                     itineraryId: it.id,
-                    tripId: it.trip_id || `GT-${it.id.slice(0, 4).toUpperCase()}`,
+                    tripId: it.trip_id || `GT-PENDING`,
                     clientId: it.client_id || "",
                     clientName: enrichedClients.find(c => c.id === it.client_id)?.name || "Unknown Client",
                     tripTitle: it.title,
                     destination: it.destinations,
                     clientPrice: it.client_price || 0,
-                    currency: (it.itinerary_data?.pricing?.currency as Currency) || "INR",
+                    currency: (it.currency as Currency) || (agencySettings as any)?.default_currency || DEFAULT_CURRENCY,
                     expenses: itExpenses,
                     payments: itPayments,
                     commissionRate: it.commission_rate || 0,
@@ -134,13 +199,6 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
 
             setFinancials(mappedFinancials);
 
-            // 4. Check for localStorage migration
-            const localData = loadFinancialData();
-            if (localData.length > 0) {
-                console.log("📦 Found legacy localStorage data. Starting migration...");
-                await migrateLocalStorageToSupabase(localData, mappedFinancials);
-            }
-
         } catch (error) {
             console.error("Error fetching financials:", error);
             toast({ title: "Error", description: "Failed to load financial records.", variant: "destructive" });
@@ -149,62 +207,6 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
         }
     };
 
-    const migrateLocalStorageToSupabase = async (localData: TripFinancial[], dbData: TripFinancial[]) => {
-        let migrationCount = 0;
-        const dbItineraryIds = new Set(dbData.map(d => d.itineraryId));
-
-        for (const item of localData) {
-            // Only migrate if the itinerary exists in DB and doesn't have financial data yet
-            // We use tripId (GT-XXXX) to match if possible, or itineraryId
-            const matchingDbItem = dbData.find(d => d.itineraryId === item.itineraryId || d.tripId === item.tripId);
-            
-            if (matchingDbItem && matchingDbItem.payments.length === 0 && matchingDbItem.expenses.length === 0) {
-                // Migrate payments
-                if (item.payments.length > 0) {
-                    const payData = item.payments.map(p => ({
-                        itinerary_id: matchingDbItem.itineraryId,
-                        amount: p.amount,
-                        date: p.date,
-                        method: p.method,
-                        type: p.type,
-                        reference: p.reference,
-                        notes: p.notes
-                    }));
-                    await supabase.from("trip_payments").insert(payData);
-                }
-
-                // Migrate expenses
-                if (item.expenses.length > 0) {
-                    const expData = item.expenses.map(e => ({
-                        itinerary_id: matchingDbItem.itineraryId,
-                        category: e.category,
-                        vendor: e.vendor,
-                        description: e.description,
-                        amount: e.amount,
-                        date: e.date,
-                        is_paid: e.isPaid
-                    }));
-                    await supabase.from("trip_expenses").insert(expData);
-                }
-
-                // Update itinerary columns
-                await supabase.from("itineraries").update({
-                    commission_rate: item.commissionRate,
-                    commission_amount: item.commissionAmount,
-                    // We don't overwrite client_price if DB has one, but fallback if 0
-                    client_price: matchingDbItem.clientPrice || item.clientPrice
-                }).eq("id", matchingDbItem.itineraryId);
-
-                migrationCount++;
-            }
-        }
-
-        if (migrationCount > 0) {
-            toast({ title: "Migration Complete", description: `Successfully synced ${migrationCount} records from local storage.` });
-            localStorage.removeItem('crm_financial_data'); // Clear after successful migration
-            fetchFinancials(); // Reload from DB
-        }
-    };
 
     useEffect(() => {
         fetchFinancials();
@@ -352,7 +354,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
 
             if (error) throw error;
 
-            toast({ title: 'Payment Recorded', description: `₹${payment.amount.toLocaleString()} payment recorded.` });
+            toast({ title: 'Payment Recorded', description: `Recorded payment of ${cs()} ${payment.amount.toLocaleString()}.` });
             setShowAddPayment(false);
             fetchFinancials(); // Refresh all to keep stats synced
         } catch (error) {
@@ -386,7 +388,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
 
             if (error) throw error;
 
-            toast({ title: 'Expense Added', description: `₹${expense.amount.toLocaleString()} expense recorded.` });
+            toast({ title: 'Expense Added', description: `Recorded expense of ${cs()} ${expense.amount.toLocaleString()}.` });
             setShowAddExpense(false);
             fetchFinancials();
         } catch (error) {
@@ -445,30 +447,36 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
 
     // Payment form state
     const [payAmt, setPayAmt] = useState('');
-    const [payMethod, setPayMethod] = useState<Payment['method']>('bank_transfer');
-    const [payType, setPayType] = useState<Payment['type']>('advance');
+    const [payMethod, setPayMethod] = useState<string>('bank_transfer');
+    const [payType, setPayType] = useState<string>('advance');
     const [payRef, setPayRef] = useState('');
     const [payNotes, setPayNotes] = useState('');
 
     // Expense form state
     const [expAmt, setExpAmt] = useState('');
-    const [expCat, setExpCat] = useState<Expense['category']>('hotel');
+    const [expCat, setExpCat] = useState<string>('hotel');
     const [expVendor, setExpVendor] = useState('');
     const [expDesc, setExpDesc] = useState('');
 
     const resetPaymentForm = () => { setPayAmt(''); setPayMethod('bank_transfer'); setPayType('advance'); setPayRef(''); setPayNotes(''); };
     const resetExpenseForm = () => { setExpAmt(''); setExpCat('hotel'); setExpVendor(''); setExpDesc(''); };
 
-    const cs = (currency: Currency = 'INR') => getCurrencySymbol(currency);
+    useEffect(() => {
+        if (paymentMethods.length > 0 && !payMethod) setPayMethod(paymentMethods[0].value);
+        if (paymentTypes.length > 0 && !payType) setPayType(paymentTypes[0].value);
+        if (expenseCategories.length > 0 && !expCat) setExpCat(expenseCategories[0].value);
+    }, [paymentMethods, paymentTypes, expenseCategories, payMethod, payType, expCat]);
+
+    const cs = (currency?: Currency) => getCurrencySymbol(currency || (agencySettings as any)?.default_currency || DEFAULT_CURRENCY);
 
     return (
         <div className="space-y-6">
             {/* Summary Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
-                    { label: 'Total Revenue', value: `₹${stats.totalRevenue.toLocaleString()}`, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20' },
-                    { label: 'Payments Received', value: `₹${stats.totalPaid.toLocaleString()}`, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
-                    { label: 'Pending Amount', value: `₹${stats.totalPending.toLocaleString()}`, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
+                    { label: 'Total Revenue', value: `${cs()} ${stats.totalRevenue.toLocaleString()}`, color: 'text-green-400', bg: 'bg-green-500/10 border-green-500/20' },
+                    { label: 'Payments Received', value: `${cs()} ${stats.totalPaid.toLocaleString()}`, color: 'text-blue-400', bg: 'bg-blue-500/10 border-blue-500/20' },
+                    { label: 'Pending Amount', value: `${cs()} ${stats.totalPending.toLocaleString()}`, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
                     { label: 'Profit Margin', value: `${stats.profitMargin.toFixed(1)}%`, color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/20' },
                 ].map(card => (
                     <div key={card.label} className={`p-4 rounded-xl border ${card.bg}`}>
@@ -503,7 +511,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                         <h3 className="text-sm font-semibold text-gray-300">Payment Tracking</h3>
                     </div>
                     <div className="space-y-3">
-                        {financials.filter(f => true).map(fin => {
+                        {financials.map(fin => {
                             const totalPaid = fin.payments.reduce((s, p) => s + p.amount, 0);
                             const paidPct = fin.clientPrice > 0 ? (totalPaid / fin.clientPrice * 100) : 0;
                             return (
@@ -540,7 +548,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-green-400 font-medium">{cs(fin.currency)}{p.amount.toLocaleString()}</span>
                                                         <span className="text-gray-600">{new Date(p.date).toLocaleDateString()}</span>
-                                                        <button onClick={() => deletePayment(fin.tripId, p.id)} className="text-gray-600 hover:text-red-400 transition-colors"><TrashIcon /></button>
+                                                        <button onClick={() => deletePayment(fin.itineraryId, p.id)} className="text-gray-600 hover:text-red-400 transition-colors"><TrashIcon /></button>
                                                     </div>
                                                 </div>
                                             ))}
@@ -557,7 +565,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                                 </div>
                             );
                         })}
-                        {financials.filter(f => true).length === 0 && (
+                        {financials.length === 0 && (
                             <div className="text-center py-12 text-gray-500 text-sm">No active trips found. Start organizing a trip to track payments.</div>
                         )}
                     </div>
@@ -569,10 +577,10 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h3 className="text-sm font-semibold text-gray-300">Expense Tracking</h3>
-                        <p className="text-xs text-gray-500">Total: ₹{stats.totalExpenses.toLocaleString()}</p>
+                        <p className="text-xs text-gray-500">Total: {cs()} {stats.totalExpenses.toLocaleString()}</p>
                     </div>
                     <div className="space-y-3">
-                        {financials.filter(f => true).map(fin => {
+                        {financials.map(fin => {
                             const totalExp = fin.expenses.reduce((s, e) => s + e.amount, 0);
                             const margin = fin.clientPrice > 0 ? ((fin.clientPrice - totalExp) / fin.clientPrice * 100) : 0;
                             return (
@@ -600,7 +608,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                                                     </div>
                                                     <div className="flex items-center gap-2">
                                                         <span className="text-red-400 font-medium">{cs(fin.currency)}{e.amount.toLocaleString()}</span>
-                                                        <button onClick={() => deleteExpense(fin.tripId, e.id)} className="text-gray-600 hover:text-red-400 transition-colors"><TrashIcon /></button>
+                                                        <button onClick={() => deleteExpense(fin.itineraryId, e.id)} className="text-gray-600 hover:text-red-400 transition-colors"><TrashIcon /></button>
                                                     </div>
                                                 </div>
                                             ))}
@@ -637,7 +645,6 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                                     // Update all trip commission rates
                                     const updated = financials.map(f => ({ ...f, commissionRate: rate, commissionAmount: f.clientPrice * (rate / 100) }));
                                     setFinancials(updated);
-                                    saveFinancialData(updated);
                                 }}
                                 className="w-16 h-7 text-xs bg-white/5 border-white/10 text-white text-center"
                             />
@@ -647,7 +654,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                     <div className="bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-4 flex items-center justify-between">
                         <div>
                             <p className="text-xs text-gray-400">Total Commission Earned</p>
-                            <p className="text-2xl font-bold text-purple-400">₹{stats.totalCommission.toLocaleString()}</p>
+                            <p className="text-2xl font-bold text-purple-400">{cs()} {stats.totalCommission.toLocaleString()}</p>
                         </div>
                         <DollarIcon />
                     </div>
@@ -663,7 +670,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
-                                {financials.filter(f => true).map(fin => (
+                                {financials.map(fin => (
                                     <tr key={fin.tripId} className="hover:bg-white/5 transition-colors">
                                         <td className="p-3 text-gray-300">{fin.clientName}</td>
                                         <td className="p-3 text-gray-500">{fin.tripTitle}</td>
@@ -674,7 +681,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                                                 value={fin.commissionRate}
                                                 onChange={e => {
                                                     const rate = parseFloat(e.target.value) || 0;
-                                                    updateFinancial(fin.tripId, { commissionRate: rate, commissionAmount: fin.clientPrice * (rate / 100) });
+                                                    updateFinancial(fin.itineraryId, { commissionRate: rate, commissionAmount: fin.clientPrice * (rate / 100) });
                                                 }}
                                                 className="w-14 h-6 text-[11px] bg-white/5 border-white/10 text-white text-center inline-block"
                                             />
@@ -694,7 +701,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                 <div className="space-y-4">
                     <h3 className="text-sm font-semibold text-gray-300">Invoice Generation</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {financials.filter(f => true).map(fin => {
+                        {financials.map(fin => {
                             const totalPaid = fin.payments.reduce((s, p) => s + p.amount, 0);
                             const balance = fin.clientPrice - totalPaid;
                             return (
@@ -705,7 +712,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                                             <p className="text-xs text-gray-500">{fin.tripTitle}</p>
                                         </div>
                                         <Badge variant="secondary" className={cn("text-[10px] border-0", balance <= 0 ? "bg-green-500/10 text-green-400" : "bg-amber-500/10 text-amber-400")}>
-                                            {balance <= 0 ? "Paid" : `₹${balance.toLocaleString()} due`}
+                                            {balance <= 0 ? "Paid" : `${cs()} ${balance.toLocaleString()} due`}
                                         </Badge>
                                     </div>
                                     <div className="grid grid-cols-3 gap-2 text-center">
@@ -727,7 +734,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                                         size="sm"
                                         className="h-7 text-xs border-white/10 bg-transparent text-gray-400 hover:bg-white/10 w-full"
                                         onClick={() => {
-                                            if (onOpenFinances) onOpenFinances(fin.tripId);
+                                            if (onOpenFinances) onOpenFinances(fin.itineraryId);
                                         }}
                                     >
                                         <PrintIcon /> <span className="ml-1">Manage Finances & Invoice</span>
@@ -748,12 +755,12 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                             <p className="text-[10px] text-gray-500 uppercase tracking-wider">Net Profit</p>
                             <p className={cn("text-lg font-bold mt-1", stats.netProfit >= 0 ? "text-green-400" : "text-red-400")}>
-                                ₹{stats.netProfit.toLocaleString()}
+                                {cs()} {stats.netProfit.toLocaleString()}
                             </p>
                         </div>
                         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                             <p className="text-[10px] text-gray-500 uppercase tracking-wider">Total Commissions</p>
-                            <p className="text-lg font-bold mt-1 text-purple-400">₹{stats.totalCommission.toLocaleString()}</p>
+                            <p className="text-lg font-bold mt-1 text-purple-400">{cs()} {stats.totalCommission.toLocaleString()}</p>
                         </div>
                         <div className="bg-white/5 border border-white/10 rounded-xl p-4">
                             <p className="text-[10px] text-gray-500 uppercase tracking-wider">Active Trips</p>
@@ -772,9 +779,9 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                                 return (
                                     <div key={m.month} className="flex flex-col items-center gap-1 h-full justify-end">
                                         <div className="w-full flex gap-0.5 h-full items-end justify-center">
-                                            <div className="w-3 bg-blue-500/60 rounded-t" style={{ height: `${(m.revenue / maxVal * 100)}%`, minHeight: m.revenue > 0 ? '4px' : '0' }} title={`Revenue: ₹${m.revenue.toLocaleString()}`} />
-                                            <div className="w-3 bg-red-500/60 rounded-t" style={{ height: `${(m.expenses / maxVal * 100)}%`, minHeight: m.expenses > 0 ? '4px' : '0' }} title={`Expenses: ₹${m.expenses.toLocaleString()}`} />
-                                            <div className="w-3 bg-green-500/60 rounded-t" style={{ height: `${(m.payments / maxVal * 100)}%`, minHeight: m.payments > 0 ? '4px' : '0' }} title={`Payments: ₹${m.payments.toLocaleString()}`} />
+                                            <div className="w-3 bg-blue-500/60 rounded-t" style={{ height: `${(m.revenue / maxVal * 100)}%`, minHeight: m.revenue > 0 ? '4px' : '0' }} title={`Revenue: ${cs()} ${m.revenue.toLocaleString()}`} />
+                                            <div className="w-3 bg-red-500/60 rounded-t" style={{ height: `${(m.expenses / maxVal * 100)}%`, minHeight: m.expenses > 0 ? '4px' : '0' }} title={`Expenses: ${cs()} ${m.expenses.toLocaleString()}`} />
+                                            <div className="w-3 bg-green-500/60 rounded-t" style={{ height: `${(m.payments / maxVal * 100)}%`, minHeight: m.payments > 0 ? '4px' : '0' }} title={`Payments: ${cs()} ${m.payments.toLocaleString()}`} />
                                         </div>
                                         <span className="text-[10px] text-gray-500">{m.month}</span>
                                     </div>
@@ -802,7 +809,7 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
-                                    {financials.filter(f => true).map(fin => {
+                                    {financials.map(fin => {
                                         const totalExp = fin.expenses.reduce((s, e) => s + e.amount, 0);
                                         const profit = fin.clientPrice - totalExp;
                                         const margin = fin.clientPrice > 0 ? (profit / fin.clientPrice * 100) : 0;
@@ -842,32 +849,29 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                     <div className="space-y-4 py-2">
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <Label className="text-xs text-gray-400 mb-1">Amount (₹)</Label>
+                                <Label className="text-xs text-gray-400 mb-1">Amount ({cs(selectedTripFin?.currency)})</Label>
                                 <Input type="number" value={payAmt} onChange={e => setPayAmt(e.target.value)} className="bg-white/5 border-white/10 text-white" placeholder="0" />
                             </div>
                             <div>
                                 <Label className="text-xs text-gray-400 mb-1">Type</Label>
-                                <Select value={payType} onValueChange={(v: Payment['type']) => setPayType(v)}>
+                                <Select value={payType} onValueChange={(v: string) => setPayType(v)}>
                                     <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="advance">Advance</SelectItem>
-                                        <SelectItem value="partial">Partial</SelectItem>
-                                        <SelectItem value="balance">Balance</SelectItem>
-                                        <SelectItem value="final">Final</SelectItem>
+                                        {paymentTypes.map(pt => (
+                                            <SelectItem key={pt.value} value={pt.value}>{pt.label}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                         </div>
                         <div>
                             <Label className="text-xs text-gray-400 mb-1">Payment Method</Label>
-                            <Select value={payMethod} onValueChange={(v: Payment['method']) => setPayMethod(v)}>
+                            <Select value={payMethod} onValueChange={(v: string) => setPayMethod(v)}>
                                 <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                                    <SelectItem value="upi">UPI</SelectItem>
-                                    <SelectItem value="card">Card</SelectItem>
-                                    <SelectItem value="cash">Cash</SelectItem>
-                                    <SelectItem value="other">Other</SelectItem>
+                                    {paymentMethods.map(pm => (
+                                        <SelectItem key={pm.value} value={pm.value}>{pm.label}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -885,10 +889,11 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                         <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => {
                             if (!selectedTripFin || !payAmt) return;
                             addPayment(selectedTripFin.itineraryId, {
+                                itineraryId: selectedTripFin.itineraryId,
                                 amount: parseFloat(payAmt),
                                 date: new Date().toISOString(),
-                                method: payMethod,
-                                type: payType,
+                                method: payMethod as any,
+                                type: payType as any,
                                 reference: payRef,
                                 notes: payNotes,
                             });
@@ -909,23 +914,17 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                     <div className="space-y-4 py-2">
                         <div className="grid grid-cols-2 gap-3">
                             <div>
-                                <Label className="text-xs text-gray-400 mb-1">Amount (₹)</Label>
+                                <Label className="text-xs text-gray-400 mb-1">Amount ({cs(selectedTripFin?.currency)})</Label>
                                 <Input type="number" value={expAmt} onChange={e => setExpAmt(e.target.value)} className="bg-white/5 border-white/10 text-white" placeholder="0" />
                             </div>
                             <div>
                                 <Label className="text-xs text-gray-400 mb-1">Category</Label>
-                                <Select value={expCat} onValueChange={(v: Expense['category']) => setExpCat(v)}>
+                                <Select value={expCat} onValueChange={(v: string) => setExpCat(v)}>
                                     <SelectTrigger className="bg-white/5 border-white/10 text-white"><SelectValue /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="hotel">Hotel</SelectItem>
-                                        <SelectItem value="flight">Flight</SelectItem>
-                                        <SelectItem value="transport">Transport</SelectItem>
-                                        <SelectItem value="activity">Activity</SelectItem>
-                                        <SelectItem value="visa">Visa</SelectItem>
-                                        <SelectItem value="insurance">Insurance</SelectItem>
-                                        <SelectItem value="food">Food</SelectItem>
-                                        <SelectItem value="guide">Guide</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
+                                        {expenseCategories.map(ec => (
+                                            <SelectItem key={ec.value} value={ec.value}>{ec.label}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -944,9 +943,10 @@ export default function FinancialTracker({ enrichedClients, userEmail, userName,
                         <Button className="bg-purple-600 hover:bg-purple-700" onClick={() => {
                             if (!selectedTripFin || !expAmt) return;
                             addExpense(selectedTripFin.itineraryId, {
+                                itineraryId: selectedTripFin.itineraryId,
                                 amount: parseFloat(expAmt),
                                 date: new Date().toISOString(),
-                                category: expCat,
+                                category: expCat as any,
                                 vendor: expVendor,
                                 description: expDesc,
                                 isPaid: true,

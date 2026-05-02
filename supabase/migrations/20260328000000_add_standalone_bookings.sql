@@ -1,9 +1,18 @@
 -- Create ENUM types for Standalone Bookings
-CREATE TYPE booking_service_type AS ENUM ('flight', 'cab', 'bus', 'train', 'hotel');
-CREATE TYPE booking_status AS ENUM ('draft', 'quoted', 'confirmed', 'cancelled');
+DO $$ BEGIN
+    CREATE TYPE booking_service_type AS ENUM ('flight', 'cab', 'bus', 'train', 'hotel');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE booking_status AS ENUM ('draft', 'quoted', 'confirmed', 'cancelled');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Create Standalone Bookings Table
-CREATE TABLE standalone_bookings (
+CREATE TABLE IF NOT EXISTS standalone_bookings (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES auth.users(id) NOT NULL,
     client_id UUID REFERENCES clients(id) ON DELETE SET NULL,
@@ -18,7 +27,7 @@ CREATE TABLE standalone_bookings (
     -- Financials linked to this specific booking
     net_cost NUMERIC(10,2) DEFAULT 0,
     markup_percentage NUMERIC(5,2) DEFAULT 0,
-    currency VARCHAR(3) DEFAULT 'USD',
+    currency VARCHAR(3) DEFAULT 'INR',
     
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -27,22 +36,38 @@ CREATE TABLE standalone_bookings (
 -- RLS Policies
 ALTER TABLE standalone_bookings ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view their own standalone bookings"
-    ON standalone_bookings FOR SELECT
-    USING (auth.uid() = user_id);
+DO $$ BEGIN
+    CREATE POLICY "Users can view their own standalone bookings"
+        ON standalone_bookings FOR SELECT
+        USING (auth.uid() = user_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Users can create their own standalone bookings"
-    ON standalone_bookings FOR INSERT
-    WITH CHECK (auth.uid() = user_id);
+DO $$ BEGIN
+    CREATE POLICY "Users can create their own standalone bookings"
+        ON standalone_bookings FOR INSERT
+        WITH CHECK (auth.uid() = user_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Users can update their own standalone bookings"
-    ON standalone_bookings FOR UPDATE
-    USING (auth.uid() = user_id)
-    WITH CHECK (auth.uid() = user_id);
+DO $$ BEGIN
+    CREATE POLICY "Users can update their own standalone bookings"
+        ON standalone_bookings FOR UPDATE
+        USING (auth.uid() = user_id)
+        WITH CHECK (auth.uid() = user_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
-CREATE POLICY "Users can delete their own standalone bookings"
-    ON standalone_bookings FOR DELETE
-    USING (auth.uid() = user_id);
+DO $$ BEGIN
+    CREATE POLICY "Users can delete their own standalone bookings"
+        ON standalone_bookings FOR DELETE
+        USING (auth.uid() = user_id);
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
 
 -- Triggers
 CREATE OR REPLACE FUNCTION update_standalone_bookings_updated_at()
@@ -53,6 +78,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_standalone_bookings_updated_at ON standalone_bookings;
 CREATE TRIGGER update_standalone_bookings_updated_at
     BEFORE UPDATE ON standalone_bookings
     FOR EACH ROW

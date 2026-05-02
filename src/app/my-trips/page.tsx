@@ -26,6 +26,8 @@ import {
 } from "@/components/ui/select";
 import { TripCard } from '@/components/trip-card';
 import { FinancesSheet } from '@/components/finances-sheet';
+import { getCurrencySymbol } from '@/types/financial';
+import { useReferenceOptions } from '@/hooks/use-reference-options';
 
 interface SavedItinerary {
   id: string;
@@ -45,7 +47,8 @@ interface SavedItinerary {
 }
 
 export default function MyTripsPage() {
-  const { user, userProfile, loading: authLoading } = useAuth();
+  const { user, userProfile, agencySettings, loading: authLoading } = useAuth();
+  const currencySymbol = getCurrencySymbol((agencySettings as any)?.default_currency || DEFAULT_CURRENCY);
   const supabase = createClient();
   const { toast } = useToast();
   const [trips, setTrips] = useState<SavedItinerary[]>([]);
@@ -59,6 +62,8 @@ export default function MyTripsPage() {
   const [showFavouritesOnly, setShowFavouritesOnly] = useState(false);
   const router = useRouter();
   const { clients } = useClients();
+  const { userPreferences } = useAuth();
+  const { options: themeOptions } = useReferenceOptions("pdf_theme");
 
   useEffect(() => {
     // Don't do anything while auth is still loading
@@ -71,6 +76,20 @@ export default function MyTripsPage() {
       setLoading(false);
     }
   }, [user, authLoading]);
+
+  // Sync with user preferences
+  useEffect(() => {
+    if (userPreferences) {
+      if (userPreferences.default_pdf_theme) {
+        setSelectedTheme(userPreferences.default_pdf_theme as PdfTheme);
+      }
+      if (userPreferences.my_trips_preferences?.showFavouritesOnly !== undefined) {
+        setShowFavouritesOnly(!!userPreferences.my_trips_preferences.showFavouritesOnly);
+      }
+    }
+  }, [userPreferences]);
+
+  const { updatePreferences } = useAuth();
 
   const fetchTrips = async (retryCount = 0) => {
     if (!user) return;
@@ -183,43 +202,50 @@ export default function MyTripsPage() {
 
   const handleDuplicateTrip = async (trip: SavedItinerary) => {
     try {
-      // 1. Set the draft variables in local storage
-      const { hotels, flights, pricing, ...coreItinerary } = trip.itinerary_data as any;
-      localStorage.setItem('travelItinerary', JSON.stringify(coreItinerary));
-      if (hotels) localStorage.setItem('travelHotels', JSON.stringify(hotels));
-      if (flights) localStorage.setItem('travelFlights', JSON.stringify(flights));
-      if (pricing) localStorage.setItem('travelPricing', JSON.stringify(pricing));
+      setLoading(true);
+      
+      const { data: newTrip, error } = await supabase
+        .from('itineraries')
+        .insert([{
+          user_id: user?.id,
+          title: `Copy of ${trip.title}`,
+          itinerary_data: trip.itinerary_data,
+          status: 'draft',
+          client_id: null,
+          trip_id: `DRF-${Date.now()}`,
+          draft_source_itinerary_id: trip.id,
+          // Copy metadata/preferences if they exist
+          generation_preferences: (trip as any).generation_preferences || {},
+          selected_theme: (trip as any).selected_theme || 'classic',
+          show_timestamps: (trip as any).show_timestamps ?? true,
+          show_prices: (trip as any).show_prices ?? true
+        }])
+        .select()
+        .single();
 
-      localStorage.removeItem('draft_client_id'); // Reset CRM fields for the copy
-      localStorage.setItem('draft_status', 'draft');
+      if (error) throw error;
 
       toast({
-        title: 'Duplicating Trip',
+        title: 'Success',
         description: 'Opening a copy in the AI Architect...',
       });
 
-      router.push('/ai-architect');
-    } catch (error) {
+      router.push(`/ai-architect?itineraryId=${newTrip.id}`);
+    } catch (error: any) {
       console.error(error);
       toast({
         title: 'Error',
-        description: 'Failed to duplicate trip',
+        description: error.message || 'Failed to duplicate trip',
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleDownloadPdf = () => {
     if (!selectedTrip) return;
     setIsPreviewOpen(true);
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
   };
 
   return (
@@ -243,14 +269,30 @@ export default function MyTripsPage() {
           <div className="flex mb-6 space-x-3">
             <Button
               variant="outline"
-              onClick={() => setShowFavouritesOnly(false)}
+              onClick={async () => {
+                setShowFavouritesOnly(false);
+                await updatePreferences({
+                  my_trips_preferences: {
+                    ...(userPreferences?.my_trips_preferences as any || {}),
+                    showFavouritesOnly: false
+                  }
+                });
+              }}
               className={`glass-button rounded-full px-6 ${!showFavouritesOnly ? 'bg-primary/20 hover:bg-primary/30 text-primary border-primary/50' : 'border-white/10 hover:bg-white/5'}`}
             >
               All Trips
             </Button>
             <Button
               variant="outline"
-              onClick={() => setShowFavouritesOnly(true)}
+              onClick={async () => {
+                setShowFavouritesOnly(true);
+                await updatePreferences({
+                  my_trips_preferences: {
+                    ...(userPreferences?.my_trips_preferences as any || {}),
+                    showFavouritesOnly: true
+                  }
+                });
+              }}
               className={`glass-button rounded-full px-6 gap-2 ${showFavouritesOnly ? 'bg-pink-500/20 hover:bg-pink-500/30 text-pink-500 border-pink-500/50' : 'border-white/10 hover:bg-white/5'}`}
             >
               <Heart className="w-4 h-4" fill={showFavouritesOnly ? "currentColor" : "none"} />
@@ -315,6 +357,7 @@ export default function MyTripsPage() {
                 key={trip.id}
                 trip={trip as any}
                 clients={clients}
+                agencySettings={agencySettings}
                 onToggleFavourite={handleToggleFavourite}
                 onDuplicate={handleDuplicateTrip}
                 onView={(trip) => {
@@ -341,16 +384,39 @@ export default function MyTripsPage() {
             <DialogTitle>{selectedTrip?.title}</DialogTitle>
             <DialogDescription>{selectedTrip?.description}</DialogDescription>
             <div className="flex items-center gap-4 mt-4">
-              <Select defaultValue="classic" onValueChange={(value) => setSelectedTheme(value as PdfTheme)}>
+              <Select 
+                value={selectedTheme} 
+                onValueChange={async (value) => {
+                  const newTheme = value as PdfTheme;
+                  setSelectedTheme(newTheme);
+                  // Update global preference
+                  await updatePreferences({ default_pdf_theme: newTheme });
+                  // Update individual trip theme
+                  if (selectedTrip) {
+                    await supabase
+                      .from('itineraries')
+                      .update({ selected_theme: newTheme })
+                      .eq('id', selectedTrip.id);
+                  }
+                }}
+              >
                 <SelectTrigger className="w-[180px]">
                   <SelectValue placeholder="Select PDF Format" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="classic">Classic (Default)</SelectItem>
-                  <SelectItem value="editorial">Editorial (Magazine)</SelectItem>
-                  <SelectItem value="minimalist">Minimalist</SelectItem>
-                  <SelectItem value="dark">Dark Mode</SelectItem>
-                  <SelectItem value="corporate">Corporate</SelectItem>
+                  {themeOptions.length > 0 ? (
+                    themeOptions.map(opt => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))
+                  ) : (
+                    <>
+                      <SelectItem value="classic">Classic (Default)</SelectItem>
+                      <SelectItem value="editorial">Editorial (Magazine)</SelectItem>
+                      <SelectItem value="minimalist">Minimalist</SelectItem>
+                      <SelectItem value="dark">Dark Mode</SelectItem>
+                      <SelectItem value="corporate">Corporate</SelectItem>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
               <Button
@@ -370,6 +436,7 @@ export default function MyTripsPage() {
                 showDecorations={false}
                 hotels={(selectedTrip.itinerary_data as any)?.hotels || []}
                 flights={(selectedTrip.itinerary_data as any)?.flights || []}
+                currency={(selectedTrip.itinerary_data as any)?.pricing?.currency}
               />
             </div>
           )}
@@ -382,10 +449,12 @@ export default function MyTripsPage() {
               itinerary: selectedTrip?.itinerary_data,
               title: selectedTrip?.title,
               userProfile: userProfile,
+              agencySettings: agencySettings,
               hotels: (selectedTrip?.itinerary_data as any)?.hotels || [],
               flights: (selectedTrip?.itinerary_data as any)?.flights || [],
             }}
             initialTheme={selectedTheme}
+            itineraryId={selectedTrip?.id}
             filename={`${selectedTrip?.title || 'Itinerary'}.pdf`}
           />
         </DialogContent>

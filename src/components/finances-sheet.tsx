@@ -11,6 +11,18 @@ import { useTripFinances } from '@/lib/hooks/use-trip-finances';
 import { SavedItinerary } from './trip-card';
 import { Trash2, ExternalLink, Plus, Loader } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { createClient } from '@/lib/supabase/client';
+import { useAuth } from '@/contexts/auth-context';
+import { getCurrencySymbol } from '@/types/financial';
+import { DEFAULT_CURRENCY } from '@/types/pricing';
+
+const DEFAULT_EXPENSE_CATEGORIES = [
+  { value: 'hotel', label: 'Accommodation' },
+  { value: 'flight', label: 'Flight' },
+  { value: 'activity', label: 'Activity' },
+  { value: 'transport', label: 'Transport' },
+  { value: 'fee', label: 'Fee/Other' },
+];
 
 interface FinancesSheetProps {
   trip: SavedItinerary | null;
@@ -24,8 +36,31 @@ export function FinancesSheet({ trip, isOpen, onOpenChange }: FinancesSheetProps
   const [newTitle, setNewTitle] = useState('');
   const [newCategory, setNewCategory] = useState('hotel');
   const [newNetCost, setNewNetCost] = useState('');
-  const [newMarkup, setNewMarkup] = useState('10');
+  const { agencySettings } = useAuth();
+  const [newMarkup, setNewMarkup] = useState((agencySettings as any)?.default_markup_value?.toString() || '10');
   const { toast } = useToast();
+  const supabase = React.useMemo(() => createClient(), []);
+  const [referenceOptions, setReferenceOptions] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    const fetchOptions = async () => {
+      const { data } = await supabase
+        .from('reference_options')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+      if (data) setReferenceOptions(data);
+    };
+    fetchOptions();
+  }, [supabase]);
+
+  const categories = React.useMemo(() => {
+    const opts = referenceOptions.filter(opt => opt.scope === 'expense_category');
+    return opts.length > 0 ? opts.map(opt => ({ value: opt.value, label: opt.label })) : DEFAULT_EXPENSE_CATEGORIES;
+  }, [referenceOptions]);
+
+  const tripCurrency = trip?.currency || (agencySettings as any)?.default_currency || DEFAULT_CURRENCY;
+  const currencySymbol = getCurrencySymbol(tripCurrency as any);
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +73,7 @@ export function FinancesSheet({ trip, isOpen, onOpenChange }: FinancesSheetProps
         category: newCategory,
         net_cost: Number(newNetCost),
         markup_percentage: Number(newMarkup),
-        currency: 'INR',
+        currency: tripCurrency,
       });
       setNewTitle('');
       setNewNetCost('');
@@ -77,15 +112,15 @@ export function FinancesSheet({ trip, isOpen, onOpenChange }: FinancesSheetProps
         <div className="grid grid-cols-3 gap-4 mt-6">
           <div className="bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col items-center justify-center">
             <span className="text-sm text-muted-foreground">Total Net</span>
-            <span className="text-xl font-bold">₹{metrics.totalNet.toFixed(2)}</span>
+            <span className="text-xl font-bold">{currencySymbol}{metrics.totalNet.toFixed(2)}</span>
           </div>
           <div className="bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col items-center justify-center">
             <span className="text-sm text-green-400">Est. Profit</span>
-            <span className="text-xl font-bold text-green-400">₹{metrics.totalMarkupAmount.toFixed(2)}</span>
+            <span className="text-xl font-bold text-green-400">{currencySymbol}{metrics.totalMarkupAmount.toFixed(2)}</span>
           </div>
           <div className="bg-white/5 border border-white/10 p-4 rounded-xl flex flex-col items-center justify-center">
             <span className="text-sm text-muted-foreground">Client Gross</span>
-            <span className="text-xl font-bold">₹{metrics.totalGross.toFixed(2)}</span>
+            <span className="text-xl font-bold">{currencySymbol}{metrics.totalGross.toFixed(2)}</span>
           </div>
         </div>
 
@@ -129,9 +164,9 @@ export function FinancesSheet({ trip, isOpen, onOpenChange }: FinancesSheetProps
                     return (
                       <TableRow key={item.id} className="border-white/5">
                         <TableCell className="font-medium">{item.title} <span className="block text-xs text-muted-foreground capitalize">{item.category}</span></TableCell>
-                        <TableCell className="text-right">₹{Number(item.net_cost).toFixed(2)}</TableCell>
+                        <TableCell className="text-right">{currencySymbol}{Number(item.net_cost).toFixed(2)}</TableCell>
                         <TableCell className="text-right">{item.markup_percentage}%</TableCell>
-                        <TableCell className="text-right font-semibold">₹{gross.toFixed(2)}</TableCell>
+                        <TableCell className="text-right font-semibold">{currencySymbol}{gross.toFixed(2)}</TableCell>
                         <TableCell>
                           <Button
                             variant="ghost"
@@ -164,16 +199,14 @@ export function FinancesSheet({ trip, isOpen, onOpenChange }: FinancesSheetProps
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="hotel">Accommodation</SelectItem>
-                    <SelectItem value="flight">Flight</SelectItem>
-                    <SelectItem value="activity">Activity</SelectItem>
-                    <SelectItem value="transport">Transport</SelectItem>
-                    <SelectItem value="fee">Fee/Other</SelectItem>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-1">
-                <Label>Net Cost (₹)</Label>
+                <Label>Net Cost ({currencySymbol})</Label>
                 <Input required type="number" min="0" step="0.01" value={newNetCost} onChange={(e) => setNewNetCost(e.target.value)} placeholder="0.00" className="bg-background/50" />
               </div>
               <div className="space-y-1">

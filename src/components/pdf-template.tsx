@@ -2,6 +2,8 @@ import React from 'react';
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
 import type { HotelInfo, FlightInfo } from '@/components/hotel-flight-editor';
 import type { PricingConfig } from '@/types/pricing';
+import { getCurrencySymbol } from '@/lib/itinerary-calculator';
+import { DEFAULT_CURRENCY } from '@/types/pricing';
 
 export type PdfTheme = 'classic' | 'editorial' | 'minimalist' | 'dark' | 'corporate';
 
@@ -9,6 +11,7 @@ export interface PdfTemplateProps {
     itinerary: TravelItineraryOutput | null | undefined;
     title?: string;
     userProfile?: any;
+    agencySettings?: any;
     theme?: PdfTheme;
     hotels?: HotelInfo[];
     flights?: FlightInfo[];
@@ -17,10 +20,10 @@ export interface PdfTemplateProps {
 }
 
 /* ───────── shared helpers ───────── */
-const getAgentInfo = (userProfile: any) => ({
+const getAgentInfo = (userProfile: any, agencySettings?: any) => ({
     primaryColor: userProfile?.brand_color || "#a855f7",
-    agentName: userProfile?.full_name || "Your Travel Architect",
-    companyName: userProfile?.company_name || "OdysseyLuxe",
+    agentName: userProfile?.full_name || agencySettings?.brand_name || "Your Travel Architect",
+    companyName: userProfile?.company_name || agencySettings?.brand_name || "OdysseyLuxe",
     agentPhone: userProfile?.business_phone || "",
     agentEmail: userProfile?.business_email || "",
     agentWebsite: userProfile?.website || "",
@@ -48,13 +51,17 @@ const formatTitleCase = (str: string) => {
     return str.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
 };
 
-const formatCurrency = (val: string | number) => {
+const formatCurrency = (val: string | number, currencyCode: string = 'INR') => {
     if (!val) return "0";
     const numMatch = String(val).match(/[\d,.]+/);
     if (!numMatch) return "0";
     const numStr = numMatch[0].replace(/,/g, '');
     const num = parseFloat(numStr);
-    return isNaN(num) ? "0" : num.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+    return isNaN(num) ? "0" : num.toLocaleString('en-IN', { 
+        style: 'currency', 
+        currency: currencyCode, 
+        maximumFractionDigits: 0 
+    }).replace(/[A-Z]{3}/, '').trim(); // Remove ISO code if it fails to find symbol
 };
 
 const formatDistance = (dist: string | number) => {
@@ -68,8 +75,11 @@ const formatDate = (dateStr: string) => {
     return dateStr.replace(/^DAY\s*\d+/i, '').replace(/^-/, '').trim();
 };
 
-const formatMoneyWithDecimals = (amount: number) => {
-    return amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const formatMoneyWithDecimals = (amount: number, currencyCode: string = 'INR') => {
+    return amount.toLocaleString('en-IN', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+    });
 };
 
 const formatPlural = (count: number, singular: string, plural: string) => {
@@ -255,7 +265,7 @@ const ClassicTheme = ({ itinerary, title, agent }: ThemeProps) => (
                     </div>
                     <div style={{ flex: 1, borderRadius: "12px", padding: "20px", borderLeft: "4px solid #ec4899", ...glassStyles }}>
                         <h3 style={{ margin: "0 0 5px 0", fontSize: "14px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px" }}>Total Budget</h3>
-                        <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>₹{getTotalBudget(itinerary).toLocaleString()}</p>
+                        <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>{getCurrencySymbol(itinerary.pricing?.currency || DEFAULT_CURRENCY)}{getTotalBudget(itinerary).toLocaleString()}</p>
                     </div>
                 </div>
 
@@ -286,8 +296,8 @@ const ClassicTheme = ({ itinerary, title, agent }: ThemeProps) => (
                         </div>
                     ))}
                     <div style={{ marginTop: "18px", paddingTop: "15px", borderTop: "1px solid rgba(255,255,255,0.4)", display: "flex", gap: "20px", fontSize: "13px", color: "#64748b", fontWeight: 500, pageBreakInside: "avoid", breakInside: "avoid" }}>
-                        <div>🏃‍♂️ Distance: {formatDistance(day.dailyStats?.walkingDistance)} km</div>
-                        <div>💰 Budget: ₹{formatCurrency(day.dailyStats?.totalCost)}</div>
+                        <div>🏃‍♂️ Distance: {formatDistance((day.dailyStats as any)?.walkingDistance)} km</div>
+                        <div>💰 Budget: {getCurrencySymbol(itinerary.pricing?.currency || DEFAULT_CURRENCY)}{formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</div>
                     </div>
                 </div>
             </div>
@@ -348,7 +358,7 @@ const EditorialTheme = ({ itinerary, title, agent }: ThemeProps) => {
                         </div>
                         <div style={{ width: "1px", background: "#ddd" }} />
                         <div>
-                            <p style={{ fontSize: "36px", fontWeight: "normal", color: gold, margin: "0 0 5px 0", fontStyle: "italic" }}>₹{getTotalBudget(itinerary).toLocaleString()}</p>
+                            <p style={{ fontSize: "36px", fontWeight: "normal", color: gold, margin: "0 0 5px 0", fontStyle: "italic" }}>{getCurrencySymbol(itinerary.pricing?.currency || DEFAULT_CURRENCY)}{getTotalBudget(itinerary).toLocaleString()}</p>
                             <p style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "3px", color: "#999", fontFamily: "'Helvetica Neue', sans-serif", margin: 0 }}>Estimated Budget</p>
                         </div>
                         <div style={{ width: "1px", background: "#ddd" }} />
@@ -382,8 +392,8 @@ const EditorialTheme = ({ itinerary, title, agent }: ThemeProps) => {
                     ))}
 
                     <div style={{ display: "flex", gap: "30px", marginTop: "15px", fontSize: "12px", color: "#999", fontFamily: "'Helvetica Neue', sans-serif", pageBreakInside: "avoid" }}>
-                        {day.dailyStats?.walkingDistance && <span>{formatDistance(day.dailyStats?.walkingDistance)} km walking</span>}
-                        {day.dailyStats?.totalCost && <span>Est. ₹{formatCurrency(day.dailyStats?.totalCost)}</span>}
+                        {(day.dailyStats as any)?.walkingDistance && <span>{formatDistance((day.dailyStats as any).walkingDistance)} km walking</span>}
+                        {day.dailyStats?.totalCost && <span>Est. {getCurrencySymbol(itinerary.pricing?.currency || DEFAULT_CURRENCY)}{formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>}
                     </div>
                 </div>
             ))}
@@ -438,7 +448,7 @@ const MinimalistTheme = ({ itinerary, title, agent }: ThemeProps) => {
                     <div style={{ display: "flex", gap: "16px", marginBottom: "35px", pageBreakInside: "avoid" }}>
                         {[
                             { label: "Duration", value: `${itinerary.itinerary.length} Days` },
-                            { label: "Est. Budget", value: `₹${getTotalBudget(itinerary).toLocaleString()}` },
+                            { label: "Est. Budget", value: `${getCurrencySymbol(itinerary.pricing?.currency || DEFAULT_CURRENCY)}${getTotalBudget(itinerary).toLocaleString()}` },
                             { label: "Activities", value: `${totalActivities}+` },
                         ].map((stat, i) => (
                             <div key={i} style={{ flex: 1, padding: "18px 20px", borderTop: `3px solid ${accent}`, background: "#f8f9fa" }}>
@@ -489,8 +499,8 @@ const MinimalistTheme = ({ itinerary, title, agent }: ThemeProps) => {
                                 </div>
                                 <div style={{ display: "flex", gap: "16px", marginTop: "5px", fontSize: "11px", color: "#999", textTransform: "uppercase", letterSpacing: "1.5px" }}>
                                     {day.date && <span>{formatDate(day.date)}</span>}
-                                    {day.dailyStats?.walkingDistance && <span>{formatDistance(day.dailyStats?.walkingDistance)} km walk</span>}
-                                    {day.dailyStats?.totalCost && <span>₹{formatCurrency(day.dailyStats?.totalCost)}</span>}
+                                    {(day.dailyStats as any)?.walkingDistance && <span>{formatDistance((day.dailyStats as any).walkingDistance)} km walk</span>}
+                                    {day.dailyStats?.totalCost && <span>{getCurrencySymbol(itinerary.pricing?.currency || DEFAULT_CURRENCY)}{formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>}
                                 </div>
                             </div>
                         </div>
@@ -555,7 +565,7 @@ const DarkTheme = ({ itinerary, title, agent }: ThemeProps) => {
                     <div style={{ display: "flex", gap: "14px", marginBottom: "32px", pageBreakInside: "avoid" }}>
                         {[
                             { label: "Duration", value: `${itinerary.itinerary?.length || 0} Days` },
-                            { label: "Est. Budget", value: `₹${getTotalBudget(itinerary).toLocaleString()}` },
+                            { label: "Est. Budget", value: `${getCurrencySymbol(itinerary.pricing?.currency || DEFAULT_CURRENCY)}${getTotalBudget(itinerary).toLocaleString()}` },
                             { label: "Activities", value: `${totalActivities}+` },
                         ].map((stat, i) => (
                             <div key={i} style={{ flex: 1, padding: "18px 20px", borderTop: `3px solid ${accent}`, background: "rgba(255,255,255,0.04)", borderRadius: "0 0 8px 8px" }}>
@@ -604,8 +614,8 @@ const DarkTheme = ({ itinerary, title, agent }: ThemeProps) => {
                                 </div>
                                 <div style={{ display: "flex", gap: "14px", marginTop: "5px", fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px" }}>
                                     {day.date && <span>{formatDate(day.date)}</span>}
-                                    {day.dailyStats?.walkingDistance && <span>{formatDistance(day.dailyStats?.walkingDistance)} km walk</span>}
-                                    {day.dailyStats?.totalCost && <span style={{ color: accent }}>₹{formatCurrency(day.dailyStats?.totalCost)}</span>}
+                                    {(day.dailyStats as any)?.walkingDistance && <span>{formatDistance((day.dailyStats as any).walkingDistance)} km walk</span>}
+                                    {day.dailyStats?.totalCost && <span style={{ color: accent }}>{getCurrencySymbol(itinerary.pricing?.currency || DEFAULT_CURRENCY)}{formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>}
                                 </div>
                             </div>
                         </div>
@@ -678,7 +688,7 @@ const CorporateTheme = ({ itinerary, title, agent }: ThemeProps) => {
                         </div>
                         <div style={{ display: "flex", borderBottom: "1px solid #eee" }}>
                             <div style={{ padding: "10px 15px", flex: "0 0 40%" }}>Estimated Budget</div>
-                            <div style={{ padding: "10px 15px", flex: "0 0 60%", fontWeight: "bold" }}>₹{getTotalBudget(itinerary).toLocaleString()}</div>
+                            <div style={{ padding: "10px 15px", flex: "0 0 60%", fontWeight: "bold" }}>{getCurrencySymbol(itinerary.pricing?.currency || DEFAULT_CURRENCY)}{getTotalBudget(itinerary).toLocaleString()}</div>
                         </div>
                         <div style={{ display: "flex", borderBottom: "1px solid #eee" }}>
                             <div style={{ padding: "10px 15px", flex: "0 0 40%" }}>Total Activities</div>
@@ -720,8 +730,8 @@ const CorporateTheme = ({ itinerary, title, agent }: ThemeProps) => {
                     </div>
 
                     <div style={{ display: "flex", gap: "30px", padding: "8px 15px", background: "#f7f9fc", borderBottom: "1px solid #ddd", fontSize: "12px", color: "#666", pageBreakInside: "avoid" }}>
-                        {day.dailyStats?.walkingDistance && <span>Walking: {formatDistance(day.dailyStats?.walkingDistance)} km</span>}
-                        {day.dailyStats?.totalCost && <span>Est. Cost: ₹{formatCurrency(day.dailyStats?.totalCost)}</span>}
+                        {(day.dailyStats as any)?.walkingDistance && <span>Walking: {formatDistance((day.dailyStats as any).walkingDistance)} km</span>}
+                        {day.dailyStats?.totalCost && <span>Est. Cost: {getCurrencySymbol(itinerary.pricing?.currency || DEFAULT_CURRENCY)}{formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>}
                     </div>
                 </div>
             ))}
@@ -853,10 +863,10 @@ const PdfFlightAndHotelSummary = ({ flights, hotels, accentColor }: { flights: F
 };
 
 /* ═════════ MAIN EXPORTED COMPONENT ═════════ */
-export const PdfTemplate = ({ itinerary, title, userProfile, theme = 'classic', hotels = [], flights = [], pricing, baseCost }: PdfTemplateProps) => {
+export const PdfTemplate = ({ itinerary, title, userProfile, agencySettings, theme = 'classic', hotels = [], flights = [], pricing, baseCost }: PdfTemplateProps) => {
     if (!itinerary || !itinerary.itinerary) return null;
 
-    const agent = getAgentInfo(userProfile);
+    const agent = getAgentInfo(userProfile, agencySettings);
     const displayTitle = getSanitizedTitle(title || "", itinerary);
 
     let ThemeComponent;

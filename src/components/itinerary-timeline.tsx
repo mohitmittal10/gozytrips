@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
 import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from "@/components/hotel-flight-editor";
@@ -12,6 +12,7 @@ import {
 import { useState, useRef, useEffect, useCallback, useContext } from "react";
 import { ItineraryContext } from "@/contexts/itinerary-context";
 import { getCurrencySymbol } from "@/lib/itinerary-calculator";
+import { useAuth } from "@/contexts/auth-context";
 import {
   DndContext,
   closestCenter,
@@ -59,6 +60,7 @@ type ItineraryTimelineProps = {
   buses?: BusInfo[];
   showTimestamps?: boolean;
   showPrices?: boolean;
+  currency?: string;
 };
 
 // ── Hotel & Flight Display Blocks ──────────────────────────────────────────────
@@ -182,6 +184,28 @@ function BusBanner({ bus }: { bus: BusInfo }) {
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
+
+/**
+ * Curated pool of verified Unsplash photo slugs used as activity thumbnails.
+ * These are real, stable photo IDs that won't 404 — rotated by stepIndex.
+ * DO NOT replace with arithmetic offsets; Unsplash IDs are alphanumeric slugs.
+ */
+const ACTIVITY_FALLBACK_PHOTOS = [
+  'photo-1476514525535-07fb3b4ae5f1', // aerial landscape
+  'photo-1506748686214-e9df14d4d9d0', // nature lake
+  'photo-1469854523086-cc02fe5d8800', // road trip
+  'photo-1436491865332-7a61a109cc05', // clouds over water
+  'photo-1530789253388-582c481c54b0', // travel
+  'photo-1501854140801-50d01698950b', // mountains
+  'photo-1488085061387-422e29b40080', // night city
+  'photo-1548013146-72479768bada', // taj mahal
+];
+
+/** Returns a stable, known-good Unsplash thumbnail URL for a given step index. */
+const getActivityFallbackUrl = (stepIndex: number) => {
+  const slug = ACTIVITY_FALLBACK_PHOTOS[stepIndex % ACTIVITY_FALLBACK_PHOTOS.length];
+  return `https://images.unsplash.com/${slug}?q=60&w=120&auto=format&fit=crop`;
+};
 
 /** Generate a unique ID for drag-and-drop. Format: "day-{dayIndex}-step-{stepIndex}" */
 const stepId = (dayIndex: number, stepIndex: number) =>
@@ -363,11 +387,14 @@ function SortableActivity({
         <div className="flex-1 min-w-0">
             <div className="glass-panel p-2 sm:p-3 rounded-xl flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center group/card transition-all">
               <div className="hidden sm:flex w-14 h-14 rounded-md overflow-hidden flex-shrink-0 shadow-lg border border-white/5 bg-zinc-900/50">
-                {/* Fallback image with Unsplash ID depending on step Index so they are visually unique and pretty */}
+                {/* Activity thumbnail — falls back to a curated pool of verified Unsplash photos.
+                    onError clears src so the browser stops retrying a broken URL,
+                    which would otherwise cause an infinite request loop. */}
                 <img 
                   className="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700 brightness-[0.8]" 
-                  src={step.imageUrl || `https://images.unsplash.com/photo-${1542104595 + (stepIndex * 1500)}?q=80&w=1000&auto=format&fit=crop`} 
+                  src={step.imageUrl || getActivityFallbackUrl(stepIndex)}
                   alt="Activity"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = getActivityFallbackUrl((stepIndex + 1) % ACTIVITY_FALLBACK_PHOTOS.length); (e.currentTarget as HTMLImageElement).onerror = null; }}
                 />
               </div>
               
@@ -386,7 +413,7 @@ function SortableActivity({
                   
                   {showPrices !== false && (
                     <div className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-[9px] font-black shadow-lg flex items-center gap-1">
-                      <span>{currencySymbol ?? "₹"}</span>
+                      <span>{currencySymbol}</span>
                       <InlineEdit
                         value={step.cost !== undefined ? String(step.cost) : ""}
                         onSave={(v) => onUpdateStep("cost", v ? Number(v) : undefined)}
@@ -494,15 +521,20 @@ const ItineraryTimeline = ({
   buses = [],
   showTimestamps = true,
   showPrices = true,
+  currency,
 }: ItineraryTimelineProps) => {
   const { toast } = useToast();
 
-  // Derive currency symbol from ItineraryContext when available (e.g. inside ClientItineraryEditor).
-  // Falls back to "₹" for standalone/read-only usage (PDF preview, trip cards, etc.).
+  const { agencySettings } = useAuth();
   const itineraryCtx = useContext(ItineraryContext);
-  const currencySymbol = itineraryCtx
-    ? getCurrencySymbol(itineraryCtx.state.pricing.currency)
-    : "₹";
+  
+  // Resolve currency code
+  const currencyCode = currency 
+    || itineraryCtx?.state.pricing.currency 
+    || (agencySettings as any)?.default_currency 
+    || "INR";
+
+  const currencySymbol = getCurrencySymbol(currencyCode as any);
   const [activeStepId, setActiveStepId] = useState<string | null>(null);
   // Track which container the dragged item is currently over
   const [overDayIndex, setOverDayIndex] = useState<number | null>(null);
@@ -597,7 +629,7 @@ const ItineraryTimeline = ({
         areaFocus: "New Area — click to edit",
         imageSearchTerm: "",
         timeline: [{ time: "9:00 AM", details: "First activity — click to edit" }],
-        dailyStats: { totalCost: "₹0" },
+        dailyStats: { totalCost: `${currencySymbol}0` },
       };
       days.push(newDay);
       return days;

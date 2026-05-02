@@ -2,6 +2,8 @@
 import React from 'react';
 import { cn } from "@/lib/utils";
 import { MorphingSquare } from "@/components/ui/morphing-square";
+import { MAX_AI_OPTIMIZATIONS } from "@/constants/ai-architect";
+import { useReferenceOptions } from '@/hooks/use-reference-options';
 
 interface AiArchitectSummaryPanelProps {
   itinerary: any;
@@ -17,7 +19,11 @@ const AiArchitectSummaryPanel = React.memo(function AiArchitectSummaryPanel({
   itinerary, selectedStatus, clients, selectedClientId,
   optimizationCount, isGenerating, onOptimize
 }: AiArchitectSummaryPanelProps) {
+  const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
+  
   if (!itinerary || !itinerary.itinerary || itinerary.itinerary.length === 0) return null;
+
+  const statusOption = itineraryStatuses.find(opt => opt.value === selectedStatus);
 
   return (
     <div className="w-[100vw] -ml-3 sm:-ml-2 md:-ml-4 lg:ml-0 lg:w-auto lg:col-span-4 space-y-3 sm:space-y-4 lg:sticky lg:top-24 order-1 lg:order-2 self-start px-3 sm:px-2 md:px-4 lg:px-0">
@@ -40,19 +46,39 @@ const AiArchitectSummaryPanel = React.memo(function AiArchitectSummaryPanel({
               <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/5 border border-white/5 transition-all">
                 <div className={cn(
                   "w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]",
-                  selectedStatus === 'draft' && "bg-zinc-400 shadow-zinc-400/20",
-                  selectedStatus === 'sent' && "bg-primary shadow-primary/20",
-                  selectedStatus === 'confirmed' && "bg-emerald-400 shadow-emerald-500/20",
-                  selectedStatus === 'rejected' && "bg-rose-400 shadow-rose-500/20"
+                  statusOption?.metadata?.color === 'purple' && "bg-purple-400 shadow-purple-400/20",
+                  statusOption?.metadata?.color === 'pink' && "bg-pink-400 shadow-pink-400/20",
+                  statusOption?.metadata?.color === 'blue' && "bg-blue-400 shadow-blue-400/20",
+                  statusOption?.metadata?.color === 'green' && "bg-emerald-400 shadow-emerald-500/20",
+                  statusOption?.metadata?.color === 'amber' && "bg-amber-400 shadow-amber-500/20",
+                  statusOption?.metadata?.color === 'red' && "bg-rose-400 shadow-rose-500/20",
+                  // Fallback for missing metadata
+                  !statusOption && (
+                    selectedStatus === 'draft' ? "bg-zinc-400 shadow-zinc-400/20" :
+                    selectedStatus === 'sent' ? "bg-primary shadow-primary/20" :
+                    selectedStatus === 'confirmed' || selectedStatus === 'booked' ? "bg-emerald-400 shadow-emerald-500/20" :
+                    selectedStatus === 'rejected' ? "bg-rose-400 shadow-rose-500/20" :
+                    "bg-zinc-500"
+                  )
                 )} />
                 <span className={cn(
                   "text-[10px] font-black uppercase tracking-wider leading-none",
-                  selectedStatus === 'draft' && "text-zinc-400",
-                  selectedStatus === 'sent' && "text-primary",
-                  selectedStatus === 'confirmed' && "text-emerald-400",
-                  selectedStatus === 'rejected' && "text-rose-400"
+                  statusOption?.metadata?.color === 'purple' && "text-purple-400",
+                  statusOption?.metadata?.color === 'pink' && "text-pink-400",
+                  statusOption?.metadata?.color === 'blue' && "text-blue-400",
+                  statusOption?.metadata?.color === 'green' && "text-emerald-400",
+                  statusOption?.metadata?.color === 'amber' && "text-amber-400",
+                  statusOption?.metadata?.color === 'red' && "text-rose-400",
+                  // Fallback
+                  !statusOption && (
+                    selectedStatus === 'draft' ? "text-zinc-400" :
+                    selectedStatus === 'sent' ? "text-primary" :
+                    selectedStatus === 'confirmed' || selectedStatus === 'booked' ? "text-emerald-400" :
+                    selectedStatus === 'rejected' ? "text-rose-400" :
+                    "text-zinc-500"
+                  )
                 )}>
-                  {selectedStatus}
+                  {statusOption?.label || selectedStatus}
                 </span>
               </div>
             </div>
@@ -96,14 +122,14 @@ const AiArchitectSummaryPanel = React.memo(function AiArchitectSummaryPanel({
         
         <button
           onClick={() => {
-            if (!itinerary.optimizations || optimizationCount >= 3) return;
+            if (!itinerary.optimizations || optimizationCount >= MAX_AI_OPTIMIZATIONS) return;
             const feedback = itinerary.optimizations.map((o:any) => `${o.type}: ${o.message}`).join(". ");
             onOptimize(feedback);
           }}
-          disabled={isGenerating || !itinerary || optimizationCount >= 3}
+          disabled={isGenerating || !itinerary || optimizationCount >= MAX_AI_OPTIMIZATIONS}
           className={cn(
             "w-full py-2.5 rounded-lg aurora-gradient text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 mt-2",
-            (isGenerating || !itinerary || optimizationCount >= 3) && "opacity-50 cursor-not-allowed"
+            (isGenerating || !itinerary || optimizationCount >= MAX_AI_OPTIMIZATIONS) && "opacity-50 cursor-not-allowed"
           )}
         >
           {isGenerating ? (
@@ -111,7 +137,7 @@ const AiArchitectSummaryPanel = React.memo(function AiArchitectSummaryPanel({
           ) : (
             <>
               <span className="material-symbols-outlined text-[16px]">bolt</span>
-              {optimizationCount >= 3 ? "Optimization Limit Reached" : `Apply Optimizations (${optimizationCount}/3)`}
+              {optimizationCount >= MAX_AI_OPTIMIZATIONS ? "Optimization Limit Reached" : `Apply Optimizations (${optimizationCount}/${MAX_AI_OPTIMIZATIONS})`}
             </>
           )}
         </button>

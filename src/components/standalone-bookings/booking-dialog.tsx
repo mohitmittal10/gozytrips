@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import type { BookingServiceType } from '@/types/standalone-bookings';
 import { useClients } from '@/lib/hooks/use-clients';
+import { useReferenceOptions } from '@/hooks/use-reference-options';
+import { useFormDraft } from '@/hooks/use-form-draft';
+import { DEFAULT_CURRENCY } from '@/types/pricing';
 
 interface StandaloneBookingDialogProps {
   isOpen: boolean;
@@ -20,29 +23,66 @@ interface StandaloneBookingDialogProps {
 }
 
 export function StandaloneBookingDialog({ isOpen, onClose, onBookingCreated }: StandaloneBookingDialogProps) {
-  const { user } = useAuth();
+  const { user, agencySettings } = useAuth();
   const supabase = createClient();
   const { toast } = useToast();
   const { clients } = useClients();
 
+  const { options } = useReferenceOptions();
+  const serviceTypes = options.filter(opt => opt.scope === 'booking_service_type');
+
   const [loading, setLoading] = useState(false);
-  const [serviceType, setServiceType] = useState<BookingServiceType>('flight');
-  const [title, setTitle] = useState('');
-  const [clientId, setClientId] = useState<string>('none');
-  const [netCost, setNetCost] = useState('');
-  const [markupPercentage, setMarkupPercentage] = useState('');
-  
-  // Specific fields
-  const [provider, setProvider] = useState('');
-  const [pnr, setPnr] = useState('');
-  const [passengers, setPassengers] = useState('1');
-  const [notes, setNotes] = useState('');
+  const [formData, setFormData] = useState({
+    serviceType: 'flight' as BookingServiceType,
+    title: '',
+    clientId: 'none',
+    netCost: '',
+    markupPercentage: String(agencySettings?.default_markup_value || ''),
+    provider: '',
+    pnr: '',
+    passengers: '1',
+    notes: '',
+    currency: (agencySettings as any)?.default_booking_currency || (agencySettings as any)?.default_currency || DEFAULT_CURRENCY
+  });
+
+  const { saveDraft, clearDraft } = useFormDraft(
+    isOpen ? "booking:new" : null,
+    {
+      serviceType: 'flight' as BookingServiceType,
+      title: '',
+      clientId: 'none',
+      netCost: '',
+      markupPercentage: String(agencySettings?.default_markup_value || ''),
+      provider: '',
+      pnr: '',
+      passengers: '1',
+      notes: '',
+      currency: (agencySettings as any)?.default_booking_currency || (agencySettings as any)?.default_currency || DEFAULT_CURRENCY
+    },
+    (draftData) => {
+      setFormData(prev => ({ ...prev, ...draftData }));
+    }
+  );
+
+  // Update markup if agency settings change
+  useEffect(() => {
+    if (agencySettings?.default_markup_value && !formData.markupPercentage) {
+      setFormData(prev => ({ ...prev, markupPercentage: String(agencySettings.default_markup_value) }));
+    }
+  }, [agencySettings]);
+
+  // Save draft whenever formData changes
+  useEffect(() => {
+    if (isOpen) {
+      saveDraft(formData);
+    }
+  }, [formData, isOpen, saveDraft]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
 
-    if (!title.trim()) {
+    if (!formData.title.trim()) {
       toast({ title: 'Error', description: 'Title is required', variant: 'destructive' });
       return;
     }
@@ -51,22 +91,22 @@ export function StandaloneBookingDialog({ isOpen, onClose, onBookingCreated }: S
       setLoading(true);
 
       const bookingDetails = {
-        provider,
-        pnr_or_confirmation: pnr,
-        passengers: parseInt(passengers) || 1,
-        notes
+        provider: formData.provider,
+        pnr_or_confirmation: formData.pnr,
+        passengers: parseInt(formData.passengers) || 1,
+        notes: formData.notes
       };
 
       const payload = {
         user_id: user.id,
-        client_id: clientId === 'none' ? null : clientId,
-        title,
-        service_type: serviceType,
+        client_id: formData.clientId === 'none' ? null : formData.clientId,
+        title: formData.title,
+        service_type: formData.serviceType,
         status: 'draft',
         booking_details: bookingDetails,
-        net_cost: parseFloat(netCost) || 0,
-        markup_percentage: parseFloat(markupPercentage) || 0,
-        currency: 'USD'
+        net_cost: parseFloat(formData.netCost) || 0,
+        markup_percentage: parseFloat(formData.markupPercentage) || 0,
+        currency: formData.currency
       };
 
       const { error } = await supabase
@@ -75,6 +115,7 @@ export function StandaloneBookingDialog({ isOpen, onClose, onBookingCreated }: S
 
       if (error) throw error;
 
+      await clearDraft();
       toast({ title: 'Success', description: 'Booking created successfully.' });
       onBookingCreated();
       onClose();
@@ -103,16 +144,24 @@ export function StandaloneBookingDialog({ isOpen, onClose, onBookingCreated }: S
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Service Type</Label>
-              <Select value={serviceType} onValueChange={(val) => setServiceType(val as BookingServiceType)}>
+              <Select value={formData.serviceType} onValueChange={(val) => setFormData({ ...formData, serviceType: val as BookingServiceType })}>
                 <SelectTrigger className="bg-white/5 border-white/10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="flight">Flight</SelectItem>
-                  <SelectItem value="cab">Cab / Transfer</SelectItem>
-                  <SelectItem value="bus">Bus</SelectItem>
-                  <SelectItem value="train">Train</SelectItem>
-                  <SelectItem value="hotel">Hotel (Room Only)</SelectItem>
+                  {serviceTypes.length > 0 ? (
+                    serviceTypes.map(st => (
+                      <SelectItem key={st.value} value={st.value}>{st.label}</SelectItem>
+                    ))
+                  ) : (
+                    <>
+                      <SelectItem value="flight">Flight</SelectItem>
+                      <SelectItem value="cab">Cab / Transfer</SelectItem>
+                      <SelectItem value="bus">Bus</SelectItem>
+                      <SelectItem value="train">Train</SelectItem>
+                      <SelectItem value="hotel">Hotel (Room Only)</SelectItem>
+                    </>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -121,8 +170,8 @@ export function StandaloneBookingDialog({ isOpen, onClose, onBookingCreated }: S
               <Label>Title</Label>
               <Input
                 placeholder="e.g. Flight to NYC"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 className="bg-white/5 border-white/10"
                 required
               />
@@ -130,7 +179,7 @@ export function StandaloneBookingDialog({ isOpen, onClose, onBookingCreated }: S
 
             <div className="space-y-2">
               <Label>Assign to Client (Optional)</Label>
-              <Select value={clientId} onValueChange={setClientId}>
+              <Select value={formData.clientId} onValueChange={(val) => setFormData({ ...formData, clientId: val })}>
                 <SelectTrigger className="bg-white/5 border-white/10">
                   <SelectValue placeholder="Select client..." />
                 </SelectTrigger>
@@ -148,8 +197,8 @@ export function StandaloneBookingDialog({ isOpen, onClose, onBookingCreated }: S
               <Input
                 type="number"
                 min="1"
-                value={passengers}
-                onChange={(e) => setPassengers(e.target.value)}
+                value={formData.passengers}
+                onChange={(e) => setFormData({ ...formData, passengers: e.target.value })}
                 className="bg-white/5 border-white/10"
               />
             </div>
@@ -158,8 +207,8 @@ export function StandaloneBookingDialog({ isOpen, onClose, onBookingCreated }: S
               <Label>Provider / Operator</Label>
               <Input
                 placeholder="e.g. Delta Airlines"
-                value={provider}
-                onChange={(e) => setProvider(e.target.value)}
+                value={formData.provider}
+                onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
                 className="bg-white/5 border-white/10"
               />
             </div>
@@ -168,8 +217,8 @@ export function StandaloneBookingDialog({ isOpen, onClose, onBookingCreated }: S
               <Label>PNR / Confirmation #</Label>
               <Input
                 placeholder="e.g. XY123AB"
-                value={pnr}
-                onChange={(e) => setPnr(e.target.value)}
+                value={formData.pnr}
+                onChange={(e) => setFormData({ ...formData, pnr: e.target.value })}
                 className="bg-white/5 border-white/10"
               />
             </div>
@@ -180,8 +229,8 @@ export function StandaloneBookingDialog({ isOpen, onClose, onBookingCreated }: S
                 type="number"
                 step="0.01"
                 placeholder="0.00"
-                value={netCost}
-                onChange={(e) => setNetCost(e.target.value)}
+                value={formData.netCost}
+                onChange={(e) => setFormData({ ...formData, netCost: e.target.value })}
                 className="bg-white/5 border-white/10"
               />
             </div>
@@ -192,10 +241,24 @@ export function StandaloneBookingDialog({ isOpen, onClose, onBookingCreated }: S
                 type="number"
                 step="0.1"
                 placeholder="10"
-                value={markupPercentage}
-                onChange={(e) => setMarkupPercentage(e.target.value)}
+                value={formData.markupPercentage}
+                onChange={(e) => setFormData({ ...formData, markupPercentage: e.target.value })}
                 className="bg-white/5 border-white/10"
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Currency</Label>
+              <Select value={formData.currency} onValueChange={(val) => setFormData({ ...formData, currency: val })}>
+                <SelectTrigger className="bg-white/5 border-white/10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {options.filter(o => o.scope === 'currency').map(o => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -203,8 +266,8 @@ export function StandaloneBookingDialog({ isOpen, onClose, onBookingCreated }: S
             <Label>Additional Notes</Label>
             <Textarea
               placeholder="Any specific requests, baggages limits, pickup instructions..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               className="bg-white/5 border-white/10 min-h-[100px]"
             />
           </div>

@@ -4,14 +4,18 @@
  * Implemented today: destination labels, top destinations, seasonality by departure month,
  * trip duration buckets, repeat-client detection.
  *
- * Future schema (not stored yet — add when building pipeline analytics):
- * - `itinerary_status_events`: itinerary_id, from_status, to_status, at, user_id — for stage duration & conversion rates
- * - `itineraries.expected_value` or quote_amount — pipeline value
- * - `itineraries.loss_reason` | `clients.loss_reason` — win/loss analysis
- * - `itineraries.last_activity_at` | `clients.last_contact_at` — stale deals
+ * Now implemented:
+ * - `itinerary_status_events`: itinerary_id, from_status, to_status, changed_at, user_id (stage duration)
+ * - `itineraries.expected_value` — pipeline value
+ * - `itineraries.loss_reason` — win/loss analysis
+ * - `itineraries.last_activity_at` — stale deals
  */
 
-export type FutureCrmPipelineFields = {
+/**
+ * Pipeline schema fields implemented via itinerary_status_events
+ * and the expected_value/loss_reason/last_activity_at on itineraries.
+ */
+export type CrmPipelineFields = {
   /** ISO timestamps per stage transition; enables avg time in stage */
   statusHistoryTable?: "itinerary_status_events";
   /** Forward-looking open pipeline total */

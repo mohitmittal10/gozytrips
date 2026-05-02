@@ -8,6 +8,7 @@
 
 import type { ItineraryState } from "@/types/itinerary-store";
 import type { PricingConfig, PaymentMilestone, Currency } from "@/types/pricing";
+import { DEFAULT_CURRENCY } from "@/types/pricing";
 
 // ── Currency ───────────────────────────────────────────────────────────────────
 
@@ -97,11 +98,11 @@ export function calcBaseCost(state: Pick<ItineraryState, "itinerary" | "hotels" 
 export function calcMarkupAmount(baseCost: number, pricing: PricingConfig): number {
   // If tier pricing is enabled, use the active tier's markup value
   const markupValue =
-    pricing.tiersEnabled && pricing.tiers[pricing.selectedTier]?.isActive
+    pricing?.tiersEnabled && pricing?.tiers?.[pricing.selectedTier]?.isActive
       ? (pricing.tiers[pricing.selectedTier]?.markupValue ?? pricing.markupValue)
-      : pricing.markupValue;
+      : (pricing?.markupValue ?? 0);
 
-  if (pricing.markupType === "percentage") {
+  if (pricing?.markupType === "percentage") {
     return (baseCost * markupValue) / 100;
   }
   return markupValue; // flat fee
@@ -110,7 +111,7 @@ export function calcMarkupAmount(baseCost: number, pricing: PricingConfig): numb
 // ── Tax ───────────────────────────────────────────────────────────────────────
 
 export function calcTaxAmount(costWithMarkup: number, pricing: PricingConfig): number {
-  return (costWithMarkup * pricing.taxPercentage) / 100;
+  return (costWithMarkup * (pricing?.taxPercentage || 0)) / 100;
 }
 
 // ── Final Total ───────────────────────────────────────────────────────────────
@@ -147,13 +148,14 @@ export function calcPricingBreakdown(
   const taxAmount = calcTaxAmount(costWithMarkup, pricing);
   const finalTotal = costWithMarkup + taxAmount;
 
-  const totalPax = pricing.adultPax + pricing.childPax + pricing.infantPax;
-  const perAdult = pricing.adultPax > 0 ? finalTotal / pricing.adultPax : finalTotal;
-  const perChild = pricing.childPax > 0 ? finalTotal / pricing.childPax : 0;
+  const totalPax = (pricing?.adultPax || 0) + (pricing?.childPax || 0) + (pricing?.infantPax || 0);
+  const perAdult = (pricing?.adultPax || 0) > 0 ? finalTotal / pricing.adultPax : finalTotal;
+  const perChild = (pricing?.childPax || 0) > 0 ? finalTotal / pricing.childPax : 0;
 
-  const currencySymbol = getCurrencySymbol(pricing.currency);
+  const currencySymbol = getCurrencySymbol(pricing?.currency || DEFAULT_CURRENCY);
 
-  const milestoneAmounts: MilestoneAmount[] = pricing.milestones.map((m) => ({
+  const milestones = pricing?.milestones || [];
+  const milestoneAmounts: MilestoneAmount[] = milestones.map((m) => ({
     ...m,
     amount: (finalTotal * m.percentage) / 100,
   }));

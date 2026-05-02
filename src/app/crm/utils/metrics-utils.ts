@@ -1,4 +1,6 @@
 import { type Client } from "@/lib/hooks/use-clients";
+import { calcPricingBreakdown } from "@/lib/itinerary-calculator";
+import { defaultPricingConfig } from "@/types/pricing";
 
 // A combined type taking our client and adding the dynamic trip data
 export interface EnrichedClient extends Client {
@@ -16,82 +18,23 @@ export interface EnrichedClient extends Client {
  * Helper function to extract total trip cost from itinerary data.
  */
 export const getTripCost = (trip: any): number => {
-    if (typeof trip === 'number') return trip;
     if (!trip) return 0;
+    if (typeof trip === 'number') return trip;
 
-    let totalBaseCost = 0;
-    const data = trip.itinerary_data || {};
-    const pricing = data.pricing || {};
+    // Primary source of truth: top-level DB column maintained by persistence/save hooks
+    if (typeof trip.client_price === 'number' && trip.client_price > 0) return trip.client_price;
 
-    // 1. Calculate Base Cost based on Mode
-    if (pricing.costingType === 'manual') {
-        const manualOptions = pricing.manualOptions || [];
-        const totalPax = (pricing.adultPax || 0) + (pricing.childPax || 0) + (pricing.infantPax || 0);
-        
-        manualOptions.forEach((item: any) => {
-            const amount = Number(item.amount) || 0;
-            if (item.type === 'per-person') {
-                totalBaseCost += amount * totalPax;
-            } else {
-                totalBaseCost += amount;
-            }
-        });
-    } else {
-        // Automatic Logic
-        const itineraryDays = data.itinerary || data.days || [];
-        if (Array.isArray(itineraryDays)) {
-            itineraryDays.forEach((day: any) => {
-                if (Array.isArray(day.timeline)) {
-                    day.timeline.forEach((item: any) => {
-                        if (typeof item.cost === 'number') {
-                            totalBaseCost += item.cost;
-                        }
-                    });
-                } else if (day.dailyStats?.totalCost) {
-                    const costStr = day.dailyStats.totalCost.toString();
-                    const costNum = parseInt(costStr.replace(/[^\d]/g, ''), 10);
-                    totalBaseCost += isNaN(costNum) ? 0 : costNum;
-                }
-            });
-        }
+    const details = trip.itinerary_data || {};
+    const { finalTotal } = calcPricingBreakdown({
+        itinerary: details.itinerary || details.days || [],
+        hotels: details.hotels || [],
+        flights: details.flights || [],
+        cabs: details.cabs || [],
+        buses: details.buses || [],
+        pricing: details.pricing || defaultPricingConfig
+    });
 
-        const pax = {
-            adult: pricing.adultPax || 2,
-            child: pricing.childPax || 0,
-            infant: pricing.infantPax || 0
-        };
-
-        if (Array.isArray(data.hotels)) {
-            data.hotels.forEach((h: any) => {
-                if (h.costAdult) totalBaseCost += h.costAdult * pax.adult;
-                if (h.costChild) totalBaseCost += h.costChild * pax.child;
-                if (h.costInfant) totalBaseCost += h.costInfant * pax.infant;
-            });
-        }
-
-        if (Array.isArray(data.flights)) {
-            data.flights.forEach((f: any) => {
-                if (f.costAdult) totalBaseCost += f.costAdult * pax.adult;
-                if (f.costChild) totalBaseCost += f.costChild * pax.child;
-                if (f.costInfant) totalBaseCost += f.costInfant * pax.infant;
-            });
-        }
-    }
-    const markupValue = pricing.markupValue || 0;
-    const markupType = pricing.markupType || 'percentage';
-    const taxPercentage = pricing.taxPercentage || 0;
-
-    const markupAmount = markupType === 'percentage'
-        ? (totalBaseCost * markupValue) / 100
-        : markupValue;
-
-    const costWithMarkup = totalBaseCost + markupAmount;
-    const taxAmount = (costWithMarkup * taxPercentage) / 100;
-
-    const finalTotal = costWithMarkup + taxAmount;
-
-    if (finalTotal > 0) return finalTotal;
-    return trip.budget || 0;
+    return finalTotal || trip.budget || 0;
 };
 
 export const isBookedTripStatus = (status: string): boolean => {

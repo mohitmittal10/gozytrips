@@ -102,14 +102,14 @@ Also add to `itineraries`:
 - `google_drive_folder_id text | null`
 - `backup_frequency text | null`
 - `last_backup_date timestamptz | null`
-
+///////////////////////////check later/////////////////////////////////
 **🔴 ISSUE TYPE: [Orphaned Flow / Missing DB Column]**  
 **📁 FILE:** `src/lib/backup-service.ts`  
 **📌 LINE(S):** `14-22`, `35-42`, `203-216`, `271-273`  
 **🔍 WHAT IT IS:** The backup service reads/writes a `trips` table that does not exist in migrations or generated types, and it treats `itineraries.trip_id` like a foreign key during restore even though migration `20260408000000_sync_financial_fields.sql` defines `trip_id` as `TEXT` human ID.  
 **⚠️ PROBLEM:** Backups and restores are internally inconsistent. Cross-account restore can remap a text trip code as if it were a relation, and the `trips` payload path is effectively orphaned.  
 **✅ FIX:** Remove `trips` from backup logic unless you create a real `public.trips` table. Treat `itineraries.trip_id` as a unique human-readable code only. Keep relational links on UUID columns such as `itinerary_id` and `client_id`.
-
+///////////////////////////////////////////////////////////
 **🔴 ISSUE TYPE: [Orphaned Flow / Lost On Restore]**  
 **📁 FILE:** `src/lib/backup-service.ts`  
 **📌 LINE(S):** `14-22`, `35-42`, `228-276`  

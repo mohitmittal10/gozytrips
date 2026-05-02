@@ -19,10 +19,12 @@ export default function AnimatedTypography() {
 
     return (
         <div className="w-full h-[40vh] min-h-[300px] bg-black text-white flex flex-col items-center justify-center relative overflow-hidden">
-            {/* Ambient Background Image */}
+            {/* Ambient Background — NOTE: supply your own image URL here when ready.
+                Previously an Unsplash hotlink; removed to stop recurring network requests.
+                Set backgroundImage to a self-hosted URL when available. */}
             <div
-                className="absolute inset-0 opacity-20 bg-cover bg-center grayscale mix-blend-luminosity"
-                style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=2000&auto=format&fit=crop")' }}
+                className="absolute inset-0 opacity-30 bg-cover bg-center mix-blend-luminosity"
+                style={{ background: 'radial-gradient(ellipse at 60% 40%, #1e1040 0%, #0a0a0a 70%)' }}
             ></div>
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-neutral-900/50 via-transparent to-black/80 z-0"></div>
 

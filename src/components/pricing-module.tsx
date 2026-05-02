@@ -14,11 +14,11 @@ import { type Currency, type PaymentMilestone, type PricingTier, type ManualCost
 import { useItinerary } from "@/hooks/use-itinerary";
 import { useItineraryPricing } from "@/hooks/use-itinerary-pricing";
 import { debounce } from "@/lib/utils";
-import React from "react";
+import React, { useState, useEffect, useMemo } from "react";
+import { createClient } from "@/lib/supabase/client";
 
-// ── Currency list ──────────────────────────────────────────────────────────────
-
-const currencies: { value: Currency; label: string }[] = [
+// Fallback defaults if DB is not populated
+const DEFAULT_CURRENCIES: { value: Currency; label: string }[] = [
   { value: "INR", label: "Indian Rupee (INR)" },
   { value: "USD", label: "US Dollar (USD)" },
   { value: "EUR", label: "Euro (EUR)" },
@@ -29,15 +29,41 @@ const currencies: { value: Currency; label: string }[] = [
   { value: "AED", label: "UAE Dirham (AED)" },
 ];
 
-const manualCategories: ManualCostItem["category"][] = [
+const DEFAULT_MANUAL_CATEGORIES: string[] = [
   "Flight", "Hotel", "Transport", "Activity", "Visa", "Insurance", "Other"
 ];
+
+// Dynamic options fetched in component
 
 // ── Component (zero props — reads everything from store) ───────────────────────
 
 export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: PricingConfig) => void, isSaving?: boolean }) {
   // Store
   const { pricing, validationErrors, updatePricing } = useItinerary();
+  const supabase = useMemo(() => createClient(), []);
+  const [referenceOptions, setReferenceOptions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      const { data } = await supabase
+        .from('reference_options')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+      if (data) setReferenceOptions(data);
+    };
+    fetchOptions();
+  }, [supabase]);
+
+  const currencies = useMemo(() => {
+    const opts = referenceOptions.filter(opt => opt.scope === 'currency');
+    return opts.length > 0 ? opts.map(opt => ({ value: opt.value as Currency, label: opt.label })) : DEFAULT_CURRENCIES;
+  }, [referenceOptions]);
+
+  const manualCategories = useMemo(() => {
+    const opts = referenceOptions.filter(opt => opt.scope === 'manual_cost_category');
+    return opts.length > 0 ? opts.map(opt => opt.value) : DEFAULT_MANUAL_CATEGORIES;
+  }, [referenceOptions]);
 
   // All derived monetary values come from the calculation engine
   const {
@@ -90,7 +116,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
           name: "Custom Service",
           amount: 0,
           type: "per-person",
-          category: "Activity"
+          category: manualCategories[0] || "Activity"
         }
       ]
     });

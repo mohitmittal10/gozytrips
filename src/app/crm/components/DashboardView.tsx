@@ -1,5 +1,7 @@
 import React from "react";
 import { useMemo } from "react";
+import { getCurrencySymbol } from "@/types/financial";
+import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { 
     Users, MapPin, TrendingUp, CheckCircle2, UserPlus, 
     Plane, DollarSign, CalendarDays,
@@ -66,6 +68,7 @@ interface DashboardViewProps {
     clientsLoading: boolean;
     isComputing: boolean;
     enrichedClients: any[];
+    itineraryStatuses: any[];
     activeTripsCount: number;
     bookingsCount: number;
     conversionRate: number;
@@ -95,46 +98,82 @@ interface DashboardViewProps {
     revenueByMonth: any[];
     recentActivity: any[];
     unreadActivitiesCount: number;
+    agencySettings?: any;
     handleOpenActivitySheet: () => void;
 }
 
 export const DashboardView = (props: DashboardViewProps) => {
     const {
-        clients, clientsLoading, isComputing, enrichedClients = [], activeTripsCount, bookingsCount,
+        clients, clientsLoading, isComputing, enrichedClients = [], itineraryStatuses = [],
+        activeTripsCount, bookingsCount,
         conversionRate, bookedCount, totalProposals, bookedRevenue, standaloneRevenue,
         newClientsThisMonth, repeatClientStats, avgBookedTripValue, blendedMarginPct,
         packageVsStandaloneMix, departureCalendarStats, topDestinationsChart,
         seasonalityChart, durationBucketsChart, durationMax, revenueByMonth,
-        recentActivity = [], unreadActivitiesCount = 0, handleOpenActivitySheet
+        recentActivity = [], unreadActivitiesCount = 0, agencySettings, handleOpenActivitySheet
     } = props;
 
     // Pipeline funnel data
     const pipelineFunnel = useMemo(() => {
-        const statusCounts: Record<string, number> = { draft: 0, proposed: 0, sent: 0, booked: 0, completed: 0 };
+        const funnel: Record<string, { stage: string, count: number, color: string }> = {};
+        
+        // Define default gradients for core statuses
+        const defaultGradients: Record<string, string> = {
+            draft: 'from-purple-500 to-violet-500',
+            proposed: 'from-pink-500 to-rose-500',
+            sent: 'from-blue-500 to-cyan-500',
+            booked: 'from-green-500 to-emerald-500',
+            completed: 'from-amber-500 to-yellow-500',
+            rejected: 'from-red-500 to-rose-700'
+        };
+
+        if (itineraryStatuses.length > 0) {
+            itineraryStatuses.forEach(opt => {
+                funnel[opt.value] = {
+                    stage: opt.label,
+                    count: 0,
+                    color: opt.metadata?.gradient || defaultGradients[opt.value] || 'from-gray-500 to-slate-600'
+                };
+            });
+        } else {
+            ['draft', 'proposed', 'sent', 'booked', 'completed'].forEach(s => {
+                funnel[s] = { 
+                    stage: s.charAt(0).toUpperCase() + s.slice(1), 
+                    count: 0, 
+                    color: defaultGradients[s] 
+                };
+            });
+        }
+
         enrichedClients.forEach(c => {
             if (!c.allTrips) return;
             c.allTrips.forEach((t: any) => {
-                const s = (t.status || '').toLowerCase();
-                if (s === 'confirmed') statusCounts['booked']++;
-                else if (statusCounts[s] !== undefined) statusCounts[s]++;
+                let s = (t.status || '').toLowerCase();
+                if (s === 'confirmed') s = 'booked';
+                if (funnel[s]) {
+                    funnel[s].count++;
+                }
             });
         });
-        const total = Object.values(statusCounts).reduce((a, b) => a + b, 0) || 1;
-        return [
-            { stage: 'Draft', count: statusCounts.draft, pct: Math.round((statusCounts.draft / total) * 100), color: 'from-purple-500 to-violet-500' },
-            { stage: 'Proposed', count: statusCounts.proposed, pct: Math.round((statusCounts.proposed / total) * 100), color: 'from-pink-500 to-rose-500' },
-            { stage: 'Sent', count: statusCounts.sent, pct: Math.round((statusCounts.sent / total) * 100), color: 'from-blue-500 to-cyan-500' },
-            { stage: 'Booked', count: statusCounts.booked, pct: Math.round((statusCounts.booked / total) * 100), color: 'from-green-500 to-emerald-500' },
-            { stage: 'Completed', count: statusCounts.completed, pct: Math.round((statusCounts.completed / total) * 100), color: 'from-amber-500 to-yellow-500' },
-        ];
-    }, [enrichedClients]);
+
+        const total = Object.values(funnel).reduce((a, b) => a + b.count, 0) || 1;
+        return Object.values(funnel).map(item => ({
+            ...item,
+            pct: Math.round((item.count / total) * 100)
+        }));
+    }, [enrichedClients, itineraryStatuses]);
 
     const totalBookedRevenue = bookedRevenue + (standaloneRevenue || 0);
 
     const formatCurrency = (val: number) => {
-        if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)}Cr`;
-        if (val >= 100000) return `₹${(val / 100000).toFixed(2)}L`;
-        return `₹${Math.round(val).toLocaleString()}`;
+        const symbol = getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY);
+        if (agencySettings?.default_currency === 'INR' || !agencySettings?.default_currency) {
+            if (val >= 10000000) return `${symbol}${(val / 10000000).toFixed(2)}Cr`;
+            if (val >= 100000) return `${symbol}${(val / 100000).toFixed(2)}L`;
+        } else if (val >= 1000000) {
+            return `${symbol}${(val / 1000000).toFixed(1)}M`;
+        }
+        return `${symbol}${Math.round(val).toLocaleString()}`;
     };
 
     return (
@@ -229,7 +268,7 @@ export const DashboardView = (props: DashboardViewProps) => {
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
                                 <XAxis dataKey="month" stroke="#6b7280" fontSize={10} axisLine={false} tickLine={false} />
-                                <YAxis stroke="#6b7280" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(val) => `₹${val / 1000}k`} />
+                                <YAxis stroke="#6b7280" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(val) => `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${val / 1000}k`} />
                                 <Tooltip
                                     contentStyle={{ backgroundColor: '#18181b', border: '1px solid #ffffff10', borderRadius: '8px', color: '#fff' }}
                                     itemStyle={{ color: '#fff' }}

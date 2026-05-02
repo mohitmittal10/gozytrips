@@ -15,6 +15,8 @@ import HotelFlightEditor from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
 import { type PdfTheme } from "@/components/pdf-template";
 import { useToast } from "@/hooks/use-toast";
+import { useReferenceOptions } from "@/hooks/use-reference-options";
+import { createClient } from "@/lib/supabase/client";
 
 // Store
 import { ItineraryProvider } from "@/contexts/itinerary-context";
@@ -25,13 +27,16 @@ import { useItinerary } from "@/hooks/use-itinerary";
 interface InnerEditorProps {
   trip: ClientItinerary;
   clientName?: string;
-  onSave: (id: string, newData: any, newStatus?: string) => Promise<void>;
+  onSave: (id: string, newData: any, newStatus?: string, newTheme?: string) => Promise<void>;
   onOpenChange: (open: boolean) => void;
 }
 
 function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProps) {
-  const { userProfile } = useAuth();
+  const { userProfile, agencySettings } = useAuth();
   const { toast } = useToast();
+  const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
+  const { options: themeOptions } = useReferenceOptions('pdf_theme');
+  const supabase = createClient();
 
   // Get everything from the central store
   const {
@@ -51,7 +56,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
 
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<string>(trip.status || "draft");
-  const [selectedTheme, setSelectedTheme] = useState<PdfTheme>("classic");
+  const [selectedTheme, setSelectedTheme] = useState<PdfTheme>((trip.selected_theme as PdfTheme) || "classic");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const handleSave = async () => {
@@ -63,7 +68,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
         ...getSerializable(),
       };
 
-      await onSave(trip.id, mergedData, status);
+      await onSave(trip.id, mergedData, status, selectedTheme);
       markClean();
 
       toast({
@@ -133,11 +138,19 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
             <SelectTrigger className="w-[140px] h-9 glass-button border-white/20">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="draft">Draft</SelectItem>
-              <SelectItem value="sent">Sent to Client</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
+            <SelectContent className="bg-[#1a1a2e] border-white/10 text-white">
+              {itineraryStatuses.length > 0 ? (
+                itineraryStatuses.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))
+              ) : (
+                <>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="sent">Sent to Client</SelectItem>
+                  <SelectItem value="booked">Booked</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </>
+              )}
             </SelectContent>
           </Select>
 
@@ -152,15 +165,26 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
 
           <div className="w-px h-6 bg-white/20 hidden md:block mx-1" />
 
-          <Select defaultValue="classic" onValueChange={(value) => setSelectedTheme(value as PdfTheme)}>
+          <Select 
+            value={selectedTheme} 
+            onValueChange={(value) => setSelectedTheme(value as PdfTheme)}
+          >
             <SelectTrigger className="w-[130px] h-9 glass-button border-white/20 hidden md:flex">
               <SelectValue placeholder="PDF Format" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="classic">Classic</SelectItem>
-              <SelectItem value="editorial">Editorial</SelectItem>
-              <SelectItem value="minimalist">Minimalist</SelectItem>
-              <SelectItem value="corporate">Corporate</SelectItem>
+              {themeOptions.length > 0 ? (
+                themeOptions.map(opt => (
+                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                ))
+              ) : (
+                <>
+                  <SelectItem value="classic">Classic</SelectItem>
+                  <SelectItem value="editorial">Editorial</SelectItem>
+                  <SelectItem value="minimalist">Minimalist</SelectItem>
+                  <SelectItem value="corporate">Corporate</SelectItem>
+                </>
+              )}
             </SelectContent>
           </Select>
 
@@ -221,6 +245,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
                 onHotelsChange={setHotels}
                 onFlightsChange={setFlights}
                 totalDays={itinerary?.length || 1}
+                currency={pricing?.currency}
               />
             </div>
           </TabsContent>
@@ -238,8 +263,12 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
       <PdfPreviewEditor
         isOpen={isPreviewOpen}
         onOpenChange={setIsPreviewOpen}
-        templateProps={activeThemeProps}
+        templateProps={{
+          ...activeThemeProps,
+          agencySettings
+        }}
         initialTheme={selectedTheme}
+        itineraryId={trip.id}
         filename={pdfFilename}
       />
     </>
@@ -252,7 +281,7 @@ interface ClientItineraryEditorProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   trip: ClientItinerary | null;
-  onSave: (id: string, newData: any, newStatus?: string) => Promise<void>;
+  onSave: (id: string, newData: any, newStatus?: string, newTheme?: string) => Promise<void>;
   clientName?: string;
 }
 

@@ -24,8 +24,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-
 import { Button } from "@/components/ui/button";
+import { useReferenceOptions } from "@/hooks/use-reference-options";
 
 interface ClientsViewProps {
     // Data
@@ -99,6 +99,7 @@ interface ClientsViewProps {
 }
 
 export const ClientsView = (props: ClientsViewProps) => {
+    const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
     const {
         activeTab = 'clients',
         paginatedClients = props.clients || [],
@@ -167,11 +168,19 @@ export const ClientsView = (props: ClientsViewProps) => {
                         <SelectTrigger className="h-8 w-[140px] bg-white/5 border-white/10 text-white text-xs">
                             <SelectValue placeholder="Set Status..." />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="draft">Draft</SelectItem>
-                            <SelectItem value="proposed">Proposed</SelectItem>
-                            <SelectItem value="sent">Sent</SelectItem>
-                            <SelectItem value="booked">Booked</SelectItem>
+                        <SelectContent className="bg-obsidian-dark border-white/10 text-white">
+                            {itineraryStatuses.length > 0 ? (
+                                itineraryStatuses.map(opt => (
+                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                ))
+                            ) : (
+                                <>
+                                    <SelectItem value="draft">Draft</SelectItem>
+                                    <SelectItem value="proposed">Proposed</SelectItem>
+                                    <SelectItem value="sent">Sent</SelectItem>
+                                    <SelectItem value="booked">Booked</SelectItem>
+                                </>
+                            )}
                         </SelectContent>
                     </Select>
                     <Button variant="outline" size="sm" className="h-8 border-white/10 bg-transparent text-gray-300 hover:bg-white/10 text-xs" onClick={handleExportCSV}>

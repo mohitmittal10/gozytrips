@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 
 interface EditItineraryViewProps {
     enrichedClients: any[];
+    itineraryStatuses: any[];
     setSelectedTripForModal: (trip: any) => void;
     setShowModal: (show: boolean) => void;
     handleDuplicateTrip: (trip: any) => void;
@@ -15,6 +16,7 @@ interface EditItineraryViewProps {
 
 export const EditItineraryView = ({
     enrichedClients,
+    itineraryStatuses = [],
     setSelectedTripForModal,
     setShowModal,
     handleDuplicateTrip,
@@ -68,8 +70,19 @@ export const EditItineraryView = ({
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-1.5 font-bold">
-                                                <span className={`text-[10px] uppercase px-2 py-0.5 rounded-full ${trip.status === 'booked' || trip.status === 'confirmed' ? 'bg-green-500/10 text-green-400' : trip.status === 'sent' || trip.status === 'proposed' ? 'bg-blue-500/10 text-blue-400' : 'bg-purple-500/10 text-purple-400'}`}>
-                                                    {trip.status}
+                                                <span className={cn(
+                                                    "text-[10px] uppercase px-2 py-0.5 rounded-full",
+                                                    (() => {
+                                                        const s = trip.status.toLowerCase();
+                                                        const opt = itineraryStatuses.find(o => o.value === s);
+                                                        if (opt?.metadata?.bgColor) return `${opt.metadata.bgColor} ${opt.metadata.color ? `text-${opt.metadata.color}-400` : 'text-purple-400'}`;
+                                                        
+                                                        if (s === 'booked' || s === 'confirmed') return 'bg-green-500/10 text-green-400';
+                                                        if (s === 'proposed' || s === 'sent') return 'bg-blue-500/10 text-blue-400';
+                                                        return 'bg-purple-500/10 text-purple-400';
+                                                    })()
+                                                )}>
+                                                    {itineraryStatuses.find(opt => opt.value === trip.status.toLowerCase())?.label || trip.status}
                                                 </span>
                                                 <Button
                                                     variant="ghost"

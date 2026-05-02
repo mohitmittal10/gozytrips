@@ -3,12 +3,8 @@ import { GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface KanbanViewProps {
-    kanbanColumns: {
-        draft: any[];
-        proposed: any[];
-        sent: any[];
-        booked: any[];
-    };
+    kanbanColumns: Record<string, any[]>;
+    itineraryStatuses: any[];
     handleStatusChange: (clientId: string, tripId: string, newStatus: string) => void;
     setSelectedClient: (client: any) => void;
     getAvatarColor: (name: string) => string;
@@ -16,16 +12,26 @@ interface KanbanViewProps {
 
 export const KanbanView = ({ 
     kanbanColumns, 
+    itineraryStatuses,
     handleStatusChange, 
     setSelectedClient, 
     getAvatarColor 
 }: KanbanViewProps) => {
-    const columns = [
-        { key: 'draft' as const, label: 'Draft', color: 'purple', borderColor: 'border-purple-500/30', bgColor: 'bg-purple-500/10' },
-        { key: 'proposed' as const, label: 'Proposed', color: 'pink', borderColor: 'border-pink-500/30', bgColor: 'bg-pink-500/10' },
-        { key: 'sent' as const, label: 'Sent', color: 'blue', borderColor: 'border-blue-500/30', bgColor: 'bg-blue-500/10' },
-        { key: 'booked' as const, label: 'Booked', color: 'green', borderColor: 'border-green-500/30', bgColor: 'bg-green-500/10' },
-    ];
+    const columns = itineraryStatuses.length > 0 
+        ? itineraryStatuses
+            .filter(opt => ['draft', 'proposed', 'sent', 'booked'].includes(opt.value))
+            .map(opt => ({
+                key: opt.value,
+                label: opt.label,
+                borderColor: opt.metadata?.borderColor || 'border-white/10',
+                bgColor: opt.metadata?.bgColor || 'bg-white/5'
+            }))
+        : [
+            { key: 'draft', label: 'Draft', borderColor: 'border-purple-500/30', bgColor: 'bg-purple-500/10' },
+            { key: 'proposed', label: 'Proposed', borderColor: 'border-pink-500/30', bgColor: 'bg-pink-500/10' },
+            { key: 'sent', label: 'Sent', borderColor: 'border-blue-500/30', bgColor: 'bg-blue-500/10' },
+            { key: 'booked', label: 'Booked', borderColor: 'border-green-500/30', bgColor: 'bg-green-500/10' },
+        ];
 
     return (
         <div className="crm-kanban-grid">

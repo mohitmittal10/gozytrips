@@ -4,9 +4,10 @@ import { useAuth } from "@/contexts/auth-context";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
-import { generateTripId } from "@/types/financial";
 import { buildLineItems } from "@/lib/helpers/trip-line-items";
 import type { SaveItineraryOptions } from "@/types/ai-architect";
+import { calcPricingBreakdown } from "@/lib/itinerary-calculator";
+import { defaultPricingConfig } from "@/types/pricing";
 
 export function useItinerarySave({
   currentTripId,
@@ -27,8 +28,7 @@ export function useItinerarySave({
       await supabase.from("trip_line_items").delete().eq("itinerary_id", activeTripId);
       return activeTripId;
     } else {
-      const newTripId = generateTripId();
-      const { data, error } = await supabase.from("itineraries").insert([{ ...tripData, trip_id: newTripId }]).select("id");
+      const { data, error } = await supabase.from("itineraries").insert([tripData]).select("id");
       if (error) throw error;
       return data?.[0]?.id || null;
     }
@@ -63,35 +63,35 @@ export function useItinerarySave({
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       if (sessionError || !session?.user) throw new Error("Authentication failed or session expired. Sign in again.");
 
-      const pricingCfg = options.pricingOverride || itineraryState.pricing || {};
-      const markupValue = (pricingCfg as any).markupValue || 0;
-      const markupType = (pricingCfg as any).markupType || 'percentage';
-      const taxPct = (pricingCfg as any).taxPercentage || 0;
+      const pricingCfg = { ...defaultPricingConfig, ...(options.pricingOverride || itineraryState.pricing || {}) };
+
+      // Use the centralized calculation engine
+      const { finalTotal, markupAmount, taxAmount } = calcPricingBreakdown({
+        itinerary: itineraryState.itinerary?.itinerary || [],
+        hotels: itineraryState.hotels || [],
+        flights: itineraryState.flights || [],
+        cabs: itineraryState.cabs || [],
+        buses: itineraryState.buses || [],
+        pricing: pricingCfg
+      });
+
+      const clientPrice = finalTotal;
+      const markupVal = markupAmount;
+      const taxPct = pricingCfg.taxPercentage;
       const paxInfo = {
-        adult: (pricingCfg as any).adultPax || 2,
-        child: (pricingCfg as any).childPax || 0,
-        infant: (pricingCfg as any).infantPax || 0,
+        adult: pricingCfg.adultPax || 2,
+        child: pricingCfg.childPax || 0,
+        infant: pricingCfg.infantPax || 0
       };
-
-      // Calculate total base cost
-      let totalBaseCost = 0;
-      if (itineraryState.itinerary?.itinerary) {
-        itineraryState.itinerary.itinerary.forEach((day: any) => {
-          if (day.timeline) day.timeline.forEach((step: any) => { if (step.cost) totalBaseCost += step.cost; });
-        });
-      }
-      itineraryState.hotels.forEach((h: any) => { totalBaseCost += (h.costAdult || 0) * paxInfo.adult + (h.costChild || 0) * paxInfo.child + (h.costInfant || 0) * paxInfo.infant; });
-      itineraryState.flights.forEach((f: any) => { totalBaseCost += (f.costAdult || 0) * paxInfo.adult + (f.costChild || 0) * paxInfo.child + (f.costInfant || 0) * paxInfo.infant; });
-      itineraryState.cabs.forEach((c: any) => { if (c.totalCost) totalBaseCost += c.totalCost; });
-      itineraryState.buses.forEach((b: any) => { totalBaseCost += (b.costAdult || 0) * paxInfo.adult + (b.costChild || 0) * paxInfo.child + (b.costInfant || 0) * paxInfo.infant; });
-
-      const markupAmount = markupType === 'percentage' ? (totalBaseCost * markupValue) / 100 : markupValue;
-      const costWithMarkup = totalBaseCost + markupAmount;
-      const clientPrice = costWithMarkup + (costWithMarkup * taxPct) / 100;
 
       const tripData = {
         user_id: session.user.id,
-        title: `Trip to ${destinations}`,
+        title: (() => {
+          const totalDays = Math.round((dtEnd.getTime() - dtStart.getTime()) / (1000 * 60 * 60 * 24));
+          const nights = totalDays;
+          const days = totalDays + 1;
+          return `${startingLocation} to ${destinations} ${nights}N ${days}D`;
+        })(),
         description: mustInclude ? `Must include: ${mustInclude}` : null,
         starting_location: startingLocation,
         ending_location: formValues.endingLocation || startingLocation,
@@ -109,16 +109,25 @@ export function useItinerarySave({
           buses: itineraryState.buses, 
           pricing: pricingCfg 
         },
+        generation_preferences: formValues,
+        selected_theme: itineraryState.selectedTheme || 'classic',
+        show_timestamps: itineraryState.showTimestamps ?? true,
+        show_prices: itineraryState.showPrices ?? true,
+        optimization_count: itineraryState.optimizationCount || 0,
+        pdf_overrides: itineraryState.pdfOverrides || {},
+        last_activity_at: new Date().toISOString(),
         client_price: clientPrice,
-        markup_value: markupValue,
-        markup_type: markupType,
+        markup_value: pricingCfg.markupValue || 0,
+        markup_type: pricingCfg.markupType || 'percentage',
         tax_percentage: taxPct,
         adult_pax: paxInfo.adult,
         child_pax: paxInfo.child,
         infant_pax: paxInfo.infant,
-        costing_type: (pricingCfg as any).costingType || 'automatic',
+        costing_type: pricingCfg.costingType || 'automatic',
         commission_rate: 0,
         commission_amount: 0,
+        currency: pricingCfg.currency || "INR",
+        updated_financial_at: new Date().toISOString()
       };
 
       const resolvedActiveTripId = await _upsertItinerary(tripData, currentTripId);

@@ -52,6 +52,7 @@ const TravelItineraryOutputSchema = z.object({
       ),
       dailyStats: z.object({
         totalCost: z.string(),
+        walkingDistance: z.string().optional(),
       }),
     })
   ),
@@ -59,7 +60,7 @@ const TravelItineraryOutputSchema = z.object({
     z.object({
       type: z.string().describe('The category of optimization (e.g., "Timing", "Cost", "Experience", "Leisure").'),
       message: z.string().describe('A concise, actionable optimization tip (max 60 chars).'),
-      impact: z.string().describe('A short description of the benefit (e.g., "+15% Leisure", "Save ₹2,000", "Avoid Crowds").'),
+      impact: z.string().describe('A short description of the benefit (e.g., "+15% Leisure", "Save 2,000", "Avoid Crowds").'),
     })
   ).describe('A list of 3-4 smart AI optimization insights for the trip.'),
 });
@@ -84,7 +85,7 @@ const prompt = ai.definePrompt({
   TRIP DETAILS:
   - Departure: {{startingLocation}} on {{startDate}}
   {{#if endingLocation}}- Return: {{endingLocation}} on {{endDate}}{{else}}- Return: {{startingLocation}} on {{endDate}}{{/if}}
-  {{#if budget}}- Maximum daily budget: ₹{{budget}}{{/if}}
+  {{#if budget}}- Maximum daily budget: {{budget}}{{/if}}
   {{#if mustInclude}}- Must include: {{mustInclude}}{{/if}}
   {{#if avoid}}- Avoid: {{avoid}}{{/if}}
   {{#if leisureTime}}- Please block out a few hours of unstructured free/leisure time{{#if leisureDay}} specifically on Day {{leisureDay}}{{else}} throughout the trip{{/if}}.{{/if}}
@@ -125,7 +126,7 @@ const prompt = ai.definePrompt({
   1. Provide 3-4 "Optimization Insights" that add value to the trip.
   2. Examples: 
      - "Timing: Shift Morning Temple visit to 07:00 AM (Avoid Crowds)"
-     - "Cost: Group Day 2 activities to save ₹1,200 on transport"
+     - "Cost: Group Day 2 activities to save 1,200 on transport"
      - "Leisure: Add a 2-hour gap on Day 3 for spontaneous exploration"
   
   GOOD examples for search terms: "Red Fort Delhi", "Hawa Mahal Jaipur", "Marina Beach Chennai", "Munnar tea plantation", "Varanasi ghats", "Goa beach Palolem", "Hampi ruins Karnataka".

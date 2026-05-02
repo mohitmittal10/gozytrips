@@ -5,7 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Database } from '@/types/supabase'; // TODO: verify import path
+import { useReferenceOptions } from '@/hooks/use-reference-options';
+
 type Client = any; // Fallback from useClients
 
 interface AiArchitectHeaderProps {
@@ -27,19 +28,23 @@ interface AiArchitectHeaderProps {
   isSaving: boolean;
   setShowBackConfirm: (show: boolean) => void;
   setItinerary: (itinerary: null) => void;
+  activeArchitectTab: string;
 }
 
 const AiArchitectHeader = React.memo(function AiArchitectHeader({
   itinerary, clients, selectedClientId, setSelectedClientId,
   selectedStatus, setSelectedStatus, showTimestamps, setShowTimestamps,
   showPrices, setShowPrices, isEditing, setIsEditing,
-  handleCreateNew, handleDownloadPdf, handleSaveItinerary, isSaving, setShowBackConfirm, setItinerary
+  handleCreateNew, handleDownloadPdf, handleSaveItinerary, isSaving, setShowBackConfirm, setItinerary,
+  activeArchitectTab
 }: AiArchitectHeaderProps) {
-  if (!itinerary) return null;
+  const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
+  
+  if (!itinerary || ['history','settings'].includes(activeArchitectTab)) return null;
 
   return (
-    <div className="bg-obsidian-dark/60 backdrop-blur-md border-b border-white/5 py-2 sm:py-3 shadow-xl sticky top-0 z-30 mb-4 sm:mb-6 -mx-3 sm:-mx-4 md:-mx-6 lg:-mx-8">
-      <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-2 sm:gap-4">
+    <div className="bg-transparent py-2 sm:py-3 z-30 mb-0 w-full">
+      <div className="w-full flex flex-wrap justify-between items-center gap-2 sm:gap-4">
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 md:space-x-6">
           <button
             onClick={() => {
@@ -79,10 +84,18 @@ const AiArchitectHeader = React.memo(function AiArchitectHeader({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
-                <SelectItem value="draft">Draft</SelectItem>
-                <SelectItem value="sent">Sent</SelectItem>
-                <SelectItem value="confirmed">Confirmed</SelectItem>
-                <SelectItem value="rejected">Rejected</SelectItem>
+                {itineraryStatuses.length > 0 ? (
+                  itineraryStatuses.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))
+                ) : (
+                  <>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="sent">Sent</SelectItem>
+                    <SelectItem value="booked">Booked</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                  </>
+                )}
               </SelectContent>
             </Select>
           </div>

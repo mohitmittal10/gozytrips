@@ -13,8 +13,10 @@ import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/lib/supabase/client";
 import { logAuditEvent } from "@/lib/audit-logger";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useFormDraft } from "@/hooks/use-form-draft";
 
-const currencies = [
+// Fallback defaults if DB is not populated
+const DEFAULT_CURRENCIES = [
   { value: "INR", label: "Indian Rupee (INR)" },
   { value: "USD", label: "US Dollar (USD)" },
   { value: "EUR", label: "Euro (EUR)" },
@@ -38,17 +40,86 @@ export function CrmSettings() {
     website: "",
     brand_color: "#0066cc",
   });
-  
   const [agencyData, setAgencyData] = useState({
-    default_currency: "USD",
+    default_currency: "INR",
     default_markup_type: "percentage",
     default_markup_value: 0,
     default_tax_percentage: 0,
+    default_commission_rate: 0,
     gst_number: "",
     bank_details: "",
     terms_conditions: "",
     agent_signature: "",
+    default_booking_currency: "INR",
+    default_hotel_check_in: "2:00 PM",
+    default_hotel_check_out: "11:00 AM",
+    default_hotel_star_rating: 3,
+    default_cab_vehicle_type: "SUV",
+    default_bus_type: "Volvo AC",
+    default_bus_reporting_time: "8:30 AM",
+    default_bus_departure_time: "9:00 AM",
+    default_meal_plan: "MAP",
   });
+
+  const { saveDraft, clearDraft } = useFormDraft(
+    "crm_settings",
+    {
+      profile: {
+        company_name: userProfile?.company_name || "",
+        business_email: userProfile?.business_email || "",
+        business_phone: userProfile?.business_phone || "",
+        website: userProfile?.website || "",
+        brand_color: userProfile?.brand_color || "#0066cc",
+      },
+      agency: {
+        default_currency: agencySettings?.default_currency || "INR",
+        default_markup_type: agencySettings?.default_markup_type || "percentage",
+        default_markup_value: agencySettings?.default_markup_value || 0,
+        default_tax_percentage: agencySettings?.default_tax_percentage || 0,
+        default_commission_rate: (agencySettings as any)?.default_commission_rate || 0,
+        gst_number: agencySettings?.gst_number || "",
+        bank_details: agencySettings?.bank_details || "",
+        terms_conditions: agencySettings?.terms_conditions || "",
+        agent_signature: agencySettings?.agent_signature || "",
+        default_booking_currency: (agencySettings as any)?.default_booking_currency || "INR",
+        default_hotel_check_in: (agencySettings as any)?.default_hotel_check_in || "2:00 PM",
+        default_hotel_check_out: (agencySettings as any)?.default_hotel_check_out || "11:00 AM",
+        default_hotel_star_rating: (agencySettings as any)?.default_hotel_star_rating || 3,
+        default_cab_vehicle_type: (agencySettings as any)?.default_cab_vehicle_type || "SUV",
+        default_bus_type: (agencySettings as any)?.default_bus_type || "Volvo AC",
+        default_bus_reporting_time: (agencySettings as any)?.default_bus_reporting_time || "8:30 AM",
+        default_bus_departure_time: (agencySettings as any)?.default_bus_departure_time || "9:00 AM",
+        default_meal_plan: (agencySettings as any)?.default_meal_plan || "MAP",
+      }
+    },
+    (draftData) => {
+      if (draftData.profile) setProfileData(prev => ({ ...prev, ...draftData.profile }));
+      if (draftData.agency) setAgencyData(prev => ({ ...prev, ...draftData.agency }));
+    }
+  );
+
+  // Save draft whenever data changes
+  useEffect(() => {
+    saveDraft({ profile: profileData, agency: agencyData });
+  }, [profileData, agencyData, saveDraft]);
+
+  const [referenceOptions, setReferenceOptions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      const { data } = await supabase
+        .from('reference_options')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order');
+      if (data) setReferenceOptions(data);
+    };
+    fetchOptions();
+  }, []);
+
+  const currencies = referenceOptions.length > 0 
+    ? referenceOptions.filter(opt => opt.scope === 'currency').map(opt => ({ value: opt.value, label: opt.label }))
+    : DEFAULT_CURRENCIES;
 
   useEffect(() => {
     if (userProfile) {
@@ -62,14 +133,24 @@ export function CrmSettings() {
     }
     if (agencySettings) {
       setAgencyData({
-        default_currency: agencySettings.default_currency || "USD",
+        default_currency: agencySettings.default_currency || "INR",
         default_markup_type: agencySettings.default_markup_type || "percentage",
         default_markup_value: agencySettings.default_markup_value || 0,
         default_tax_percentage: agencySettings.default_tax_percentage || 0,
+        default_commission_rate: (agencySettings as any).default_commission_rate || 0,
         gst_number: agencySettings.gst_number || "",
         bank_details: agencySettings.bank_details || "",
         terms_conditions: agencySettings.terms_conditions || "",
         agent_signature: agencySettings.agent_signature || "",
+        default_booking_currency: (agencySettings as any).default_booking_currency || "INR",
+        default_hotel_check_in: (agencySettings as any).default_hotel_check_in || "2:00 PM",
+        default_hotel_check_out: (agencySettings as any).default_hotel_check_out || "11:00 AM",
+        default_hotel_star_rating: (agencySettings as any).default_hotel_star_rating || 3,
+        default_cab_vehicle_type: (agencySettings as any).default_cab_vehicle_type || "SUV",
+        default_bus_type: (agencySettings as any).default_bus_type || "Volvo AC",
+        default_bus_reporting_time: (agencySettings as any).default_bus_reporting_time || "8:30 AM",
+        default_bus_departure_time: (agencySettings as any).default_bus_departure_time || "9:00 AM",
+        default_meal_plan: (agencySettings as any).default_meal_plan || "MAP",
       });
     }
   }, [userProfile, agencySettings]);
@@ -92,11 +173,12 @@ export function CrmSettings() {
         .upsert({
           user_id: user.id,
           ...agencyData,
-        });
+        }, { onConflict: 'user_id' });
 
       if (agencyError) throw agencyError;
 
       await Promise.all([refreshProfile(), refreshSettings()]);
+      await clearDraft();
       logAuditEvent(user.id, 'SETTINGS_UPDATE', 'CRM settings and agency profile updated', {
         entityType: 'settings',
         entityId: user.id,
@@ -148,6 +230,7 @@ export function CrmSettings() {
         <TabsList className="bg-white/5 border border-white/10 mb-4 sm:mb-6 w-full flex overflow-x-auto hide-scrollbar">
           <TabsTrigger value="profile" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4"><Building2 className="w-3.5 h-3.5 mr-1.5 sm:hidden flex-shrink-0" /><span className="hidden sm:inline">Agency </span>Profile</TabsTrigger>
           <TabsTrigger value="financials" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4"><DollarSign className="w-3.5 h-3.5 mr-1.5 sm:hidden flex-shrink-0" /><span className="hidden sm:inline">Costing </span>Defaults</TabsTrigger>
+          <TabsTrigger value="operations" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4"><Settings className="w-3.5 h-3.5 mr-1.5 sm:hidden flex-shrink-0" />Operations</TabsTrigger>
           <TabsTrigger value="legal" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4"><Gavel className="w-3.5 h-3.5 mr-1.5 sm:hidden flex-shrink-0" /><span className="hidden sm:inline">Legal & </span>Compliance</TabsTrigger>
         </TabsList>
         
@@ -237,6 +320,99 @@ export function CrmSettings() {
               <div className="space-y-1.5">
                 <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Default Tax (%)</Label>
                 <Input type="number" min={0} max={100} value={agencyData.default_tax_percentage} onChange={(e) => updateAgency('default_tax_percentage', Number(e.target.value))} className="bg-white/5 border-white/10 text-white h-10 sm:h-9 text-sm" />
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Default Commission Rate (%)</Label>
+                <Input type="number" min={0} max={100} value={agencyData.default_commission_rate} onChange={(e) => updateAgency('default_commission_rate', Number(e.target.value))} className="bg-white/5 border-white/10 text-white h-10 sm:h-9 text-sm" />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Operations Tab */}
+        <TabsContent value="operations" className="space-y-6">
+          <Card className="glass-card border-white/10 bg-white/[0.02]">
+            <CardHeader>
+              <div className="flex items-center gap-2">
+                <Settings className="w-5 h-5 text-orange-400" />
+                <CardTitle className="text-lg">Logistics & Operational Defaults</CardTitle>
+              </div>
+              <CardDescription className="text-gray-500">Set default values for hotels, cabs, and buses to speed up itinerary creation.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6 px-3 sm:px-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                {/* Hotel Defaults */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold text-gray-300 border-b border-white/5 pb-2">Hotel Defaults</h4>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Check-in Time</Label>
+                    <Input value={agencyData.default_hotel_check_in} onChange={(e) => updateAgency('default_hotel_check_in', e.target.value)} placeholder="2:00 PM" className="bg-white/5 border-white/10 text-white h-9 text-sm" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Check-out Time</Label>
+                    <Input value={agencyData.default_hotel_check_out} onChange={(e) => updateAgency('default_hotel_check_out', e.target.value)} placeholder="11:00 AM" className="bg-white/5 border-white/10 text-white h-9 text-sm" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Star Rating</Label>
+                    <Select value={String(agencyData.default_hotel_star_rating)} onValueChange={(v) => updateAgency('default_hotel_star_rating', Number(v))}>
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-sm">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4, 5].map(s => (
+                          <SelectItem key={s} value={String(s)}>{s} Star</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Transport Defaults */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold text-gray-300 border-b border-white/5 pb-2">Transport Defaults</h4>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Cab Vehicle Type</Label>
+                    <Input value={agencyData.default_cab_vehicle_type} onChange={(e) => updateAgency('default_cab_vehicle_type', e.target.value)} placeholder="SUV / Sedan" className="bg-white/5 border-white/10 text-white h-9 text-sm" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Bus Type</Label>
+                    <Input value={agencyData.default_bus_type} onChange={(e) => updateAgency('default_bus_type', e.target.value)} placeholder="Volvo AC" className="bg-white/5 border-white/10 text-white h-9 text-sm" />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Bus Reporting</Label>
+                      <Input value={agencyData.default_bus_reporting_time} onChange={(e) => updateAgency('default_bus_reporting_time', e.target.value)} placeholder="8:30 AM" className="bg-white/5 border-white/10 text-white h-9 text-sm" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Bus Departure</Label>
+                      <Input value={agencyData.default_bus_departure_time} onChange={(e) => updateAgency('default_bus_departure_time', e.target.value)} placeholder="9:00 AM" className="bg-white/5 border-white/10 text-white h-9 text-sm" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Other Defaults */}
+                <div className="space-y-4 sm:col-span-2">
+                  <h4 className="text-sm font-bold text-gray-300 border-b border-white/5 pb-2">Miscellaneous</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Default Meal Plan</Label>
+                      <Input value={agencyData.default_meal_plan} onChange={(e) => updateAgency('default_meal_plan', e.target.value)} placeholder="MAP / CP" className="bg-white/5 border-white/10 text-white h-9 text-sm" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Booking Currency</Label>
+                      <Select value={agencyData.default_booking_currency} onValueChange={(v) => updateAgency('default_booking_currency', v)}>
+                        <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {currencies.map((c) => (
+                            <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>

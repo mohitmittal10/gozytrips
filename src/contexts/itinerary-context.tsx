@@ -8,7 +8,7 @@
  * Access via useItinerary() or useItineraryPricing() hooks — never via raw context.
  */
 
-import React, { createContext, useContext, useReducer, useCallback } from "react";
+import React, { createContext, useContext, useReducer, useCallback, useMemo } from "react";
 import type {
   ItineraryState,
   ItineraryAction,
@@ -19,6 +19,7 @@ import { createDefaultState } from "@/types/itinerary-store";
 import { validateItineraryState } from "@/lib/itinerary-validator";
 import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from "@/components/hotel-flight-editor";
 import type { PricingConfig } from "@/types/pricing";
+import { useAuth } from "./auth-context";
 
 // ── Context ────────────────────────────────────────────────────────────────────
 
@@ -148,19 +149,33 @@ interface ItineraryProviderProps {
 }
 
 export function ItineraryProvider({ children, initialTrip }: ItineraryProviderProps) {
-  const initial = createDefaultState(initialTrip?.id ?? null, {
-    itinerary: initialTrip?.itinerary ?? [],
-    hotels: initialTrip?.hotels ?? [],
-    flights: initialTrip?.flights ?? [],
-    cabs: initialTrip?.cabs ?? [],
-    buses: initialTrip?.buses ?? [],
-    pricing: {
-      ...createDefaultState().pricing,
-      ...initialTrip?.pricing,
-      milestones: initialTrip?.pricing?.milestones ?? createDefaultState().pricing.milestones,
-    },
-    isDirty: false,
-  });
+  const { agencySettings } = useAuth();
+
+  const initial = useMemo(() => {
+    const defaultPricing = { ...createDefaultState().pricing };
+    
+    if (agencySettings) {
+      const settings = agencySettings as any;
+      if (settings.default_currency) defaultPricing.currency = settings.default_currency;
+      if (settings.default_markup_value) defaultPricing.markupValue = settings.default_markup_value;
+      if (settings.default_markup_type) defaultPricing.markupType = settings.default_markup_type;
+      if (settings.default_payment_milestones) defaultPricing.milestones = settings.default_payment_milestones;
+    }
+
+    return createDefaultState(initialTrip?.id ?? null, {
+      itinerary: initialTrip?.itinerary ?? [],
+      hotels: initialTrip?.hotels ?? [],
+      flights: initialTrip?.flights ?? [],
+      cabs: initialTrip?.cabs ?? [],
+      buses: initialTrip?.buses ?? [],
+      pricing: {
+        ...defaultPricing,
+        ...initialTrip?.pricing,
+        milestones: initialTrip?.pricing?.milestones ?? (initialTrip ? defaultPricing.milestones : defaultPricing.milestones),
+      },
+      isDirty: false,
+    });
+  }, [initialTrip, agencySettings]);
 
   const [state, dispatch] = useReducer(itineraryReducer, withValidation(initial));
 

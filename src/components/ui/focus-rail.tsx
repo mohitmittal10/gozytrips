@@ -4,6 +4,7 @@ import * as React from "react";
 import { motion, AnimatePresence, PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 export type FocusRailItem = {
@@ -24,11 +25,6 @@ interface FocusRailProps {
     className?: string;
 }
 
-function wrap(min: number, max: number, v: number) {
-    const rangeSize = max - min;
-    return ((((v - min) % rangeSize) + rangeSize) % rangeSize) + min;
-}
-
 const BASE_SPRING = {
     type: "spring",
     stiffness: 300,
@@ -43,6 +39,19 @@ const TAP_SPRING = {
     mass: 1,
 } as const;
 
+/**
+ * Computes the shortest-path visual offset of itemIdx relative to active,
+ * wrapping around so items on the far side appear on the near side.
+ * e.g. for count=3, active=0, itemIdx=2 → offset=-1 (show left, not +2 right)
+ */
+function shortestOffset(itemIdx: number, active: number, count: number): number {
+    let offset = itemIdx - active;
+    const half = count / 2;
+    if (offset > half) offset -= count;
+    if (offset < -half) offset += count;
+    return offset;
+}
+
 export function FocusRail({
     items,
     initialIndex = 0,
@@ -51,23 +60,39 @@ export function FocusRail({
     interval = 4000,
     className,
 }: FocusRailProps) {
-    const [active, setActive] = React.useState(initialIndex);
+    const count = items.length;
+
+    // Clamp to [0, count) immediately so it never drifts.
+    const [active, setActive] = React.useState(() =>
+        Math.max(0, Math.min(count - 1, initialIndex))
+    );
     const [isHovering, setIsHovering] = React.useState(false);
     const lastWheelTime = React.useRef<number>(0);
 
-    const count = items.length;
-    const activeIndex = wrap(0, count, active);
-    const activeItem = items[activeIndex];
+    const activeItem = items[active];
 
+    // Both callbacks are stable (deps: loop, count — never change at runtime).
+    // Using functional setActive so no stale closure over `active`.
     const handlePrev = React.useCallback(() => {
-        if (!loop && active === 0) return;
-        setActive((p) => p - 1);
-    }, [loop, active]);
+        setActive((p) => {
+            if (!loop && p === 0) return p;
+            return (p - 1 + count) % count;
+        });
+    }, [loop, count]);
 
     const handleNext = React.useCallback(() => {
-        if (!loop && active === count - 1) return;
-        setActive((p) => p + 1);
-    }, [loop, active, count]);
+        setActive((p) => {
+            if (!loop && p === count - 1) return p;
+            return (p + 1) % count;
+        });
+    }, [loop, count]);
+
+    // Stable interval — handleNext never changes so this runs once on mount.
+    React.useEffect(() => {
+        if (!autoPlay || isHovering) return;
+        const timer = setInterval(handleNext, interval);
+        return () => clearInterval(timer);
+    }, [autoPlay, isHovering, handleNext, interval]);
 
     const onWheel = React.useCallback(
         (e: React.WheelEvent) => {
@@ -76,48 +101,31 @@ export function FocusRail({
             const isHorizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY);
             const delta = isHorizontal ? e.deltaX : e.deltaY;
             if (Math.abs(delta) > 20) {
-                if (delta > 0) {
-                    handleNext();
-                } else {
-                    handlePrev();
-                }
+                delta > 0 ? handleNext() : handlePrev();
                 lastWheelTime.current = now;
             }
         },
         [handleNext, handlePrev]
     );
 
-    React.useEffect(() => {
-        if (!autoPlay || isHovering) return;
-        const timer = setInterval(() => handleNext(), interval);
-        return () => clearInterval(timer);
-    }, [autoPlay, isHovering, handleNext, interval]);
-
     const onKeyDown = (e: React.KeyboardEvent) => {
         if (e.key === "ArrowLeft") handlePrev();
         if (e.key === "ArrowRight") handleNext();
     };
 
-    const swipeConfidenceThreshold = 10000;
-    const swipePower = (offset: number, velocity: number) => {
-        return Math.abs(offset) * velocity;
-    };
-
-    const onDragEnd = (e: MouseEvent | TouchEvent | PointerEvent, { offset, velocity }: PanInfo) => {
-        const swipe = swipePower(offset.x, velocity.x);
-        if (swipe < -swipeConfidenceThreshold) {
-            handleNext();
-        } else if (swipe > swipeConfidenceThreshold) {
-            handlePrev();
-        }
-    };
-
-    const visibleIndices = [-2, -1, 0, 1, 2];
+    const onDragEnd = React.useCallback(
+        (_e: MouseEvent | TouchEvent | PointerEvent, { offset, velocity }: PanInfo) => {
+            const swipe = Math.abs(offset.x) * velocity.x;
+            if (swipe < -10000) handleNext();
+            else if (swipe > 10000) handlePrev();
+        },
+        [handleNext, handlePrev]
+    );
 
     return (
         <div
             className={cn(
-                "group relative flex h-[600px] w-full flex-col overflow-hidden bg-neutral-950 text-white outline-none select-none overflow-x-hidden",
+                "group relative flex h-[600px] w-full flex-col overflow-hidden bg-neutral-950 text-white outline-none select-none",
                 className
             )}
             onMouseEnter={() => setIsHovering(true)}
@@ -126,30 +134,33 @@ export function FocusRail({
             onKeyDown={onKeyDown}
             onWheel={onWheel}
         >
-            {/* Background Ambience */}
+            {/*
+             * Background ambience — all items are rendered simultaneously, always.
+             * Only opacity is toggled (0 ↔ 0.4). No key changes, no remounts,
+             * no image re-requests. Previously this remounted on every slide change.
+             */}
             <div className="absolute inset-0 z-0 pointer-events-none">
-                <AnimatePresence mode="popLayout">
+                {items.map((item, i) => (
                     <motion.div
-                        key={`bg-${activeItem.id}`}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.4 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        key={item.id}
                         className="absolute inset-0"
-                    >
-                        <img
-                            src={activeItem.imageSrc}
-                            alt=""
-                            className="h-full w-full object-cover blur-3xl saturate-200"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/50 to-transparent" />
-                    </motion.div>
-                </AnimatePresence>
+                        animate={{ opacity: i === active ? 0.4 : 0 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        style={{
+                            backgroundImage: `url(${item.imageSrc})`,
+                            backgroundSize: "cover",
+                            backgroundPosition: "center",
+                            // CSS filter in style (not Framer animate) — handled by
+                            // the browser compositor, not JS animation frames.
+                            filter: "blur(48px) saturate(2)",
+                        }}
+                    />
+                ))}
+                <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/50 to-transparent" />
             </div>
 
             {/* Main Stage */}
             <div className="relative z-10 flex flex-1 flex-col justify-center px-4 md:px-8">
-                {/* DRAGGABLE RAIL CONTAINER */}
                 <motion.div
                     className="relative mx-auto flex h-[360px] w-full max-w-6xl items-center justify-center perspective-[1200px] cursor-grab active:cursor-grabbing"
                     drag="x"
@@ -157,61 +168,70 @@ export function FocusRail({
                     dragElastic={0.2}
                     onDragEnd={onDragEnd}
                 >
-                    {visibleIndices.map((offset) => {
-                        const absIndex = active + offset;
-                        const index = wrap(0, count, absIndex);
-                        const item = items[index];
-
-                        if (!loop && (absIndex < 0 || absIndex >= count)) return null;
-
+                    {/*
+                     * THE CORE FIX — iterate over items, not visibleIndices.
+                     *
+                     * Old approach (visibleIndices.map):
+                     *   key=offset (-2..+2), src=items[wrap(active+offset)]
+                     *   → every slide: ALL 5 slots get a new src prop
+                     *   → Next.js Image resets loading state for each
+                     *   → commitMutationEffectsOnFiber fires for every card
+                     *   → deep React mutation loop in HAR
+                     *
+                     * New approach (items.map):
+                     *   key=item.id (permanent, never changes)
+                     *   src=item.imageSrc (permanent, never changes)
+                     *   → only animated x/z/rotateY/opacity/scale change
+                     *   → Next.js Image never reloads, zero mutation cascade
+                     */}
+                    {items.map((item, itemIdx) => {
+                        const offset = shortestOffset(itemIdx, active, count);
                         const isCenter = offset === 0;
                         const dist = Math.abs(offset);
 
-                        const xOffset = offset * 320;
-                        const zOffset = -dist * 180;
-                        const scale = isCenter ? 1 : 0.85;
-                        const rotateY = offset * -20;
-
-                        const opacity = isCenter ? 1 : Math.max(0.1, 1 - dist * 0.5);
-                        const blur = isCenter ? 0 : dist * 6;
-                        const brightness = isCenter ? 1 : 0.5;
-
                         return (
                             <motion.div
-                                key={absIndex}
+                                key={item.id}
                                 className={cn(
-                                    "absolute w-[260px] md:w-[320px] lg:w-[400px] h-[300px] rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-500 overflow-hidden",
-                                    isCenter ? "z-20 ring-1 ring-white/20 shadow-[0_32px_64px_rgba(0,0,0,0.6)]" : "z-10"
+                                    "absolute w-[260px] md:w-[320px] lg:w-[400px] h-[300px] rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden",
+                                    isCenter
+                                        ? "z-20 ring-1 ring-white/20 shadow-[0_32px_64px_rgba(0,0,0,0.6)]"
+                                        : "z-10"
                                 )}
                                 initial={false}
                                 animate={{
-                                    x: xOffset,
-                                    z: zOffset,
-                                    scale: scale,
-                                    rotateY: rotateY,
-                                    opacity: opacity,
-                                    filter: `blur(${blur}px) brightness(${brightness})`,
+                                    x: offset * 320,
+                                    z: -dist * 180,
+                                    scale: isCenter ? 1 : 0.85,
+                                    rotateY: offset * -20,
+                                    opacity: isCenter ? 1 : Math.max(0.1, 1 - dist * 0.5),
                                 }}
                                 transition={{
                                     x: BASE_SPRING,
                                     z: BASE_SPRING,
                                     rotateY: BASE_SPRING,
                                     opacity: BASE_SPRING,
-                                    filter: BASE_SPRING,
                                     scale: TAP_SPRING,
                                 }}
                                 style={{
                                     transformStyle: "preserve-3d",
+                                    // filter via CSS transition (browser compositor) instead of
+                                    // Framer Motion animate — eliminates JS RAF update loop.
+                                    filter: `blur(${isCenter ? 0 : dist * 6}px) brightness(${isCenter ? 1 : 0.5})`,
+                                    transition: "filter 0.5s ease",
                                 }}
                                 onClick={() => {
-                                    if (offset !== 0) setActive((p) => p + offset);
+                                    if (!isCenter) setActive(itemIdx);
                                 }}
                             >
                                 <div className="absolute inset-2 overflow-hidden rounded-[24px] bg-black/40 border border-white/10">
-                                    <img
+                                    <Image
                                         src={item.imageSrc}
                                         alt={item.title}
-                                        className="h-full w-full object-cover opacity-90 transition-opacity duration-500 hover:opacity-100 pointer-events-none"
+                                        fill
+                                        sizes="(max-width: 768px) 260px, (max-width: 1024px) 320px, 400px"
+                                        className="object-cover opacity-90 transition-opacity duration-500 hover:opacity-100 pointer-events-none"
+                                        priority={itemIdx === 0}
                                     />
                                 </div>
                                 {/* Apple-style inner highlight */}
@@ -260,7 +280,7 @@ export function FocusRail({
                                 <ChevronLeft className="h-5 w-5" />
                             </button>
                             <span className="min-w-[40px] text-center text-xs font-mono text-neutral-500">
-                                {activeIndex + 1} / {count}
+                                {active + 1} / {count}
                             </span>
                             <button
                                 onClick={handleNext}

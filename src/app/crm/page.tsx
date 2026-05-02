@@ -11,6 +11,7 @@ import {
     Trash2, Shield, Mail, Tag, Car, Bus, Hotel, DownloadCloud, 
     BarChart, Percent, Timer, RefreshCw, HelpCircle, Filter, Ticket, CloudDownload
 } from "lucide-react";
+import { useReferenceOptions } from "@/hooks/use-reference-options";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Header from "@/components/layout/header";
@@ -24,6 +25,7 @@ import type { SavedItinerary } from "@/components/trip-card";
 import dynamic from "next/dynamic";
 const ItineraryTimeline = dynamic(() => import("@/components/itinerary-timeline"), { ssr: false });
 const PdfPreviewEditor = dynamic(() => import("@/components/pdf-preview-editor").then(mod => mod.PdfPreviewEditor), { ssr: false });
+import { updateItineraryStatus } from "@/lib/services/itinerary-status";
 import { type PdfTheme } from "@/components/pdf-template";
 import { ClientDialog } from "@/components/client-dialog";
 import { getAvatarColor, cn } from "@/lib/utils";
@@ -38,6 +40,8 @@ import {
     getTripCost,
     type EnrichedClient
 } from "./utils/metrics-utils";
+import { getCurrencySymbol } from "@/types/financial";
+import { DEFAULT_CURRENCY } from "@/types/pricing";
 const StandaloneBookingDialog = dynamic(() => import("@/components/standalone-bookings/booking-dialog").then(mod => mod.StandaloneBookingDialog), { ssr: false });
 import type { BookingServiceType } from '@/types/standalone-bookings';
 import {
@@ -97,6 +101,7 @@ import { ClientProfileSheet } from "./components/ClientProfileSheet";
 
 
 export default function CRMLitePage() {
+    const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
     const [searchQuery, setSearchQuery] = useState("");
     const [enrichedClients, setEnrichedClients] = useState<EnrichedClient[]>([]);
     const [isComputing, setIsComputing] = useState(true);
@@ -124,14 +129,65 @@ export default function CRMLitePage() {
     const [selectedTripForModal, setSelectedTripForModal] = useState<SavedItinerary | null>(null);
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
-    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [editingClient, setEditingClient] = useState<Client | null>(null);
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const { userPreferences, updatePreferences, agencySettings, user, userProfile } = useAuth();
+    const { options: themeOptions } = useReferenceOptions("pdf_theme");
+    const [hasSyncedPreferences, setHasSyncedPreferences] = useState(false);
+    
+    // Sync with user preferences
+    useEffect(() => {
+        if (userPreferences && !hasSyncedPreferences) {
+            if (userPreferences.default_pdf_theme) {
+                setSelectedTheme(userPreferences.default_pdf_theme as PdfTheme);
+            }
+            if (userPreferences.crm_visible_columns) {
+                setVisibleColumns(prev => ({ ...prev, ...(userPreferences.crm_visible_columns as any) }));
+            }
+            if (userPreferences.crm_sort) {
+                const sort = userPreferences.crm_sort as any;
+                if (sort.column) setSortColumn(sort.column);
+                if (sort.direction) setSortDirection(sort.direction);
+            }
+            if (userPreferences.crm_filter_presets) {
+                setSavedPresets(userPreferences.crm_filter_presets as FilterPreset[]);
+            }
+            if (userPreferences.crm_last_viewed_activity_at) {
+                setLastViewedActivity(new Date(userPreferences.crm_last_viewed_activity_at).getTime());
+            }
+            if (userPreferences.crm_deadline_range) {
+                setDeadlineRange(userPreferences.crm_deadline_range);
+            }
+            setHasSyncedPreferences(true);
+        }
+    }, [userPreferences, hasSyncedPreferences]);
     const [isFinancesOpen, setIsFinancesOpen] = useState(false);
     const [financesTrip, setFinancesTrip] = useState<SavedItinerary | null>(null);
 
     // Sidebar Expansion State
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+
+    // Lazy load full itinerary data when a trip is selected for viewing
+    useEffect(() => {
+        const fetchFullTrip = async () => {
+            if (selectedTripForModal && !selectedTripForModal.itinerary_data) {
+                try {
+                    const { data, error } = await supabase
+                        .from('itineraries')
+                        .select('*')
+                        .eq('id', selectedTripForModal.id)
+                        .single();
+                    if (!error && data) {
+                        setSelectedTripForModal(data as SavedItinerary);
+                    }
+                } catch (err) {
+                    console.error("Error fetching full itinerary data:", err);
+                }
+            }
+        };
+        fetchFullTrip();
+    }, [selectedTripForModal, supabase]);
 
     // Standalone Bookings State
     const [bookings, setBookings] = useState<any[]>([]);
@@ -190,32 +246,19 @@ export default function CRMLitePage() {
         budgetMin: string;
         budgetMax: string;
     }
-    const [savedPresets, setSavedPresets] = useState<FilterPreset[]>(() => {
-        if (typeof window !== 'undefined') {
-            const stored = localStorage.getItem('crm_filter_presets');
-            return stored ? JSON.parse(stored) : [];
-        }
-        return [];
-    });
+    const [savedPresets, setSavedPresets] = useState<FilterPreset[]>([]);
     const [presetName, setPresetName] = useState('');
     const [showPresetSave, setShowPresetSave] = useState(false);
 
     // Activity Feed State
     const [isActivitySheetOpen, setIsActivitySheetOpen] = useState(false);
     const [activityFilter, setActivityFilter] = useState<string>("all");
-    const [lastViewedActivity, setLastViewedActivity] = useState<number>(() => {
-        if (typeof window !== 'undefined') {
-            const stored = localStorage.getItem('crm_last_viewed_activity');
-            return stored ? parseInt(stored, 10) : 0;
-        }
-        return 0;
-    });
+    const [lastViewedActivity, setLastViewedActivity] = useState<number>(0);
 
     // Status audit trail (in-memory for this session, builds from trip data)
     const [statusHistory, setStatusHistory] = useState<Record<string, { status: string; timestamp: string; by: string }[]>>({});
 
     const { clients, loading: clientsLoading, createClient: _createClient, fetchClients, updateClient } = useClients();
-    const { user, userProfile } = useAuth();
     const supabaseRef = useRef(createClient());
     const supabase = supabaseRef.current;
     const { toast } = useToast();
@@ -411,10 +454,10 @@ export default function CRMLitePage() {
                     standaloneGross: 0,
                 });
 
-                // Fetch all itineraries for this user
+                // Fetch all itineraries for this user - selecting only required columns to avoid heavy itinerary_data
                 const { data: itineraries, error } = await supabase
                     .from("itineraries")
-                    .select("*")
+                    .select("id, client_id, title, status, destinations, start_date, end_date, budget, client_price, currency, commission_rate, markup_value, markup_type, tax_percentage, adult_pax, child_pax, infant_pax, created_at, updated_at")
                     .eq("user_id", user.id)
                     .order("updated_at", { ascending: false });
 
@@ -525,7 +568,11 @@ export default function CRMLitePage() {
                         latestStatus: latestTrip?.status || "No Active Trips",
                         latestDestination: bookedDestinations.length > 0 ? bookedDestinations.map(d => d.label).join(", ") : "N/A",
                         bookedDestinations: bookedDestinations,
-                        latestBudget: totalBookedRevenue > 0 ? `₹${totalBookedRevenue.toLocaleString()}` : (latestCalculatedBudget > 0 ? `₹${latestCalculatedBudget.toLocaleString()}` : "N/A"),
+                        latestBudget: totalBookedRevenue > 0 
+                            ? `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${totalBookedRevenue.toLocaleString()}` 
+                            : (latestCalculatedBudget > 0 
+                                ? `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${latestCalculatedBudget.toLocaleString()}` 
+                                : "N/A"),
                         latestRawBudget: totalBookedRevenue > 0 ? totalBookedRevenue : latestCalculatedBudget,
                         latestContact: new Date(client.updated_at).toLocaleDateString(),
                         latestTripId: latestTrip?.id,
@@ -568,6 +615,11 @@ export default function CRMLitePage() {
     const handleStatusChange = async (clientId: string, tripId: string | undefined, newStatus: string) => {
         if (!user || !tripId) return;
 
+        // Find the old status before updating state
+        const client = enrichedClients.find(c => c.id === clientId);
+        const tripToUpdate = client?.allTrips.find(t => t.id === tripId);
+        const oldStatus = tripToUpdate?.status || "unknown";
+
         // Simplify Confirmed and Booked to just Booked
         const statusToSave = newStatus.toLowerCase() === 'confirmed' ? 'booked' : newStatus;
 
@@ -602,13 +654,7 @@ export default function CRMLitePage() {
         }
 
         try {
-            const { error } = await supabase
-                .from("itineraries")
-                .update({ status: statusToSave })
-                .eq("id", tripId)
-                .eq("user_id", user.id);
-
-            if (error) throw error;
+            await updateItineraryStatus(tripId, statusToSave, supabase, user.id, oldStatus);
 
             // Record in audit trail
             setStatusHistory(prev => {
@@ -724,13 +770,16 @@ export default function CRMLitePage() {
 
         // Active Trips: only show clients with active trips, then filter by pipeline stage
         if (activeTab === 'trips') {
-            result = result.filter(c =>
-                c.latestStatus.toLowerCase() !== "no active trips" &&
-                c.latestStatus.toLowerCase() !== "completed" &&
-                c.latestStatus.toLowerCase() !== "rejected"
-            );
+            result = result.filter(c => {
+                const s = c.latestStatus.toLowerCase();
+                return s !== "no active trips" && s !== "completed" && s !== "rejected";
+            });
             if (tripsPipelineFilter !== "all") {
-                result = result.filter(c => c.latestStatus.toLowerCase() === tripsPipelineFilter.toLowerCase() || (c.latestStatus.toLowerCase() === 'confirmed' && tripsPipelineFilter.toLowerCase() === 'booked'));
+                result = result.filter(c => {
+                    const s = c.latestStatus.toLowerCase();
+                    const filter = tripsPipelineFilter.toLowerCase();
+                    return s === filter || (s === 'confirmed' && filter === 'booked');
+                });
             }
         }
 
@@ -831,19 +880,35 @@ export default function CRMLitePage() {
 
     const handleDuplicateTrip = async (trip: SavedItinerary) => {
         try {
-            const { hotels, flights, pricing, ...coreItinerary } = trip.itinerary_data as any;
-            localStorage.setItem('travelItinerary', JSON.stringify(coreItinerary));
-            if (hotels) localStorage.setItem('travelHotels', JSON.stringify(hotels));
-            if (flights) localStorage.setItem('travelFlights', JSON.stringify(flights));
-            if (pricing) localStorage.setItem('travelPricing', JSON.stringify(pricing));
+            setIsRefreshing(true);
+            
+            const { data: newTrip, error } = await supabase
+                .from('itineraries')
+                .insert([{
+                    user_id: user?.id,
+                    title: `Copy of ${trip.title}`,
+                    itinerary_data: trip.itinerary_data,
+                    status: 'draft',
+                    client_id: null,
+                    trip_id: `DRF-${Date.now()}`,
+                    draft_source_itinerary_id: trip.id,
+                    generation_preferences: (trip as any).generation_preferences || {},
+                    selected_theme: (trip as any).selected_theme || 'classic',
+                    show_timestamps: (trip as any).show_timestamps ?? true,
+                    show_prices: (trip as any).show_prices ?? true
+                }])
+                .select()
+                .single();
 
-            localStorage.removeItem('draft_client_id');
-            localStorage.setItem('draft_status', 'draft');
+            if (error) throw error;
 
-            toast({ title: 'Duplicating Trip', description: 'Opening a copy in the AI Architect...' });
-            router.push('/ai-architect');
-        } catch (error) {
-            toast({ title: 'Error', description: 'Failed to duplicate trip', variant: 'destructive' });
+            toast({ title: 'Success', description: 'Opening a copy in the AI Architect...' });
+            router.push(`/ai-architect?itineraryId=${newTrip.id}`);
+        } catch (error: any) {
+            console.error(error);
+            toast({ title: 'Error', description: error.message || 'Failed to duplicate trip', variant: 'destructive' });
+        } finally {
+            setIsRefreshing(false);
         }
     };
 
@@ -859,7 +924,7 @@ export default function CRMLitePage() {
     );
 
     // Filter preset helpers
-    const saveCurrentPreset = () => {
+    const saveCurrentPreset = async () => {
         if (!presetName.trim()) return;
         const preset: FilterPreset = {
             name: presetName, searchQuery, clientsActivityFilter, clientsTagFilter,
@@ -867,7 +932,7 @@ export default function CRMLitePage() {
         };
         const updated = [...savedPresets, preset];
         setSavedPresets(updated);
-        localStorage.setItem('crm_filter_presets', JSON.stringify(updated));
+        await updatePreferences({ crm_filter_presets: updated });
         setPresetName('');
         setShowPresetSave(false);
         toast({ title: 'Preset Saved', description: `Filter preset "${presetName}" saved.` });
@@ -885,10 +950,10 @@ export default function CRMLitePage() {
         toast({ title: 'Preset Applied', description: `Applied "${p.name}" filter preset.` });
     };
 
-    const deletePreset = (idx: number) => {
+    const deletePreset = async (idx: number) => {
         const updated = savedPresets.filter((_, i) => i !== idx);
         setSavedPresets(updated);
-        localStorage.setItem('crm_filter_presets', JSON.stringify(updated));
+        await updatePreferences({ crm_filter_presets: updated });
     };
 
     const clearAllFilters = () => {
@@ -901,28 +966,48 @@ export default function CRMLitePage() {
 
     // Kanban columns
     const kanbanColumns = useMemo(() => {
-        const cols = { draft: [] as EnrichedClient[], proposed: [] as EnrichedClient[], sent: [] as EnrichedClient[], booked: [] as EnrichedClient[] };
+        const cols: Record<string, EnrichedClient[]> = {};
+        
+        // Use authoritative statuses for columns if available, fallback to defaults
+        const targetStatuses = itineraryStatuses.length > 0 
+            ? itineraryStatuses.filter(opt => ['draft', 'proposed', 'sent', 'booked'].includes(opt.value)).map(opt => opt.value)
+            : ['draft', 'proposed', 'sent', 'booked'];
+            
+        targetStatuses.forEach(status => {
+            cols[status] = [];
+        });
+
         enrichedClients.forEach(c => {
-            const s = c.latestStatus.toLowerCase();
-            if (s === 'draft') cols.draft.push(c);
-            else if (s === 'proposed') cols.proposed.push(c);
-            else if (s === 'sent') cols.sent.push(c);
-            else if (s === 'booked' || s === 'confirmed') cols.booked.push(c);
+            let s = c.latestStatus.toLowerCase();
+            if (s === 'confirmed') s = 'booked';
+            
+            if (cols[s]) {
+                cols[s].push(c);
+            }
         });
         return cols;
-    }, [enrichedClients]);
+    }, [enrichedClients, itineraryStatuses]);
 
     // Reset page when filters change
     useEffect(() => { setCurrentPage(1); }, [activeTab, clientsActivityFilter, clientsTagFilter, tripsPipelineFilter, searchQuery, dateFrom, dateTo, budgetMin, budgetMax]);
 
     // Sort displayClients
-    const handleSort = (col: typeof sortColumn) => {
+    const handleSort = async (col: typeof sortColumn) => {
+        let newDir: 'asc' | 'desc' = 'asc';
+        let newCol = col;
+        
         if (sortColumn === col) {
-            setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc');
+            newDir = sortDirection === 'asc' ? 'desc' : 'asc';
+            setSortDirection(newDir);
         } else {
+            newCol = col;
             setSortColumn(col);
             setSortDirection('asc');
         }
+        
+        await updatePreferences({
+            crm_sort: { column: newCol, direction: newDir }
+        });
     };
 
     const sortedClients = useMemo(() => {
@@ -996,8 +1081,10 @@ export default function CRMLitePage() {
         toast({ title: 'Export', description: `Exported ${targets.length} client(s).` });
     };
 
-    const toggleColumn = (col: string) => {
-        setVisibleColumns(prev => ({ ...prev, [col]: !prev[col as keyof typeof visibleColumns] }));
+    const toggleColumn = async (col: string) => {
+        const next = { ...visibleColumns, [col]: !visibleColumns[col as keyof typeof visibleColumns] };
+        setVisibleColumns(next);
+        await updatePreferences({ crm_visible_columns: next });
     };
 
 
@@ -1027,11 +1114,11 @@ export default function CRMLitePage() {
     }, [enrichedClients, deadlineRange]);
 
 
-    const handleOpenActivitySheet = () => {
+    const handleOpenActivitySheet = async () => {
         setIsActivitySheetOpen(true);
         const now = Date.now();
         setLastViewedActivity(now);
-        localStorage.setItem('crm_last_viewed_activity', now.toString());
+        await updatePreferences({ crm_last_viewed_activity_at: new Date(now).toISOString() });
     };
 
     return (
@@ -1042,10 +1129,13 @@ export default function CRMLitePage() {
 
                     {/* Glassmorphism Icon Sidebar */}
                     <div className={cn(
-                        "hidden lg:flex flex-col shrink-0 sticky top-28 self-start h-[calc(100vh-8rem)] transition-all duration-300 z-40",
+                        "hidden lg:flex flex-col shrink-0 sticky top-24 self-start transition-all duration-300 z-40",
                         isSidebarExpanded ? "w-64" : "w-16"
                     )}>
-                        <div className="flex flex-col h-full py-4 px-2 rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-[0_8px_32_rgba(0,0,0,0.4)] overflow-hidden">
+                        <div className={cn(
+                            "flex flex-col w-full bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300",
+                            "h-[calc(100vh-110px)] max-h-[900px] py-4 px-2"
+                        )}>
                             <div className="space-y-1.5 pb-4 px-1 border-b border-white/[0.08]">
                                 <Button variant="ghost" size="icon" onClick={() => setIsSidebarExpanded(!isSidebarExpanded)} className="h-9 w-9 text-gray-400 hover:text-white hover:bg-white/5 transition-all">
                                     <Sliders className="w-4 h-4" />
@@ -1175,10 +1265,12 @@ export default function CRMLitePage() {
                         {/* TAB VIEWS */}
                         <div className="min-h-[60vh]">
                             {activeTab === 'dashboard' && (
-                                <DashboardView
+                                <DashboardView 
+                                    agencySettings={agencySettings}
                                     clients={clients}
                                     clientsLoading={clientsLoading}
                                     enrichedClients={enrichedClients}
+                                    itineraryStatuses={itineraryStatuses}
                                     activeTripsCount={activeTripsCount}
                                     conversionRate={conversionRate}
                                     bookedCount={bookedCount}
@@ -1230,6 +1322,7 @@ export default function CRMLitePage() {
                             {activeTab === 'edit-itinerary' && (
                                 <EditItineraryView
                                     enrichedClients={enrichedClients}
+                                    itineraryStatuses={itineraryStatuses}
                                     setSelectedTripForModal={setSelectedTripForModal}
                                     setShowModal={setShowModal}
                                     handleDuplicateTrip={handleDuplicateTrip}
@@ -1294,10 +1387,18 @@ export default function CRMLitePage() {
                                                             </SelectTrigger>
                                                             <SelectContent className="bg-[#1a1a2e] border-white/10">
                                                                 <SelectItem value="all">All Stages</SelectItem>
-                                                                <SelectItem value="draft">Draft</SelectItem>
-                                                                <SelectItem value="proposed">Proposed</SelectItem>
-                                                                <SelectItem value="sent">Sent</SelectItem>
-                                                                <SelectItem value="booked">Booked</SelectItem>
+                                                                {itineraryStatuses.length > 0 ? (
+                                                                    itineraryStatuses.filter(opt => ['draft', 'proposed', 'sent', 'booked'].includes(opt.value)).map(opt => (
+                                                                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                                                    ))
+                                                                ) : (
+                                                                    <>
+                                                                        <SelectItem value="draft">Draft</SelectItem>
+                                                                        <SelectItem value="proposed">Proposed</SelectItem>
+                                                                        <SelectItem value="sent">Sent</SelectItem>
+                                                                        <SelectItem value="booked">Booked</SelectItem>
+                                                                    </>
+                                                                )}
                                                             </SelectContent>
                                                         </Select>
                                                         
@@ -1477,16 +1578,18 @@ export default function CRMLitePage() {
                                         />
                                     ) : (activeTab === 'trips' && tripsViewMode === 'kanban') ? (
                                         <KanbanView
-                                            kanbanColumns={kanbanColumns}
-                                            handleStatusChange={handleStatusChange}
-                                            setSelectedClient={setSelectedClient}
-                                            getAvatarColor={getAvatarColor}
-                                        />
+                                             kanbanColumns={kanbanColumns}
+                                             itineraryStatuses={itineraryStatuses}
+                                             handleStatusChange={handleStatusChange}
+                                             setSelectedClient={setSelectedClient}
+                                             getAvatarColor={getAvatarColor}
+                                         />
                                     ) : (
                                         <CRMTableView
                                             clients={paginatedClients}
                                             clientsLoading={clientsLoading}
                                             isComputing={isComputing}
+                                            itineraryStatuses={itineraryStatuses}
                                             selectedIds={selectedIds}
                                             toggleSelectAll={toggleSelectAll}
                                             toggleSelectOne={toggleSelectOne}
@@ -1515,6 +1618,7 @@ export default function CRMLitePage() {
                 selectedClient={selectedClient}
                 setSelectedClient={setSelectedClient}
                 statusHistory={statusHistory}
+                itineraryStatuses={itineraryStatuses}
                 handleStatusChange={handleStatusChange}
                 handleDuplicateTrip={handleDuplicateTrip}
                 handleDeleteTrip={handleDeleteTrip}
@@ -1534,16 +1638,37 @@ export default function CRMLitePage() {
                         <DialogTitle>{selectedTripForModal?.title}</DialogTitle>
                         <DialogDescription className="text-gray-400">{selectedTripForModal?.description}</DialogDescription>
                         <div className="flex items-center gap-4 mt-4">
-                            <Select defaultValue="classic" onValueChange={(value) => setSelectedTheme(value as PdfTheme)}>
+                            <Select 
+                                value={selectedTheme} 
+                                onValueChange={async (value) => {
+                                    const newTheme = value as PdfTheme;
+                                    setSelectedTheme(newTheme);
+                                    await updatePreferences({ default_pdf_theme: newTheme });
+                                    if (selectedTripForModal) {
+                                        await supabase
+                                            .from('itineraries')
+                                            .update({ selected_theme: newTheme })
+                                            .eq('id', selectedTripForModal.id);
+                                    }
+                                }}
+                            >
                                 <SelectTrigger className="w-[180px] bg-white/5 border-white/10 text-white">
                                     <SelectValue placeholder="Select PDF Format" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="classic">Classic (Default)</SelectItem>
-                                    <SelectItem value="editorial">Editorial (Magazine)</SelectItem>
-                                    <SelectItem value="minimalist">Minimalist</SelectItem>
-                                    <SelectItem value="dark">Dark Mode</SelectItem>
-                                    <SelectItem value="corporate">Corporate</SelectItem>
+                                    {themeOptions.length > 0 ? (
+                                        themeOptions.map(opt => (
+                                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                        ))
+                                    ) : (
+                                        <>
+                                            <SelectItem value="classic">Classic (Default)</SelectItem>
+                                            <SelectItem value="editorial">Editorial (Magazine)</SelectItem>
+                                            <SelectItem value="minimalist">Minimalist</SelectItem>
+                                            <SelectItem value="dark">Dark Mode</SelectItem>
+                                            <SelectItem value="corporate">Corporate</SelectItem>
+                                        </>
+                                    )}
                                 </SelectContent>
                             </Select>
                             <Button onClick={handleDownloadPdf} disabled={!selectedTripForModal} className="w-fit bg-white text-black hover:bg-gray-200">
@@ -1570,10 +1695,12 @@ export default function CRMLitePage() {
                             itinerary: selectedTripForModal?.itinerary_data,
                             title: selectedTripForModal?.title,
                             userProfile: userProfile,
+                            agencySettings: agencySettings,
                             hotels: (selectedTripForModal?.itinerary_data as any)?.hotels || [],
                             flights: (selectedTripForModal?.itinerary_data as any)?.flights || [],
                         }}
                         initialTheme={selectedTheme}
+                        itineraryId={selectedTripForModal?.id}
                         filename={`${selectedTripForModal?.title || 'Itinerary'}.pdf`}
                     />
                 </DialogContent>

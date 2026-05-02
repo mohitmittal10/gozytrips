@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
-    MapPin, Compass, History, Eye, Save, Trash2, Clock 
+    MapPin, Compass, History, Eye, Trash2, Clock 
 } from "lucide-react";
 import {
     Select,
@@ -19,7 +19,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { getAvatarColor, cn } from "@/lib/utils";
+import { getCurrencySymbol } from "@/types/financial";
+import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { EnrichedClient } from "../utils/metrics-utils";
 
 const ClientUpdateSuggestions = dynamic(() => import("@/components/client-update-suggestions"), { ssr: false });
@@ -28,6 +30,7 @@ interface ClientProfileSheetProps {
     selectedClient: EnrichedClient | null;
     setSelectedClient: (client: EnrichedClient | null) => void;
     statusHistory: Record<string, any[]>;
+    itineraryStatuses: any[];
     handleStatusChange: (clientId: string, tripId: string, status: string) => void;
     handleDuplicateTrip: (trip: any) => void;
     handleDeleteTrip: (tripId: string) => void;
@@ -44,6 +47,7 @@ export const ClientProfileSheet = ({
     selectedClient,
     setSelectedClient,
     statusHistory,
+    itineraryStatuses = [],
     handleStatusChange,
     handleDuplicateTrip,
     handleDeleteTrip,
@@ -183,18 +187,33 @@ export const ClientProfileSheet = ({
                                                                 >
                                                                     <SelectTrigger className={cn(
                                                                         "h-7 border-0 shadow-none focus:ring-0 w-[110px] inline-flex items-center px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight",
-                                                                        trip.status.toLowerCase() === 'booked' || trip.status.toLowerCase() === 'confirmed' ? 'bg-green-500/10 text-green-400' :
-                                                                        trip.status.toLowerCase() === 'proposed' || trip.status.toLowerCase() === 'sent' ? 'bg-blue-500/10 text-blue-400' :
-                                                                        'bg-purple-500/10 text-purple-400'
+                                                                        (() => {
+                                                                            const s = trip.status.toLowerCase();
+                                                                            const opt = itineraryStatuses.find(o => o.value === s);
+                                                                            if (opt?.metadata?.bgColor) return `${opt.metadata.bgColor} ${opt.metadata.color ? `text-${opt.metadata.color}-400` : 'text-purple-400'}`;
+                                                                            
+                                                                            // Fallback styling
+                                                                            if (s === 'booked' || s === 'confirmed') return 'bg-green-500/10 text-green-400';
+                                                                            if (s === 'proposed' || s === 'sent') return 'bg-blue-500/10 text-blue-400';
+                                                                            return 'bg-purple-500/10 text-purple-400';
+                                                                        })()
                                                                     )}>
                                                                         <SelectValue />
                                                                     </SelectTrigger>
                                                                     <SelectContent className="bg-[#1a1a2e] border-white/10 text-white">
-                                                                        <SelectItem value="draft">Draft</SelectItem>
-                                                                        <SelectItem value="proposed">Proposed</SelectItem>
-                                                                        <SelectItem value="sent">Sent</SelectItem>
-                                                                        <SelectItem value="booked">Booked</SelectItem>
-                                                                        <SelectItem value="rejected">Rejected</SelectItem>
+                                                                        {itineraryStatuses.length > 0 ? (
+                                                                            itineraryStatuses.map(opt => (
+                                                                                <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                                                            ))
+                                                                        ) : (
+                                                                            <>
+                                                                                <SelectItem value="draft">Draft</SelectItem>
+                                                                                <SelectItem value="proposed">Proposed</SelectItem>
+                                                                                <SelectItem value="sent">Sent</SelectItem>
+                                                                                <SelectItem value="booked">Booked</SelectItem>
+                                                                                <SelectItem value="rejected">Rejected</SelectItem>
+                                                                            </>
+                                                                        )}
                                                                     </SelectContent>
                                                                 </Select>
                                                             </td>
@@ -239,7 +258,7 @@ export const ClientProfileSheet = ({
                                                                 </div>
                                                             </td>
                                                             <td className="p-4 text-sm font-semibold text-purple-400">
-                                                                {tripCost > 0 ? `₹${tripCost.toLocaleString()}` : "N/A"}
+                                                                {tripCost > 0 ? `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${tripCost.toLocaleString()}` : "N/A"}
                                                             </td>
                                                             <td className="p-4 text-right">
                                                                 <div className="flex items-center justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
@@ -254,15 +273,6 @@ export const ClientProfileSheet = ({
                                                                         title="View Itinerary"
                                                                     >
                                                                         <Eye className="w-4 h-4" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        variant="ghost"
-                                                                        size="icon"
-                                                                        className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10 rounded-full"
-                                                                        onClick={() => handleDuplicateTrip(trip)}
-                                                                        title="Duplicate Trip"
-                                                                    >
-                                                                        <Save className="w-4 h-4" />
                                                                     </Button>
                                                                     <Button
                                                                         variant="ghost"
@@ -318,7 +328,7 @@ export const ClientProfileSheet = ({
                                         destination={destLabel}
                                         travelDates={`${startDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} - ${endDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}`}
                                         tripDuration={`${diffDays}D/${diffDays - 1}N`}
-                                        totalCost={tripCost > 0 ? `₹${tripCost.toLocaleString()}` : undefined}
+                                        totalCost={tripCost > 0 ? `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${tripCost.toLocaleString()}` : undefined}
                                         daysUntilTrip={daysUntilTrip}
                                         hotelNames={hotelNamesList || undefined}
                                         hasFlights={(latestTrip.itinerary_data?.flights || []).length > 0}

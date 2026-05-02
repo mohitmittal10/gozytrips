@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,23 +12,25 @@ import { Badge } from "@/components/ui/badge";
 import {
   Building2, Car, Compass, FileCheck, Shield, Sparkles, Send,
   LoaderCircle, Copy, Check, AlertCircle, Pencil, RotateCcw,
+  History, Trash2, ExternalLink, Save
 } from "lucide-react";
+import {
+  Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger,
+} from "@/components/ui/sheet";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
+import { createClient } from "@/lib/supabase/client";
 import { generateVendorEnquiry } from "@/ai/flows/generate-vendor-enquiry";
 import type { VendorEnquiryInput } from "@/ai/flows/generate-vendor-enquiry";
+import { LucideIcon } from "lucide-react";
+import { useReferenceOptions } from "@/hooks/use-reference-options";
+import { useClients } from "@/lib/hooks/use-clients";
 
-// ── Enquiry types ────────────────────────────────────────────────────────────
+const ICON_MAP: Record<string, LucideIcon> = {
+  Building2, Car, Compass, FileCheck, Shield, Sparkles
+};
 
-const ENQUIRY_TYPES = [
-  { value: "hotel", label: "Hotel", icon: Building2, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-  { value: "transport", label: "Transport", icon: Car, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
-  { value: "activities", label: "Activities", icon: Compass, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
-  { value: "visa", label: "Visa", icon: FileCheck, color: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-500/20" },
-  { value: "insurance", label: "Insurance", icon: Shield, color: "text-cyan-400", bg: "bg-cyan-500/10", border: "border-cyan-500/20" },
-] as const;
-
-type EnquiryType = typeof ENQUIRY_TYPES[number]["value"];
+type EnquiryType = string;
 
 // ── Mailto helper ────────────────────────────────────────────────────────────
 
@@ -66,6 +68,38 @@ function FormField({
 export default function VendorEnquiry() {
   const { userProfile, agencySettings } = useAuth();
   const { toast } = useToast();
+  const { options, loading: optionsLoading } = useReferenceOptions();
+
+  const enquiryTypes = useMemo(() => {
+    // Support both new 'vendor_enquiry_type' and legacy 'enquiry_type'
+    const opts = options.filter(opt => opt.scope === 'vendor_enquiry_type' || opt.scope === 'enquiry_type');
+    return opts.map(opt => ({
+      value: opt.value,
+      label: opt.label,
+      icon: ICON_MAP[opt.metadata?.icon] || Sparkles,
+      color: opt.metadata?.color || "text-purple-400",
+      bg: opt.metadata?.bg || "bg-purple-500/10",
+      border: opt.metadata?.border || "border-purple-500/20"
+    }));
+  }, [options]);
+
+  const mealPlans = useMemo(() => {
+    const opts = options.filter(opt => opt.scope === 'meal_plan' || opt.scope === 'mealPlan' || opt.scope === 'meal-plan');
+    const unique = Array.from(new Map(opts.map(o => [o.value, o])).values());
+    return unique.map(opt => ({ value: opt.value, label: opt.label }));
+  }, [options]);
+
+  const vehicleTypes = useMemo(() => {
+    const opts = options.filter(opt => opt.scope === 'vehicle_type' || opt.scope === 'transport_type' || opt.scope === 'car_type');
+    const unique = Array.from(new Map(opts.map(o => [o.value, o])).values());
+    return unique.map(opt => ({ value: opt.value, label: opt.label }));
+  }, [options]);
+
+  const coverageTypes = useMemo(() => {
+    const opts = options.filter(opt => opt.scope === 'insurance_coverage' || opt.scope === 'coverage_type');
+    const unique = Array.from(new Map(opts.map(o => [o.value, o])).values());
+    return unique.map(opt => ({ value: opt.value, label: opt.label }));
+  }, [options]);
 
   // Form state
   const [enquiryType, setEnquiryType] = useState<EnquiryType>("hotel");
@@ -81,7 +115,7 @@ export default function VendorEnquiry() {
   const [hotelName, setHotelName] = useState("");
   const [roomType, setRoomType] = useState("");
   const [numberOfRooms, setNumberOfRooms] = useState("1");
-  const [mealPlan, setMealPlan] = useState("MAP");
+  const [mealPlan, setMealPlan] = useState("");
 
   // Transport fields
   const [vehicleType, setVehicleType] = useState("");
@@ -105,9 +139,196 @@ export default function VendorEnquiry() {
   const [isEditing, setIsEditing] = useState(false);
   const [copied, setCopied] = useState(false);
 
+  // Persistence state
+  const [id, setId] = useState<string | null>(null);
+  const [clientId, setClientId] = useState<string | null>(null);
+  const [itineraryId, setItineraryId] = useState<string | null>(null);
+  const [status, setStatus] = useState<"draft" | "sent">("draft");
+  const [pastEnquiries, setPastEnquiries] = useState<any[]>([]);
+  const [userItineraries, setUserItineraries] = useState<any[]>([]);
+  const [isLoadingPast, setIsLoadingPast] = useState(false);
+
+  const { clients } = useClients();
+  const supabase = useMemo(() => createClient(), []);
+
+  // ── Dynamic State Initialization ──────────────────────────────────────────
+  
+  useEffect(() => {
+    if (!id && mealPlans.length > 0 && !mealPlan) {
+      setMealPlan(agencySettings?.default_meal_plan || mealPlans[0].value);
+    }
+  }, [mealPlans, mealPlan, agencySettings, id]);
+
+  useEffect(() => {
+    if (!id && vehicleTypes.length > 0 && !vehicleType) {
+      setVehicleType(agencySettings?.default_cab_vehicle_type || vehicleTypes[0].value);
+    }
+  }, [vehicleTypes, vehicleType, agencySettings, id]);
+
+  useEffect(() => {
+    if (!id && coverageTypes.length > 0 && !coverageType) {
+      setCoverageType(coverageTypes[0].value);
+    }
+  }, [coverageTypes, coverageType, id]);
+
+  // Fetch itineraries and past enquiries
+  useEffect(() => {
+    async function fetchData() {
+      if (!userProfile?.id) return;
+      
+      setIsLoadingPast(true);
+      try {
+        // Fetch itineraries
+        const { data: itins } = await supabase
+          .from("itineraries")
+          .select("id, title")
+          .eq("user_id", userProfile.id)
+          .order("updated_at", { ascending: false });
+        setUserItineraries(itins || []);
+
+        // Fetch past enquiries
+        const { data: enqs } = await supabase
+          .from("vendor_enquiries")
+          .select("*")
+          .eq("user_id", userProfile.id)
+          .order("updated_at", { ascending: false });
+        setPastEnquiries(enqs || []);
+      } catch (err) {
+        console.error("Failed to fetch persistence data:", err);
+      } finally {
+        setIsLoadingPast(false);
+      }
+    }
+    fetchData();
+  }, [userProfile?.id, supabase]);
+
   const hasGenerated = generatedSubject.length > 0;
 
-  const activeType = ENQUIRY_TYPES.find(t => t.value === enquiryType)!;
+  const activeType = enquiryTypes.find(t => t.value === enquiryType) || enquiryTypes[0];
+
+  // ── Persistence ───────────────────────────────────────────────────────────
+  
+  const saveEnquiry = useCallback(async (overrides: any = {}) => {
+    if (!userProfile?.id) return;
+
+    const payload = {
+      destination, travelDates, adults, children, infants, specialRequests,
+      hotelName, roomType, numberOfRooms, mealPlan,
+      vehicleType, route, pickupLocation,
+      activityName, destinationCountry, nationality, coverageType
+    };
+
+    const data = {
+      user_id: userProfile.id,
+      client_id: clientId,
+      itinerary_id: itineraryId,
+      enquiry_type: enquiryType,
+      vendor_email: vendorEmail,
+      payload,
+      subject: generatedSubject,
+      body: generatedBody,
+      status: overrides.status || status,
+      sent_at: overrides.sent_at || (overrides.status === "sent" ? new Date().toISOString() : null),
+    };
+
+    try {
+      if (id) {
+        const { data: updated, error } = await supabase
+          .from("vendor_enquiries")
+          .update(data)
+          .eq("id", id)
+          .select()
+          .single();
+        if (error) throw error;
+        setPastEnquiries(prev => prev.map(e => e.id === id ? updated : e));
+      } else {
+        const { data: inserted, error } = await supabase
+          .from("vendor_enquiries")
+          .insert([data])
+          .select()
+          .single();
+        if (error) throw error;
+        setId(inserted.id);
+        setPastEnquiries(prev => [inserted, ...prev]);
+      }
+    } catch (err) {
+      console.error("Failed to save enquiry:", err);
+    }
+  }, [id, userProfile?.id, clientId, itineraryId, enquiryType, vendorEmail, destination, travelDates, adults, children, infants, specialRequests, hotelName, roomType, numberOfRooms, mealPlan, vehicleType, route, pickupLocation, activityName, destinationCountry, nationality, coverageType, generatedSubject, generatedBody, status, supabase]);
+
+  const loadEnquiry = useCallback((enq: any) => {
+    setId(enq.id);
+    setClientId(enq.client_id);
+    setItineraryId(enq.itinerary_id);
+    setEnquiryType(enq.enquiry_type);
+    setVendorEmail(enq.vendor_email || "");
+    setGeneratedSubject(enq.subject || "");
+    setGeneratedBody(enq.body || "");
+    setStatus(enq.status);
+
+    const p = enq.payload;
+    setDestination(p.destination || "");
+    setTravelDates(p.travelDates || "");
+    setAdults(p.adults || "2");
+    setChildren(p.children || "0");
+    setInfants(p.infants || "0");
+    setSpecialRequests(p.specialRequests || "");
+    setHotelName(p.hotelName || "");
+    setRoomType(p.roomType || "");
+    setNumberOfRooms(p.numberOfRooms || "1");
+    setMealPlan(p.mealPlan || "");
+    setVehicleType(p.vehicleType || "");
+    setRoute(p.route || "");
+    setPickupLocation(p.pickupLocation || "");
+    setActivityName(p.activityName || "");
+    setDestinationCountry(p.destinationCountry || "");
+    setNationality(p.nationality || "");
+    setCoverageType(p.coverageType || "");
+    
+    setIsEditing(false);
+  }, []);
+
+  const handleDeleteEnquiry = useCallback(async (enqId: string) => {
+    try {
+      const { error } = await supabase.from("vendor_enquiries").delete().eq("id", enqId);
+      if (error) throw error;
+      setPastEnquiries(prev => prev.filter(e => e.id !== enqId));
+      if (id === enqId) handleReset();
+      toast({ title: "Enquiry Deleted" });
+    } catch (err) {
+      toast({ variant: "destructive", title: "Delete Failed" });
+    }
+  }, [id, supabase, toast]);
+
+  // ── Reset ──────────────────────────────────────────────────────────────────
+
+  const handleReset = () => {
+    setId(null);
+    setClientId(null);
+    setItineraryId(null);
+    setVendorEmail("");
+    setDestination("");
+    setTravelDates("");
+    setAdults("2");
+    setChildren("0");
+    setInfants("0");
+    setSpecialRequests("");
+    setHotelName("");
+    setRoomType("");
+    setNumberOfRooms("1");
+    setMealPlan(agencySettings?.default_meal_plan || "MAP");
+    setVehicleType(agencySettings?.default_cab_vehicle_type || "");
+    setRoute("");
+    setPickupLocation("");
+    setActivityName("");
+    setDestinationCountry("");
+    setNationality("");
+    setCoverageType("");
+    setGeneratedSubject("");
+    setGeneratedBody("");
+    setStatus("draft");
+    setIsEditing(false);
+  };
 
   // ── Generate ──────────────────────────────────────────────────────────────
 
@@ -149,22 +370,30 @@ export default function VendorEnquiry() {
       setGeneratedBody(result.body);
       setIsEditing(false);
 
-      toast({ title: "Email Generated!", description: "Review and send via Gmail." });
+      // Save to DB
+      await saveEnquiry({ subject: result.subject, body: result.body });
+
+      toast({ title: "Email Generated!", description: "Review and save or send via Gmail." });
     } catch (err: any) {
       console.error("Vendor enquiry generation failed:", err);
       toast({ variant: "destructive", title: "Generation Failed", description: err.message || "Failed to generate email." });
     } finally {
       setIsGenerating(false);
     }
-  }, [enquiryType, destination, travelDates, adults, children, infants, specialRequests, vendorEmail, hotelName, roomType, numberOfRooms, mealPlan, vehicleType, route, pickupLocation, activityName, destinationCountry, nationality, coverageType, userProfile, agencySettings, toast]);
+  }, [enquiryType, destination, travelDates, adults, children, infants, specialRequests, vendorEmail, hotelName, roomType, numberOfRooms, mealPlan, vehicleType, route, pickupLocation, activityName, destinationCountry, nationality, coverageType, userProfile, agencySettings, toast, saveEnquiry]);
 
   // ── Send via Gmail ────────────────────────────────────────────────────────
 
-  const handleSendGmail = useCallback(() => {
+  const handleSendGmail = useCallback(async () => {
     if (!generatedSubject || !generatedBody) return;
     openGmailCompose(vendorEmail, generatedSubject, generatedBody);
-    toast({ title: "Opening Gmail", description: "Your email has been pre-filled in Gmail." });
-  }, [vendorEmail, generatedSubject, generatedBody, toast]);
+    
+    // Mark as sent
+    await saveEnquiry({ status: "sent", sent_at: new Date().toISOString() });
+    setStatus("sent");
+
+    toast({ title: "Opening Gmail", description: "Enquiry marked as sent." });
+  }, [vendorEmail, generatedSubject, generatedBody, saveEnquiry, toast]);
 
   // ── Copy to clipboard ─────────────────────────────────────────────────────
 
@@ -176,35 +405,113 @@ export default function VendorEnquiry() {
     toast({ title: "Copied!", description: "Email copied to clipboard." });
   }, [generatedSubject, generatedBody, toast]);
 
-  // ── Reset ──────────────────────────────────────────────────────────────────
+  if (optionsLoading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <LoaderCircle className="w-8 h-8 animate-spin text-purple-500" />
+      </div>
+    );
+  }
 
-  const handleReset = () => {
-    setGeneratedSubject("");
-    setGeneratedBody("");
-    setIsEditing(false);
-  };
+  if (!activeType) {
+    return (
+      <div className="flex flex-col items-center justify-center py-24 text-gray-500">
+        <AlertCircle className="w-8 h-8 mb-2" />
+        <p>No enquiry types found in reference options. Please check reference options in settings.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       {/* Enquiry Type Selector */}
-      <div className="flex flex-wrap gap-2">
-        {ENQUIRY_TYPES.map(type => {
-          const Icon = type.icon;
-          const isActive = enquiryType === type.value;
-          return (
-            <button
-              key={type.value}
-              onClick={() => { setEnquiryType(type.value); handleReset(); }}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
-                ${isActive
-                  ? `${type.bg} ${type.border} ${type.color} shadow-lg shadow-${type.color}/5`
-                  : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-gray-200"}`}
-            >
-              <Icon className="w-4 h-4" />
-              {type.label}
-            </button>
-          );
-        })}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-2">
+          {enquiryTypes.map(type => {
+            const Icon = type.icon;
+            const isActive = enquiryType === type.value;
+            return (
+              <button
+                key={type.value}
+                onClick={() => { setEnquiryType(type.value); handleReset(); }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
+                  ${isActive
+                    ? `${type.bg} ${type.border} ${type.color} shadow-lg shadow-${type.color}/5`
+                    : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-gray-200"}`}
+              >
+                <Icon className="w-4 h-4" />
+                {type.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <Sheet>
+          <SheetTrigger asChild>
+            <Button variant="outline" className="border-white/10 text-gray-400 hover:text-white gap-2 h-10">
+              <History className="w-4 h-4" />
+              History {pastEnquiries.length > 0 && <Badge variant="secondary" className="ml-1 bg-purple-500/20 text-purple-400 border-none">{pastEnquiries.length}</Badge>}
+            </Button>
+          </SheetTrigger>
+          <SheetContent className="bg-[#0a0a0a] border-white/10 text-white w-[400px] sm:w-[540px]">
+            <SheetHeader>
+              <SheetTitle className="text-white flex items-center gap-2">
+                <History className="w-5 h-5 text-purple-400" />
+                Recent Enquiries
+              </SheetTitle>
+              <SheetDescription className="text-gray-500">
+                Audit and resume your past vendor outreach.
+              </SheetDescription>
+            </SheetHeader>
+            <div className="mt-6 space-y-4 overflow-y-auto max-h-[calc(100vh-180px)] pr-2">
+              {isLoadingPast ? (
+                <div className="flex items-center justify-center py-12">
+                  <LoaderCircle className="w-6 h-6 animate-spin text-purple-500" />
+                </div>
+              ) : pastEnquiries.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-gray-500 text-sm">No past enquiries found.</p>
+                </div>
+              ) : (
+                pastEnquiries.map(enq => (
+                  <div key={enq.id} className="group relative bg-white/5 border border-white/10 rounded-xl p-4 hover:border-purple-500/30 transition-all">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="capitalize text-[10px] bg-purple-500/10 text-purple-400 border-purple-500/20">
+                          {enq.enquiry_type}
+                        </Badge>
+                        <Badge variant="outline" className={`capitalize text-[10px] ${enq.status === 'sent' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
+                          {enq.status}
+                        </Badge>
+                      </div>
+                      <span className="text-[10px] text-gray-500">
+                        {new Date(enq.updated_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-semibold text-gray-200 truncate pr-8">{enq.payload.destination}</h4>
+                    <p className="text-xs text-gray-500 truncate mb-3">{enq.subject || "No subject"}</p>
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        size="sm" variant="secondary" 
+                        className="h-8 text-xs bg-purple-600 hover:bg-purple-700 text-white border-none flex-1"
+                        onClick={() => loadEnquiry(enq)}
+                      >
+                        Resume
+                      </Button>
+                      <Button 
+                        size="sm" variant="outline" 
+                        className="h-8 w-8 p-0 border-white/10 text-gray-500 hover:text-red-400 hover:bg-red-400/10"
+                        onClick={() => handleDeleteEnquiry(enq.id)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </SheetContent>
+        </Sheet>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -220,8 +527,42 @@ export default function VendorEnquiry() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
-            {/* Common Fields */}
             <div className="space-y-3">
+              <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Persistence & Context</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Link to Client</Label>
+                  <Select value={clientId || "none"} onValueChange={(v) => setClientId(v === "none" ? null : v)}>
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-sm">
+                      <SelectValue placeholder="Select client..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Client</SelectItem>
+                      {clients.map(c => (
+                        <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Link to Itinerary</Label>
+                  <Select value={itineraryId || "none"} onValueChange={(v) => setItineraryId(v === "none" ? null : v)}>
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-sm">
+                      <SelectValue placeholder="Select itinerary..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">No Itinerary</SelectItem>
+                      {userItineraries.map(i => (
+                        <SelectItem key={i.id} value={i.id}>{i.title}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+
+            {/* Common Fields */}
+            <div className="space-y-3 pt-2 border-t border-white/5">
               <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Trip Details</p>
               <div className="grid grid-cols-2 gap-3">
                 <FormField label="Destination" value={destination} onChange={setDestination} placeholder="e.g. Manali, Himachal Pradesh" required />
@@ -250,10 +591,9 @@ export default function VendorEnquiry() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="EP">EP (Room Only)</SelectItem>
-                        <SelectItem value="CP">CP (Breakfast)</SelectItem>
-                        <SelectItem value="MAP">MAP (Breakfast + Dinner)</SelectItem>
-                        <SelectItem value="AP">AP (All Meals)</SelectItem>
+                        {mealPlans.map(mp => (
+                          <SelectItem key={mp.value} value={mp.value}>{mp.label}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -269,11 +609,9 @@ export default function VendorEnquiry() {
                         <SelectValue placeholder="Select vehicle..." />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Sedan">Sedan (4 seater)</SelectItem>
-                        <SelectItem value="SUV">SUV (6-7 seater)</SelectItem>
-                        <SelectItem value="Tempo Traveller">Tempo Traveller (12-16 seater)</SelectItem>
-                        <SelectItem value="Mini Bus">Mini Bus (20-25 seater)</SelectItem>
-                        <SelectItem value="Bus">Bus (40+ seater)</SelectItem>
+                        {vehicleTypes.map(vt => (
+                          <SelectItem key={vt.value} value={vt.value}>{vt.label}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -301,10 +639,9 @@ export default function VendorEnquiry() {
                       <SelectValue placeholder="Select coverage..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Comprehensive">Comprehensive</SelectItem>
-                      <SelectItem value="Medical Only">Medical Only</SelectItem>
-                      <SelectItem value="Trip Cancellation">Trip Cancellation</SelectItem>
-                      <SelectItem value="Adventure Sports">Adventure Sports</SelectItem>
+                      {coverageTypes.map(ct => (
+                        <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -325,24 +662,37 @@ export default function VendorEnquiry() {
               </div>
             </div>
 
-            {/* Generate Button */}
-            <Button
-              onClick={handleGenerate}
-              disabled={isGenerating || !destination.trim() || !travelDates.trim()}
-              className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-11 text-sm font-semibold gap-2 shadow-lg shadow-purple-500/20"
-            >
-              {isGenerating ? (
-                <>
-                  <LoaderCircle className="w-4 h-4 animate-spin" />
-                  Generating Email...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  {hasGenerated ? "Regenerate Email" : "Generate Email with AI"}
-                </>
-              )}
-            </Button>
+            {/* Action Buttons */}
+            <div className="flex gap-2">
+              <Button
+                onClick={() => {
+                  saveEnquiry();
+                  toast({ title: "Draft Saved", description: "Your enquiry details have been persisted." });
+                }}
+                variant="outline"
+                className="flex-1 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white h-11 text-sm font-semibold gap-2"
+              >
+                <Save className="w-4 h-4" />
+                Save Draft
+              </Button>
+              <Button
+                onClick={handleGenerate}
+                disabled={isGenerating || !destination.trim() || !travelDates.trim()}
+                className="flex-[2] bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-11 text-sm font-semibold gap-2 shadow-lg shadow-purple-500/20"
+              >
+                {isGenerating ? (
+                  <>
+                    <LoaderCircle className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    {hasGenerated ? "Regenerate" : "Generate with AI"}
+                  </>
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 

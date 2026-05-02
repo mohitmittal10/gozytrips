@@ -24,6 +24,9 @@ import {
 } from "lucide-react";
 import { PdfTemplate, type PdfTheme, type PdfTemplateProps } from "@/components/pdf-template";
 import { useToast } from "@/hooks/use-toast";
+import { useReferenceOptions } from "@/hooks/use-reference-options";
+import { useAuth } from "@/contexts/auth-context";
+import { createClient } from "@/lib/supabase/client";
 import type { SectionMeta, EditOverrides } from "@/lib/pdf-page-renderer";
 
 interface PdfPreviewEditorProps {
@@ -32,6 +35,7 @@ interface PdfPreviewEditorProps {
     templateProps: Omit<PdfTemplateProps, "theme">;
     initialTheme?: PdfTheme;
     filename?: string;
+    itineraryId?: string;
 }
 
 export function PdfPreviewEditor({
@@ -40,8 +44,12 @@ export function PdfPreviewEditor({
     templateProps,
     initialTheme = "classic",
     filename = "Itinerary.pdf",
+    itineraryId,
 }: PdfPreviewEditorProps) {
     const { toast } = useToast();
+    const { userPreferences, agencySettings } = useAuth();
+    const { options: themeOptions } = useReferenceOptions("pdf_theme");
+    const supabase = createClient();
 
     // ─── State ───
     const [theme, setTheme] = useState<PdfTheme>(initialTheme);
@@ -57,6 +65,34 @@ export function PdfPreviewEditor({
     const [forcedBreaks, setForcedBreaks] = useState<Set<string>>(new Set());
     const [spacingOverrides, setSpacingOverrides] = useState<Record<string, number>>({});
     const [hasUnappliedChanges, setHasUnappliedChanges] = useState(false);
+    const [isSaving, setIsSaving] = useState(false);
+
+    // ─── Initialize from persisted data ───
+    useEffect(() => {
+        if (isOpen && itineraryId) {
+            const fetchItineraryData = async () => {
+                const { data, error } = await supabase
+                    .from('itineraries')
+                    .select('selected_theme, pdf_overrides')
+                    .eq('id', itineraryId)
+                    .single();
+                
+                if (!error && data) {
+                    if (data.selected_theme) setTheme(data.selected_theme as PdfTheme);
+                    if (data.pdf_overrides) {
+                        const overrides = data.pdf_overrides as any;
+                        if (overrides.forcedBreaksBefore) setForcedBreaks(new Set(overrides.forcedBreaksBefore));
+                        if (overrides.spacingOverrides) setSpacingOverrides(overrides.spacingOverrides);
+                    }
+                } else if (userPreferences?.default_pdf_theme) {
+                    setTheme(userPreferences.default_pdf_theme as PdfTheme);
+                }
+            };
+            fetchItineraryData();
+        } else if (isOpen && userPreferences?.default_pdf_theme) {
+            setTheme(userPreferences.default_pdf_theme as PdfTheme);
+        }
+    }, [isOpen, itineraryId, userPreferences]);
 
     // Refs
     const hiddenContainerRef = useRef<HTMLDivElement>(null);
@@ -142,8 +178,49 @@ export function PdfPreviewEditor({
         setHasUnappliedChanges(true);
     };
 
-    const applyAndRerender = () => {
+    const applyAndRerender = async () => {
         renderPages();
+        
+        // Auto-save when applying changes if we have an itineraryId
+        if (itineraryId) {
+            setIsSaving(true);
+            try {
+                const overrides = buildOverrides();
+                const { error } = await supabase
+                    .from('itineraries')
+                    .update({
+                        selected_theme: theme,
+                        pdf_overrides: overrides ? {
+                            forcedBreaksBefore: Array.from(overrides.forcedBreaksBefore || []),
+                            spacingOverrides: overrides.spacingOverrides
+                        } : {}
+                    })
+                    .eq('id', itineraryId);
+                
+                if (error) throw error;
+            } catch (err) {
+                console.error("Failed to save PDF overrides:", err);
+            } finally {
+                setIsSaving(false);
+            }
+        }
+    };
+
+    // Also auto-save theme change immediately if no other changes are pending
+    const handleThemeChange = async (newTheme: PdfTheme) => {
+        setTheme(newTheme);
+        if (itineraryId && !hasUnappliedChanges) {
+            try {
+                await supabase
+                    .from('itineraries')
+                    .update({ selected_theme: newTheme })
+                    .eq('id', itineraryId);
+            } catch (err) {
+                console.error("Failed to save theme selection:", err);
+            }
+        } else {
+            setHasUnappliedChanges(true);
+        }
     };
 
     // ─── Download ───
@@ -187,7 +264,7 @@ export function PdfPreviewEditor({
         <>
             {/* Hidden PDF template */}
             <div ref={hiddenContainerRef} style={{ display: "none" }}>
-                <PdfTemplate {...templateProps} theme={theme} />
+                <PdfTemplate {...templateProps} theme={theme} agencySettings={agencySettings} />
             </div>
 
             <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -198,16 +275,24 @@ export function PdfPreviewEditor({
                     <div className="flex items-center justify-between gap-4 px-4 py-3 border-b border-white/10 bg-black/60 backdrop-blur-xl flex-shrink-0">
                         {/* Left: Theme + Zoom */}
                         <div className="flex items-center gap-3">
-                            <Select value={theme} onValueChange={(v) => setTheme(v as PdfTheme)}>
+                            <Select value={theme} onValueChange={(v) => handleThemeChange(v as PdfTheme)}>
                                 <SelectTrigger className="w-[130px] h-8 bg-white/5 border-white/15 text-white text-sm">
                                     <SelectValue placeholder="Theme" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="classic">Classic</SelectItem>
-                                    <SelectItem value="editorial">Editorial</SelectItem>
-                                    <SelectItem value="minimalist">Minimalist</SelectItem>
-                                    <SelectItem value="dark">Dark</SelectItem>
-                                    <SelectItem value="corporate">Corporate</SelectItem>
+                                    {themeOptions.length > 0 ? (
+                                        themeOptions.map(opt => (
+                                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                        ))
+                                    ) : (
+                                        <>
+                                            <SelectItem value="classic">Classic</SelectItem>
+                                            <SelectItem value="editorial">Editorial</SelectItem>
+                                            <SelectItem value="minimalist">Minimalist</SelectItem>
+                                            <SelectItem value="dark">Dark</SelectItem>
+                                            <SelectItem value="corporate">Corporate</SelectItem>
+                                        </>
+                                    )}
                                 </SelectContent>
                             </Select>
 
@@ -425,7 +510,7 @@ export function PdfPreviewEditor({
                                 <div className="px-4 py-3 border-t border-white/10">
                                     <Button
                                         onClick={applyAndRerender}
-                                        disabled={isRendering || !hasUnappliedChanges}
+                                        disabled={isRendering || !hasUnappliedChanges || isSaving}
                                         className={`w-full h-9 text-sm font-medium transition-all ${hasUnappliedChanges
                                             ? "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-0 text-white shadow-lg shadow-purple-500/20"
                                             : "bg-white/5 text-white/40 border border-white/10"
@@ -433,8 +518,10 @@ export function PdfPreviewEditor({
                                     >
                                         {isRendering ? (
                                             <><Loader className="w-4 h-4 mr-2 animate-spin" />Re-rendering…</>
+                                        ) : isSaving ? (
+                                            <><Loader className="w-4 h-4 mr-2 animate-spin" />Saving…</>
                                         ) : hasUnappliedChanges ? (
-                                            <><span className="mr-2">↻</span>Apply Changes & Re-render</>
+                                            <><span className="mr-2">↻</span>Apply & Save Changes</>
                                         ) : (
                                             <>Up to date</>
                                         )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useFormDraft } from "@/hooks/use-form-draft";
 import { type Client } from "@/lib/hooks/use-clients";
 import {
     Dialog,
@@ -41,6 +42,28 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
         tags: [],
     });
 
+    const formKey = isOpen ? (client ? `client:${client.id}` : "client:new") : null;
+
+    const { saveDraft, clearDraft } = useFormDraft(
+        formKey,
+        client ? {
+            name: client.name || "",
+            email: client.email || "",
+            phone: client.phone || "",
+            notes: client.notes || "",
+            tags: client.tags ? [...client.tags] : [],
+        } : {
+            name: "",
+            email: "",
+            phone: "",
+            notes: "",
+            tags: [],
+        },
+        (draftData) => {
+            setFormData(draftData);
+        }
+    );
+
     useEffect(() => {
         if (isOpen) {
             setTagInput("");
@@ -63,6 +86,13 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
             }
         }
     }, [client, isOpen]);
+
+    // Save draft whenever formData changes
+    useEffect(() => {
+        if (isOpen) {
+            saveDraft(formData);
+        }
+    }, [formData, isOpen, saveDraft]);
 
     const handleAddTag = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' || e.key === ',') {
@@ -92,6 +122,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                 notes: formData.notes || null,
                 tags: formData.tags,
             });
+            await clearDraft();
             onOpenChange(false);
         } catch (error) {
             console.error("Failed to save client:", error);

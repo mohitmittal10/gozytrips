@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { getCurrencySymbol } from '@/types/financial';
+import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -324,7 +326,7 @@ function CabCard({ cab, totalDays, onChange, onDelete }: {
                 <Field label="Driver Contact" value={cab.driverContact} onChange={(v) => update("driverContact", v)} placeholder="+91 98765 43210" />
                 <Field label="Driver Name" value={cab.driverName} onChange={(v) => update("driverName", v)} placeholder="Rajesh Kumar" />
                 <Field label="Booking Ref" value={cab.bookingRef} onChange={(v) => update("bookingRef", v)} placeholder="CAB-XXXX" />
-                <Field label="Total Cost (INR)" type="number" value={cab.totalCost} onChange={(v) => update("totalCost", v ? Number(v) : undefined)} placeholder="0" className="col-span-2" />
+                <Field label={`Total Cost (${getCurrencySymbol(DEFAULT_CURRENCY)})`} type="number" value={cab.totalCost} onChange={(v) => update("totalCost", v ? Number(v) : undefined)} placeholder="0" className="col-span-2" />
             </div>
         </div>
     );

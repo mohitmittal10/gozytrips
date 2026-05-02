@@ -43,8 +43,8 @@ export interface Payment {
     itineraryId: string;         // Link to itinerary
     amount: number;
     date: string;
-    method: 'bank_transfer' | 'cash' | 'upi' | 'card' | 'other';
-    type: 'advance' | 'partial' | 'balance' | 'final';
+    method: string; // 'bank_transfer' | 'cash' | 'upi' | 'card' | 'other'
+    type: string;   // 'advance' | 'partial' | 'balance' | 'final'
     notes: string;
     reference: string;          // payment reference number
 }
@@ -52,7 +52,7 @@ export interface Payment {
 export interface Expense {
     id: string;
     itineraryId: string;         // Link to itinerary
-    category: 'hotel' | 'flight' | 'transport' | 'activity' | 'visa' | 'insurance' | 'food' | 'guide' | 'other';
+    category: string; // 'hotel' | 'flight' | 'transport' | 'activity' | 'visa' | 'insurance' | 'food' | 'guide' | 'other'
     vendor: string;
     description: string;
     amount: number;
@@ -81,36 +81,16 @@ export interface InvoiceData {
     companyName: string;
 }
 
-// Helper to generate human-readable Trip ID (GT-XXXX)
-export function generateTripId(): string {
-    const sequence = Math.floor(1000 + Math.random() * 9000);
-    return `GT-${sequence}`;
-}
-
-// Helper to generate unique IDs
-export function generateId(): string {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-}
-
 // Helper to get currency symbol
 export function getCurrencySymbol(currency: Currency): string {
-    const symbols: Record<Currency, string> = {
-        INR: '₹', USD: '$', EUR: '€', GBP: '£',
-        AUD: 'A$', CAD: 'C$', SGD: 'S$', AED: 'AED '
-    };
-    return symbols[currency] || currency;
+    try {
+        const format = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: currency,
+        });
+        return format.formatToParts(0).find(p => p.type === 'currency')?.value || currency;
+    } catch (e) {
+        return currency;
+    }
 }
 
-// Local storage helpers for financial data
-const STORAGE_KEY = 'crm_financial_data';
-
-export function loadFinancialData(): TripFinancial[] {
-    if (typeof window === 'undefined') return [];
-    const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : [];
-}
-
-export function saveFinancialData(data: TripFinancial[]): void {
-    if (typeof window === 'undefined') return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-}

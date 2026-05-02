@@ -34,6 +34,7 @@ interface CRMTableViewProps {
     sortedClients: any[];
     clientsLoading: boolean;
     isComputing: boolean;
+    itineraryStatuses: any[];
     
     // Selection
     selectedIds: Set<string>;
@@ -75,6 +76,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
         sortedClients = [],
         clientsLoading = false,
         isComputing = false,
+        itineraryStatuses = [],
         selectedIds = new Set<string>(),
         toggleSelectAll = () => {},
         toggleSelectOne = () => {},
@@ -112,11 +114,19 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                         <SelectTrigger className="h-8 w-[140px] bg-white/5 border-white/10 text-white text-xs">
                             <SelectValue placeholder="Set Status..." />
                         </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="draft">Draft</SelectItem>
-                            <SelectItem value="proposed">Proposed</SelectItem>
-                            <SelectItem value="sent">Sent</SelectItem>
-                            <SelectItem value="booked">Booked</SelectItem>
+                        <SelectContent className="bg-[#1a1a2e] border-white/10 text-white">
+                            {itineraryStatuses.length > 0 ? (
+                                itineraryStatuses.map(opt => (
+                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                ))
+                            ) : (
+                                <>
+                                    <SelectItem value="draft">Draft</SelectItem>
+                                    <SelectItem value="proposed">Proposed</SelectItem>
+                                    <SelectItem value="sent">Sent</SelectItem>
+                                    <SelectItem value="booked">Booked</SelectItem>
+                                </>
+                            )}
                         </SelectContent>
                     </Select>
                     <Button variant="outline" size="sm" className="h-8 border-white/10 bg-transparent text-gray-300 hover:bg-white/10 text-xs" onClick={handleExportCSV}>

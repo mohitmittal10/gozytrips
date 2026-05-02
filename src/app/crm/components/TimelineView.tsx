@@ -8,6 +8,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
+import { useReferenceOptions } from "@/hooks/use-reference-options";
+import { createClient } from "@/lib/supabase/client";
 import ItineraryTimeline from "@/components/itinerary-timeline";
 
 interface TimelineViewProps {
@@ -17,7 +19,6 @@ interface TimelineViewProps {
     setSelectedTheme: (theme: any) => void;
     handleDownloadPdf: () => void;
     enrichedClients: any[];
-    selectedTheme: any;
 }
 
 export const TimelineView = ({
@@ -28,6 +29,8 @@ export const TimelineView = ({
     handleDownloadPdf,
     enrichedClients
 }: TimelineViewProps) => {
+    const { options: themeOptions } = useReferenceOptions("pdf_theme");
+    const supabase = createClient();
     if (!hasTrips) {
         return (
             <div className="mt-4 glass-main border border-white/10 rounded-xl p-16 text-center text-gray-400 flex flex-col items-center justify-center">
@@ -84,16 +87,35 @@ export const TimelineView = ({
                             </p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <Select defaultValue="classic" onValueChange={(value) => setSelectedTheme(value)}>
+                            <Select 
+                                defaultValue="classic" 
+                                onValueChange={async (value) => {
+                                    setSelectedTheme(value);
+                                    if (selectedTripForModal) {
+                                        await supabase
+                                            .from('itineraries')
+                                            .update({ selected_theme: value })
+                                            .eq('id', selectedTripForModal.id);
+                                    }
+                                }}
+                            >
                                 <SelectTrigger className="w-[150px] bg-white/5 border-white/10 text-white h-9">
                                     <SelectValue placeholder="Format" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="classic">Classic</SelectItem>
-                                    <SelectItem value="editorial">Editorial</SelectItem>
-                                    <SelectItem value="minimalist">Minimalist</SelectItem>
-                                    <SelectItem value="dark">Dark Mode</SelectItem>
-                                    <SelectItem value="corporate">Corporate</SelectItem>
+                                    {themeOptions.length > 0 ? (
+                                        themeOptions.map(opt => (
+                                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                        ))
+                                    ) : (
+                                        <>
+                                            <SelectItem value="classic">Classic</SelectItem>
+                                            <SelectItem value="editorial">Editorial</SelectItem>
+                                            <SelectItem value="minimalist">Minimalist</SelectItem>
+                                            <SelectItem value="dark">Dark Mode</SelectItem>
+                                            <SelectItem value="corporate">Corporate</SelectItem>
+                                        </>
+                                    )}
                                 </SelectContent>
                             </Select>
                             <Button onClick={handleDownloadPdf} className="px-4 py-2 aurora-gradient text-white rounded-lg text-xs font-semibold h-9 flex items-center gap-2 border-none">

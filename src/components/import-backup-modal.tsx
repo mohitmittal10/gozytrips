@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/auth-context";
 
 interface ImportBackupModalProps {
   isDataEmpty: boolean;
@@ -35,18 +36,27 @@ export function ImportBackupModal({ isDataEmpty, onImportSuccess, isOpen: extern
   const [selectedBackupId, setSelectedBackupId] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState("");
   const { toast } = useToast();
+  const { userPreferences, updatePreferences, loading: authLoading } = useAuth();
   const router = useRouter();
-
+  const [hasCheckedPreferences, setHasCheckedPreferences] = useState(false);
+  
   useEffect(() => {
     // Only automatically show if data is empty and they haven't dismissed it
-    const hasSeenPrompt = localStorage.getItem("hasSeenBackupPrompt");
-    if (isDataEmpty && hasSeenPrompt !== "true") {
+    // Wait for auth and preferences to load
+    if (authLoading || !userPreferences || hasCheckedPreferences) return;
+
+    if (isDataEmpty && !userPreferences.backup_prompt_dismissed) {
       setIsOpen(true);
     }
-  }, [isDataEmpty]);
+    setHasCheckedPreferences(true);
+  }, [isDataEmpty, userPreferences, authLoading, hasCheckedPreferences]);
 
-  const handleDismiss = () => {
-    localStorage.setItem("hasSeenBackupPrompt", "true");
+  const handleDismiss = async () => {
+    try {
+      await updatePreferences({ backup_prompt_dismissed: true });
+    } catch (err) {
+      console.error("Failed to update preferences:", err);
+    }
     setIsOpen(false);
   };
 
@@ -60,7 +70,7 @@ export function ImportBackupModal({ isDataEmpty, onImportSuccess, isOpen: extern
       if (!tokenRes.ok) {
         if (tokenRes.status === 404 || tokenRes.status === 401) {
           // If not configured or not authorized, redirect to auth
-          localStorage.setItem("importBackupIntent", "true");
+          await updatePreferences({ pending_import_backup: true });
           router.push("/api/google/auth");
           return;
         }
@@ -92,14 +102,17 @@ export function ImportBackupModal({ isDataEmpty, onImportSuccess, isOpen: extern
   // If we came back from Google Auth intent
   useEffect(() => {
     const handleAuthReturn = async () => {
-      if (localStorage.getItem("importBackupIntent") === "true") {
-        localStorage.removeItem("importBackupIntent");
+      if (userPreferences?.pending_import_backup) {
+        // Clear the intent first
+        await updatePreferences({ pending_import_backup: false });
         setIsOpen(true);
         await handleConnectGoogle();
       }
     };
-    handleAuthReturn();
-  }, []);
+    if (!authLoading && userPreferences) {
+      handleAuthReturn();
+    }
+  }, [userPreferences, authLoading]);
 
   const handleImport = async () => {
     if (!selectedBackupId) return;
@@ -119,7 +132,7 @@ export function ImportBackupModal({ isDataEmpty, onImportSuccess, isOpen: extern
         description: "Your data has been completely restored.",
       });
       
-      localStorage.setItem("hasSeenBackupPrompt", "true");
+      await updatePreferences({ backup_prompt_dismissed: true });
       onImportSuccess(); // Refresh the application state
       
       setTimeout(() => {
@@ -193,7 +206,7 @@ export function ImportBackupModal({ isDataEmpty, onImportSuccess, isOpen: extern
                       description: "Your local data has been restored.",
                     });
                     
-                    localStorage.setItem("hasSeenBackupPrompt", "true");
+                    await updatePreferences({ backup_prompt_dismissed: true });
                     onImportSuccess();
                     
                     setTimeout(() => {

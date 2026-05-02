@@ -3,6 +3,8 @@ import { createClient } from "@supabase/supabase-js";
 import { Database } from "@/types/supabase";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { MapPin, Calendar, FileText } from "lucide-react";
+import { getCurrencySymbol } from "@/types/financial";
+import { DEFAULT_CURRENCY } from "@/types/pricing";
 
 // Use service role key to bypass RLS for public invoice viewing
 const supabaseAdmin = createClient<Database>(
@@ -15,11 +17,12 @@ export const revalidate = 0; // Dynamic rendering
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  // 1. Fetch itinerary
+  // 1. Fetch itinerary securely via share_token
   const { data: itinData, error: itinError } = await supabaseAdmin
     .from("itineraries")
     .select("*")
-    .eq("id", id)
+    .eq("share_token", id)
+    .eq("share_enabled", true)
     .single();
 
   if (itinError || !itinData) {
@@ -27,6 +30,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   }
   
   const itinerary = itinData as any;
+  const itineraryId = itinerary.id;
 
   // 2. Fetch agent profile
   const { data: profData } = await supabaseAdmin
@@ -41,13 +45,37 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const { data: lineItemsData } = await supabaseAdmin
     .from("trip_line_items")
     .select("*")
-    .eq("itinerary_id", id)
+    .eq("itinerary_id", itineraryId)
     .order("created_at", { ascending: true });
 
+  // 4. Fetch payments
+  const { data: paymentsData } = await supabaseAdmin
+    .from("trip_payments")
+    .select("*")
+    .eq("itinerary_id", itineraryId);
+    
+  const payments = (paymentsData as any[]) || [];
+  const amountPaid = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+
+  // 5. Fetch agency settings
+  const { data: settingsData } = await supabaseAdmin
+    .from("agency_settings")
+    .select("*")
+    .eq("user_id", itinerary.user_id)
+    .single();
+    
+  const agencySettings = settingsData as any;
+  const currencyCode = itinerary.currency || agencySettings?.default_currency || DEFAULT_CURRENCY;
+  const currency = getCurrencySymbol(currencyCode as any);
+
   const items = (lineItemsData as any[]) || [];
-  const totalGross = items.reduce((sum, item) => {
+  
+  const calculatedTotal = items.reduce((sum, item) => {
     return sum + (Number(item.net_cost) * (1 + Number(item.markup_percentage) / 100));
   }, 0);
+  
+  const totalGross = itinerary.client_price ? Number(itinerary.client_price) : calculatedTotal;
+  const balanceDue = totalGross - amountPaid;
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -127,7 +155,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                             <div className="text-xs text-zinc-500 capitalize mt-1">{item.category}</div>
                           </td>
                           <td className="px-6 py-4 text-right font-medium text-zinc-900 dark:text-zinc-100">
-                            ₹{itemGross.toFixed(2)}
+                            {currency}{itemGross.toFixed(2)}
                           </td>
                         </tr>
                       );
@@ -136,24 +164,101 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                 </tbody>
                 <tfoot>
                   <tr className="border-t-2 border-zinc-200 dark:border-zinc-700">
+                    <td className="px-6 py-4 text-right font-medium text-zinc-600 dark:text-zinc-400">
+                      Subtotal
+                    </td>
+                    <td className="px-6 py-4 text-right font-medium text-zinc-900 dark:text-zinc-100">
+                      {currency}{totalGross.toFixed(2)}
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-6 py-4 text-right font-medium text-zinc-600 dark:text-zinc-400">
+                      Amount Paid
+                    </td>
+                    <td className="px-6 py-4 text-right font-medium text-green-600 dark:text-green-500">
+                      -{currency}{amountPaid.toFixed(2)}
+                    </td>
+                  </tr>
+                  <tr className="border-t-2 border-zinc-200 dark:border-zinc-700">
                     <td className="px-6 py-6 text-right font-bold text-lg text-zinc-900 dark:text-zinc-100">
-                      Total Due
+                      Balance Due
                     </td>
                     <td className="px-6 py-6 text-right font-bold text-2xl text-primary">
-                      ₹{totalGross.toFixed(2)}
+                      {currency}{balanceDue.toFixed(2)}
                     </td>
                   </tr>
                 </tfoot>
               </table>
             </div>
 
+            {/* Payment History Section */}
+            {payments.length > 0 && (
+              <div className="mt-12">
+                <h3 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Payment History</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="text-xs text-zinc-500 uppercase bg-zinc-50 dark:bg-zinc-800/50">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">Date</th>
+                        <th className="px-4 py-3 font-semibold">Description</th>
+                        <th className="px-4 py-3 font-semibold">Method</th>
+                        <th className="px-4 py-3 font-semibold text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+                      {payments.map((payment) => (
+                        <tr key={payment.id}>
+                          <td className="px-4 py-3 text-zinc-600 dark:text-zinc-400">
+                            {formatDate(payment.date || payment.created_at)}
+                          </td>
+                          <td className="px-4 py-3 text-zinc-900 dark:text-zinc-100 font-medium">
+                            {payment.notes || payment.reference || 'Trip Payment'}
+                          </td>
+                          <td className="px-4 py-3 text-zinc-500 dark:text-zinc-500 capitalize">
+                            {payment.method?.replace('_', ' ') || 'N/A'}
+                          </td>
+                          <td className="px-4 py-3 text-right font-medium text-green-600 dark:text-green-500">
+                            {currency}{Number(payment.amount).toFixed(2)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
             {/* Payment / Footer Note */}
-            <div className="mt-12 p-6 bg-zinc-50 dark:bg-zinc-800/30 rounded-xl border border-zinc-100 dark:border-zinc-800">
-              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 mb-2">Payment Details</h3>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Thank you for your business. Please ensure the total amount is settled prior to the departure date. For any questions regarding this invoice, please contact your travel agent directly.
-              </p>
+            <div className="mt-12 p-8 bg-zinc-50 dark:bg-zinc-800/30 rounded-2xl border border-zinc-100 dark:border-zinc-800 shadow-sm">
+              <h3 className="text-base font-bold text-zinc-900 dark:text-zinc-100 mb-4">Payment & Bank Details</h3>
+              {agencySettings?.bank_details ? (
+                <div className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap leading-relaxed">
+                  {agencySettings.bank_details}
+                </div>
+              ) : (
+                <p className="text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed">
+                  Thank you for your business. Please ensure the total amount is settled prior to the departure date. For any questions regarding this invoice, please contact your travel agent directly.
+                </p>
+              )}
+              
+              {agencySettings?.terms_conditions && (
+                <div className="mt-8 pt-8 border-t border-zinc-200 dark:border-zinc-700">
+                  <h4 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-3">Terms & Conditions</h4>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400 whitespace-pre-wrap leading-relaxed">
+                    {agencySettings.terms_conditions}
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Agent Signature */}
+            {agencySettings?.agent_signature && (
+              <div className="mt-8 pt-8 border-t border-zinc-100 dark:border-zinc-800">
+                <div className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap">
+                  {agencySettings.agent_signature}
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

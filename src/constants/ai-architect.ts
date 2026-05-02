@@ -6,6 +6,8 @@ export const aiArchitectSteps = [
   { id: 3, label: "Preferences", fields: ["budget", "mustInclude", "avoid", "leisureTime", "leisureDay", "travelTimePreference"] as const },
 ];
 
+export const MAX_AI_OPTIMIZATIONS = 3;
+
 export const loadingTexts = [
   "Analyzing your preferences...",
   "Finding the best flights...",

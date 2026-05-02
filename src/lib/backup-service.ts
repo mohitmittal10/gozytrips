@@ -1,25 +1,33 @@
 import { createClient } from '@/lib/supabase/client';
+import { google } from 'googleapis';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 export class BackupService {
   /**
    * Generates a full JSON backup of the user's data from Supabase.
    */
-  static async generateBackupData(): Promise<Blob> {
-    const supabase = createClient();
+  static async generateBackupData(customSupabase?: SupabaseClient, customUserId?: string): Promise<Blob> {
+    const supabase = customSupabase || createClient();
     
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('Not authenticated');
+    let userId = customUserId;
+    if (!userId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      userId = user.id;
+    }
 
     // Fetch all related data
-    const [clientsRes, tripsRes, itinerariesRes, auditLogsRes, profileRes, settingsRes, tripLineItemsRes, standaloneBookingsRes] = await Promise.all([
-      supabase.from('clients').select('*').eq('user_id', user.id),
-      supabase.from('trips').select('*').eq('user_id', user.id),
-      supabase.from('itineraries').select('*').eq('user_id', user.id),
-      supabase.from('audit_logs').select('*').eq('user_id', user.id),
-      supabase.from('user_profiles').select('*').eq('id', user.id),
-      supabase.from('agency_settings').select('*').eq('user_id', user.id),
-      supabase.from('trip_line_items').select('*, itineraries!inner(user_id)').eq('itineraries.user_id', user.id),
-      supabase.from('standalone_bookings').select('*').eq('user_id', user.id)
+    const [clientsRes, tripsRes, itinerariesRes, auditLogsRes, profileRes, settingsRes, tripLineItemsRes, tripPaymentsRes, tripExpensesRes, standaloneBookingsRes] = await Promise.all([
+      supabase.from('clients').select('*').eq('user_id', userId),
+      supabase.from('trips').select('*').eq('user_id', userId),
+      supabase.from('itineraries').select('*').eq('user_id', userId),
+      supabase.from('audit_logs').select('*').eq('user_id', userId),
+      supabase.from('user_profiles').select('*').eq('id', userId),
+      supabase.from('agency_settings').select('*').eq('user_id', userId),
+      supabase.from('trip_line_items').select('*, itineraries!inner(user_id)').eq('itineraries.user_id', userId),
+      supabase.from('trip_payments').select('*, itineraries!inner(user_id)').eq('itineraries.user_id', userId),
+      supabase.from('trip_expenses').select('*, itineraries!inner(user_id)').eq('itineraries.user_id', userId),
+      supabase.from('standalone_bookings').select('*').eq('user_id', userId)
     ]);
 
     // Clean up the joined data from trip_line_items if needed, or just let it be.
@@ -30,7 +38,7 @@ export class BackupService {
     const backupData = {
       version: '1.1',
       timestamp: new Date().toISOString(),
-      user_id: user.id,
+      user_id: userId,
       data: {
         clients: clientsRes.data || [],
         trips: tripsRes.data || [],
@@ -39,6 +47,8 @@ export class BackupService {
         user_profiles: profileRes.data || [],
         agency_settings: settingsRes.data || [],
         trip_line_items: tripLineItemsRes.data || [],
+        trip_payments: tripPaymentsRes.data || [],
+        trip_expenses: tripExpensesRes.data || [],
         standalone_bookings: standaloneBookingsRes.data || []
       }
     };
@@ -80,36 +90,67 @@ export class BackupService {
   /**
    * Orchestrates the full backup process.
    */
-  static async performBackup(): Promise<void> {
-    // 1. Get fresh access token
-    const tokenRes = await fetch('/api/google/token');
-    if (!tokenRes.ok) {
-      if (tokenRes.status === 404) {
-        throw new Error('Google Drive integration not configured.');
+  static async performBackup(customSupabase?: SupabaseClient, customUserId?: string): Promise<void> {
+    const supabase = customSupabase || createClient();
+    
+    let userId = customUserId;
+    let googleRefreshToken: string | null = null;
+
+    if (!userId) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+      userId = user.id;
+    }
+
+    // 1. Get access token
+    let accessToken: string;
+
+    if (typeof window === 'undefined') {
+      // Server-side: Direct refresh
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('google_refresh_token')
+        .eq('id', userId)
+        .single();
+      
+      googleRefreshToken = profile?.google_refresh_token;
+
+      if (!googleRefreshToken) throw new Error('Google Drive integration not configured.');
+
+      const oauth2Client = new google.auth.OAuth2(
+        process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET
+      );
+
+      oauth2Client.setCredentials({ refresh_token: googleRefreshToken });
+      const { credentials } = await oauth2Client.refreshAccessToken();
+      accessToken = credentials.access_token!;
+    } else {
+      // Client-side: Call API route
+      const tokenRes = await fetch('/api/google/token');
+      if (!tokenRes.ok) {
+        if (tokenRes.status === 404) throw new Error('Google Drive integration not configured.');
+        throw new Error('Failed to obtain Google Drive access token.');
       }
-      throw new Error('Failed to obtain Google Drive access token.');
+      const { access_token } = await tokenRes.json();
+      accessToken = access_token;
     }
     
-    const { access_token } = await tokenRes.json();
-    if (!access_token) throw new Error('No access token returned.');
+    if (!accessToken) throw new Error('No access token returned.');
 
     // 2. Generate backup file
-    const fileBlob = await this.generateBackupData();
+    const fileBlob = await this.generateBackupData(supabase, userId);
     const dateStr = new Date().toISOString().split('T')[0];
     const filename = `GozyTrips_Backup_${dateStr}.json`;
 
     // 3. Upload to Google Drive
-    await this.uploadToGoogleDrive(access_token, fileBlob, filename);
+    await this.uploadToGoogleDrive(accessToken, fileBlob, filename);
 
     // 4. Update last_backup_date in profile
-    const supabase = createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase
-        .from('user_profiles')
-        .update({ last_backup_date: new Date().toISOString() })
-        .eq('id', user.id);
-    }
+    await supabase
+      .from('user_profiles')
+      .update({ last_backup_date: new Date().toISOString() })
+      .eq('id', userId);
   }
 
   /**
@@ -227,16 +268,29 @@ export class BackupService {
 
     // 5. Process trip_line_items (Finances)
     const mappedTripLineItems = (dataToRestore.trip_line_items || []).map((tl: any) => {
+      const { itineraries, ...rest } = tl;
       return {
-        id: getTargetId(tl.id),
-        itinerary_id: resolveForeignKey(tl.itinerary_id),
-        title: tl.title,
-        category: tl.category,
-        net_cost: tl.net_cost,
-        markup_percentage: tl.markup_percentage,
-        currency: tl.currency,
-        created_at: tl.created_at,
-        updated_at: tl.updated_at
+        ...rest,
+        id: getTargetId(rest.id),
+        itinerary_id: resolveForeignKey(rest.itinerary_id)
+      };
+    });
+
+    const mappedTripPayments = (dataToRestore.trip_payments || []).map((tp: any) => {
+      const { itineraries, ...rest } = tp;
+      return {
+        ...rest,
+        id: getTargetId(rest.id),
+        itinerary_id: resolveForeignKey(rest.itinerary_id)
+      };
+    });
+
+    const mappedTripExpenses = (dataToRestore.trip_expenses || []).map((te: any) => {
+      const { itineraries, ...rest } = te;
+      return {
+        ...rest,
+        id: getTargetId(rest.id),
+        itinerary_id: resolveForeignKey(rest.itinerary_id)
       };
     });
 
@@ -272,6 +326,8 @@ export class BackupService {
         await upsertInChunks('trips', mappedTrips);
         await upsertInChunks('itineraries', mappedItineraries);
         await upsertInChunks('trip_line_items', mappedTripLineItems);
+        await upsertInChunks('trip_payments', mappedTripPayments);
+        await upsertInChunks('trip_expenses', mappedTripExpenses);
         await upsertInChunks('audit_logs', mappedAuditLogs);
         await upsertInChunks('standalone_bookings', mappedStandaloneBookings);
 

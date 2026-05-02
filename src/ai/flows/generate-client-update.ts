@@ -23,7 +23,7 @@ const ClientUpdateContextSchema = z.object({
   destination: z.string().describe('Trip destination(s).'),
   travelDates: z.string().describe('Travel dates in readable format.'),
   tripDuration: z.string().optional().describe('Trip duration, e.g. "5D/4N".'),
-  totalCost: z.string().optional().describe('Total trip cost for the client, e.g. "₹85,000".'),
+  totalCost: z.string().optional().describe('Total trip cost for the client, e.g. "85,000".'),
   daysUntilTrip: z.number().optional().describe('Number of days until the trip starts. Negative means trip has passed.'),
   hotelNames: z.string().optional().describe('Comma-separated list of hotel names booked.'),
   hasFlights: z.boolean().optional().describe('Whether flights are included.'),

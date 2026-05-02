@@ -3,6 +3,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, DollarSign, Trash2, Eye, Heart } from 'lucide-react';
+import { getCurrencySymbol } from "@/types/financial";
+import { DEFAULT_CURRENCY } from "@/types/pricing";
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
 
 export interface SavedItinerary {
@@ -18,6 +20,7 @@ export interface SavedItinerary {
     status: string;
     is_favourite: boolean | null;
     itinerary_data: TravelItineraryOutput;
+    currency: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -30,6 +33,7 @@ interface Client {
 interface TripCardProps {
     trip: SavedItinerary;
     clients?: Client[];
+    agencySettings?: any;
     onToggleFavourite?: (trip: SavedItinerary) => void;
     onDuplicate?: (trip: SavedItinerary) => void;
     onView?: (trip: SavedItinerary) => void;
@@ -41,6 +45,7 @@ interface TripCardProps {
 export function TripCard({
     trip,
     clients = [],
+    agencySettings,
     onToggleFavourite,
     onDuplicate,
     onView,
@@ -108,8 +113,8 @@ export function TripCard({
                     </div>
                     {trip.budget && (
                         <div className="flex items-center gap-2 text-foreground/80">
-                            <DollarSign className="w-4 h-4 text-green-400" />
-                            <span>₹{trip.budget} per day</span>
+                            <span className="w-4 h-4 flex items-center justify-center text-[10px]">💰</span>
+                            <span>{getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}{trip.budget} per day</span>
                         </div>
                     )}
                 </div>

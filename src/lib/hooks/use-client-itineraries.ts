@@ -18,6 +18,7 @@ export interface ClientItinerary {
   budget: number | null;
   client_id: string | null;
   status: string;
+  selected_theme: string | null;
   itinerary_data: TravelItineraryOutput;
   created_at: string;
   updated_at: string;
@@ -60,7 +61,8 @@ export function useClientItineraries(clientId: string) {
   const updateItineraryData = async (
     itineraryId: string, 
     newData: TravelItineraryOutput,
-    newStatus?: string
+    newStatus?: string,
+    newTheme?: string
   ) => {
     if (!user) throw new Error("Must be logged in to update");
     
@@ -73,6 +75,10 @@ export function useClientItineraries(clientId: string) {
       
       if (newStatus) {
         updates.status = newStatus;
+      }
+
+      if (newTheme) {
+        updates.selected_theme = newTheme;
       }
       
       const { data, error } = await supabase

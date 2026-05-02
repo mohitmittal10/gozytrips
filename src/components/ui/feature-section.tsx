@@ -170,14 +170,21 @@ export function FeatureSteps({
                                             exit={{ y: -20, opacity: 0 }}
                                             transition={{ duration: 0.4, ease: "easeOut" }}
                                         >
-                                            <Image
-                                                src={feature.image}
-                                                alt={feature.step}
-                                                className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                                                width={1000}
-                                                height={500}
-                                                priority
-                                            />
+                                            {feature.image ? (
+                                                <Image
+                                                    src={feature.image}
+                                                    alt={feature.step}
+                                                    className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                                                    width={1000}
+                                                    height={500}
+                                                    priority
+                                                />
+                                            ) : (
+                                                // Placeholder shown when no image URL is provided yet
+                                                <div className="w-full h-full bg-gradient-to-br from-purple-900/40 via-violet-900/30 to-indigo-900/40 flex items-center justify-center">
+                                                    <span className="text-white/20 text-xs font-medium uppercase tracking-widest">Image coming soon</span>
+                                                </div>
+                                            )}
                                             <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent" />
                                         </motion.div>
                                     ),

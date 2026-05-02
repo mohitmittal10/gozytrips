@@ -105,7 +105,7 @@ export default function BackupSettings({ userId, userProfile }: { userId: string
                 </Select>
               </div>
               <p className="text-xs text-muted-foreground flex-1 mt-1">
-                Backups process locally in your browser upon logging into GozyTrips.
+                Backups are processed automatically on the server based on your selected frequency.
               </p>
             </div>
 
