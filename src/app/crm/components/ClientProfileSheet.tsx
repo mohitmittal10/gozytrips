@@ -23,6 +23,7 @@ import { getAvatarColor, cn } from "@/lib/utils";
 import { getCurrencySymbol } from "@/types/financial";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { EnrichedClient } from "../utils/metrics-utils";
+import { useAuth } from "@/contexts/auth-context";
 
 const ClientUpdateSuggestions = dynamic(() => import("@/components/client-update-suggestions"), { ssr: false });
 
@@ -59,6 +60,7 @@ export const ClientProfileSheet = ({
     getAvatarColor,
     getTripCost
 }: ClientProfileSheetProps) => {
+    const { agencySettings } = useAuth();
     return (
         <Sheet open={!!selectedClient} onOpenChange={(open) => !open && setSelectedClient(null)}>
             <SheetContent className="bg-[#0A0A0A] border-l border-white/10 text-white w-full sm:max-w-2xl lg:max-w-3xl overflow-y-auto">

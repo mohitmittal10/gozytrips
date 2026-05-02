@@ -168,6 +168,9 @@ export default function CRMLitePage() {
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
+    const supabaseRef = useRef(createClient());
+    const supabase = supabaseRef.current;
+
     // Lazy load full itinerary data when a trip is selected for viewing
     useEffect(() => {
         const fetchFullTrip = async () => {
@@ -259,8 +262,6 @@ export default function CRMLitePage() {
     const [statusHistory, setStatusHistory] = useState<Record<string, { status: string; timestamp: string; by: string }[]>>({});
 
     const { clients, loading: clientsLoading, createClient: _createClient, fetchClients, updateClient } = useClients();
-    const supabaseRef = useRef(createClient());
-    const supabase = supabaseRef.current;
     const { toast } = useToast();
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);

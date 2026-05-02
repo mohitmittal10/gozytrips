@@ -3,6 +3,7 @@ import { Compass, Plus, Eye, ArrowRight, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 interface EditItineraryViewProps {
     enrichedClients: any[];
