@@ -43,7 +43,9 @@ import {
 import { getCurrencySymbol } from "@/types/financial";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 const StandaloneBookingDialog = dynamic(() => import("@/components/standalone-bookings/booking-dialog").then(mod => mod.StandaloneBookingDialog), { ssr: false });
+
 import type { BookingServiceType } from '@/types/standalone-bookings';
+
 import {
     Select,
     SelectContent,
@@ -97,6 +99,8 @@ import { EditItineraryView } from "./components/EditItineraryView";
 import { ClientProfileSheet } from "./components/ClientProfileSheet";
 import { TripsView } from "./components/TripsView";
 import { TripDetailSheet, type FlatTrip } from "./components/TripDetailSheet";
+import { BookingDetailSheet } from "./components/BookingDetailSheet";
+
 
 
 // A combined type taking our client and adding the dynamic trip data
@@ -116,11 +120,6 @@ export default function CRMLitePage() {
 
     // Add Client Dialog State
     const [isAddClientOpen, setIsAddClientOpen] = useState(false);
-    const [newClientName, setNewClientName] = useState("");
-    const [newClientEmail, setNewClientEmail] = useState("");
-    const [newClientPhone, setNewClientPhone] = useState("");
-    const [newClientNotes, setNewClientNotes] = useState("");
-    const [isAddingClient, setIsAddingClient] = useState(false);
 
     // View Client Sheet State
     const [selectedClient, setSelectedClient] = useState<EnrichedClient | null>(null);
@@ -210,7 +209,9 @@ export default function CRMLitePage() {
         standaloneGross: 0,
     });
     const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+    const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
     const [deletingBookingId, setDeletingBookingId] = useState<string | null>(null);
+
 
     // Table UX: sorting
     const [sortColumn, setSortColumn] = useState<'name' | 'status' | 'budget' | 'date'>('name');
@@ -439,163 +440,170 @@ export default function CRMLitePage() {
         return recentActivity.filter(a => a.time.getTime() > lastViewedActivity).length;
     }, [recentActivity, lastViewedActivity]);
 
+    const selectedClientForBooking = useMemo(() => {
+        if (!selectedBooking || !selectedBooking.client_id) return null;
+        return clients.find(c => c.id === selectedBooking.client_id) || null;
+    }, [selectedBooking, clients]);
+
+
     const uniqueTags = useMemo(() => {
         const tags = new Set<string>();
         clients.forEach(c => c.tags?.forEach(t => tags.add(t)));
         return Array.from(tags).sort();
     }, [clients]);
 
-    useEffect(() => {
-        async function fetchTripsAndCombine() {
-            if (!user || clientsLoading) return;
-            setIsComputing(true);
+    const fetchWorkspaceData = useCallback(async () => {
+        if (!user || clientsLoading) return;
+        setIsComputing(true);
 
-            try {
-                setDashboardFinanceRollup({
-                    tripLineNet: 0,
-                    tripLineMarkup: 0,
-                    tripLineGross: 0,
-                    standaloneNet: 0,
-                    standaloneMarkup: 0,
-                    standaloneGross: 0,
-                });
+        try {
+            setDashboardFinanceRollup({
+                tripLineNet: 0,
+                tripLineMarkup: 0,
+                tripLineGross: 0,
+                standaloneNet: 0,
+                standaloneMarkup: 0,
+                standaloneGross: 0,
+            });
 
-                // Fetch all itineraries for this user - selecting only required columns to avoid heavy itinerary_data
-                const { data: itineraries, error } = await supabase
-                    .from("itineraries")
-                    .select("id, client_id, title, status, destinations, start_date, end_date, budget, client_price, currency, commission_rate, markup_value, markup_type, tax_percentage, adult_pax, child_pax, infant_pax, created_at, updated_at")
-                    .eq("user_id", user.id)
-                    .order("updated_at", { ascending: false });
+            // Fetch all itineraries for this user - selecting only required columns to avoid heavy itinerary_data
+            const { data: itineraries, error } = await supabase
+                .from("itineraries")
+                .select("id, client_id, title, status, destinations, start_date, end_date, budget, client_price, currency, commission_rate, markup_value, markup_type, tax_percentage, adult_pax, child_pax, infant_pax, created_at, updated_at")
+                .eq("user_id", user.id)
+                .order("updated_at", { ascending: false });
 
-                if (error) throw error;
+            if (error) throw error;
 
-                // Also fetch standalone bookings
-                const { data: standaloneData, error: standaloneError } = await supabase
-                    .from('standalone_bookings')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .order('created_at', { ascending: false });
+            // Also fetch standalone bookings
+            const { data: standaloneData, error: standaloneError } = await supabase
+                .from('standalone_bookings')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
 
-                if (!standaloneError) {
-                    setBookings(standaloneData || []);
-                }
-                setBookingsLoading(false);
-
-                const bookedItineraryIds = (itineraries || [])
-                    .filter((t: { status?: string }) => isBookedTripStatus(t.status))
-                    .map((t: { id: string }) => t.id);
-
-                let tripLineNet = 0;
-                let tripLineMarkup = 0;
-                let tripLineGross = 0;
-                const LINE_CHUNK = 60;
-                for (let i = 0; i < bookedItineraryIds.length; i += LINE_CHUNK) {
-                    const slice = bookedItineraryIds.slice(i, i + LINE_CHUNK);
-                    const { data: lineItems, error: lineErr } = await supabase
-                        .from("trip_line_items")
-                        .select("net_cost, markup_percentage")
-                        .in("itinerary_id", slice);
-                    if (!lineErr && lineItems) {
-                        lineItems.forEach((item: { net_cost?: number; markup_percentage?: number }) => {
-                            const net = Number(item.net_cost) || 0;
-                            const m = Number(item.markup_percentage) || 0;
-                            tripLineNet += net;
-                            tripLineMarkup += net * (m / 100);
-                            tripLineGross += net * (1 + m / 100);
-                        });
-                    }
-                }
-
-                let standaloneNet = 0;
-                let standaloneMarkup = 0;
-                let standaloneGross = 0;
-                (standaloneData || []).forEach((b: { net_cost?: number | null; markup_percentage?: number | null }) => {
-                    const net = Number(b.net_cost) || 0;
-                    const m = Number(b.markup_percentage) || 0;
-                    standaloneNet += net;
-                    standaloneMarkup += net * (m / 100);
-                    standaloneGross += net * (1 + m / 100);
-                });
-
-                setDashboardFinanceRollup({
-                    tripLineNet,
-                    tripLineMarkup,
-                    tripLineGross,
-                    standaloneNet,
-                    standaloneMarkup,
-                    standaloneGross,
-                });
-
-                const combined = clients.map((client) => {
-                    const clientTrips = itineraries?.filter(it => it.client_id === client.id) || [];
-                    const totalBookedRevenue = clientTrips
-                        .filter(t => t.status.toLowerCase() === 'booked' || t.status.toLowerCase() === 'confirmed')
-                        .reduce((acc, t) => acc + getTripCost(t), 0);
-                    
-                    const latestTrip = clientTrips[0];
-                    const latestCalculatedBudget = latestTrip ? getTripCost(latestTrip) : 0;
-
-                    const bookedTrips = clientTrips.filter(t => t.status.toLowerCase() === 'booked' || t.status.toLowerCase() === 'confirmed');
-                    
-                    const tripsToRender = bookedTrips.length > 0 ? bookedTrips : (latestTrip ? [latestTrip] : []);
-                    const bookedDestinations = tripsToRender.map(t => {
-                        // 1. Check destinations column
-                        let label = t.destinations && t.destinations !== "" ? t.destinations : "";
-                        
-                        // 2. If empty, check title (removing "Trip to " prefix)
-                        if (!label && t.title) {
-                            label = t.title.replace(/^Trip to\s+/i, "");
-                        }
-                        
-                        // 3. If still empty, check itinerary_data areaFocus
-                        if (!label && t.itinerary_data?.itinerary) {
-                            const cities = t.itinerary_data.itinerary
-                                .map((day: any) => day.areaFocus?.split(',')[0]?.trim())
-                                .filter(Boolean);
-                            const uniqueCities = Array.from(new Set(cities));
-                            if (uniqueCities.length > 0) {
-                                label = uniqueCities.join(", ");
-                            }
-                        }
-
-                        // 4. Default fallback to starting_location
-                        if (!label) {
-                            label = (t.starting_location === t.ending_location || !t.ending_location 
-                                ? t.starting_location 
-                                : `${t.starting_location} to ${t.ending_location}`);
-                        }
-                        
-                        return { id: t.id, label };
-                    });
-
-                    return {
-                        ...client,
-                        tags: client.tags || [],
-                        latestStatus: latestTrip?.status || "No Active Trips",
-                        latestDestination: bookedDestinations.length > 0 ? bookedDestinations.map(d => d.label).join(", ") : "N/A",
-                        bookedDestinations: bookedDestinations,
-                        latestBudget: totalBookedRevenue > 0 
-                            ? `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${totalBookedRevenue.toLocaleString()}` 
-                            : (latestCalculatedBudget > 0 
-                                ? `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${latestCalculatedBudget.toLocaleString()}` 
-                                : "N/A"),
-                        latestRawBudget: totalBookedRevenue > 0 ? totalBookedRevenue : latestCalculatedBudget,
-                        latestContact: new Date(client.updated_at).toLocaleDateString(),
-                        latestTripId: latestTrip?.id,
-                        allTrips: clientTrips
-                    };
-                });
-
-                setEnrichedClients(combined);
-            } catch (err) {
-                console.error("Failed to combine client trips:", err);
-            } finally {
-                setIsComputing(false);
+            if (!standaloneError) {
+                setBookings(standaloneData || []);
             }
-        }
+            setBookingsLoading(false);
 
-        fetchTripsAndCombine();
-    }, [user?.id, clientsKey, clientsLoading]);
+            const bookedItineraryIds = (itineraries || [])
+                .filter((t: { status?: string }) => isBookedTripStatus(t.status))
+                .map((t: { id: string }) => t.id);
+
+            let tripLineNet = 0;
+            let tripLineMarkup = 0;
+            let tripLineGross = 0;
+            const LINE_CHUNK = 60;
+            for (let i = 0; i < bookedItineraryIds.length; i += LINE_CHUNK) {
+                const slice = bookedItineraryIds.slice(i, i + LINE_CHUNK);
+                const { data: lineItems, error: lineErr } = await supabase
+                    .from("trip_line_items")
+                    .select("net_cost, markup_percentage")
+                    .in("itinerary_id", slice);
+                if (!lineErr && lineItems) {
+                    lineItems.forEach((item: { net_cost?: number; markup_percentage?: number }) => {
+                        const net = Number(item.net_cost) || 0;
+                        const m = Number(item.markup_percentage) || 0;
+                        tripLineNet += net;
+                        tripLineMarkup += net * (m / 100);
+                        tripLineGross += net * (1 + m / 100);
+                    });
+                }
+            }
+
+            let standaloneNet = 0;
+            let standaloneMarkup = 0;
+            let standaloneGross = 0;
+            (standaloneData || []).forEach((b: { net_cost?: number | null; markup_percentage?: number | null }) => {
+                const net = Number(b.net_cost) || 0;
+                const m = Number(b.markup_percentage) || 0;
+                standaloneNet += net;
+                standaloneMarkup += net * (m / 100);
+                standaloneGross += net * (1 + m / 100);
+            });
+
+            setDashboardFinanceRollup({
+                tripLineNet,
+                tripLineMarkup,
+                tripLineGross,
+                standaloneNet,
+                standaloneMarkup,
+                standaloneGross,
+            });
+
+            const combined = clients.map((client) => {
+                const clientTrips = itineraries?.filter(it => it.client_id === client.id) || [];
+                const totalBookedRevenue = clientTrips
+                    .filter(t => t.status.toLowerCase() === 'booked' || t.status.toLowerCase() === 'confirmed')
+                    .reduce((acc, t) => acc + getTripCost(t), 0);
+                
+                const latestTrip = clientTrips[0];
+                const latestCalculatedBudget = latestTrip ? getTripCost(latestTrip) : 0;
+
+                const bookedTrips = clientTrips.filter(t => t.status.toLowerCase() === 'booked' || t.status.toLowerCase() === 'confirmed');
+                
+                const tripsToRender = bookedTrips.length > 0 ? bookedTrips : (latestTrip ? [latestTrip] : []);
+                const bookedDestinations = tripsToRender.map(t => {
+                    // 1. Check destinations column
+                    let label = t.destinations && t.destinations !== "" ? t.destinations : "";
+                    
+                    // 2. If empty, check title (removing "Trip to " prefix)
+                    if (!label && t.title) {
+                        label = t.title.replace(/^Trip to\s+/i, "");
+                    }
+                    
+                    // 3. If still empty, check itinerary_data areaFocus
+                    if (!label && t.itinerary_data?.itinerary) {
+                        const cities = t.itinerary_data.itinerary
+                            .map((day: any) => day.areaFocus?.split(',')[0]?.trim())
+                            .filter(Boolean);
+                        const uniqueCities = Array.from(new Set(cities));
+                        if (uniqueCities.length > 0) {
+                            label = uniqueCities.join(", ");
+                        }
+                    }
+
+                    // 4. Default fallback to starting_location
+                    if (!label) {
+                        label = (t.starting_location === t.ending_location || !t.ending_location 
+                            ? t.starting_location 
+                            : `${t.starting_location} to ${t.ending_location}`);
+                    }
+                    
+                    return { id: t.id, label };
+                });
+
+                return {
+                    ...client,
+                    tags: client.tags || [],
+                    latestStatus: latestTrip?.status || "No Active Trips",
+                    latestDestination: bookedDestinations.length > 0 ? bookedDestinations.map(d => d.label).join(", ") : "N/A",
+                    bookedDestinations: bookedDestinations,
+                    latestBudget: totalBookedRevenue > 0 
+                        ? `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${totalBookedRevenue.toLocaleString()}` 
+                        : (latestCalculatedBudget > 0 
+                            ? `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${latestCalculatedBudget.toLocaleString()}` 
+                            : "N/A"),
+                    latestRawBudget: totalBookedRevenue > 0 ? totalBookedRevenue : latestCalculatedBudget,
+                    latestContact: new Date(client.updated_at).toLocaleDateString(),
+                    latestTripId: latestTrip?.id,
+                    allTrips: clientTrips
+                };
+            });
+
+            setEnrichedClients(combined);
+        } catch (err) {
+            console.error("Failed to combine client trips:", err);
+        } finally {
+            setIsComputing(false);
+        }
+    }, [user?.id, clientsKey, clientsLoading, clients, agencySettings?.default_currency, supabase]);
+
+    useEffect(() => {
+        fetchWorkspaceData();
+    }, [fetchWorkspaceData]);
+
 
     // Manual refresh: re-fetches clients (which triggers enrichment via clientsKey change)
     const handleRefreshClients = useCallback(async () => {
@@ -618,7 +626,42 @@ export default function CRMLitePage() {
         }
     }, [fetchClients, toast]);
 
+    const handleDeleteBooking = async (bookingId: string) => {
+        if (!user || !bookingId) return;
+        
+        setDeletingBookingId(bookingId);
+        try {
+            const { error } = await supabase
+                .from('standalone_bookings')
+                .delete()
+                .eq('id', bookingId);
+
+            if (error) throw error;
+
+            toast({
+                title: "Booking Deleted",
+                description: "Standalone booking has been removed.",
+            });
+            
+            if (selectedBooking?.id === bookingId) {
+                setSelectedBooking(null);
+            }
+            
+            fetchWorkspaceData();
+        } catch (err) {
+            console.error("Failed to delete booking:", err);
+            toast({
+                title: "Error",
+                description: "Failed to delete standalone booking.",
+                variant: "destructive",
+            });
+        } finally {
+            setDeletingBookingId(null);
+        }
+    };
+
     const handleStatusChange = async (clientId: string, tripId: string | undefined, newStatus: string) => {
+
         if (!user || !tripId) return;
 
         // Find the old status before updating state
@@ -727,43 +770,7 @@ export default function CRMLitePage() {
 
 
 
-    const handleAddClient = async () => {
-        if (!newClientName.trim()) {
-            toast({ variant: "destructive", title: "Error", description: "Client name is required." });
-            return;
-        }
 
-        setIsAddingClient(true);
-        try {
-            await _createClient({
-                name: newClientName,
-                email: newClientEmail || null,
-                phone: newClientPhone || null,
-                notes: newClientNotes || null,
-                tags: []
-            });
-
-            // Audit log (fire-and-forget)
-            if (user) {
-                logAuditEvent(user.id, "CREATE_CLIENT", `Client "${newClientName}" was added`, {
-                    entityType: "client",
-                    metadata: { name: newClientName, email: newClientEmail },
-                });
-            }
-
-            toast({ title: "Success", description: "Client added successfully." });
-            setIsAddClientOpen(false);
-            setNewClientName("");
-            setNewClientEmail("");
-            setNewClientPhone("");
-            setNewClientNotes("");
-            // Component should auto-re-fetch and merge dynamically triggered by useClients update
-        } catch (err: any) {
-            toast({ variant: "destructive", title: "Error", description: err.message || "Failed to add client." });
-        } finally {
-            setIsAddingClient(false);
-        }
-    }
 
     // Multi-field search: name, email, phone, destination, notes
     const filteredClients = useMemo(() => {
@@ -1347,9 +1354,11 @@ export default function CRMLitePage() {
                                     bookingsLoading={bookingsLoading}
                                     setIsBookingDialogOpen={setIsBookingDialogOpen}
                                     setBookings={setBookings}
+                                    setSelectedBooking={setSelectedBooking}
                                     user={user}
                                 />
                             )}
+
                             {activeTab === 'settings' && <CrmSettings />}
                             {activeTab === 'timeline' && (
                                 <TimelineView
@@ -1859,6 +1868,22 @@ export default function CRMLitePage() {
                 onOpenChange={setIsFinancesOpen}
                 trip={financesTrip}
             />
+            <ClientDialog
+                isOpen={isAddClientOpen}
+                onOpenChange={setIsAddClientOpen}
+                client={null}
+                onSave={async (clientData) => {
+                    await _createClient(clientData);
+                    // Audit log (fire-and-forget)
+                    if (user) {
+                        logAuditEvent(user.id, "CREATE_CLIENT", `Client "${clientData.name}" was added`, {
+                            entityType: "client",
+                            metadata: { name: clientData.name, email: clientData.email },
+                        });
+                    }
+                    toast({ title: "Success", description: "Client added successfully." });
+                }}
+            />
 
             <ImportBackupModal 
                 isDataEmpty={!clientsLoading && !isComputing && clients.length === 0} 
@@ -1866,6 +1891,22 @@ export default function CRMLitePage() {
                 isOpen={isImportModalOpen}
                 onOpenChange={setIsImportModalOpen}
             />
+
+            <StandaloneBookingDialog
+                isOpen={isBookingDialogOpen}
+                onClose={() => setIsBookingDialogOpen(false)}
+                onBookingCreated={() => fetchWorkspaceData()}
+            />
+
+            <BookingDetailSheet
+                booking={selectedBooking}
+                onClose={() => setSelectedBooking(null)}
+                onDelete={handleDeleteBooking}
+                deleting={deletingBookingId}
+                client={selectedClientForBooking}
+            />
+
+
         </div>
     );
 }

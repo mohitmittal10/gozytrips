@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
 
 interface ClientDialogProps {
     isOpen: boolean;
@@ -26,6 +27,7 @@ interface ClientDialogProps {
 }
 
 export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDialogProps) {
+    const { toast } = useToast();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [tagInput, setTagInput] = useState("");
     const [formData, setFormData] = useState<{
@@ -123,9 +125,22 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                 tags: formData.tags,
             });
             await clearDraft();
+            setFormData({
+                name: "",
+                email: "",
+                phone: "",
+                notes: "",
+                tags: [],
+            });
+            setTagInput("");
             onOpenChange(false);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Failed to save client:", error);
+            toast({
+                variant: "destructive",
+                title: "Error Saving Client",
+                description: error.message || "There was a problem saving the client. Please try again.",
+            });
         } finally {
             setIsSubmitting(false);
         }

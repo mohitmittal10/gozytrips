@@ -64,6 +64,12 @@ export function useClients() {
     
     setError(null);
     try {
+      // Check for duplicate name locally first for immediate feedback
+      const isDuplicate = clients.some(c => c.name.toLowerCase() === newClient.name.trim().toLowerCase());
+      if (isDuplicate) {
+        throw new Error(`A client named "${newClient.name.trim()}" already exists.`);
+      }
+
       const { data, error } = await supabase
         .from('clients')
         .insert([{

@@ -15,14 +15,17 @@ interface BookingsViewProps {
     bookingsLoading: boolean;
     setIsBookingDialogOpen: (open: boolean) => void;
     setBookings: (bookings: any[]) => void;
+    setSelectedBooking: (booking: any) => void;
     user: any;
 }
 
 export const BookingsView = ({ 
     bookings, 
     bookingsLoading, 
-    setIsBookingDialogOpen 
+    setIsBookingDialogOpen,
+    setSelectedBooking
 }: BookingsViewProps) => {
+
     const getIcon = (type: string) => {
         switch (type) {
             case 'flight': return <Plane className="w-5 h-5 text-blue-400" />;
@@ -36,14 +39,6 @@ export const BookingsView = ({
 
     return (
         <div className="mt-4 space-y-6">
-            <div className="flex justify-end mb-6">
-                <Button
-                    onClick={() => setIsBookingDialogOpen(true)}
-                    className="px-6 py-2.5 aurora-gradient text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 h-10 border-none"
-                >
-                    <Plus className="w-4 h-4" /> New Booking
-                </Button>
-            </div>
 
             {bookingsLoading ? (
                 <div className="crm-booking-grid">
@@ -63,7 +58,11 @@ export const BookingsView = ({
             ) : (
                 <div className="crm-booking-grid">
                     {bookings.map((booking) => (
-                        <div key={booking.id} className="glass-main border border-white/10 rounded-xl p-5 hover:bg-white/[0.04] transition-all group relative overflow-hidden">
+                        <div 
+                            key={booking.id} 
+                            onClick={() => setSelectedBooking(booking)}
+                            className="glass-main border border-white/10 rounded-xl p-5 hover:bg-white/[0.04] transition-all group relative overflow-hidden cursor-pointer"
+                        >
                             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="flex items-center justify-between mb-3 relative">
                                 <div className="flex items-center gap-3">

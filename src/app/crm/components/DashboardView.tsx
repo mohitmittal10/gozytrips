@@ -35,33 +35,41 @@ interface MetricCardProps {
     value: string | number;
     subtext?: string;
     icon: any;
+    /** Tailwind gradient class for the card hover overlay, e.g. "from-purple-500/10" */
     color: string;
+    /** Explicit Tailwind bg class for the icon container, e.g. "bg-purple-500/15" */
+    iconBg: string;
+    /** Explicit Tailwind text class for the icon, e.g. "text-purple-400" */
+    iconColor: string;
     loading?: boolean;
     badge?: string;
 }
 
-const MetricCard = ({ title, value, subtext, icon: Icon, color, loading, badge }: MetricCardProps) => (
-    <div className="glass-main border border-white/10 rounded-xl p-3 relative overflow-hidden group">
-        <div className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity", color)} />
+const MetricCard = ({ title, value, subtext, icon: Icon, color, iconBg, iconColor, loading, badge }: MetricCardProps) => (
+    <div className="glass-main border border-white/10 rounded-xl p-4 relative overflow-hidden group">
+        <div className={cn("absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300", color)} />
         <div className="flex items-center justify-between relative z-10">
-            <div>
-                <div className="flex items-center gap-1">
-                    <p className="text-xs text-gray-400 font-medium">{title}</p>
+            <div className="min-w-0 flex-1 pr-3">
+                <div className="flex items-center gap-1.5 mb-1">
+                    <p className="text-xs text-gray-400 font-medium truncate">{title}</p>
                     {badge && (
-                        <Badge variant="outline" className="text-[9px] px-0.5 py-0 border-blue-500/30 text-blue-400 h-4">
+                        <Badge variant="outline" className="text-[9px] px-1 py-0 border-blue-500/30 text-blue-400 h-4 shrink-0">
                             {badge}
                         </Badge>
                     )}
                 </div>
-                <p className="text-xl font-bold mt-0.5">{loading ? "..." : value}</p>
-                {subtext && <p className="text-[11px] text-gray-500 mt-0.5">{subtext}</p>}
+                <p className="text-2xl font-bold text-white tracking-tight">{loading ? (
+                    <span className="inline-block w-16 h-7 bg-white/10 rounded animate-pulse" />
+                ) : value}</p>
+                {subtext && <p className="text-[11px] text-gray-500 mt-0.5 truncate">{subtext}</p>}
             </div>
-            <div className={cn("p-2 rounded-lg bg-opacity-20", color.replace('from-', 'bg-').split('/')[0])}>
-                <Icon className={cn("w-4 h-4", color.replace('from-', 'text-').split('/')[0])} />
+            <div className={cn("p-2.5 rounded-xl shrink-0", iconBg)}>
+                <Icon className={cn("w-5 h-5", iconColor)} />
             </div>
         </div>
     </div>
 );
+
 
 interface DashboardViewProps {
     clients: any[];
@@ -186,6 +194,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     loading={clientsLoading}
                     icon={Users}
                     color="from-purple-500/10"
+                    iconBg="bg-purple-500/15"
+                    iconColor="text-purple-400"
                 />
                 <MetricCard 
                     title="Active Trips"
@@ -194,6 +204,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     badge={`${bookingsCount} Bookings`}
                     icon={MapPin}
                     color="from-blue-500/10"
+                    iconBg="bg-blue-500/15"
+                    iconColor="text-blue-400"
                 />
                 <MetricCard 
                     title="Conversion Rate"
@@ -202,6 +214,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     subtext={`${bookedCount}/${totalProposals} proposals`}
                     icon={TrendingUp}
                     color="from-emerald-500/10"
+                    iconBg="bg-emerald-500/15"
+                    iconColor="text-emerald-400"
                 />
                 <MetricCard 
                     title="Booked Revenue"
@@ -210,6 +224,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     subtext="Incl. Standalone Bookings"
                     icon={CheckCircle2}
                     color="from-green-500/10"
+                    iconBg="bg-green-500/15"
+                    iconColor="text-green-400"
                 />
             </div>
 
@@ -221,6 +237,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     subtext="Created this calendar month"
                     icon={UserPlus}
                     color="from-cyan-500/10"
+                    iconBg="bg-cyan-500/15"
+                    iconColor="text-cyan-400"
                 />
                 <MetricCard 
                     title="Repeat Clients"
@@ -229,6 +247,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     subtext={`${repeatClientStats.repeat} with 2+ trips/bookings`}
                     icon={Users}
                     color="from-rose-500/10"
+                    iconBg="bg-rose-500/15"
+                    iconColor="text-rose-400"
                 />
                 <MetricCard 
                     title="Avg Package Trip"
@@ -237,6 +257,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     subtext="Booked and confirmed itineraries"
                     icon={Plane}
                     color="from-indigo-500/10"
+                    iconBg="bg-indigo-500/15"
+                    iconColor="text-indigo-400"
                 />
                 <MetricCard 
                     title="Est. Markup %"
@@ -245,6 +267,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     subtext="Blended average across all business"
                     icon={DollarSign}
                     color="from-emerald-500/10"
+                    iconBg="bg-amber-500/15"
+                    iconColor="text-amber-400"
                 />
             </div>
 
