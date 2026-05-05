@@ -3,8 +3,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { fetchAuditLogs, type AuditLog } from '@/lib/audit-logger';
-import Header from '@/components/layout/header';
-import Footer from '@/components/layout/footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -174,7 +172,7 @@ export default function SecurityPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#0A0A0A] text-white">
-      <Header />
+
       <main className="flex-grow container mx-auto px-4 py-20 max-w-5xl">
         <Link href="/profile">
           <Button variant="ghost" className="mb-6 gap-2 text-gray-400 hover:text-white">
@@ -391,7 +389,7 @@ export default function SecurityPage() {
           </CardContent>
         </Card>
       </main>
-      <Footer />
+
     </div>
   );
 }

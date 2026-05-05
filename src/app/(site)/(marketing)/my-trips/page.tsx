@@ -8,8 +8,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
 import { MapPin, Calendar, DollarSign, Trash2, Eye, Plus, ArrowLeft, Heart } from 'lucide-react';
 import Link from 'next/link';
-import Header from '@/components/layout/header';
-import Footer from '@/components/layout/footer';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ItineraryTimeline from '@/components/itinerary-timeline';
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
@@ -250,7 +248,7 @@ export default function MyTripsPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-[#05070a] bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.08),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,92,51,0.08),transparent_50%)]">
-      <Header />
+
       <main className="flex-grow container mx-auto px-4 py-20">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-6">
@@ -375,7 +373,7 @@ export default function MyTripsPage() {
           </div>
         )}
       </main>
-      <Footer />
+
 
       {/* Modal for viewing itinerary */}
       <Dialog open={showModal} onOpenChange={setShowModal}>

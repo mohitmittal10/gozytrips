@@ -10,8 +10,7 @@ import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { ArrowLeft, Save, Shield } from 'lucide-react';
 import Link from 'next/link';
-import Header from '@/components/layout/header';
-import Footer from '@/components/layout/footer';
+
 import { logAuditEvent } from '@/lib/audit-logger';
 import BackupSettings from '@/components/settings/backup-settings';
 import { useFormDraft } from '@/hooks/use-form-draft';
@@ -134,7 +133,7 @@ export default function ProfilePage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background">
-      <Header />
+
       <main className="flex-grow container mx-auto px-4 py-20 max-w-2xl">
         <Link href="/my-trips">
           <Button variant="ghost" className="mb-6 gap-2">
@@ -311,7 +310,7 @@ export default function ProfilePage() {
           </Card>
         </div>
       </main>
-      <Footer />
+
     </div>
   );
 }

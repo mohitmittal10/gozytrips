@@ -11,8 +11,6 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Plus, User, Mail, Edit, Trash2, MoreHorizontal, PhoneCall, File } from "lucide-react";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -43,11 +41,11 @@ export default function ClientsPage() {
     if (authLoading || (clientsLoading && clients.length === 0)) {
         return (
             <div className="flex flex-col min-h-screen bg-[#05070a] bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.08),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,92,51,0.08),transparent_50%)]">
-                <Header />
+
                 <div className="flex-1 flex justify-center items-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
                 </div>
-                <Footer />
+
             </div>
         );
     }
@@ -55,7 +53,7 @@ export default function ClientsPage() {
     if (!user) {
         return (
             <div className="flex flex-col min-h-screen bg-[#05070a] bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.08),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,92,51,0.08),transparent_50%)]">
-                <Header />
+
                 <div className="flex-1 container mx-auto px-4 pt-32 pb-12 text-center">
                     <div className="max-w-md mx-auto glass-main p-8 border-white/10 rounded-2xl">
                         <User className="w-16 h-16 mx-auto text-primary/40 mb-4" />
@@ -66,7 +64,7 @@ export default function ClientsPage() {
                         </Button>
                     </div>
                 </div>
-                <Footer />
+
             </div>
         );
     }
@@ -109,7 +107,7 @@ export default function ClientsPage() {
 
     return (
         <div className="flex flex-col min-h-screen bg-[#05070a] bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.08),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,92,51,0.08),transparent_50%)]">
-            <Header />
+
             <main className="flex-grow container mx-auto px-4 pt-24 pb-16">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
                     <div>
@@ -270,7 +268,7 @@ export default function ClientsPage() {
                     onSave={handleSaveClient}
                 />
             </main>
-            <Footer />
+
         </div>
     );
 }

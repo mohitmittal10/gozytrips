@@ -14,7 +14,7 @@ import {
 import { useReferenceOptions } from "@/hooks/use-reference-options";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import Header from "@/components/layout/header";
+
 import { useClients, type Client } from "@/lib/hooks/use-clients";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
@@ -1173,7 +1173,7 @@ export default function CRMLitePage() {
 
     return (
         <div className="crm-page">
-            <Header />
+
             <div className="crm-container">
                 <div className="crm-layout">
 

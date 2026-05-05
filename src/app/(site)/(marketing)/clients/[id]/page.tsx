@@ -8,8 +8,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { useClients } from "@/lib/hooks/use-clients";
 import { useClientItineraries, type ClientItinerary } from "@/lib/hooks/use-client-itineraries";
 import { createClient } from "@/lib/supabase/client";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -39,7 +38,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
     if (authLoading || itinsLoading || (!client && clients.length === 0)) {
         return (
             <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background">
-                <Header />
+
                 <div className="flex-1 flex justify-center items-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
                 </div>
@@ -50,7 +49,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
     if (!client) {
         return (
             <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background">
-                <Header />
+
                 <div className="container mx-auto px-4 py-32 text-center">
                     <h2 className="text-2xl font-bold mb-4">Client Not Found</h2>
                     <Button variant="outline" onClick={() => router.push('/clients')}>Return to Clients</Button>
@@ -69,7 +68,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
 
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background">
-            <Header />
+
             <main className="flex-grow container mx-auto px-4 pt-24 pb-20">
 
                 {/* Navigation & Header */}
@@ -199,7 +198,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                     )}
                 </div>
             </main>
-            <Footer />
+
 
             <ClientItineraryEditor
                 isOpen={isEditorOpen}
