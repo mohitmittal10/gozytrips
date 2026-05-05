@@ -21,6 +21,12 @@ export function useReferenceOptions(scope?: string) {
 
   useEffect(() => {
     async function fetchOptions() {
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.error('Supabase environment variables are missing in the browser');
+        setError(new Error('Supabase environment variables are missing'));
+        setLoading(false);
+        return;
+      }
       try {
         setLoading(true);
         let query = supabase
@@ -37,9 +43,15 @@ export function useReferenceOptions(scope?: string) {
 
         if (fetchError) throw fetchError;
         setOptions(data || []);
-      } catch (err) {
-        console.error('Error fetching reference options:', err);
-        setError(err instanceof Error ? err : new Error('Unknown error'));
+      } catch (err: any) {
+        console.error('Error fetching reference options:', {
+          message: err.message,
+          code: err.code,
+          details: err.details,
+          hint: err.hint,
+          scope
+        });
+        setError(err instanceof Error ? err : new Error(err.message || 'Unknown error'));
       } finally {
         setLoading(false);
       }

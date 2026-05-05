@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Save, Settings, DollarSign, Building2, Gavel } from "lucide-react";
+import { Save, Settings, DollarSign, Home, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/lib/supabase/client";
@@ -100,7 +100,7 @@ export function CrmSettings() {
 
   // Save draft whenever data changes
   useEffect(() => {
-    saveDraft({ profile: profileData, agency: agencyData });
+    saveDraft({ profile: profileData, agency: agencyData as any });
   }, [profileData, agencyData, saveDraft]);
 
   const [referenceOptions, setReferenceOptions] = useState<any[]>([]);
@@ -228,10 +228,10 @@ export function CrmSettings() {
 
       <Tabs defaultValue="profile" className="w-full">
         <TabsList className="bg-white/5 border border-white/10 mb-4 sm:mb-6 w-full flex overflow-x-auto hide-scrollbar">
-          <TabsTrigger value="profile" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4"><Building2 className="w-3.5 h-3.5 mr-1.5 sm:hidden flex-shrink-0" /><span className="hidden sm:inline">Agency </span>Profile</TabsTrigger>
+          <TabsTrigger value="profile" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4">                <Home className="w-5 h-5 text-blue-400" /><span className="hidden sm:inline">Agency </span>Profile</TabsTrigger>
           <TabsTrigger value="financials" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4"><DollarSign className="w-3.5 h-3.5 mr-1.5 sm:hidden flex-shrink-0" /><span className="hidden sm:inline">Costing </span>Defaults</TabsTrigger>
           <TabsTrigger value="operations" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4"><Settings className="w-3.5 h-3.5 mr-1.5 sm:hidden flex-shrink-0" />Operations</TabsTrigger>
-          <TabsTrigger value="legal" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4"><Gavel className="w-3.5 h-3.5 mr-1.5 sm:hidden flex-shrink-0" /><span className="hidden sm:inline">Legal & </span>Compliance</TabsTrigger>
+          <TabsTrigger value="legal" className="data-[state=active]:bg-white/10 data-[state=active]:text-white flex-1 min-h-[40px] text-xs sm:text-sm whitespace-nowrap px-2 sm:px-4"><Shield className="w-3.5 h-3.5 mr-1.5 sm:hidden flex-shrink-0" /><span className="hidden sm:inline">Legal & </span>Compliance</TabsTrigger>
         </TabsList>
         
         {/* Agency Profile Tab */}
@@ -239,7 +239,7 @@ export function CrmSettings() {
           <Card className="glass-card border-white/10 bg-white/[0.02]">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Building2 className="w-5 h-5 text-blue-400" />
+                                <Home className="w-5 h-5 text-blue-400" />
                 <CardTitle className="text-lg">Company Details</CardTitle>
               </div>
               <CardDescription className="text-gray-500">This information will be displayed on client-facing documents.</CardDescription>
@@ -423,7 +423,7 @@ export function CrmSettings() {
           <Card className="glass-card border-white/10 bg-white/[0.02]">
             <CardHeader>
               <div className="flex items-center gap-2">
-                <Gavel className="w-5 h-5 text-purple-400" />
+                                <Shield className="w-5 h-5 text-purple-400" />
                 <CardTitle className="text-lg">Legal & Payments</CardTitle>
               </div>
               <CardDescription className="text-gray-500">Configure your banking details, tax ID, and terms and conditions.</CardDescription>

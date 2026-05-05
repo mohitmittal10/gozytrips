@@ -15,8 +15,8 @@
   min-height: 100vh;
   background-color: #0A0A0A;
   color: #fff;
-  padding-top: 5rem; /* 80px accounts for fixed header */
-  padding-bottom: 2rem;
+  padding-top: 1.5rem; /* Drastically reduced to eliminate gap */
+  padding-bottom: 1rem;
   overflow-x: clip; /* clip instead of hidden to allow position: sticky to work on children */
 }
 
@@ -26,7 +26,7 @@
   margin: 0 auto;
   padding-left: 0.75rem;
   padding-right: 0.75rem;
-  margin-top: 0.5rem;
+  margin-top: 0;
 }
 
 .crm-layout {
@@ -319,7 +319,7 @@
   .crm-container {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
-    margin-top: 1rem;
+    margin-top: 0;
   }
 
   .crm-main-content > .space-y-8 > * + * {
@@ -388,7 +388,10 @@
 /* =====================================================
    Desktop  (min-width: 1280px)
    ===================================================== */
-@media (min-width: 1280px) {
+@media (min-width: 768px) {
+  .crm-page {
+    padding-top: 2rem; 
+  }
   .crm-container {
     padding-left: 2rem;
     padding-right: 2rem;

@@ -18,18 +18,19 @@ import {
     FileText,
     DollarSign,
     Clock,
-    Hash,
+    Info,
     Users,
     Trash2,
     Calendar,
-    ReceiptText,
+    Receipt,
     ExternalLink,
     Copy,
     Check,
-    Loader2,
+    LoaderCircle,
     User,
     Mail,
-    Phone,
+    PhoneCall,
+    Percent,
     AlertCircle,
     ChevronRight,
 } from "lucide-react";
@@ -233,7 +234,7 @@ export const BookingDetailSheet = ({
                                     )}
                                     {client.phone && (
                                         <div className="flex items-center gap-2 text-sm text-gray-400">
-                                            <Phone className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                                            <PhoneCall className="w-3.5 h-3.5 text-gray-500 shrink-0" />
                                             <span>{client.phone}</span>
                                         </div>
                                     )}
@@ -254,7 +255,7 @@ export const BookingDetailSheet = ({
                             </div>
                             <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl">
                                 <div className="flex items-center gap-2 mb-1">
-                                    <Hash className="w-4 h-4 text-blue-400" />
+                                    <Percent className="w-4 h-4 text-blue-400" />
                                     <p className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Markup</p>
                                 </div>
                                 <p className="text-lg font-bold text-white">{markup}%</p>
@@ -280,7 +281,7 @@ export const BookingDetailSheet = ({
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
-                                    <Hash className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
+                                    <Info className="w-4 h-4 text-gray-500 mr-2 shrink-0" />
                                     <div>
                                         <p className="text-[10px] text-gray-500 uppercase">PNR / Confirmation</p>
                                         <p className="text-sm font-medium text-gray-200">{booking.booking_details?.pnr_or_confirmation || "N/A"}</p>
@@ -307,7 +308,7 @@ export const BookingDetailSheet = ({
                         {/* ── Invoice Section ── */}
                         <div className="p-5 bg-white/[0.03] border border-white/10 rounded-xl space-y-3">
                             <h5 className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2 flex items-center gap-2">
-                                <ReceiptText className="w-3.5 h-3.5" /> Invoice
+                                <Receipt className="w-3.5 h-3.5" /> Invoice
                             </h5>
 
                             {invoiceUrl ? (
@@ -369,9 +370,9 @@ export const BookingDetailSheet = ({
                                         disabled={isGenerating}
                                     >
                                         {isGenerating ? (
-                                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
+                                            <><LoaderCircle className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
                                         ) : (
-                                            <><ReceiptText className="w-4 h-4 mr-2" /> Generate Invoice</>
+                                            <><Receipt className="w-4 h-4 mr-2" /> Generate Invoice</>
                                         )}
                                     </Button>
                                 </>
@@ -399,7 +400,7 @@ export const BookingDetailSheet = ({
                                 disabled={deleting === booking.id}
                             >
                                 {deleting === booking.id ? (
-                                    <Loader2 className="w-4 h-4 animate-spin" />
+                                    <LoaderCircle className="w-4 h-4 animate-spin" />
                                 ) : (
                                     <><Trash2 className="w-4 h-4 mr-2" /> Delete Booking</>
                                 )}

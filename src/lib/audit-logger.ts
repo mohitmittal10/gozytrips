@@ -14,9 +14,10 @@ export type AuditActionType =
   | "EXPORT_CSV"
   | "EXPORT_PDF"
   | "UPDATE_PROFILE"
+  | "SETTINGS_UPDATE"
   | "VIEW_TRIP";
 
-export type AuditEntityType = "itinerary" | "client" | "profile" | "session";
+export type AuditEntityType = "itinerary" | "client" | "profile" | "session" | "settings";
 
 export interface AuditLog {
   id: string;
