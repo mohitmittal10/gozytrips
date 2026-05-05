@@ -5,11 +5,10 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { Mail, Lock, User, ArrowRight } from 'lucide-react';
-import Logo from '@/components/layout/logo';
+import { AuthLayout } from '@/components/auth/auth-layout';
 
 export default function SignUp() {
   const [email, setEmail] = useState('');
@@ -66,9 +65,7 @@ export default function SignUp() {
           description: 'Account created successfully. Redirecting...',
         });
 
-        setTimeout(() => {
-          router.push('/ai-architect');
-        }, 1500);
+        router.push('/ai-architect');
       }
     } catch (error) {
       toast({
@@ -82,95 +79,82 @@ export default function SignUp() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/10 to-background flex items-center justify-center p-4">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl"></div>
+    <AuthLayout
+      title="Create Account"
+      description="Join Odyssey Luxe and start planning your luxury trips"
+    >
+      <form onSubmit={handleSignUp} className="space-y-4">
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground/80">Full Name</label>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Your full name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+              className="pl-10 glass-input border-white/10 placeholder:text-muted-foreground/50"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground/80">Email</label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="email"
+              placeholder="your@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="pl-10 glass-input border-white/10 placeholder:text-muted-foreground/50"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-foreground/80">Password</label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              type="password"
+              placeholder="At least 6 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="pl-10 glass-input border-white/10 placeholder:text-muted-foreground/50"
+            />
+          </div>
+        </div>
+
+        <Button
+          type="submit"
+          disabled={loading}
+          className="w-full glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 group"
+        >
+          {loading ? 'Creating account...' : 'Sign Up'}
+          <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+        </Button>
+      </form>
+
+      <div className="mt-6 space-y-4">
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-white/10"></div>
+          </div>
+          <div className="relative flex justify-center text-sm">
+            <span className="px-2 bg-background/50 text-muted-foreground">Already have an account?</span>
+          </div>
+        </div>
+
+        <Link href="/auth/login">
+          <Button variant="outline" className="w-full glass-button border-white/20">
+            Sign In
+          </Button>
+        </Link>
       </div>
-
-      <Card className="w-full max-w-md glass-main border-white/10">
-        <CardHeader className="space-y-2 text-center">
-          <div className="flex justify-center mb-4">
-            <Logo />
-          </div>
-          <CardTitle className="text-2xl">Create Account</CardTitle>
-          <CardDescription>Join Odyssey Luxe and start planning your luxury trips</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSignUp} className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground/80">Full Name</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="text"
-                  placeholder="Your full name"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  required
-                  className="pl-10 glass-input border-white/10 placeholder:text-muted-foreground/50"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground/80">Email</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="pl-10 glass-input border-white/10 placeholder:text-muted-foreground/50"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground/80">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input
-                  type="password"
-                  placeholder="At least 6 characters"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="pl-10 glass-input border-white/10 placeholder:text-muted-foreground/50"
-                />
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 group"
-            >
-              {loading ? 'Creating account...' : 'Sign Up'}
-              <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </form>
-
-          <div className="mt-6 space-y-4">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10"></div>
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-background/50 text-muted-foreground">Already have an account?</span>
-              </div>
-            </div>
-
-            <Link href="/auth/login">
-              <Button variant="outline" className="w-full glass-button border-white/20">
-                Sign In
-              </Button>
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    </AuthLayout>
   );
 }

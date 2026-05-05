@@ -83,22 +83,7 @@
 ✅ FIX: Move scheduling logic (`shouldBackup`) to `BackupService`.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🟠 DUPLICATE CODE (DRY VIOLATIONS)
-📁 FILE: `src/app/api/google/auth/route.ts`, `src/app/api/google/callback/route.ts`
-📌 LINE(S): 15-19 (Auth), 20-24 (Callback)
-🔍 ISSUE: Identical Google OAuth2 client initialization code.
-⚠️  IMPACT: DRY violation; changes to environment variables or callback URLs must be updated in multiple places.
-✅ FIX: Create a utility function `getGoogleOAuth2Client()` in `src/lib/google-auth.ts`.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔶 ERROR HANDLING GAPS
-📁 FILE: `src/app/api/google/auth/route.ts`
-📌 LINE(S): 15-27
-🔍 ISSUE: Missing try/catch block around OAuth client initialization and URL generation.
-⚠️  IMPACT: Potential unhandled exceptions if environment variables are missing or library fails.
-✅ FIX: Wrap the handler logic in a try/catch block.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━c
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { google } from 'googleapis';
+
 import { createServerComponentClient } from '@/lib/supabase/server';
+import { getGoogleOAuth2Client } from '@/lib/google-auth';
 
 export async function GET(request: Request) {
   const supabase = await createServerComponentClient();
@@ -12,17 +13,18 @@ export async function GET(request: Request) {
 
   const origin = new URL(request.url).origin;
 
-  const oauth2Client = new google.auth.OAuth2(
-    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    `${origin}/api/google/callback`
-  );
+  try {
+    const oauth2Client = getGoogleOAuth2Client(origin);
 
-  const url = oauth2Client.generateAuthUrl({
-    access_type: 'offline', // Required to get a refresh token
-    prompt: 'consent', // Forces the consent screen to ensure refresh token is returned
-    scope: ['https://www.googleapis.com/auth/drive.file'],
-  });
+    const url = oauth2Client.generateAuthUrl({
+      access_type: 'offline', // Required to get a refresh token
+      prompt: 'consent', // Forces the consent screen to ensure refresh token is returned
+      scope: ['https://www.googleapis.com/auth/drive.file'],
+    });
 
-  return NextResponse.redirect(url);
+    return NextResponse.redirect(url);
+  } catch (error) {
+    console.error('Error generating Google OAuth URL:', error);
+    return NextResponse.json({ error: 'Failed to initialize OAuth client' }, { status: 500 });
+  }
 }

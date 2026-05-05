@@ -106,6 +106,9 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  body {
     background-color: #030507;
     background-image: 
         radial-gradient(circle at 0% 0%, rgba(124, 58, 237, 0.03) 0%, transparent 50%),

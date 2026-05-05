@@ -4,6 +4,23 @@ import { SupabaseClient } from '@supabase/supabase-js';
 
 export class BackupService {
   /**
+   * Determines if a backup should be run based on the user's frequency and last backup date.
+   */
+  static shouldRunBackup(user: { backup_frequency: string; last_backup_date: string | null }): boolean {
+    if (user.backup_frequency === 'none') return false;
+    if (!user.last_backup_date) return true;
+
+    const now = new Date();
+    const lastDate = new Date(user.last_backup_date);
+    const daysSinceLast = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24);
+
+    if (user.backup_frequency === 'weekly' && daysSinceLast >= 7) return true;
+    if (user.backup_frequency === 'monthly' && daysSinceLast >= 30) return true;
+
+    return false;
+  }
+
+  /**
    * Generates a full JSON backup of the user's data from Supabase.
    */
   static async generateBackupData(customSupabase?: SupabaseClient, customUserId?: string): Promise<Blob> {

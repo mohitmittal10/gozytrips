@@ -38,26 +38,16 @@ export async function GET(request: Request) {
       errors: [] as any[]
     };
 
-    const now = new Date();
-
-    for (const user of users || []) {
+    const usersToProcess = users || [];
+    
+    // Process backups in parallel with a concurrency limit
+    const concurrencyLimit = 5;
+    let i = 0;
+    
+    const processUser = async (user: any) => {
       results.processed++;
       
-      let shouldBackup = false;
-      if (!user.last_backup_date) {
-        shouldBackup = true;
-      } else {
-        const lastDate = new Date(user.last_backup_date);
-        const daysSinceLast = (now.getTime() - lastDate.getTime()) / (1000 * 60 * 60 * 24);
-
-        if (user.backup_frequency === 'weekly' && daysSinceLast >= 7) {
-          shouldBackup = true;
-        } else if (user.backup_frequency === 'monthly' && daysSinceLast >= 30) {
-          shouldBackup = true;
-        }
-      }
-
-      if (shouldBackup) {
+      if (BackupService.shouldRunBackup(user as any)) {
         try {
           console.log(`[BackupCron] Running backup for user: ${user.id}`);
           await BackupService.performBackup(supabaseAdmin, user.id);
@@ -70,7 +60,17 @@ export async function GET(request: Request) {
       } else {
         results.skipped++;
       }
-    }
+    };
+
+    const execWorker = async (): Promise<void> => {
+      while (i < usersToProcess.length) {
+        const index = i++;
+        await processUser(usersToProcess[index]);
+      }
+    };
+
+    const workers = Array.from({ length: Math.min(concurrencyLimit, usersToProcess.length) }).map(execWorker);
+    await Promise.all(workers);
 
     return NextResponse.json(results);
   } catch (error: any) {

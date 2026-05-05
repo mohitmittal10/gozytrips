@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
-import { google } from 'googleapis';
+
 import { createServerComponentClient } from '@/lib/supabase/server';
+import { getGoogleOAuth2Client } from '@/lib/google-auth';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -17,11 +18,7 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/profile?error=Unauthorized`);
   }
 
-  const oauth2Client = new google.auth.OAuth2(
-    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
-    process.env.GOOGLE_CLIENT_SECRET,
-    `${origin}/api/google/callback`
-  );
+  const oauth2Client = getGoogleOAuth2Client(origin);
 
     try {
       const { tokens } = await oauth2Client.getToken(code);
