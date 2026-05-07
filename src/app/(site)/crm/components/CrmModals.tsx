@@ -133,7 +133,7 @@ export function CrmModals() {
                 setIsEditDialogOpen={setIsEditDialogOpen}
                 setShowModal={setShowModal}
                 setSelectedTripForModal={setSelectedTripForModal}
-                getAvatarColor={getAvatarColor}
+
                 getTripCost={getTripCost}
             />
 

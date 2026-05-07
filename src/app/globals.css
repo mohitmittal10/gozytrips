@@ -247,6 +247,32 @@
       background-clip: text;
       -webkit-text-fill-color: transparent;
   }
+
+  /* Logistics Banner Colors */
+  .logistics-flight-banner {
+    @apply bg-primary/10 border border-primary/20 text-primary;
+  }
+  .logistics-flight-badge {
+    @apply bg-primary/20 text-primary;
+  }
+  .logistics-hotel-banner {
+    @apply bg-secondary/10 border border-secondary/20 text-secondary;
+  }
+  .logistics-hotel-badge {
+    @apply bg-secondary/20 text-secondary;
+  }
+  .logistics-cab-banner {
+    @apply bg-orange-500/10 border border-orange-500/20 text-orange-500;
+  }
+  .logistics-cab-badge {
+    @apply bg-orange-500/20 text-orange-400;
+  }
+  .logistics-bus-banner {
+    @apply bg-yellow-500/10 border border-yellow-500/20 text-yellow-500;
+  }
+  .logistics-bus-badge {
+    @apply bg-yellow-500/20 text-yellow-400;
+  }
 }
 
 /* Morph Loading Keyframes */

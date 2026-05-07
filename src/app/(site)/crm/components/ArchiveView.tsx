@@ -1,17 +1,16 @@
 import React from "react";
 import { Archive, Compass } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getAvatarColor } from "@/lib/utils";
 
 interface ArchiveViewProps {
     archivedClients: any[];
     setSelectedClient: (client: any) => void;
-    getAvatarColor: (name: string) => string;
+
 }
 
 export const ArchiveView = ({ 
     archivedClients, 
     setSelectedClient, 
-    getAvatarColor 
 }: ArchiveViewProps) => {
     return (
         <div className="space-y-4">

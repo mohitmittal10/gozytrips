@@ -120,3 +120,142 @@ export const computeDurationBuckets = (clients: EnrichedClient[]) => {
 
     return buckets;
 };
+
+export interface DashboardFinanceRollup {
+    tripLineNet: number;
+    tripLineMarkup: number;
+    tripLineGross: number;
+    standaloneNet: number;
+    standaloneMarkup: number;
+    standaloneGross: number;
+}
+
+export interface CrmMetrics {
+    activeTripsCount: number;
+    bookedCount: number;
+    totalProposals: number;
+    conversionRate: number;
+    bookedRevenue: number;
+    standaloneRevenue: number;
+    newClientsThisMonth: number;
+    repeatClientStats: { repeat: number; pct: number };
+    avgBookedTripValue: number;
+    blendedMarginPct: number;
+    packageVsStandaloneMix: {
+        packageRev: number;
+        standaloneRev: number;
+        packagePct: number;
+        standalonePct: number;
+    };
+    topDestinationsChart: any[];
+    seasonalityChart: any[];
+    durationBucketsChart: any[];
+    durationMax: number;
+    departureCalendarStats: { thisMonth: number; nextMonth: number };
+    revenueByMonth: { month: string; revenue: number }[];
+}
+
+export const computeCrmMetrics = (
+    enrichedClients: EnrichedClient[], 
+    clients: Client[], 
+    financeRollup: DashboardFinanceRollup
+): CrmMetrics => {
+    const activeTripsCount = enrichedClients.filter(c => 
+        c.latestStatus.toLowerCase() !== "no active trips" && 
+        c.latestStatus.toLowerCase() !== "completed" && 
+        c.latestStatus.toLowerCase() !== "rejected"
+    ).length;
+
+    const bookedCount = enrichedClients.filter(c => 
+        c.latestStatus.toLowerCase() === "booked" || 
+        c.latestStatus.toLowerCase() === "confirmed"
+    ).length;
+
+    const totalProposals = enrichedClients.reduce((acc, c) => acc + (c.allTrips?.length || 0), 0);
+    const conversionRate = totalProposals === 0 ? 0 : Math.round((bookedCount / totalProposals) * 100);
+    
+    const bookedRevenue = financeRollup.tripLineGross;
+    const standaloneRevenue = financeRollup.standaloneGross;
+
+    const now = new Date();
+    const newClientsThisMonth = clients.filter(c => {
+        const created = new Date(c.created_at);
+        return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+    }).length;
+
+    const repeatCount = enrichedClients.filter(c => (c.allTrips?.length || 0) > 1).length;
+    const repeatPct = enrichedClients.length > 0 ? (repeatCount / enrichedClients.length) * 100 : 0;
+    const repeatClientStats = { repeat: repeatCount, pct: Math.round(repeatPct) };
+
+    const avgBookedTripValue = bookedCount === 0 ? 0 : (bookedRevenue + standaloneRevenue) / bookedCount;
+
+    const totalGross = financeRollup.tripLineGross + financeRollup.standaloneGross;
+    const totalMarkup = financeRollup.tripLineMarkup + financeRollup.standaloneMarkup;
+    const blendedMarginPct = totalGross === 0 ? 0 : Math.round((totalMarkup / totalGross) * 100);
+
+    const packageVsStandaloneMix = {
+        packageRev: financeRollup.tripLineGross,
+        standaloneRev: financeRollup.standaloneGross,
+        packagePct: totalGross === 0 ? 0 : Math.round((financeRollup.tripLineGross / totalGross) * 100),
+        standalonePct: totalGross === 0 ? 0 : Math.round((financeRollup.standaloneGross / totalGross) * 100)
+    };
+
+    const topDestinationsChart = computeTopDestinations(enrichedClients);
+    const seasonalityChart = computeSeasonalityDepartures(enrichedClients);
+    const durationBucketsChart = computeDurationBuckets(enrichedClients);
+    const durationMax = Math.max(1, ...durationBucketsChart.map(b => b.count));
+
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const thisMonthCount = enrichedClients.reduce((acc, c) => acc + (c.allTrips?.filter(t => {
+        if (!t.start_date) return false;
+        const d = new Date(t.start_date);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && isBookedTripStatus(t.status);
+    }).length || 0), 0);
+    const nextMonthCount = enrichedClients.reduce((acc, c) => acc + (c.allTrips?.filter(t => {
+        if (!t.start_date) return false;
+        const d = new Date(t.start_date);
+        return d.getMonth() === nextMonth.getMonth() && d.getFullYear() === nextMonth.getFullYear() && isBookedTripStatus(t.status);
+    }).length || 0), 0);
+    const departureCalendarStats = { thisMonth: thisMonthCount, nextMonth: nextMonthCount };
+
+    const monthsMap: Record<string, number> = {};
+    enrichedClients.forEach(c => {
+        c.allTrips?.forEach(t => {
+            if (t.start_date && isBookedTripStatus(t.status)) {
+                const m = new Date(t.start_date).toLocaleString('default', { month: 'short' });
+                monthsMap[m] = (monthsMap[m] || 0) + getTripCost(t);
+            }
+        });
+    });
+    const revenueByMonth = Object.entries(monthsMap).map(([month, revenue]) => ({ month, revenue }));
+
+    return {
+        activeTripsCount, bookedCount, totalProposals, conversionRate, bookedRevenue, standaloneRevenue,
+        newClientsThisMonth, repeatClientStats, avgBookedTripValue, blendedMarginPct, packageVsStandaloneMix,
+        topDestinationsChart, seasonalityChart, durationBucketsChart, durationMax,
+        departureCalendarStats, revenueByMonth
+    };
+};
+
+export const computeRecentActivity = (enrichedClients: EnrichedClient[]) => {
+    const activities: any[] = [];
+    enrichedClients.forEach(c => {
+        activities.push({ 
+            id: `client-${c.id}`, 
+            type: 'client_added', 
+            label: `New client added: ${c.name}`, 
+            time: new Date(c.created_at), 
+            icon: 'user' 
+        });
+        c.allTrips?.forEach(t => {
+            activities.push({ 
+                id: `trip-${t.id}`, 
+                type: 'trip_created', 
+                label: `New trip for ${c.name}: ${t.title}`, 
+                time: new Date(t.created_at), 
+                icon: 'plane' 
+            });
+        });
+    });
+    return activities.sort((a, b) => b.time.getTime() - a.time.getTime()).slice(0, 50);
+};

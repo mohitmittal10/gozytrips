@@ -1,13 +1,13 @@
 import React from "react";
 import { GripVertical } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, getAvatarColor } from "@/lib/utils";
 
 interface KanbanViewProps {
     kanbanColumns: Record<string, any[]>;
     itineraryStatuses: any[];
     handleStatusChange: (clientId: string, tripId: string, newStatus: string) => void;
     setSelectedClient: (client: any) => void;
-    getAvatarColor: (name: string) => string;
+
 }
 
 export const KanbanView = ({ 
@@ -15,7 +15,6 @@ export const KanbanView = ({
     itineraryStatuses,
     handleStatusChange, 
     setSelectedClient, 
-    getAvatarColor 
 }: KanbanViewProps) => {
     const columns = itineraryStatuses.length > 0 
         ? itineraryStatuses

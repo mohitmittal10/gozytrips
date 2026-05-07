@@ -3,34 +3,32 @@
 import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import {
   Building2, Car, Compass, FileCheck, Shield, Sparkles, Send,
-  LoaderCircle, Copy, Check, AlertCircle, Pencil, RotateCcw,
-  History, Trash2, ExternalLink, Save
+  LoaderCircle, Check, AlertCircle, Pencil, RotateCcw,
+  Save, Copy
 } from "lucide-react";
-import {
-  Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger,
-} from "@/components/ui/sheet";
+
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
-import { createClient } from "@/lib/supabase/client";
-import { generateVendorEnquiry } from "@/ai/flows/generate-vendor-enquiry";
-import type { VendorEnquiryInput } from "@/ai/flows/generate-vendor-enquiry";
-import { LucideIcon } from "lucide-react";
 import { useReferenceOptions } from "@/hooks/use-reference-options";
 import { useClients } from "@/lib/hooks/use-clients";
 
-const ICON_MAP: Record<string, LucideIcon> = {
+import { VendorEnquiryInput } from "@/ai/flows/generate-vendor-enquiry";
+import { EnquiryType, EnquiryTypeOption, VendorEnquiry as VendorEnquiryType } from "@/types/vendor-enquiry";
+import { vendorEnquiryService } from "@/lib/services/vendor-enquiry";
+import { useVendorEnquiryAi } from "@/hooks/use-vendor-enquiry-ai";
+import { FormField } from "@/components/ui/form-field";
+import { EnquiryHistory } from "@/components/vendor/EnquiryHistory";
+
+const ICON_MAP: Record<string, any> = {
   Building2, Car, Compass, FileCheck, Shield, Sparkles
 };
-
-type EnquiryType = string;
 
 // ── Mailto helper ────────────────────────────────────────────────────────────
 
@@ -39,39 +37,15 @@ function openGmailCompose(to: string, subject: string, body: string) {
   window.open(mailtoUrl, "_blank");
 }
 
-// ── Field component ──────────────────────────────────────────────────────────
-
-function FormField({
-  label, value, onChange, placeholder, type = "text", required = false, className = "",
-}: {
-  label: string; value: string; onChange: (v: string) => void; placeholder?: string;
-  type?: string; required?: boolean; className?: string;
-}) {
-  return (
-    <div className={`space-y-1.5 ${className}`}>
-      <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
-        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
-      </Label>
-      <Input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-purple-500 h-9 text-sm"
-      />
-    </div>
-  );
-}
-
 // ── Main Component ───────────────────────────────────────────────────────────
 
 export default function VendorEnquiry() {
   const { userProfile, agencySettings } = useAuth();
   const { toast } = useToast();
   const { options, loading: optionsLoading } = useReferenceOptions();
+  const { clients } = useClients();
 
-  const enquiryTypes = useMemo(() => {
-    // Support both new 'vendor_enquiry_type' and legacy 'enquiry_type'
+  const enquiryTypes = useMemo<EnquiryTypeOption[]>(() => {
     const opts = options.filter(opt => opt.scope === 'vendor_enquiry_type' || opt.scope === 'enquiry_type');
     return opts.map(opt => ({
       value: opt.value,
@@ -132,24 +106,29 @@ export default function VendorEnquiry() {
   // Insurance fields
   const [coverageType, setCoverageType] = useState("");
 
-  // Output state
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [generatedSubject, setGeneratedSubject] = useState("");
-  const [generatedBody, setGeneratedBody] = useState("");
-  const [isEditing, setIsEditing] = useState(false);
-  const [copied, setCopied] = useState(false);
-
   // Persistence state
   const [id, setId] = useState<string | null>(null);
   const [clientId, setClientId] = useState<string | null>(null);
   const [itineraryId, setItineraryId] = useState<string | null>(null);
   const [status, setStatus] = useState<"draft" | "sent">("draft");
-  const [pastEnquiries, setPastEnquiries] = useState<any[]>([]);
+  const [pastEnquiries, setPastEnquiries] = useState<VendorEnquiryType[]>([]);
   const [userItineraries, setUserItineraries] = useState<any[]>([]);
   const [isLoadingPast, setIsLoadingPast] = useState(false);
 
-  const { clients } = useClients();
-  const supabase = useMemo(() => createClient(), []);
+  // AI Hook
+  const {
+    isGenerating,
+    generatedSubject,
+    setGeneratedSubject,
+    generatedBody,
+    setGeneratedBody,
+    isEditing,
+    setIsEditing,
+    copied,
+    handleGenerate: generateWithAi,
+    handleCopy,
+    resetAiState
+  } = useVendorEnquiryAi();
 
   // ── Dynamic State Initialization ──────────────────────────────────────────
   
@@ -178,21 +157,12 @@ export default function VendorEnquiry() {
       
       setIsLoadingPast(true);
       try {
-        // Fetch itineraries
-        const { data: itins } = await supabase
-          .from("itineraries")
-          .select("id, title")
-          .eq("user_id", userProfile.id)
-          .order("updated_at", { ascending: false });
-        setUserItineraries(itins || []);
-
-        // Fetch past enquiries
-        const { data: enqs } = await supabase
-          .from("vendor_enquiries")
-          .select("*")
-          .eq("user_id", userProfile.id)
-          .order("updated_at", { ascending: false });
-        setPastEnquiries(enqs || []);
+        const [itins, enqs] = await Promise.all([
+          vendorEnquiryService.fetchUserItineraries(userProfile.id),
+          vendorEnquiryService.fetchPastEnquiries(userProfile.id)
+        ]);
+        setUserItineraries(itins);
+        setPastEnquiries(enqs);
       } catch (err) {
         console.error("Failed to fetch persistence data:", err);
       } finally {
@@ -200,10 +170,9 @@ export default function VendorEnquiry() {
       }
     }
     fetchData();
-  }, [userProfile?.id, supabase]);
+  }, [userProfile?.id]);
 
   const hasGenerated = generatedSubject.length > 0;
-
   const activeType = enquiryTypes.find(t => t.value === enquiryType) || enquiryTypes[0];
 
   // ── Persistence ───────────────────────────────────────────────────────────
@@ -218,45 +187,36 @@ export default function VendorEnquiry() {
       activityName, destinationCountry, nationality, coverageType
     };
 
-    const data = {
+    const data: Partial<VendorEnquiryType> = {
+      id: id || undefined,
       user_id: userProfile.id,
       client_id: clientId,
       itinerary_id: itineraryId,
       enquiry_type: enquiryType,
       vendor_email: vendorEmail,
       payload,
-      subject: generatedSubject,
-      body: generatedBody,
+      subject: overrides.subject || generatedSubject,
+      body: overrides.body || generatedBody,
       status: overrides.status || status,
       sent_at: overrides.sent_at || (overrides.status === "sent" ? new Date().toISOString() : null),
     };
 
     try {
+      const saved = await vendorEnquiryService.saveEnquiry(data);
       if (id) {
-        const { data: updated, error } = await supabase
-          .from("vendor_enquiries")
-          .update(data)
-          .eq("id", id)
-          .select()
-          .single();
-        if (error) throw error;
-        setPastEnquiries(prev => prev.map(e => e.id === id ? updated : e));
+        setPastEnquiries(prev => prev.map(e => e.id === saved.id ? saved : e));
       } else {
-        const { data: inserted, error } = await supabase
-          .from("vendor_enquiries")
-          .insert([data])
-          .select()
-          .single();
-        if (error) throw error;
-        setId(inserted.id);
-        setPastEnquiries(prev => [inserted, ...prev]);
+        setId(saved.id);
+        setPastEnquiries(prev => [saved, ...prev]);
       }
-    } catch (err) {
-      console.error("Failed to save enquiry:", err);
+      return saved;
+    } catch (err: any) {
+      console.error("Failed to save enquiry:", err?.message || err);
+      toast({ variant: "destructive", title: "Save Failed" });
     }
-  }, [id, userProfile?.id, clientId, itineraryId, enquiryType, vendorEmail, destination, travelDates, adults, children, infants, specialRequests, hotelName, roomType, numberOfRooms, mealPlan, vehicleType, route, pickupLocation, activityName, destinationCountry, nationality, coverageType, generatedSubject, generatedBody, status, supabase]);
+  }, [id, userProfile?.id, clientId, itineraryId, enquiryType, vendorEmail, destination, travelDates, adults, children, infants, specialRequests, hotelName, roomType, numberOfRooms, mealPlan, vehicleType, route, pickupLocation, activityName, destinationCountry, nationality, coverageType, generatedSubject, generatedBody, status, toast]);
 
-  const loadEnquiry = useCallback((enq: any) => {
+  const loadEnquiry = useCallback((enq: VendorEnquiryType) => {
     setId(enq.id);
     setClientId(enq.client_id);
     setItineraryId(enq.itinerary_id);
@@ -286,19 +246,18 @@ export default function VendorEnquiry() {
     setCoverageType(p.coverageType || "");
     
     setIsEditing(false);
-  }, []);
+  }, [setGeneratedSubject, setGeneratedBody, setIsEditing]);
 
   const handleDeleteEnquiry = useCallback(async (enqId: string) => {
     try {
-      const { error } = await supabase.from("vendor_enquiries").delete().eq("id", enqId);
-      if (error) throw error;
+      await vendorEnquiryService.deleteEnquiry(enqId);
       setPastEnquiries(prev => prev.filter(e => e.id !== enqId));
       if (id === enqId) handleReset();
       toast({ title: "Enquiry Deleted" });
     } catch (err) {
       toast({ variant: "destructive", title: "Delete Failed" });
     }
-  }, [id, supabase, toast]);
+  }, [id, toast]);
 
   // ── Reset ──────────────────────────────────────────────────────────────────
 
@@ -324,63 +283,49 @@ export default function VendorEnquiry() {
     setDestinationCountry("");
     setNationality("");
     setCoverageType("");
-    setGeneratedSubject("");
-    setGeneratedBody("");
+    resetAiState();
     setStatus("draft");
-    setIsEditing(false);
   };
 
   // ── Generate ──────────────────────────────────────────────────────────────
 
-  const handleGenerate = useCallback(async () => {
+  const onGenerate = async () => {
     if (!destination.trim() || !travelDates.trim()) {
       toast({ variant: "destructive", title: "Missing Info", description: "Please fill in destination and travel dates." });
       return;
     }
 
-    setIsGenerating(true);
+    const input: VendorEnquiryInput = {
+      enquiryType,
+      agentName: userProfile?.full_name || "Travel Agent",
+      agentCompany: userProfile?.company_name || undefined,
+      destination: destination.trim(),
+      travelDates: travelDates.trim(),
+      numberOfAdults: parseInt(adults) || 2,
+      numberOfChildren: parseInt(children) || 0,
+      numberOfInfants: parseInt(infants) || 0,
+      specialRequests: specialRequests.trim() || undefined,
+      vendorEmail: vendorEmail.trim() || undefined,
+      hotelName: hotelName.trim() || undefined,
+      roomType: roomType.trim() || undefined,
+      numberOfRooms: parseInt(numberOfRooms) || undefined,
+      mealPlan: mealPlan || undefined,
+      vehicleType: vehicleType.trim() || undefined,
+      route: route.trim() || undefined,
+      pickupLocation: pickupLocation.trim() || undefined,
+      activityName: activityName.trim() || undefined,
+      destinationCountry: destinationCountry.trim() || undefined,
+      nationality: nationality.trim() || undefined,
+      coverageType: coverageType.trim() || undefined,
+    };
+
     try {
-      const input: VendorEnquiryInput = {
-        enquiryType,
-        agentName: userProfile?.full_name || "Travel Agent",
-        agentCompany: userProfile?.company_name || undefined,
-        destination: destination.trim(),
-        travelDates: travelDates.trim(),
-        numberOfAdults: parseInt(adults) || 2,
-        numberOfChildren: parseInt(children) || 0,
-        numberOfInfants: parseInt(infants) || 0,
-        specialRequests: specialRequests.trim() || undefined,
-        vendorEmail: vendorEmail.trim() || undefined,
-        // Type-specific
-        hotelName: hotelName.trim() || undefined,
-        roomType: roomType.trim() || undefined,
-        numberOfRooms: parseInt(numberOfRooms) || undefined,
-        mealPlan: mealPlan || undefined,
-        vehicleType: vehicleType.trim() || undefined,
-        route: route.trim() || undefined,
-        pickupLocation: pickupLocation.trim() || undefined,
-        activityName: activityName.trim() || undefined,
-        destinationCountry: destinationCountry.trim() || undefined,
-        nationality: nationality.trim() || undefined,
-        coverageType: coverageType.trim() || undefined,
-      };
-
-      const result = await generateVendorEnquiry(input);
-      setGeneratedSubject(result.subject);
-      setGeneratedBody(result.body);
-      setIsEditing(false);
-
-      // Save to DB
+      const result = await generateWithAi(input);
       await saveEnquiry({ subject: result.subject, body: result.body });
-
-      toast({ title: "Email Generated!", description: "Review and save or send via Gmail." });
-    } catch (err: any) {
-      console.error("Vendor enquiry generation failed:", err);
-      toast({ variant: "destructive", title: "Generation Failed", description: err.message || "Failed to generate email." });
-    } finally {
-      setIsGenerating(false);
+    } catch (err) {
+      // toast handled in hook
     }
-  }, [enquiryType, destination, travelDates, adults, children, infants, specialRequests, vendorEmail, hotelName, roomType, numberOfRooms, mealPlan, vehicleType, route, pickupLocation, activityName, destinationCountry, nationality, coverageType, userProfile, agencySettings, toast, saveEnquiry]);
+  };
 
   // ── Send via Gmail ────────────────────────────────────────────────────────
 
@@ -394,16 +339,6 @@ export default function VendorEnquiry() {
 
     toast({ title: "Opening Gmail", description: "Enquiry marked as sent." });
   }, [vendorEmail, generatedSubject, generatedBody, saveEnquiry, toast]);
-
-  // ── Copy to clipboard ─────────────────────────────────────────────────────
-
-  const handleCopy = useCallback(() => {
-    const fullEmail = `Subject: ${generatedSubject}\n\n${generatedBody}`;
-    navigator.clipboard.writeText(fullEmail);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-    toast({ title: "Copied!", description: "Email copied to clipboard." });
-  }, [generatedSubject, generatedBody, toast]);
 
   if (optionsLoading) {
     return (
@@ -446,72 +381,12 @@ export default function VendorEnquiry() {
           })}
         </div>
 
-        <Sheet>
-          <SheetTrigger asChild>
-            <Button variant="outline" className="border-white/10 text-gray-400 hover:text-white gap-2 h-10">
-              <History className="w-4 h-4" />
-              History {pastEnquiries.length > 0 && <Badge variant="secondary" className="ml-1 bg-purple-500/20 text-purple-400 border-none">{pastEnquiries.length}</Badge>}
-            </Button>
-          </SheetTrigger>
-          <SheetContent className="bg-[#0a0a0a] border-white/10 text-white w-[400px] sm:w-[540px]">
-            <SheetHeader>
-              <SheetTitle className="text-white flex items-center gap-2">
-                <History className="w-5 h-5 text-purple-400" />
-                Recent Enquiries
-              </SheetTitle>
-              <SheetDescription className="text-gray-500">
-                Audit and resume your past vendor outreach.
-              </SheetDescription>
-            </SheetHeader>
-            <div className="mt-6 space-y-4 overflow-y-auto max-h-[calc(100vh-180px)] pr-2">
-              {isLoadingPast ? (
-                <div className="flex items-center justify-center py-12">
-                  <LoaderCircle className="w-6 h-6 animate-spin text-purple-500" />
-                </div>
-              ) : pastEnquiries.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 text-sm">No past enquiries found.</p>
-                </div>
-              ) : (
-                pastEnquiries.map(enq => (
-                  <div key={enq.id} className="group relative bg-white/5 border border-white/10 rounded-xl p-4 hover:border-purple-500/30 transition-all">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="capitalize text-[10px] bg-purple-500/10 text-purple-400 border-purple-500/20">
-                          {enq.enquiry_type}
-                        </Badge>
-                        <Badge variant="outline" className={`capitalize text-[10px] ${enq.status === 'sent' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
-                          {enq.status}
-                        </Badge>
-                      </div>
-                      <span className="text-[10px] text-gray-500">
-                        {new Date(enq.updated_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <h4 className="text-sm font-semibold text-gray-200 truncate pr-8">{enq.payload.destination}</h4>
-                    <p className="text-xs text-gray-500 truncate mb-3">{enq.subject || "No subject"}</p>
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        size="sm" variant="secondary" 
-                        className="h-8 text-xs bg-purple-600 hover:bg-purple-700 text-white border-none flex-1"
-                        onClick={() => loadEnquiry(enq)}
-                      >
-                        Resume
-                      </Button>
-                      <Button 
-                        size="sm" variant="outline" 
-                        className="h-8 w-8 p-0 border-white/10 text-gray-500 hover:text-red-400 hover:bg-red-400/10"
-                        onClick={() => handleDeleteEnquiry(enq.id)}
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </SheetContent>
-        </Sheet>
+        <EnquiryHistory 
+          enquiries={pastEnquiries} 
+          isLoading={isLoadingPast} 
+          onLoad={loadEnquiry} 
+          onDelete={handleDeleteEnquiry} 
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -676,7 +551,7 @@ export default function VendorEnquiry() {
                 Save Draft
               </Button>
               <Button
-                onClick={handleGenerate}
+                onClick={onGenerate}
                 disabled={isGenerating || !destination.trim() || !travelDates.trim()}
                 className="flex-[2] bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-11 text-sm font-semibold gap-2 shadow-lg shadow-purple-500/20"
               >
@@ -768,10 +643,10 @@ export default function VendorEnquiry() {
                     </Badge>
                   </div>
                   {isEditing ? (
-                    <Input
+                    <input
                       value={generatedSubject}
                       onChange={(e) => setGeneratedSubject(e.target.value)}
-                      className="bg-white/5 border-white/10 text-white text-sm"
+                      className="w-full bg-white/5 border-white/10 text-white text-sm h-9 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                       maxLength={100}
                     />
                   ) : (
@@ -804,34 +679,14 @@ export default function VendorEnquiry() {
                   )}
                 </div>
 
-                {/* Warning if no vendor email */}
-                {!vendorEmail && (
-                  <div className="flex items-center gap-2 text-xs text-amber-400 bg-amber-400/10 rounded-lg px-3 py-2 border border-amber-400/20">
-                    <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                    <span>Add a vendor email address to use the "Send via Gmail" feature.</span>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
-                  <Button
-                    onClick={handleSendGmail}
-                    disabled={!vendorEmail}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white h-10 text-sm font-semibold gap-2"
-                  >
-                    <Send className="w-4 h-4" />
-                    Send via Gmail
-                  </Button>
-                  <Button
-                    onClick={handleGenerate}
-                    disabled={isGenerating}
-                    variant="outline"
-                    className="h-10 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white gap-2"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    Regenerate
-                  </Button>
-                </div>
+                <Button
+                  onClick={handleSendGmail}
+                  disabled={!generatedSubject || !generatedBody}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-11 text-sm font-semibold gap-2 shadow-lg shadow-emerald-500/20"
+                >
+                  <Send className="w-4 h-4" />
+                  Open in Gmail
+                </Button>
               </CardContent>
             </Card>
           )}

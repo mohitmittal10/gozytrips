@@ -11,12 +11,7 @@
 const UNSPLASH_ACCESS_KEY = process.env.UNSPLASH_ACCESS_KEY;
 const UNSPLASH_API_URL = 'https://api.unsplash.com/search/photos';
 
-// Fallback images — a variety of stunning travel photos
-const FALLBACK_IMAGES = [
-    'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=1080&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?q=80&w=1080&auto=format&fit=crop',
-    'https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?q=80&w=1080&auto=format&fit=crop',
-];
+import { DEFAULT_FALLBACK_PHOTOS as FALLBACK_IMAGES, getActivityFallbackUrl } from './constants';
 
 interface UnsplashPhoto {
     urls: {
@@ -115,7 +110,7 @@ export async function searchUnsplashPhoto(
     }
 
     // Step 4: Ultimate fallback
-    return FALLBACK_IMAGES[Math.floor(Math.random() * FALLBACK_IMAGES.length)];
+    return getActivityFallbackUrl(Math.floor(Math.random() * FALLBACK_IMAGES.length));
 }
 
 /**

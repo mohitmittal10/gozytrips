@@ -1,15 +1,12 @@
-  "use client";
+"use client";
 
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
 import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from "@/components/hotel-flight-editor";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import {
-  Calendar, Clock, Footprints, Wallet, Pencil, Check, Trash2, Plus, GripVertical, X,
-  Hotel, Plane, Star, Car, Bus
-} from "lucide-react";
-import { useState, useRef, useEffect, useCallback, useContext } from "react";
+import { Footprints, Trash2, Plus } from "lucide-react";
+import { useState, useCallback, useContext } from "react";
 import { ItineraryContext } from "@/contexts/itinerary-context";
 import { getCurrencySymbol } from "@/lib/itinerary-calculator";
 import { useAuth } from "@/contexts/auth-context";
@@ -21,12 +18,8 @@ import {
   useSensor,
   useSensors,
   DragOverlay,
-  type DragStartEvent,
-  type DragEndEvent,
-  type DragOverEvent,
 } from "@dnd-kit/core";
 import {
-  arrayMove,
   SortableContext,
   sortableKeyboardCoordinates,
   useSortable,
@@ -36,16 +29,25 @@ import { CSS } from "@dnd-kit/utilities";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
+import { FlightBanner } from "@/components/banners/flight-banner";
+import { HotelBanner } from "@/components/banners/hotel-banner";
+import { CabBanner } from "@/components/banners/cab-banner";
+import { BusBanner } from "@/components/banners/bus-banner";
+import { InlineEdit } from "@/components/ui/inline-edit";
+import { useItineraryDnd } from "@/hooks/use-itinerary-dnd";
+import { useReferenceOptions } from "@/hooks/use-reference-options";
+import { DEFAULT_FALLBACK_PHOTOS, getActivityFallbackUrl } from "@/lib/constants";
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-type DayData = Omit<TravelItineraryOutput["itinerary"][number], "dailyStats"> & { 
+export type DayData = Omit<TravelItineraryOutput["itinerary"][number], "dailyStats"> & { 
   imageUrl?: string;
   dailyStats: { 
     totalCost: string;
     walkingDistance?: string;
   };
 };
-type TimelineStep = DayData["timeline"][number] & { imageUrl?: string };
+export type TimelineStep = DayData["timeline"][number] & { imageUrl?: string };
 
 type ItineraryTimelineProps = {
   itinerary: DayData[];
@@ -63,149 +65,7 @@ type ItineraryTimelineProps = {
   currency?: string;
 };
 
-// ── Hotel & Flight Display Blocks ──────────────────────────────────────────────
-
-function FlightBanner({ flight }: { flight: FlightInfo }) {
-  return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-primary/10 border border-primary/20 text-sm">
-      <Plane className="w-4 h-4 text-primary flex-shrink-0" />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-primary">
-            {flight.airline} {flight.flightNumber}
-          </span>
-          {flight.pnr && (
-            <span className="text-xs bg-primary/20 text-primary px-1.5 py-0.5 rounded">PNR: {flight.pnr}</span>
-          )}
-        </div>
-        <div className="text-foreground/70 text-xs mt-0.5">
-          {flight.departureAirport} → {flight.arrivalAirport}
-          {(flight.departure || flight.arrival) && (
-            <span className="ml-2">
-              {flight.departure}{flight.departure && flight.arrival ? " – " : ""}{flight.arrival}
-            </span>
-          )}
-          {flight.terminal && <span className="ml-2">Terminal {flight.terminal}</span>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function HotelBanner({ hotel }: { hotel: HotelInfo }) {
-  const hasImages = hotel.imageUrls && hotel.imageUrls.length > 0;
-  return (
-    <div className="flex flex-col gap-4 px-5 py-4 rounded-xl bg-secondary/10 border border-secondary/20 text-sm overflow-hidden">
-      <div className="flex items-start gap-4">
-        <Hotel className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="font-semibold text-secondary text-base">{hotel.name || "Hotel"}</span>
-            <span className="flex items-center gap-0.5">
-              {Array.from({ length: hotel.starRating }, (_, i) => (
-                <Star key={i} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-              ))}
-            </span>
-            {hotel.bookingRef && (
-              <span className="text-xs bg-secondary/20 text-secondary px-2 py-0.5 rounded-md font-medium">Ref: {hotel.bookingRef}</span>
-            )}
-          </div>
-          <div className="text-foreground/70 text-xs mt-1">
-            {hotel.address && <span>{hotel.address} • </span>}
-            Check-in: {hotel.checkIn} • Check-out: {hotel.checkOut}
-          </div>
-        </div>
-      </div>
-
-      {hasImages && (
-        <div className={cn(
-          "mt-2 grid gap-3",
-          hotel.imageUrls!.length === 1 ? "grid-cols-1" : "grid-cols-2"
-        )}>
-          {hotel.imageUrls!.map((url, idx) => (
-            <img
-              key={idx}
-              src={url}
-              alt={`Hotel ${idx + 1}`}
-              className={cn(
-                "w-full object-cover rounded-lg shadow-sm border border-secondary/10",
-                hotel.imageUrls!.length === 1 ? "h-64 sm:h-80" : "h-40 sm:h-48"
-              )}
-            />
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CabBanner({ cab }: { cab: CabInfo }) {
-  return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-sm">
-      <Car className="w-4 h-4 text-orange-500 flex-shrink-0" />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-orange-500">
-            {cab.vehicleType || "Cab"} {cab.route && `— ${cab.route}`}
-          </span>
-          {cab.bookingRef && (
-            <span className="text-xs bg-orange-500/20 text-orange-400 px-1.5 py-0.5 rounded">Ref: {cab.bookingRef}</span>
-          )}
-        </div>
-        <div className="text-foreground/70 text-xs mt-0.5">
-          {cab.pickupTime && <span>Pickup: {cab.pickupTime} • </span>}
-          {cab.driverName && <span>{cab.driverName} ({cab.driverContact})</span>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BusBanner({ bus }: { bus: BusInfo }) {
-  return (
-    <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-sm">
-      <Bus className="w-4 h-4 text-yellow-500 flex-shrink-0" />
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-semibold text-yellow-500">
-            {bus.busType || "Tourist Bus"} {bus.route && `— ${bus.route}`}
-          </span>
-          {bus.pnr && (
-            <span className="text-xs bg-yellow-500/20 text-yellow-400 px-1.5 py-0.5 rounded">PNR: {bus.pnr}</span>
-          )}
-        </div>
-        <div className="text-foreground/70 text-xs mt-0.5">
-          {bus.reportingTime && <span>Reporting: {bus.reportingTime} • </span>}
-          {bus.departureTime && <span>Departure: {bus.departureTime}</span>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Helpers ────────────────────────────────────────────────────────────────────
-
-/**
- * Curated pool of verified Unsplash photo slugs used as activity thumbnails.
- * These are real, stable photo IDs that won't 404 — rotated by stepIndex.
- * DO NOT replace with arithmetic offsets; Unsplash IDs are alphanumeric slugs.
- */
-const ACTIVITY_FALLBACK_PHOTOS = [
-  'photo-1476514525535-07fb3b4ae5f1', // aerial landscape
-  'photo-1506748686214-e9df14d4d9d0', // nature lake
-  'photo-1469854523086-cc02fe5d8800', // road trip
-  'photo-1436491865332-7a61a109cc05', // clouds over water
-  'photo-1530789253388-582c481c54b0', // travel
-  'photo-1501854140801-50d01698950b', // mountains
-  'photo-1488085061387-422e29b40080', // night city
-  'photo-1548013146-72479768bada', // taj mahal
-];
-
-/** Returns a stable, known-good Unsplash thumbnail URL for a given step index. */
-const getActivityFallbackUrl = (stepIndex: number) => {
-  const slug = ACTIVITY_FALLBACK_PHOTOS[stepIndex % ACTIVITY_FALLBACK_PHOTOS.length];
-  return `https://images.unsplash.com/${slug}?q=60&w=120&auto=format&fit=crop`;
-};
 
 /** Generate a unique ID for drag-and-drop. Format: "day-{dayIndex}-step-{stepIndex}" */
 const stepId = (dayIndex: number, stepIndex: number) =>
@@ -217,109 +77,6 @@ const parseStepId = (id: string): { dayIndex: number; stepIndex: number } | null
   if (!m) return null;
   return { dayIndex: Number(m[1]), stepIndex: Number(m[2]) };
 };
-
-/** Container ID for a day (used for droppable) */
-const dayContainerId = (dayIndex: number) => `day-container-${dayIndex}`;
-
-// ── Inline Editable Text ───────────────────────────────────────────────────────
-
-function InlineEdit({
-  value,
-  onSave,
-  className,
-  inputClassName,
-  multiline = false,
-  placeholder = "Enter text...",
-  onEditStart,
-}: {
-  value: string;
-  onSave: (val: string) => void;
-  className?: string;
-  inputClassName?: string;
-  multiline?: boolean;
-  placeholder?: string;
-  onEditStart?: () => void;
-}) {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value);
-  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-
-  useEffect(() => {
-    if (editing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
-    }
-  }, [editing]);
-
-  // Sync external value changes
-  useEffect(() => {
-    if (!editing) setDraft(value);
-  }, [value, editing]);
-
-  const commit = () => {
-    const trimmed = draft.trim();
-    if (trimmed && trimmed !== value) {
-      onSave(trimmed);
-    } else {
-      setDraft(value);
-    }
-    setEditing(false);
-  };
-
-  const cancel = () => {
-    setDraft(value);
-    setEditing(false);
-  };
-
-  if (!editing) {
-    return (
-      <span
-        className={cn("group/edit cursor-pointer inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-colors hover:bg-primary/10", className)}
-        onClick={() => {
-          if (onEditStart) onEditStart();
-          setEditing(true);
-        }}
-        title="Click to edit"
-      >
-        <span className="flex-1">{value}</span>
-        <Pencil className="w-3 h-3 text-primary/40 opacity-0 group-hover/edit:opacity-100 transition-opacity flex-shrink-0" />
-      </span>
-    );
-  }
-
-  const sharedProps = {
-    value: draft,
-    onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setDraft(e.target.value),
-    onKeyDown: (e: React.KeyboardEvent) => {
-      if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); commit(); }
-      if (e.key === "Escape") cancel();
-    },
-    onBlur: commit,
-    className: cn(
-      "bg-white/10 border border-primary/30 rounded px-2 py-1 text-inherit focus:outline-none focus:ring-2 focus:ring-primary/50 w-full",
-      inputClassName
-    ),
-    placeholder,
-  };
-
-  if (multiline) {
-    return (
-      <textarea
-        ref={inputRef as React.RefObject<HTMLTextAreaElement>}
-        rows={3}
-        {...sharedProps}
-      />
-    );
-  }
-
-  return (
-    <input
-      ref={inputRef as React.RefObject<HTMLInputElement>}
-      type="text"
-      {...sharedProps}
-    />
-  );
-}
 
 // ── Sortable Activity Item ─────────────────────────────────────────────────────
 
@@ -334,6 +91,7 @@ function SortableActivity({
   showTimestamps,
   showPrices,
   currencySymbol,
+  fallbackPhotos,
 }: {
   id: string;
   stepIndex: number;
@@ -345,6 +103,7 @@ function SortableActivity({
   showTimestamps?: boolean;
   showPrices?: boolean;
   currencySymbol?: string;
+  fallbackPhotos: string[];
 }) {
   const {
     attributes,
@@ -387,14 +146,14 @@ function SortableActivity({
         <div className="flex-1 min-w-0">
             <div className="glass-panel p-2 sm:p-3 rounded-xl flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center group/card transition-all">
               <div className="hidden sm:flex w-14 h-14 rounded-md overflow-hidden flex-shrink-0 shadow-lg border border-white/5 bg-zinc-900/50">
-                {/* Activity thumbnail — falls back to a curated pool of verified Unsplash photos.
-                    onError clears src so the browser stops retrying a broken URL,
-                    which would otherwise cause an infinite request loop. */}
                 <img 
                   className="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700 brightness-[0.8]" 
-                  src={step.imageUrl || getActivityFallbackUrl(stepIndex)}
+                  src={step.imageUrl || getActivityFallbackUrl(stepIndex, fallbackPhotos)}
                   alt="Activity"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = getActivityFallbackUrl((stepIndex + 1) % ACTIVITY_FALLBACK_PHOTOS.length); (e.currentTarget as HTMLImageElement).onerror = null; }}
+                  onError={(e) => { 
+                    (e.currentTarget as HTMLImageElement).src = getActivityFallbackUrl((stepIndex + 1), fallbackPhotos); 
+                    (e.currentTarget as HTMLImageElement).onerror = null; 
+                  }}
                 />
               </div>
               
@@ -434,8 +193,6 @@ function SortableActivity({
                   multiline
                   placeholder="Activity description..."
                 />
-
-                  {/* Removed location and picker tags */}
               </div>
             </div>
         </div>
@@ -531,13 +288,15 @@ const ItineraryTimeline = ({
   // Resolve currency code
   const currencyCode = currency 
     || itineraryCtx?.state.pricing.currency 
-    || (agencySettings as any)?.default_currency 
-    || "INR";
+    || (agencySettings as any)?.default_currency;
 
-  const currencySymbol = getCurrencySymbol(currencyCode as any);
-  const [activeStepId, setActiveStepId] = useState<string | null>(null);
-  // Track which container the dragged item is currently over
-  const [overDayIndex, setOverDayIndex] = useState<number | null>(null);
+  const currencySymbol = getCurrencySymbol((currencyCode || "INR") as any);
+
+  // Fetch reference options for dynamic photos
+  const { options: refOptions } = useReferenceOptions('activity_fallback_photos');
+  const fallbackPhotos = refOptions.length > 0 
+    ? refOptions.map(opt => opt.value)
+    : DEFAULT_FALLBACK_PHOTOS;
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -554,6 +313,19 @@ const ItineraryTimeline = ({
     },
     [itinerary, onItineraryChange]
   );
+
+  const {
+    activeStepId,
+    findStepByDragId,
+    handleDragStart,
+    handleDragOver,
+    handleDragEnd,
+  } = useItineraryDnd({
+    itinerary,
+    updateItinerary,
+    onEditingChange,
+    parseStepId,
+  });
 
   const updateStep = (dayIndex: number, stepIndex: number, field: keyof TimelineStep, value: string | number | undefined) => {
     if (onEditingChange) onEditingChange(true);
@@ -667,88 +439,6 @@ const ItineraryTimeline = ({
     });
   };
 
-  // ── Drag handlers ──
-
-  const findStepByDragId = (id: string): TimelineStep | null => {
-    const parsed = parseStepId(id);
-    if (!parsed) return null;
-    return itinerary[parsed.dayIndex]?.timeline[parsed.stepIndex] ?? null;
-  };
-
-  const handleDragStart = (event: DragStartEvent) => {
-    setActiveStepId(event.active.id as string);
-    if (onEditingChange) onEditingChange(true);
-  };
-
-  const handleDragOver = (event: DragOverEvent) => {
-    const { active, over } = event;
-    if (!over) { setOverDayIndex(null); return; }
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-    if (activeId === overId) return;
-
-    const activeParsed = parseStepId(activeId);
-    const overParsed = parseStepId(overId);
-
-    if (!activeParsed || !overParsed) return;
-
-    // Figure out which day we're over
-    setOverDayIndex(overParsed.dayIndex);
-
-    // If different day or different position, move it in real-time for visual feedback
-    if (activeParsed.dayIndex !== overParsed.dayIndex || activeParsed.stepIndex !== overParsed.stepIndex) {
-      updateItinerary((days) => {
-        if (activeParsed.dayIndex === overParsed.dayIndex) {
-          days[activeParsed.dayIndex].timeline = arrayMove(
-            days[activeParsed.dayIndex].timeline,
-            activeParsed.stepIndex,
-            overParsed.stepIndex
-          );
-        } else {
-          const [movedStep] = days[activeParsed.dayIndex].timeline.splice(activeParsed.stepIndex, 1);
-          days[overParsed.dayIndex].timeline.splice(overParsed.stepIndex, 0, movedStep);
-        }
-        return days;
-      });
-    }
-  };
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    setActiveStepId(null);
-    setOverDayIndex(null);
-
-    const { active, over } = event;
-    if (!over) return;
-
-    const activeId = active.id as string;
-    const overId = over.id as string;
-
-    if (activeId === overId) return;
-
-    const activeParsed = parseStepId(activeId);
-    const overParsed = parseStepId(overId);
-
-    if (!activeParsed || !overParsed) return;
-
-    updateItinerary((days) => {
-      if (activeParsed.dayIndex === overParsed.dayIndex) {
-        // Same day reorder
-        const dayTimeline = days[activeParsed.dayIndex].timeline;
-        days[activeParsed.dayIndex].timeline = arrayMove(
-          dayTimeline,
-          activeParsed.stepIndex,
-          overParsed.stepIndex
-        );
-      } else {
-        // Cross-day move
-        const [movedStep] = days[activeParsed.dayIndex].timeline.splice(activeParsed.stepIndex, 1);
-        days[overParsed.dayIndex].timeline.splice(overParsed.stepIndex, 0, movedStep);
-      }
-      return days;
-    });
-  };
-
   // ── Render ──
 
   if (isLoading) return <ItineraryTimelineSkeleton />;
@@ -798,8 +488,6 @@ const ItineraryTimeline = ({
         onDragEnd={handleDragEnd}
       >
         <div className="space-y-6">
-
-
           {itinerary.map((day, dayIndex) => {
             const dayStepIds = day.timeline.map((_, stepIdx) => stepId(dayIndex, stepIdx));
             return (
@@ -883,6 +571,7 @@ const ItineraryTimeline = ({
                               showTimestamps={showTimestamps}
                               showPrices={showPrices}
                               currencySymbol={currencySymbol}
+                              fallbackPhotos={fallbackPhotos}
                             />
                           ))}
                         </div>

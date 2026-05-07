@@ -40,7 +40,7 @@ interface ClientProfileSheetProps {
     setIsEditDialogOpen: (open: boolean) => void;
     setShowModal: (show: boolean) => void;
     setSelectedTripForModal: (trip: any) => void;
-    getAvatarColor: (name: string) => string;
+
     getTripCost: (trip: any) => number;
 }
 
@@ -57,7 +57,7 @@ export const ClientProfileSheet = ({
     setIsEditDialogOpen,
     setShowModal,
     setSelectedTripForModal,
-    getAvatarColor,
+
     getTripCost
 }: ClientProfileSheetProps) => {
     const { agencySettings } = useAuth();

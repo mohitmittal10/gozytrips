@@ -9,11 +9,11 @@ import { updateItineraryStatus } from "@/lib/services/itinerary-status";
 import { useToast } from "@/hooks/use-toast";
 import { 
     isBookedTripStatus, 
-    computeTopDestinations, 
-    computeSeasonalityDepartures, 
-    computeDurationBuckets,
     getTripCost,
-    type EnrichedClient
+    computeCrmMetrics,
+    computeRecentActivity,
+    type EnrichedClient,
+    type DashboardFinanceRollup
 } from "../utils/metrics-utils";
 import { getCurrencySymbol } from "@/types/financial";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
@@ -57,7 +57,7 @@ export function useCrmData() {
 
             const { data: itineraries, error } = await supabase
                 .from("itineraries")
-                .select("id, client_id, title, status, destinations, start_date, end_date, budget, client_price, currency, commission_rate, markup_value, markup_type, tax_percentage, adult_pax, child_pax, infant_pax, created_at, updated_at, itinerary_data, starting_location, ending_location")
+                .select("id, client_id, title, status, destinations, start_date, end_date, budget, client_price, currency, commission_rate, markup_value, markup_type, tax_percentage, adult_pax, child_pax, infant_pax, created_at, updated_at, itinerary_data, starting_location, ending_location, trip_line_items(net_cost, markup_percentage)")
                 .eq("user_id", user.id)
                 .order("updated_at", { ascending: false });
 
@@ -74,20 +74,10 @@ export function useCrmData() {
             }
             setBookingsLoading(false);
 
-            const bookedItineraryIds = (itineraries || [])
-                .filter((t: { status?: string }) => isBookedTripStatus(t.status || ""))
-                .map((t: { id: string }) => t.id);
-
             let tripLineNet = 0; let tripLineMarkup = 0; let tripLineGross = 0;
-            const LINE_CHUNK = 60;
-            for (let i = 0; i < bookedItineraryIds.length; i += LINE_CHUNK) {
-                const slice = bookedItineraryIds.slice(i, i + LINE_CHUNK);
-                const { data: lineItems, error: lineErr } = await supabase
-                    .from("trip_line_items")
-                    .select("net_cost, markup_percentage")
-                    .in("itinerary_id", slice);
-                if (!lineErr && lineItems) {
-                    lineItems.forEach((item: { net_cost?: number; markup_percentage?: number }) => {
+            (itineraries || []).forEach((itinerary: any) => {
+                if (isBookedTripStatus(itinerary.status || "")) {
+                    itinerary.trip_line_items?.forEach((item: { net_cost?: number; markup_percentage?: number }) => {
                         const net = Number(item.net_cost) || 0;
                         const m = Number(item.markup_percentage) || 0;
                         tripLineNet += net;
@@ -95,7 +85,7 @@ export function useCrmData() {
                         tripLineGross += net * (1 + m / 100);
                     });
                 }
-            }
+            });
 
             let standaloneNet = 0; let standaloneMarkup = 0; let standaloneGross = 0;
             (standaloneData || []).forEach((b: { net_cost?: number | null; markup_percentage?: number | null }) => {
@@ -250,84 +240,14 @@ export function useCrmData() {
         }
     };
 
-    // Metrics useMemos
-    const activeTripsCount = useMemo(() => enrichedClients.filter(c => c.latestStatus.toLowerCase() !== "no active trips" && c.latestStatus.toLowerCase() !== "completed" && c.latestStatus.toLowerCase() !== "rejected").length, [enrichedClients]);
-    const bookedCount = useMemo(() => enrichedClients.filter(c => c.latestStatus.toLowerCase() === "booked" || c.latestStatus.toLowerCase() === "confirmed").length, [enrichedClients]);
-    const totalProposals = useMemo(() => enrichedClients.reduce((acc, c) => acc + c.allTrips.length, 0), [enrichedClients]);
-    const conversionRate = useMemo(() => totalProposals === 0 ? 0 : Math.round((bookedCount / totalProposals) * 100), [bookedCount, totalProposals]);
-    const bookedRevenue = dashboardFinanceRollup.tripLineGross;
-    const standaloneRevenue = dashboardFinanceRollup.standaloneGross;
-    const newClientsThisMonth = useMemo(() => {
-        const now = new Date();
-        return clients.filter(c => {
-            const created = new Date(c.created_at);
-            return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-        }).length;
-    }, [clients]);
-    const repeatClientStats = useMemo(() => {
-        const repeatCount = enrichedClients.filter(c => c.allTrips.length > 1).length;
-        const pct = enrichedClients.length > 0 ? (repeatCount / enrichedClients.length) * 100 : 0;
-        return { repeat: repeatCount, pct: Math.round(pct) };
-    }, [enrichedClients]);
-    const avgBookedTripValue = useMemo(() => bookedCount === 0 ? 0 : (bookedRevenue + standaloneRevenue) / bookedCount, [bookedCount, bookedRevenue, standaloneRevenue]);
-    const blendedMarginPct = useMemo(() => {
-        const totalGross = dashboardFinanceRollup.tripLineGross + dashboardFinanceRollup.standaloneGross;
-        const totalMarkup = dashboardFinanceRollup.tripLineMarkup + dashboardFinanceRollup.standaloneMarkup;
-        return totalGross === 0 ? 0 : Math.round((totalMarkup / totalGross) * 100);
-    }, [dashboardFinanceRollup]);
-    const packageVsStandaloneMix = useMemo(() => {
-        const total = dashboardFinanceRollup.tripLineGross + dashboardFinanceRollup.standaloneGross;
-        if (total === 0) return { packageRev: 0, standaloneRev: 0, packagePct: 0, standalonePct: 0 };
-        return {
-            packageRev: dashboardFinanceRollup.tripLineGross, standaloneRev: dashboardFinanceRollup.standaloneGross,
-            packagePct: Math.round((dashboardFinanceRollup.tripLineGross / total) * 100), standalonePct: Math.round((dashboardFinanceRollup.standaloneGross / total) * 100)
-        };
-    }, [dashboardFinanceRollup]);
+    // Metrics & Activity Calculation
+    const metrics = useMemo(() => 
+        computeCrmMetrics(enrichedClients, clients, dashboardFinanceRollup),
+    [enrichedClients, clients, dashboardFinanceRollup]);
 
-    const topDestinationsChart = useMemo(() => computeTopDestinations(enrichedClients), [enrichedClients]);
-    const seasonalityChart = useMemo(() => computeSeasonalityDepartures(enrichedClients), [enrichedClients]);
-    const durationBucketsChart = useMemo(() => computeDurationBuckets(enrichedClients), [enrichedClients]);
-    const durationMax = useMemo(() => Math.max(1, ...durationBucketsChart.map(b => b.count)), [durationBucketsChart]);
-
-    const departureCalendarStats = useMemo(() => {
-        const now = new Date();
-        const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-        const thisMonthCount = enrichedClients.reduce((acc, c) => acc + c.allTrips.filter(t => {
-            if (!t.start_date) return false;
-            const d = new Date(t.start_date);
-            return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear() && isBookedTripStatus(t.status);
-        }).length, 0);
-        const nextMonthCount = enrichedClients.reduce((acc, c) => acc + c.allTrips.filter(t => {
-            if (!t.start_date) return false;
-            const d = new Date(t.start_date);
-            return d.getMonth() === nextMonth.getMonth() && d.getFullYear() === nextMonth.getFullYear() && isBookedTripStatus(t.status);
-        }).length, 0);
-        return { thisMonth: thisMonthCount, nextMonth: nextMonthCount };
-    }, [enrichedClients]);
-
-    const revenueByMonth = useMemo(() => {
-        const months: Record<string, number> = {};
-        enrichedClients.forEach(c => {
-            c.allTrips.forEach(t => {
-                if (t.start_date && isBookedTripStatus(t.status)) {
-                    const m = new Date(t.start_date).toLocaleString('default', { month: 'short' });
-                    months[m] = (months[m] || 0) + getTripCost(t);
-                }
-            });
-        });
-        return Object.entries(months).map(([month, revenue]) => ({ month, revenue }));
-    }, [enrichedClients]);
-
-    const recentActivity = useMemo(() => {
-        const activities: any[] = [];
-        enrichedClients.forEach(c => {
-            activities.push({ id: `client-${c.id}`, type: 'client_added', label: `New client added: ${c.name}`, time: new Date(c.created_at), icon: 'user' });
-            c.allTrips.forEach(t => {
-                activities.push({ id: `trip-${t.id}`, type: 'trip_created', label: `New trip for ${c.name}: ${t.title}`, time: new Date(t.created_at), icon: 'plane' });
-            });
-        });
-        return activities.sort((a, b) => b.time.getTime() - a.time.getTime()).slice(0, 50);
-    }, [enrichedClients]);
+    const recentActivity = useMemo(() => 
+        computeRecentActivity(enrichedClients),
+    [enrichedClients]);
 
     const uniqueTags = useMemo(() => {
         const tags = new Set<string>();
@@ -343,12 +263,7 @@ export function useCrmData() {
             uniqueTags,
             recentActivity
         },
-        metrics: {
-            activeTripsCount, bookedCount, totalProposals, conversionRate, bookedRevenue, standaloneRevenue,
-            newClientsThisMonth, repeatClientStats, avgBookedTripValue, blendedMarginPct, packageVsStandaloneMix,
-            topDestinationsChart, seasonalityChart, durationBucketsChart, durationMax,
-            departureCalendarStats, revenueByMonth
-        },
+        metrics,
         loading: {
             isComputing, clientsLoading, bookingsLoading, isRefreshing
         },

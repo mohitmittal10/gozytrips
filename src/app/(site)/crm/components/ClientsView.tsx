@@ -23,7 +23,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
+import { cn, getAvatarColor } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useReferenceOptions } from "@/hooks/use-reference-options";
 
@@ -92,7 +92,7 @@ interface ClientsViewProps {
     toggleColumn: (col: 'destination' | 'lastUpdated') => void;
     
     // Utils
-    getAvatarColor: (name: string) => string;
+
     clients?: any[];
     totalCount?: number;
     [key: string]: any;
@@ -147,7 +147,7 @@ export const ClientsView = (props: ClientsViewProps) => {
         setSelectedClient = () => {},
         visibleColumns = { destination: true, lastUpdated: true },
         toggleColumn = () => {},
-        getAvatarColor = () => 'bg-purple-500/10 text-purple-400'
+
     } = props;
 
     const SortIcon = ({ col }: { col: string }) => {

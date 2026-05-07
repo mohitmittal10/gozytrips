@@ -228,7 +228,7 @@ export function CrmTabRouter() {
     if (activeTab === 'archive') return <ArchiveView
         archivedClients={archivedClients}
         setSelectedClient={context.setSelectedClient}
-        getAvatarColor={getAvatarColor}
+
     />;
 
     if (activeTab === 'trips') return <TripsView
@@ -269,6 +269,6 @@ export function CrmTabRouter() {
         totalCount={sortedClients.length}
         handleRefreshClients={actions.handleRefreshClients}
         isRefreshing={loading.isRefreshing}
-        getAvatarColor={getAvatarColor}
+
     />;
 }
