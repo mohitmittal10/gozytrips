@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client';
-import { google } from 'googleapis';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 export class BackupService {
@@ -127,6 +126,7 @@ export class BackupService {
       googleRefreshToken = profile?.google_refresh_token;
       if (!googleRefreshToken) throw new Error('Google Drive integration not configured.');
 
+      const { google } = await import('googleapis');
       const oauth2Client = new google.auth.OAuth2(
         process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
         process.env.GOOGLE_CLIENT_SECRET,
