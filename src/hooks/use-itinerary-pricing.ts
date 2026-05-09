@@ -10,8 +10,8 @@
 
 import { useMemo } from "react";
 import { useItineraryContext } from "@/contexts/itinerary-context";
-import { calcPricingBreakdown } from "@/lib/itinerary-calculator";
-import type { PricingBreakdown } from "@/lib/itinerary-calculator";
+import { calcPricingBreakdown } from "@/services/financial";
+import type { PricingBreakdown } from "@/services/financial";
 
 export function useItineraryPricing(): PricingBreakdown {
   const { state } = useItineraryContext();

@@ -21,7 +21,7 @@ import { useClients } from "@/lib/hooks/use-clients";
 
 import { VendorEnquiryInput } from "@/ai/flows/generate-vendor-enquiry";
 import { EnquiryType, EnquiryTypeOption, VendorEnquiry as VendorEnquiryType } from "@/types/vendor-enquiry";
-import { vendorEnquiryService } from "@/lib/services/vendor-enquiry";
+import { vendorEnquiryService } from "@/services/itinerary";
 import { useVendorEnquiryAi } from "@/hooks/use-vendor-enquiry-ai";
 import { FormField } from "@/components/ui/form-field";
 import { EnquiryHistory } from "@/components/vendor/EnquiryHistory";

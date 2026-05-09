@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { format } from "date-fns";
 import type { LoadedPersistenceData } from "@/types/ai-architect";
 import { createClient } from "@/lib/supabase/client";
-import { calcPricingBreakdown } from "@/lib/itinerary-calculator";
+import { calcPricingBreakdown } from "@/services/financial";
 import { defaultPricingConfig, DEFAULT_CURRENCY } from "@/types/pricing";
 
 export function useItineraryPersistence({

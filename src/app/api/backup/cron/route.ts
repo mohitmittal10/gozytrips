@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { Database } from '@/types/supabase';
-import { BackupService } from '@/lib/backup-service';
+import { BackupService } from '@/services/backup';
 
 export const dynamic = 'force-dynamic';
 

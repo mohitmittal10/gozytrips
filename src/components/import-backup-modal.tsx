@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CloudDownload, Rocket, Loader2, AlertCircle, HardDrive, Upload } from "lucide-react";
-import { BackupService } from "@/lib/backup-service";
+import { BackupService } from "@/services/backup";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";

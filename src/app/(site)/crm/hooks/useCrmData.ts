@@ -5,17 +5,17 @@ import { useAuth } from "@/contexts/auth-context";
 import { useClients } from "@/lib/hooks/use-clients";
 import { createClient } from "@/lib/supabase/client";
 import { logAuditEvent } from "@/lib/audit-logger";
-import { updateItineraryStatus } from "@/lib/services/itinerary-status";
+import { updateItineraryStatus } from "@/services/itinerary";
 import { useToast } from "@/hooks/use-toast";
-import { 
-    isBookedTripStatus, 
-    getTripCost,
+import {
+    isBookedTripStatus,
     computeCrmMetrics,
     computeRecentActivity,
+    enrichClients,
     type EnrichedClient,
     type DashboardFinanceRollup
-} from "../utils/metrics-utils";
-import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
+} from "@/services/crm";
+import { formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 
 export function useCrmData() {
@@ -101,49 +101,11 @@ export function useCrmData() {
                 standaloneNet, standaloneMarkup, standaloneGross,
             });
 
-            const combined = clients.map((client) => {
-                const clientTrips = itineraries?.filter(it => it.client_id === client.id) || [];
-                const totalBookedRevenue = clientTrips
-                    .filter(t => t.status.toLowerCase() === 'booked' || t.status.toLowerCase() === 'confirmed')
-                    .reduce((acc, t) => acc + getTripCost(t), 0);
-                
-                const latestTrip = clientTrips[0];
-                const latestCalculatedBudget = latestTrip ? getTripCost(latestTrip) : 0;
-
-                const bookedTrips = clientTrips.filter(t => t.status.toLowerCase() === 'booked' || t.status.toLowerCase() === 'confirmed');
-                
-                const tripsToRender = bookedTrips.length > 0 ? bookedTrips : (latestTrip ? [latestTrip] : []);
-                const bookedDestinations = tripsToRender.map(t => {
-                    let label = t.destinations && t.destinations !== "" ? t.destinations : "";
-                    if (!label && t.title) label = t.title.replace(/^Trip to\s+/i, "");
-                    if (!label && t.itinerary_data?.itinerary) {
-                        const cities = t.itinerary_data.itinerary
-                            .map((day: any) => day.areaFocus?.split(',')[0]?.trim())
-                            .filter(Boolean);
-                        const uniqueCities = Array.from(new Set(cities));
-                        if (uniqueCities.length > 0) label = uniqueCities.join(", ");
-                    }
-                    if (!label) label = (t.starting_location === t.ending_location || !t.ending_location 
-                            ? t.starting_location : `${t.starting_location} to ${t.ending_location}`);
-                    return { id: t.id, label };
-                });
-
-                return {
-                    ...client,
-                    tags: client.tags || [],
-                    latestStatus: latestTrip?.status || "No Active Trips",
-                    latestDestination: bookedDestinations.length > 0 ? bookedDestinations.map(d => d.label).join(", ") : "N/A",
-                    bookedDestinations: bookedDestinations,
-                    latestBudget: totalBookedRevenue > 0 
-                        ? formatMoney(totalBookedRevenue, (agencySettings?.default_currency as any) || DEFAULT_CURRENCY) 
-                        : (latestCalculatedBudget > 0 
-                            ? formatMoney(latestCalculatedBudget, (agencySettings?.default_currency as any) || DEFAULT_CURRENCY) 
-                            : "N/A"),
-                    latestRawBudget: totalBookedRevenue > 0 ? totalBookedRevenue : latestCalculatedBudget,
-                    latestContact: new Date(client.updated_at).toLocaleDateString(),
-                    latestTripId: latestTrip?.id,
-                    allTrips: clientTrips
-                };
+            const combined = enrichClients({
+                clients,
+                itineraries: itineraries || [],
+                formatBudget: (amount) =>
+                    formatMoney(amount, (agencySettings?.default_currency as any) || DEFAULT_CURRENCY),
             });
 
             setEnrichedClients(combined);

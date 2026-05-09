@@ -4,7 +4,7 @@ import type { HotelInfo, FlightInfo } from '@/components/hotel-flight-editor';
 import { formatMoneyWithDecimals } from '@/lib/utils/currency';
 import { formatPlural, getAgentInfo } from './utils';
 import { PdfFlightBlock, PdfHotelBlock } from './shared-blocks';
-import { calcPricingFromBaseCost } from '@/lib/itinerary-calculator';
+import { calcPricingFromBaseCost } from '@/services/financial';
 
 export const PdfPricingPage = ({ pricing, baseCost = 0, agent }: { pricing: PricingConfig; baseCost?: number; agent: ReturnType<typeof getAgentInfo> }) => {
     const { costWithMarkup, taxAmount, finalTotal, milestoneAmounts } = calcPricingFromBaseCost(baseCost, pricing);
