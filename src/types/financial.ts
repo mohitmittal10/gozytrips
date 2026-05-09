@@ -81,16 +81,4 @@ export interface InvoiceData {
     companyName: string;
 }
 
-// Helper to get currency symbol
-export function getCurrencySymbol(currency: Currency): string {
-    try {
-        const format = new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: currency,
-        });
-        return format.formatToParts(0).find(p => p.type === 'currency')?.value || currency;
-    } catch (e) {
-        return currency;
-    }
-}
 

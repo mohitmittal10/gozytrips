@@ -13,7 +13,7 @@ import { Trash2, ExternalLink, Plus, Loader } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/contexts/auth-context';
-import { getCurrencySymbol } from '@/types/financial';
+import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 
 const DEFAULT_EXPENSE_CATEGORIES = [

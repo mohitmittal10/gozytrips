@@ -14,6 +14,7 @@ import { type Currency, type PaymentMilestone, type PricingTier, type ManualCost
 import { useItinerary } from "@/hooks/use-itinerary";
 import { useItineraryPricing } from "@/hooks/use-itinerary-pricing";
 import { debounce } from "@/lib/utils";
+import { formatMoney } from "@/lib/utils/currency";
 import React, { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -291,19 +292,19 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
               <div className="text-emerald-400 font-semibold mb-2">Live Costing Summary</div>
               <div className="flex justify-between text-gray-400">
                 <span>Base Cost (Automatic)</span>
-                <span>{currencySymbol}{baseCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                <span>{formatMoney(baseCost, pricing.currency)}</span>
               </div>
               <div className="flex justify-between text-emerald-400">
                 <span>Your Profit Margin</span>
-                <span>+{currencySymbol}{markupAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                <span>+{formatMoney(markupAmount, pricing.currency)}</span>
               </div>
               <div className="flex justify-between text-gray-400">
                 <span>Tax</span>
-                <span>+{currencySymbol}{taxAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                <span>+{formatMoney(taxAmount, pricing.currency)}</span>
               </div>
               <div className="pt-2 mt-2 border-t border-emerald-500/20 flex justify-between font-bold text-white text-base mb-4">
                 <span>Total Client Quote</span>
-                <span>{currencySymbol}{finalTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                <span>{formatMoney(finalTotal, pricing.currency)}</span>
               </div>
               
               {onSave && (
@@ -442,19 +443,19 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                   </div>
                   <div className="flex justify-between text-gray-400">
                     <span>Manual Base Cost</span>
-                    <span>{currencySymbol}{baseCost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    <span>{formatMoney(baseCost, pricing.currency)}</span>
                   </div>
                   <div className="flex justify-between text-amber-400">
                     <span>Total Markup</span>
-                    <span>+{currencySymbol}{markupAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    <span>+{formatMoney(markupAmount, pricing.currency)}</span>
                   </div>
                   <div className="flex justify-between text-gray-400">
                     <span>Final Tax</span>
-                    <span>+{currencySymbol}{taxAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    <span>+{formatMoney(taxAmount, pricing.currency)}</span>
                   </div>
                   <div className="pt-2 mt-2 border-t border-amber-500/20 flex justify-between font-bold text-white text-lg mb-4">
                     <span>Quote Total</span>
-                    <span>{currencySymbol}{finalTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                    <span>{formatMoney(finalTotal, pricing.currency)}</span>
                   </div>
 
                   {onSave && (
@@ -523,7 +524,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                 {/* Milestone amount — reactive from engine */}
                 <div className="pt-5">
                   <div className="text-emerald-400 font-bold text-base w-32 text-right">
-                    {currencySymbol}{milestone.amount.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    {formatMoney(milestone.amount, pricing.currency)}
                   </div>
                 </div>
 

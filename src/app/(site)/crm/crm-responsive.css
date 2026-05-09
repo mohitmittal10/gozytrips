@@ -15,7 +15,7 @@
   min-height: 100vh;
   background-color: #0A0A0A;
   color: #fff;
-  padding-top: 1.5rem; /* Drastically reduced to eliminate gap */
+  padding-top: 5rem; /* Increased to avoid overlap with fixed navbar (61px) */
   padding-bottom: 1rem;
   overflow-x: clip; /* clip instead of hidden to allow position: sticky to work on children */
 }
@@ -198,12 +198,26 @@
   min-width: 520px; /* Ensures readability with horizontal scroll */
   text-align: left;
   border-collapse: collapse;
+  table-layout: auto;
+}
+
+.crm-table-wrapper thead tr {
+  background-color: rgba(255, 255, 255, 0.03);
 }
 
 .crm-table-wrapper th,
 .crm-table-wrapper td {
-  padding: 0.625rem 0.5rem;
-  font-size: clamp(0.7rem, 1.5vw, 0.875rem);
+  padding: 0.875rem 1rem;
+  font-size: clamp(0.75rem, 1.5vw, 0.875rem);
+  vertical-align: middle;
+}
+
+.crm-table-wrapper th {
+  color: #9ca3af;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.7rem;
 }
 
 /* ─── Kanban Board ───────────────────────────────────── */
@@ -390,7 +404,7 @@
    ===================================================== */
 @media (min-width: 768px) {
   .crm-page {
-    padding-top: 2rem; 
+    padding-top: 5.5rem; 
   }
   .crm-container {
     padding-left: 2rem;

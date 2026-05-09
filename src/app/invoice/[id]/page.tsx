@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Database } from "@/types/supabase";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { MapPin, Calendar, FileText } from "lucide-react";
-import { getCurrencySymbol } from "@/types/financial";
+import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 
 // Use service role key to bypass RLS for public invoice viewing

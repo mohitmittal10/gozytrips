@@ -1,8 +1,7 @@
 import React from 'react';
 import type { ThemeProps } from './classic-theme';
 import { DEFAULT_CURRENCY } from '@/types/pricing';
-import { getCurrencySymbol } from '@/lib/itinerary-calculator';
-import { formatCurrency } from '@/lib/utils/currency';
+import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { getThematicBackground, glassStyles } from '../styles';
 
@@ -49,7 +48,7 @@ export const EditorialTheme = ({ itinerary, title, agent }: ThemeProps) => {
                         </div>
                         <div style={{ width: "1px", background: "#ddd" }} />
                         <div>
-                            <p style={{ fontSize: "36px", fontWeight: "normal", color: gold, margin: "0 0 5px 0", fontStyle: "italic" }}>{getCurrencySymbol(itinerary.pricing?.currency || DEFAULT_CURRENCY)}{getTotalBudget(itinerary).toLocaleString()}</p>
+                            <p style={{ fontSize: "36px", fontWeight: "normal", color: gold, margin: "0 0 5px 0", fontStyle: "italic" }}>{formatCurrency(getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY)}</p>
                             <p style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "3px", color: "#999", fontFamily: "'Helvetica Neue', sans-serif", margin: 0 }}>Estimated Budget</p>
                         </div>
                         <div style={{ width: "1px", background: "#ddd" }} />
@@ -84,7 +83,7 @@ export const EditorialTheme = ({ itinerary, title, agent }: ThemeProps) => {
 
                     <div style={{ display: "flex", gap: "30px", marginTop: "15px", fontSize: "12px", color: "#999", fontFamily: "'Helvetica Neue', sans-serif", pageBreakInside: "avoid" }}>
                         {(day.dailyStats as any)?.walkingDistance && <span>{formatDistance((day.dailyStats as any).walkingDistance)} km walking</span>}
-                        {day.dailyStats?.totalCost && <span>Est. {getCurrencySymbol(itinerary.pricing?.currency || DEFAULT_CURRENCY)}{formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>}
+                        {day.dailyStats?.totalCost && <span>Est. {formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>}
                     </div>
                 </div>
             ))}

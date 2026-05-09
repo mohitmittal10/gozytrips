@@ -1,7 +1,7 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { getCurrencySymbol } from "@/types/financial";
+import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/auth-context";

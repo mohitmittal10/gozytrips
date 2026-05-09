@@ -15,7 +15,7 @@ import {
     type EnrichedClient,
     type DashboardFinanceRollup
 } from "../utils/metrics-utils";
-import { getCurrencySymbol } from "@/types/financial";
+import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 
 export function useCrmData() {
@@ -135,9 +135,9 @@ export function useCrmData() {
                     latestDestination: bookedDestinations.length > 0 ? bookedDestinations.map(d => d.label).join(", ") : "N/A",
                     bookedDestinations: bookedDestinations,
                     latestBudget: totalBookedRevenue > 0 
-                        ? `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${totalBookedRevenue.toLocaleString()}` 
+                        ? formatMoney(totalBookedRevenue, (agencySettings?.default_currency as any) || DEFAULT_CURRENCY) 
                         : (latestCalculatedBudget > 0 
-                            ? `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${latestCalculatedBudget.toLocaleString()}` 
+                            ? formatMoney(latestCalculatedBudget, (agencySettings?.default_currency as any) || DEFAULT_CURRENCY) 
                             : "N/A"),
                     latestRawBudget: totalBookedRevenue > 0 ? totalBookedRevenue : latestCalculatedBudget,
                     latestContact: new Date(client.updated_at).toLocaleDateString(),

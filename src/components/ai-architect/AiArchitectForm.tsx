@@ -22,7 +22,8 @@ import {
 import { aiArchitectSteps } from "@/constants/ai-architect";
 import type { AiArchitectFormValues } from "@/types/ai-architect";
 import { useAuth } from "@/contexts/auth-context";
-import { getCurrencySymbol } from "@/types/financial";
+import { getCurrencySymbol } from "@/lib/utils/currency";
+import { DEFAULT_CURRENCY } from "@/types/pricing";
 
 interface AiArchitectFormProps {
   form: UseFormReturn<AiArchitectFormValues>;

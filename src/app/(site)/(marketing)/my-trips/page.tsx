@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { TripCard } from '@/components/trip-card';
 import { FinancesSheet } from '@/components/finances-sheet';
-import { getCurrencySymbol } from '@/types/financial';
+import { getCurrencySymbol } from "@/lib/utils/currency";
 import { useReferenceOptions } from '@/hooks/use-reference-options';
 
 interface SavedItinerary {

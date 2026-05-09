@@ -5,6 +5,7 @@ export interface AgencySettings {
   default_markup_type: 'percentage' | 'flat';
   default_markup_value: number;
   default_tax_percentage: number;
+  default_commission_rate: number | null;
   gst_number: string | null;
   bank_details: string | null;
   terms_conditions: string | null;

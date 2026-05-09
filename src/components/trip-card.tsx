@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Calendar, DollarSign, Trash2, Eye, Heart } from 'lucide-react';
-import { getCurrencySymbol } from "@/types/financial";
+import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
 

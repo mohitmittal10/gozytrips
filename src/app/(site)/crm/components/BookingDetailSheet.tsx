@@ -35,7 +35,7 @@ import {
     ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getCurrencySymbol } from "@/types/financial";
+import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
@@ -251,7 +251,7 @@ export const BookingDetailSheet = ({
                                     <DollarSign className="w-4 h-4 text-green-400" />
                                     <p className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Net Cost</p>
                                 </div>
-                                <p className="text-lg font-bold text-white">{currencySymbol}{netCost.toLocaleString()}</p>
+                                <p className="text-lg font-bold text-white">{formatMoney(netCost, booking?.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}</p>
                             </div>
                             <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl">
                                 <div className="flex items-center gap-2 mb-1">
@@ -265,7 +265,7 @@ export const BookingDetailSheet = ({
                         <div className="p-4 bg-purple-500/5 border border-purple-500/20 rounded-xl">
                             <div className="flex items-center justify-between">
                                 <p className="text-sm font-medium text-purple-300">Total Gross Amount</p>
-                                <p className="text-xl font-black text-white">{currencySymbol}{grossCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                                <p className="text-xl font-black text-white">{formatMoney(grossCost, booking?.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}</p>
                             </div>
                         </div>
 

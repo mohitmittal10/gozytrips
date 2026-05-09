@@ -1,6 +1,5 @@
 import { type Client } from "@/lib/hooks/use-clients";
-import { calcPricingBreakdown } from "@/lib/itinerary-calculator";
-import { defaultPricingConfig } from "@/types/pricing";
+import { extractTripCost } from "@/lib/financial-utils";
 
 // A combined type taking our client and adding the dynamic trip data
 export interface EnrichedClient extends Client {
@@ -14,27 +13,13 @@ export interface EnrichedClient extends Client {
     allTrips: any[];
 }
 
+
 /** 
  * Helper function to extract total trip cost from itinerary data.
+ * Redirects to the authoritative extractTripCost in financial-utils.ts
  */
 export const getTripCost = (trip: any): number => {
-    if (!trip) return 0;
-    if (typeof trip === 'number') return trip;
-
-    // Primary source of truth: top-level DB column maintained by persistence/save hooks
-    if (typeof trip.client_price === 'number' && trip.client_price > 0) return trip.client_price;
-
-    const details = trip.itinerary_data || {};
-    const { finalTotal } = calcPricingBreakdown({
-        itinerary: details.itinerary || details.days || [],
-        hotels: details.hotels || [],
-        flights: details.flights || [],
-        cabs: details.cabs || [],
-        buses: details.buses || [],
-        pricing: details.pricing || defaultPricingConfig
-    });
-
-    return finalTotal || trip.budget || 0;
+    return extractTripCost(trip);
 };
 
 export const isBookedTripStatus = (status: string): boolean => {

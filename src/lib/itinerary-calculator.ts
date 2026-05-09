@@ -10,23 +10,7 @@ import type { ItineraryState } from "@/types/itinerary-store";
 import type { PricingConfig, PaymentMilestone, Currency } from "@/types/pricing";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 
-// ── Currency ───────────────────────────────────────────────────────────────────
-
-/** Single authoritative map — eliminates duplicates in financial.ts & pricing-module.tsx */
-export const CURRENCY_SYMBOLS: Record<Currency, string> = {
-  INR: "₹",
-  USD: "$",
-  EUR: "€",
-  GBP: "£",
-  AUD: "A$",
-  CAD: "C$",
-  SGD: "S$",
-  AED: "AED ",
-};
-
-export function getCurrencySymbol(currency: Currency): string {
-  return CURRENCY_SYMBOLS[currency] ?? currency;
-}
+import { getCurrencySymbol, formatMoney } from "./utils/currency";
 
 // ── Base Cost ─────────────────────────────────────────────────────────────────
 
@@ -114,6 +98,31 @@ export function calcTaxAmount(costWithMarkup: number, pricing: PricingConfig): n
   return (costWithMarkup * (pricing?.taxPercentage || 0)) / 100;
 }
 
+/**
+ * Calculates pricing details from a pre-calculated base cost.
+ */
+export function calcPricingFromBaseCost(baseCost: number, pricing: PricingConfig): Omit<PricingBreakdown, 'totalPax' | 'perAdult' | 'perChild' | 'currencySymbol'> {
+  const markupAmount = calcMarkupAmount(baseCost, pricing);
+  const costWithMarkup = baseCost + markupAmount;
+  const taxAmount = calcTaxAmount(costWithMarkup, pricing);
+  const finalTotal = costWithMarkup + taxAmount;
+
+  const milestones = pricing?.milestones || [];
+  const milestoneAmounts: MilestoneAmount[] = milestones.map((m) => ({
+    ...m,
+    amount: (finalTotal * m.percentage) / 100,
+  }));
+
+  return {
+    baseCost,
+    markupAmount,
+    costWithMarkup,
+    taxAmount,
+    finalTotal,
+    milestoneAmounts,
+  };
+}
+
 // ── Final Total ───────────────────────────────────────────────────────────────
 
 export interface PricingBreakdown {
@@ -141,50 +150,23 @@ export function calcPricingBreakdown(
   state: Pick<ItineraryState, "itinerary" | "hotels" | "flights" | "cabs" | "buses" | "pricing">
 ): PricingBreakdown {
   const { pricing } = state;
-
   const baseCost = calcBaseCost(state);
-  const markupAmount = calcMarkupAmount(baseCost, pricing);
-  const costWithMarkup = baseCost + markupAmount;
-  const taxAmount = calcTaxAmount(costWithMarkup, pricing);
-  const finalTotal = costWithMarkup + taxAmount;
+  
+  const results = calcPricingFromBaseCost(baseCost, pricing);
 
   const totalPax = (pricing?.adultPax || 0) + (pricing?.childPax || 0) + (pricing?.infantPax || 0);
-  const perAdult = (pricing?.adultPax || 0) > 0 ? finalTotal / pricing.adultPax : finalTotal;
-  const perChild = (pricing?.childPax || 0) > 0 ? finalTotal / pricing.childPax : 0;
+  const perAdult = (pricing?.adultPax || 0) > 0 ? results.finalTotal / pricing.adultPax : results.finalTotal;
+  const perChild = (pricing?.childPax || 0) > 0 ? results.finalTotal / pricing.childPax : 0;
 
   const currencySymbol = getCurrencySymbol(pricing?.currency || DEFAULT_CURRENCY);
 
-  const milestones = pricing?.milestones || [];
-  const milestoneAmounts: MilestoneAmount[] = milestones.map((m) => ({
-    ...m,
-    amount: (finalTotal * m.percentage) / 100,
-  }));
-
   return {
-    baseCost,
-    markupAmount,
-    costWithMarkup,
-    taxAmount,
-    finalTotal,
+    ...results,
     perAdult,
     perChild,
     totalPax,
     currencySymbol,
-    milestoneAmounts,
   };
 }
 
-// ── Formatting Utility ─────────────────────────────────────────────────────────
 
-export function formatCurrency(
-  amount: number,
-  currency: Currency,
-  locale = "en-IN"
-): string {
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency,
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}

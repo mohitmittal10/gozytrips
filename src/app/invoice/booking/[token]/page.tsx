@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
 import { Database } from "@/types/supabase";
-import { getCurrencySymbol } from "@/types/financial";
+import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import {
     FileText,

@@ -162,11 +162,11 @@ export const CRMTableView = (props: CRMTableViewProps) => {
             </div>
 
             {/* Table */}
-            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+            <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
                 <div className="crm-table-wrapper">
                     <table className="w-full text-left border-collapse min-w-[520px]">
                         <thead>
-                            <tr className="border-b border-white/10 text-sm text-gray-400">
+                            <tr className="border-b border-white/10">
                                 <th className="p-4 w-10">
                                     <Checkbox
                                         checked={paginatedClients.length > 0 && selectedIds.size === paginatedClients.length}
@@ -174,18 +174,18 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                         className="h-4 w-4 rounded-full border-white/20 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500 shrink-0 transition-all"
                                     />
                                 </th>
-                                <th className="p-4 font-medium cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('name')}>
+                                <th className="p-4 cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('name')}>
                                     <span className="inline-flex items-center">Client Info <SortIcon col="name" /></span>
                                 </th>
                                 {visibleColumns.destination && (
-                                    <th className="p-4 font-medium">Destination</th>
+                                    <th className="p-4">Destination</th>
                                 )}
                                 {visibleColumns.lastUpdated && (
-                                    <th className="p-4 font-medium cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('date')}>
+                                    <th className="p-4 cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('date')}>
                                         <span className="inline-flex items-center">Last Updated <SortIcon col="date" /></span>
                                     </th>
                                 )}
-                                <th className="p-4 font-medium"></th>
+                                <th className="p-4"></th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -209,8 +209,15 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                 </tr>
                             ) : (
                                 paginatedClients.map((client) => (
-                                    <tr key={client.id} className={cn("hover:bg-white/5 transition-colors group", selectedIds.has(client.id) && "bg-purple-500/5")}>
-                                        <td className="p-4 w-10">
+                                    <tr 
+                                        key={client.id} 
+                                        className={cn("hover:bg-white/[0.04] transition-colors group cursor-pointer", selectedIds.has(client.id) && "bg-purple-500/5")}
+                                        onClick={() => setSelectedClient(client)}
+                                        role="button"
+                                        tabIndex={0}
+                                        onKeyDown={(e) => e.key === "Enter" && setSelectedClient(client)}
+                                    >
+                                        <td className="p-4 w-10" onClick={(e) => e.stopPropagation()}>
                                             <Checkbox
                                                 checked={selectedIds.has(client.id)}
                                                 onCheckedChange={() => toggleSelectOne(client.id)}
@@ -223,7 +230,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                                     {client.name.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-white">{client.name}</p>
+                                                    <p className="font-medium text-white group-hover:text-purple-300 transition-colors">{client.name}</p>
                                                     <p className="text-sm text-gray-500">{client.email || 'No email provided'}</p>
                                                     {client.tags && client.tags.length > 0 && (
                                                         <div className="flex flex-wrap gap-1 mt-1">
@@ -261,15 +268,8 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                                 </div>
                                             </td>
                                         )}
-                                        <td className="p-4 text-right">
-                                            <Button
-                                                variant="ghost"
-                                                size="icon"
-                                                className="group-hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
-                                                onClick={() => setSelectedClient(client)}
-                                            >
-                                                <ArrowRight className="w-4 h-4" />
-                                            </Button>
+                                        <td className="p-4">
+                                            <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-purple-400 transition-colors" />
                                         </td>
                                     </tr>
                                 ))

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { getCurrencySymbol } from '@/types/financial';
+import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

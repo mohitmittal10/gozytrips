@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { getCurrencySymbol } from "@/types/financial";
+import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { useAuth } from "@/contexts/auth-context";
 import type { EnrichedClient } from "../utils/metrics-utils";
@@ -146,21 +146,14 @@ function SkeletonRows() {
 const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
     const { agencySettings } = useAuth();
 
-    if (!loading && trips.length === 0) {
-        return (
-            <div className="flex flex-col items-center justify-center py-16 text-gray-500 space-y-3">
-                <Plane className="w-10 h-10 opacity-30" />
-                <p className="text-sm">No trips found matching your filters.</p>
-            </div>
-        );
-    }
+    // We'll handle empty states inside the table body now to keep the header visible.
 
     return (
         <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
-            <div className="overflow-x-auto">
+            <div className="crm-table-wrapper">
                 <table className="w-full text-left border-collapse min-w-[640px]">
                     <thead>
-                        <tr className="border-b border-white/10 text-[11px] uppercase tracking-wider text-gray-500 font-semibold bg-white/[0.02]">
+                        <tr className="border-b border-white/10 text-gray-500 font-semibold">
                             <th className="p-4">Trip</th>
                             <th className="p-4 hidden md:table-cell">Destination</th>
                             <th className="p-4 hidden lg:table-cell">Dates</th>
@@ -171,7 +164,16 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5">
-                        {loading ? (
+                        {!loading && trips.length === 0 ? (
+                            <tr>
+                                <td colSpan={7} className="p-12 text-center text-gray-500">
+                                    <div className="flex flex-col items-center justify-center space-y-3">
+                                        <Plane className="w-10 h-10 opacity-20" />
+                                        <p className="text-sm">No trips found matching your filters.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : loading ? (
                             <SkeletonRows />
                         ) : (
                             trips.map((trip) => {
@@ -255,11 +257,10 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                                             </Badge>
                                         </td>
 
-                                        {/* Cost */}
                                         <td className="p-4 text-right">
                                             <span className="text-sm font-semibold text-purple-300">
                                                 {trip.tripCost > 0
-                                                    ? `${currencySymbol}${trip.tripCost.toLocaleString()}`
+                                                    ? formatMoney(trip.tripCost, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)
                                                     : "—"}
                                             </span>
                                         </td>
@@ -381,11 +382,9 @@ const TripsKanbanView = ({
                                             <span className="truncate">{trip.clientName}</span>
                                         </div>
                                     )}
-                                    {trip.tripCost > 0 && (
                                         <p className="text-[10px] text-purple-400 font-semibold mt-1.5">
-                                            {currencySymbol}{trip.tripCost.toLocaleString()}
+                                            {formatMoney(trip.tripCost, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}
                                         </p>
-                                    )}
                                     {trip.start_date && (
                                         <p className="text-[10px] text-gray-600 mt-0.5">
                                             {formatShortDate(trip.start_date)}

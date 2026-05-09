@@ -4,16 +4,12 @@ import type { HotelInfo, FlightInfo } from '@/components/hotel-flight-editor';
 import { formatMoneyWithDecimals } from '@/lib/utils/currency';
 import { formatPlural, getAgentInfo } from './utils';
 import { PdfFlightBlock, PdfHotelBlock } from './shared-blocks';
+import { calcPricingFromBaseCost } from '@/lib/itinerary-calculator';
 
 export const PdfPricingPage = ({ pricing, baseCost = 0, agent }: { pricing: PricingConfig; baseCost?: number; agent: ReturnType<typeof getAgentInfo> }) => {
-    const isManual = pricing.costingType === "manual";
-    const markupAmount = pricing.markupType === "percentage"
-        ? (baseCost * pricing.markupValue) / 100
-        : pricing.markupValue;
-    const costWithMarkup = baseCost + markupAmount;
-    const taxAmount = (costWithMarkup * pricing.taxPercentage) / 100;
-    const finalTotal = costWithMarkup + taxAmount;
+    const { costWithMarkup, taxAmount, finalTotal, milestoneAmounts } = calcPricingFromBaseCost(baseCost, pricing);
     const currency = pricing.currency;
+    const isManual = pricing.costingType === "manual";
 
     const totalPax = (pricing.adultPax || 0) + (pricing.childPax || 0) + (pricing.infantPax || 0);
 
@@ -34,9 +30,9 @@ export const PdfPricingPage = ({ pricing, baseCost = 0, agent }: { pricing: Pric
                                     <div>
                                         <span style={{ fontWeight: "600", color: "#1e293b" }}>{option.name}</span>
                                         <span style={{ marginLeft: "8px", fontSize: "11px", color: "#ef4444", backgroundColor: "#fef2f2", padding: "2px 6px", borderRadius: "4px" }}>{option.category}</span>
-                                        {option.type === "per-person" && <span style={{ marginLeft: "8px", fontSize: "11px", color: "#64748b" }}>({currency} {formatMoneyWithDecimals(option.amount)} x {totalPax} Pax)</span>}
+                                        {option.type === "per-person" && <span style={{ marginLeft: "8px", fontSize: "11px", color: "#64748b" }}>({formatMoneyWithDecimals(option.amount, currency)} x {totalPax} Pax)</span>}
                                     </div>
-                                    <span style={{ fontWeight: "bold" }}>{currency} {formatMoneyWithDecimals(option.type === 'per-person' ? option.amount * totalPax : option.amount)}</span>
+                                    <span style={{ fontWeight: "bold" }}>{formatMoneyWithDecimals(option.type === 'per-person' ? option.amount * totalPax : option.amount, currency)}</span>
                                 </div>
                             ))}
                         </div>
@@ -48,17 +44,17 @@ export const PdfPricingPage = ({ pricing, baseCost = 0, agent }: { pricing: Pric
 
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "15px", color: "#475569" }}>
                         <span>{isManual ? "Consolidated Package Cost" : "Package Cost (Incl. Accommodations, Flights, Activities)"}</span>
-                        <span>{currency} {formatMoneyWithDecimals(costWithMarkup)}</span>
+                        <span>{formatMoneyWithDecimals(costWithMarkup, currency)}</span>
                     </div>
 
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "15px", color: "#475569" }}>
                         <span>Taxes & Fees</span>
-                        <span>{currency} {formatMoneyWithDecimals(taxAmount)}</span>
+                        <span>{formatMoneyWithDecimals(taxAmount, currency)}</span>
                     </div>
 
                     <div style={{ marginTop: "20px", paddingTop: "15px", borderTop: "2px solid #cbd5e1", display: "flex", justifyContent: "space-between", fontSize: "20px", fontWeight: "bold", color: "#0f172a" }}>
                         <span>Total Quote</span>
-                        <span>{currency} {formatMoneyWithDecimals(finalTotal)}</span>
+                        <span>{formatMoneyWithDecimals(finalTotal, currency)}</span>
                     </div>
                     <div style={{ marginTop: "10px", fontSize: "13px", color: "#64748b" }}>
                         Pricing is valid for the specified dates and {formatPlural(pricing.adultPax, 'Adult', 'Adults')}{pricing.childPax > 0 ? `, ${formatPlural(pricing.childPax, 'Child', 'Children')}` : ''}{pricing.infantPax > 0 ? `, ${formatPlural(pricing.infantPax, 'Infant', 'Infants')}` : ''} only.
@@ -83,7 +79,7 @@ export const PdfPricingPage = ({ pricing, baseCost = 0, agent }: { pricing: Pric
                                 <div key={i} style={{ display: "flex", width: "100%", borderBottom: "1px solid #e2e8f0" }}>
                                     <div style={{ padding: "15px", flex: "0 0 40%", color: "#0f172a", fontWeight: 500 }}>{m.name} ({m.percentage}%)</div>
                                     <div style={{ padding: "15px", flex: "0 0 35%", color: "#64748b" }}>{m.dueDate}</div>
-                                    <div style={{ padding: "15px", flex: "0 0 25%", textAlign: "right", color: "#0f172a", fontWeight: "bold" }}>{currency} {formatMoneyWithDecimals(amount)}</div>
+                                    <div style={{ padding: "15px", flex: "0 0 25%", textAlign: "right", color: "#0f172a", fontWeight: "bold" }}>{formatMoneyWithDecimals(amount, currency)}</div>
                                 </div>
                             )
                         })}

@@ -1,6 +1,6 @@
 import React from "react";
 import { useMemo } from "react";
-import { getCurrencySymbol } from "@/types/financial";
+import { getCurrencySymbol, formatCurrencyCompact } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { 
     Users, MapPin, TrendingUp, CheckCircle2, UserPlus, 
@@ -174,14 +174,7 @@ export const DashboardView = (props: DashboardViewProps) => {
     const totalBookedRevenue = bookedRevenue + (standaloneRevenue || 0);
 
     const formatCurrency = (val: number) => {
-        const symbol = getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY);
-        if (agencySettings?.default_currency === 'INR' || !agencySettings?.default_currency) {
-            if (val >= 10000000) return `${symbol}${(val / 10000000).toFixed(2)}Cr`;
-            if (val >= 100000) return `${symbol}${(val / 100000).toFixed(2)}L`;
-        } else if (val >= 1000000) {
-            return `${symbol}${(val / 1000000).toFixed(1)}M`;
-        }
-        return `${symbol}${Math.round(val).toLocaleString()}`;
+        return formatCurrencyCompact(val, agencySettings?.default_currency || DEFAULT_CURRENCY);
     };
 
     return (

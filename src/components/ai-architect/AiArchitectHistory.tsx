@@ -15,7 +15,8 @@ import {
 import { cn } from "@/lib/utils";
 import type { ActiveArchitectTab } from '@/types/ai-architect';
 import { useAuth } from '@/contexts/auth-context';
-import { getCurrencySymbol } from '@/types/financial';
+import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
+import { DEFAULT_CURRENCY } from "@/types/pricing";
 
 interface ItineraryRecord {
   id: string;
@@ -219,7 +220,7 @@ export const AiArchitectHistory: React.FC<AiArchitectHistoryProps> = ({
                       </div>
                       {item.client_price && (
                         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/5 border border-emerald-500/10">
-                           <span className="text-[10px] text-emerald-400/80 font-black">{currencySymbol}{item.client_price.toLocaleString()}</span>
+                           <span className="text-[10px] text-emerald-400/80 font-black">{formatMoney(item.client_price, (agencySettings as any)?.default_currency || DEFAULT_CURRENCY)}</span>
                         </div>
                       )}
                     </div>

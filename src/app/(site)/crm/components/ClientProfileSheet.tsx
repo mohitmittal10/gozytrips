@@ -20,7 +20,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { getAvatarColor, cn } from "@/lib/utils";
-import { getCurrencySymbol } from "@/types/financial";
+import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { EnrichedClient } from "../utils/metrics-utils";
 import { useAuth } from "@/contexts/auth-context";
@@ -260,7 +260,7 @@ export const ClientProfileSheet = ({
                                                                 </div>
                                                             </td>
                                                             <td className="p-4 text-sm font-semibold text-purple-400">
-                                                                {tripCost > 0 ? `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${tripCost.toLocaleString()}` : "N/A"}
+                                                                {tripCost > 0 ? formatMoney(tripCost, (agencySettings?.default_currency as any) || DEFAULT_CURRENCY) : "N/A"}
                                                             </td>
                                                             <td className="p-4 text-right">
                                                                 <div className="flex items-center justify-end gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
@@ -330,7 +330,7 @@ export const ClientProfileSheet = ({
                                         destination={destLabel}
                                         travelDates={`${startDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })} - ${endDate.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}`}
                                         tripDuration={`${diffDays}D/${diffDays - 1}N`}
-                                        totalCost={tripCost > 0 ? `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${tripCost.toLocaleString()}` : undefined}
+                                        totalCost={tripCost > 0 ? formatMoney(tripCost, (agencySettings?.default_currency as any) || DEFAULT_CURRENCY) : undefined}
                                         daysUntilTrip={daysUntilTrip}
                                         hotelNames={hotelNamesList || undefined}
                                         hasFlights={(latestTrip.itinerary_data?.flights || []).length > 0}

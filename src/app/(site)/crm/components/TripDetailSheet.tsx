@@ -32,7 +32,7 @@ import {
     ArrowRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getCurrencySymbol } from "@/types/financial";
+import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { useAuth } from "@/contexts/auth-context";
 
@@ -207,12 +207,12 @@ export const TripDetailSheet = ({
                                 </div>
                                 <p className="text-lg font-bold text-white">
                                     {trip.tripCost > 0
-                                        ? `${currencySymbol}${trip.tripCost.toLocaleString()}`
+                                        ? formatMoney(trip.tripCost, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)
                                         : "N/A"}
                                 </p>
                                 {trip.budget && trip.budget > 0 && trip.budget !== trip.tripCost && (
                                     <p className="text-xs text-gray-500 mt-0.5">
-                                        Budget: {currencySymbol}{trip.budget.toLocaleString()}
+                                        Budget: {formatMoney(trip.budget, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}
                                     </p>
                                 )}
                             </div>

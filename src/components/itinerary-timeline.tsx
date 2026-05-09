@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { Footprints, Trash2, Plus } from "lucide-react";
 import { useState, useCallback, useContext } from "react";
 import { ItineraryContext } from "@/contexts/itinerary-context";
-import { getCurrencySymbol } from "@/lib/itinerary-calculator";
+import { getCurrencySymbol } from "@/lib/utils/currency";
 import { useAuth } from "@/contexts/auth-context";
 import {
   DndContext,
