@@ -311,10 +311,12 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                 <Button 
                   onClick={() => onSave?.(pricing)} 
                   disabled={isSaving}
-                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] h-12"
+                  className="w-full h-auto bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] flex items-center justify-center px-4 whitespace-normal"
                 >
-                  <Save className="w-4 h-4 mr-2" />
-                  {isSaving ? "Updating Global Costing..." : "Update & Save Global Costing"}
+                  <Save className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="text-sm text-center">
+                    {isSaving ? "Updating Costing..." : "Update"}
+                  </span>
                 </Button>
               )}
             </div>
@@ -462,10 +464,12 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                     <Button 
                       onClick={() => onSave?.(pricing)} 
                       disabled={isSaving}
-                      className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-amber-500/20 transition-all active:scale-[0.98] h-12"
+                      className="w-full h-auto bg-amber-500 hover:bg-amber-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-amber-500/20 transition-all active:scale-[0.98] flex items-center justify-center px-4 whitespace-normal"
                     >
-                      <Save className="w-4 h-4 mr-2" />
-                      {isSaving ? "Updating Global Costing..." : "Update & Save Global Costing"}
+                      <Save className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="text-sm text-center">
+                        {isSaving ? "Updating Costing..." : "Update"}
+                      </span>
                     </Button>
                   )}
                </div>
