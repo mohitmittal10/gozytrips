@@ -138,10 +138,10 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
         <FormField control={form.control} name="budget" render={({ field }) => (
           <FormItem>
             <div className="flex items-baseline justify-between mb-2">
-              <FormLabel className={cn("font-medium tracking-tight", sidebarMode ? "text-sm" : "text-lg")}>Max Daily Budget ({currencySymbol})</FormLabel>
+              <FormLabel className={cn("font-medium tracking-tight", sidebarMode ? "text-sm" : "text-lg")}>Total Trip Budget ({currencySymbol})</FormLabel>
             </div>
             <FormControl>
-              <Input type="number" placeholder="Optional, e.g., 10000" {...field} value={field.value || ''} className={cn("border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur", sidebarMode ? "h-10 text-sm" : "h-12 sm:h-14 text-sm sm:text-base")} />
+              <Input type="number" placeholder="Optional, e.g., 50000" {...field} value={field.value || ''} className={cn("border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur", sidebarMode ? "h-10 text-sm" : "h-12 sm:h-14 text-sm sm:text-base")} />
             </FormControl>
             <FormMessage />
           </FormItem>

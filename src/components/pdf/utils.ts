@@ -13,9 +13,9 @@ export const getAgentInfo = (userProfile: any, agencySettings?: any) => ({
 export const getTotalBudget = (itinerary: TravelItineraryOutput) => {
     if (!itinerary?.itinerary || !Array.isArray(itinerary.itinerary)) return 0;
     return itinerary.itinerary.reduce((sum, day) => {
-        const costMatch = String(day.dailyStats?.totalCost || '0').match(/\d+/g);
-        const cost = costMatch ? parseInt(costMatch.join(''), 10) : 0;
-        return sum + cost;
+        const raw = String(day.dailyStats?.totalCost || '0');
+        const digits = raw.replace(/[₹$€£,]/g, '').match(/\d+(\.\d+)?/);
+        return sum + (digits ? parseFloat(digits[0]) : 0);
     }, 0);
 };
 

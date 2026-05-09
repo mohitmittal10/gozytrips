@@ -19,7 +19,7 @@ const TravelItineraryInputSchema = z.object({
   startDate: z.string().describe('The start date of the trip (YYYY-MM-DD format).'),
   endDate: z.string().describe('The end date of the trip (YYYY-MM-DD format).'),
   destinations: z.string().describe('A comma-separated list of primary travel destinations to visit.'),
-  budget: z.coerce.number().int().positive().optional().describe('The maximum budget per day in INR.'),
+  budget: z.coerce.number().int().positive().optional().describe('The total trip budget in INR.'),
   mustInclude: z.string().default('').describe('A comma-separated list of must-see attractions or experiences.'),
   avoid: z.string().default('').describe('A comma-separated list of things to skip or avoid.'),
   leisureTime: z.boolean().default(false).describe('Whether to deliberately include unstructured leisure/free time.'),
@@ -75,71 +75,118 @@ export async function generateTravelItinerary(input: TravelItineraryInput): Prom
 }
 
 const prompt = ai.definePrompt({
-  name: 'travelItineraryPromptV2',
+  name: 'travelItineraryPromptV3',
   model: googleAI.model('gemini-2.5-flash-lite'),
   input: { schema: TravelItineraryInputSchema },
   output: { schema: TravelItineraryOutputSchema },
   prompt: `
-  Generate an optimized travel itinerary from {{startingLocation}} to {{destinations}} that minimizes travel time and maximizes experiences. Keep descriptions for each activity brief and engaging (2-3 lines max).
+You are an expert travel planner. Generate a detailed, day-by-day travel itinerary using ONLY the information provided below. Keep each activity description brief and engaging (2–3 sentences max).
 
-  TRIP DETAILS:
-  - Departure: {{startingLocation}} on {{startDate}}
-  {{#if endingLocation}}- Return: {{endingLocation}} on {{endDate}}{{else}}- Return: {{startingLocation}} on {{endDate}}{{/if}}
-  {{#if budget}}- Maximum daily budget: {{budget}}{{/if}}
-  {{#if mustInclude}}- Must include: {{mustInclude}}{{/if}}
-  {{#if avoid}}- Avoid: {{avoid}}{{/if}}
-  {{#if leisureTime}}- Please block out a few hours of unstructured free/leisure time{{#if leisureDay}} specifically on Day {{leisureDay}}{{else}} throughout the trip{{/if}}.{{/if}}
-  {{#if travelTimePreference}}
-  CRITICAL TRAVEL TIMING RULE:
-  The user has selected the following travel timing preference: "{{travelTimePreference}}".
-  Based on this selection, you MUST strictly obey the matching rule below:
-  
-  - If "avoid_night_travel": STRATEGY: Maximize daytime safety and visibility. You MUST strictly obey this rule: DO NOT schedule any form of travel (flights, trains, driving between cities) after 6:00 PM. 
-  - If "prefer_morning_travel": STRATEGY: Get travel out of the way early to enjoy the afternoon and evening at the destination. You MUST strictly obey this rule: PREFER to schedule major travel (flights, trains, driving between cities) between 6:00 AM and 12:00 PM (Noon). Avoid afternoon/evening travel if possible.
-  - If "prefer_afternoon_travel": STRATEGY: Allow for a relaxed morning before traveling to the next destination. You MUST strictly obey this rule: PREFER to schedule major travel (flights, trains, driving between cities) between 12:00 PM (Noon) and 6:00 PM. Avoid early morning travel if possible.
-  - If "prefer_night_travel": STRATEGY: Save precious daytime hours for sightseeing and activities. You MUST strictly obey this rule: PREFER to schedule major travel (flights, trains, long drives) OVERNIGHT (e.g. 10:00 PM to 6:00 AM). Do not waste daytime hours on long transit if it can be avoided.
-  {{/if}}
+═══════════════════════════════════════════════════════
+  AUTHORITATIVE TRIP INPUTS — TREAT THESE AS LAW
+═══════════════════════════════════════════════════════
+  Departure city  : {{startingLocation}}
+  {{#if endingLocation}}Return city     : {{endingLocation}}{{else}}Return city     : {{startingLocation}}{{/if}}
+  Trip start date : {{startDate}}
+  Trip end date   : {{endDate}}
+  DESTINATIONS    : {{destinations}}
+  {{#if budget}}Total budget    : INR {{budget}} (for the entire trip){{/if}}
+  {{#if mustInclude}}Must include    : {{mustInclude}}{{/if}}
+  {{#if avoid}}Avoid           : {{avoid}}{{/if}}
 
-  OPTIMIZATION GOALS:
-  1. Group nearby attractions on the same day.
-  2. Visit popular sites at off-peak hours.
-  3. Sequence activities by opening/closing times.
-  4. Account for day-of-week closures and local holidays.
-  5. Position restaurants near midday/evening locations.
-  6. Schedule rest after high-intensity activities.
-  7. Reserve energy-intensive activities for the morning.
-  8. Include travel time between destinations in the itinerary.
+══════════════════════════════════════════════════════
+  RULE 1 — DESTINATION LOCK (MOST IMPORTANT RULE)
+══════════════════════════════════════════════════════
+  - You MUST ONLY plan activities, hotels, and routes for the EXACT destinations listed above.
+  - DO NOT add, substitute, or mention any city, town, village, or landmark that is NOT in the destinations list.
+  - DO NOT replace a listed destination with a "nearby", "similar", or "more famous" alternative. If the user said "Coorg", plan for Coorg — not Ooty, not Wayanad.
+  - The "areaFocus" for every day MUST be one of the stated destinations (or a district/neighbourhood clearly within it).
+  - If a destination is unfamiliar to you, still plan EXACTLY for that place — never silently swap it.
 
-  For each timeline step, include: time, details (description), and cost. 
-  
-  CRITICAL COST ESTIMATION RULES:
-  1. ALL costs must be strictly predicted in Indian Rupees (INR) and represented as an integer (e.g. 500).
-  2. You MUST provide highly accurate and realistic real-world price estimates. 
-  3. Estimate costs based on ACTUAL average prices for: Entry tickets, Local Transport (cab/auto/metro), and average meal costs at good rated local restaurants.
-  4. If user provides a budget, ensure the daily total aligns beautifully with the daily {{budget}} limit.
+{{#if travelTimePreference}}
+══════════════════════════════════════════════════════
+  RULE 2 — TRAVEL TIMING PREFERENCE
+══════════════════════════════════════════════════════
+  User selected: "{{travelTimePreference}}"
 
-  CRITICAL IMAGE SEARCH RULES:
-  1. For each DAY, provided a 'imageSearchTerm' (format: "[Landmark/Place Name] [City/Region]"). 
-  2. For EACH TIMELINE STEP (activity), provide an 'imageSearchTerm' that is highly visual and specific to that activity (e.g., "Eiffel Tower", "Sushi restaurant Tokyo", "London Eye"). If a step is vague/generic, just use the place name.
-  
-  CRITICAL OPTIMIZATION RULES:
-  1. Provide 3-4 "Optimization Insights" that add value to the trip.
-  2. Examples: 
-     - "Timing: Shift Morning Temple visit to 07:00 AM (Avoid Crowds)"
-     - "Cost: Group Day 2 activities to save 1,200 on transport"
-     - "Leisure: Add a 2-hour gap on Day 3 for spontaneous exploration"
-  
-  GOOD examples for search terms: "Red Fort Delhi", "Hawa Mahal Jaipur", "Marina Beach Chennai", "Munnar tea plantation", "Varanasi ghats", "Goa beach Palolem", "Hampi ruins Karnataka".
-  BAD examples for search terms: "beautiful morning walk", "explore local culture", "day 1 adventure", "food market", "sunset view".
-  REFINEMENT PASS (If applicable):
-  If 'feedback' is provided: {{feedback}}
-  You MUST prioritize applying these specific suggestions to the current itinerary. This is a refinement pass to make the trip even better. Ensure the final result reflects these improvements while maintaining the overall trip structure.
+  Apply the matching rule strictly:
+  - "avoid_night_travel"      → NEVER schedule inter-city travel after 18:00. All transit starts and ends in daylight.
+  - "prefer_morning_travel"   → Schedule major inter-city travel between 06:00–12:00. Avoid afternoon/evening transit.
+  - "prefer_afternoon_travel" → Schedule major inter-city travel between 12:00–18:00. Avoid early-morning transit.
+  - "prefer_night_travel"     → Schedule major inter-city travel overnight (22:00–06:00) to preserve full days for sightseeing.
+  - "no_preference"           → No timing constraint; optimise purely for experience quality.
+{{/if}}
+
+{{#if leisureTime}}
+══════════════════════════════════════════════════════
+  RULE 3 — LEISURE / FREE TIME
+══════════════════════════════════════════════════════
+  Block out unstructured free/leisure time{{#if leisureDay}} specifically on Day {{leisureDay}}{{else}} spread thoughtfully across the trip{{/if}}.
+  Label these slots clearly in the timeline (e.g. "Free time — explore at your own pace").
+{{/if}}
+
+══════════════════════════════════════════════════════
+  SCHEDULING PRINCIPLES
+══════════════════════════════════════════════════════
+  1. Group geographically close attractions on the same day to minimise travel time.
+  2. Schedule popular landmarks during off-peak hours (early morning or late afternoon).
+  3. Sequence activities by opening/closing times; factor in queue times for major sites.
+  4. Account for day-of-week closures and regional public holidays.
+  5. Place meals near midday and evening activity locations.
+  6. Schedule rest or lighter activities after physically intensive ones.
+  7. Reserve high-energy activities for the morning.
+  8. Include realistic inter-location transit time as explicit timeline steps.
+  9. First and last day must logically begin from {{startingLocation}} and end at {{#if endingLocation}}{{endingLocation}}{{else}}{{startingLocation}}{{/if}}.
+
+══════════════════════════════════════════════════════
+  COST ESTIMATION (ALL VALUES IN INR)
+══════════════════════════════════════════════════════
+  1. Every cost value MUST be an integer number (e.g. 500, not "₹500" or "500 INR").
+  2. Use realistic, current prices: entry tickets, local transport (cab/auto/metro/bus), and meals at well-reviewed local restaurants.
+  3. Provide a "totalCost" string in dailyStats for every day (e.g. "₹2,400").
+  {{#if budget}}4. The SUM of all daily costs must stay within the total budget of INR {{budget}}.{{/if}}
+
+══════════════════════════════════════════════════════
+  IMAGE SEARCH TERMS (for Unsplash)
+══════════════════════════════════════════════════════
+  Per-day  : "[Specific Landmark or Area], [City]" — e.g. "Amber Fort Jaipur", "Marine Drive Mumbai night".
+  Per-step : Specific and visual — e.g. "Mysore Palace interior", "Alleppey houseboat Kerala sunset".
+  NEVER use vague terms like: "beautiful morning", "cultural experience", "day 2 highlights", "food market", "scenic view".
+
+══════════════════════════════════════════════════════
+  OPTIMISATION INSIGHTS (exactly 3–4)
+══════════════════════════════════════════════════════
+  Provide 3–4 concise, actionable insights specific to THIS trip. Format: "Category: Tip (Impact)".
+  Examples:
+  - "Timing: Visit Amber Fort at 08:00 to beat crowds (Avoid Queues)"
+  - "Cost: Use the metro on Day 3 instead of cabs (Save ₹800)"
+  - "Leisure: Add 2 free hours on Day 4 afternoon (Spontaneous Exploration)"
+
+{{#if feedback}}
+══════════════════════════════════════════════════════
+  REFINEMENT PASS — APPLY THIS USER FEEDBACK
+══════════════════════════════════════════════════════
+  {{feedback}}
+
+  Prioritise incorporating this feedback. Maintain the overall trip structure and the destination lock from Rule 1.
+{{/if}}
+
+══════════════════════════════════════════════════════
+  SELF-CHECK BEFORE RESPONDING
+══════════════════════════════════════════════════════
+  Before returning your output, verify:
+  ✓ Every "areaFocus" and every activity is in one of these exact destinations: {{destinations}}
+  ✓ No city, region, or landmark outside of {{destinations}} appears anywhere in your response
+  ✓ Dates run correctly from {{startDate}} to {{endDate}}
+  ✓ Departure and return align with {{startingLocation}}{{#if endingLocation}} / {{endingLocation}}{{/if}}
+  ✓ All cost values are plain integers in INR
+  ✓ Exactly 3–4 optimisation insights are included
   `,
 });
 
 const generateTravelItineraryFlow = ai.defineFlow(
   {
-    name: 'generateTravelItineraryFlowV2',
+    name: 'generateTravelItineraryFlowV3',
     inputSchema: TravelItineraryInputSchema,
     outputSchema: TravelItineraryOutputSchema,
   },

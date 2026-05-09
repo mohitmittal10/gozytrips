@@ -158,9 +158,10 @@ export function calcPricingBreakdown(
  * Derives the total trip cost from a raw itinerary DB row.
  *
  * Priority:
- *  1. `client_price` DB column (set during save)
- *  2. Calculated from itinerary_data via the pricing engine
- *  3. `budget` fallback
+ *  1. `client_price` DB column (set during save via the pricing tab)
+ *  2. Calculated from itinerary_data via the pricing engine (hotels/flights/activities)
+ *  3. AI-generated total — sum of dailyStats.totalCost across all days
+ *  4. `budget` column fallback (user-entered total trip budget from form)
  */
 export function extractTripCost(trip: any): number {
   if (!trip) return 0;
@@ -169,6 +170,7 @@ export function extractTripCost(trip: any): number {
 
   const data = trip.itinerary_data || {};
 
+  // Tier 2: pricing engine (only meaningful when hotels/flights/activities have been filled in)
   try {
     const { finalTotal } = calcPricingBreakdown({
       itinerary: data.itinerary || data.days || [],
@@ -178,11 +180,25 @@ export function extractTripCost(trip: any): number {
       buses: data.buses || [],
       pricing: data.pricing || defaultPricingConfig,
     });
-    return finalTotal > 0 ? finalTotal : (trip.budget ?? 0);
+    if (finalTotal > 0) return finalTotal;
   } catch (e) {
-    console.error('[FinancialService] Error in extractTripCost:', e);
-    return trip.budget ?? 0;
+    console.error('[FinancialService] Error in extractTripCost (pricing engine):', e);
   }
+
+  // Tier 3: AI-generated total — sum of each day's totalCost from dailyStats
+  const days: any[] = data.itinerary || data.days || [];
+  if (days.length > 0) {
+    const aiTotal = days.reduce((sum: number, day: any) => {
+      const raw = String(day?.dailyStats?.totalCost ?? '0');
+      // Strip currency symbols and commas, then parse the first number found
+      const digits = raw.replace(/[₹$€£,]/g, '').match(/\d+(\.\d+)?/);
+      return sum + (digits ? parseFloat(digits[0]) : 0);
+    }, 0);
+    if (aiTotal > 0) return aiTotal;
+  }
+
+  // Tier 4: user-entered total trip budget
+  return trip.budget ?? 0;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
