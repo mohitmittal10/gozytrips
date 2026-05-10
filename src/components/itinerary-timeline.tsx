@@ -5,7 +5,7 @@ import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from "@/components/hotel
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Footprints, Trash2, Plus } from "lucide-react";
+import { Trash2, Plus } from "lucide-react";
 import { useState, useCallback, useContext } from "react";
 import { ItineraryContext } from "@/contexts/itinerary-context";
 import { getCurrencySymbol } from "@/lib/utils/currency";
@@ -40,12 +40,8 @@ import { DEFAULT_FALLBACK_PHOTOS, getActivityFallbackUrl } from "@/lib/constants
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
-export type DayData = Omit<TravelItineraryOutput["itinerary"][number], "dailyStats"> & { 
+export type DayData = TravelItineraryOutput["itinerary"][number] & { 
   imageUrl?: string;
-  dailyStats: { 
-    totalCost: string;
-    walkingDistance?: string;
-  };
 };
 export type TimelineStep = DayData["timeline"][number] & { imageUrl?: string };
 
@@ -383,13 +379,6 @@ const ItineraryTimeline = ({
     });
   };
 
-  const updateDailyStat = (dayIndex: number, field: "totalCost" | "walkingDistance", value: string) => {
-    if (onEditingChange) onEditingChange(true);
-    updateItinerary((days) => {
-      (days[dayIndex].dailyStats as any)[field] = value;
-      return days;
-    });
-  };
 
   const addDay = () => {
     if (onEditingChange) onEditingChange(true);
@@ -401,7 +390,6 @@ const ItineraryTimeline = ({
         areaFocus: "New Area — click to edit",
         imageSearchTerm: "",
         timeline: [{ time: "9:00 AM", details: "First activity — click to edit" }],
-        dailyStats: { totalCost: `${currencySymbol}0` },
       };
       days.push(newDay);
       return days;
@@ -583,39 +571,6 @@ const ItineraryTimeline = ({
                       )}
                     </CardContent>
 
-                    <CardFooter 
-                      className="mt-1 ml-0 sm:ml-12 p-0 bg-transparent border-none"
-                      style={{ borderLeftWidth: "24px", paddingLeft: "24px", paddingRight: "24px", marginBottom: "10px", marginRight: "10px" }}
-                    >
-                      <div className="w-full py-1.5 px-0 bg-transparent flex justify-between items-center text-[10px] font-medium border-none">
-                        <div className="flex items-center gap-2">
-                          <div className="flex items-center gap-1 text-zinc-500">
-                             <Footprints className="w-3.5 h-3.5 text-zinc-400" />
-                             {editable ? (
-                                <InlineEdit
-                                  value={day.dailyStats.walkingDistance || ""}
-                                  onSave={(v) => updateDailyStat(dayIndex, "walkingDistance", v)}
-                                  onEditStart={() => onEditingChange?.(true)}
-                                  className="text-[10px]"
-                                  inputClassName="text-[10px]"
-                                />
-                             ) : <span>{day.dailyStats.walkingDistance} Walk</span>}
-                          </div>
-                        </div>
-                        <div className="text-zinc-300 font-bold">
-                           Total Day {day.day}: <span className="text-white">
-                             {editable ? (
-                                <InlineEdit
-                                  value={day.dailyStats.totalCost}
-                                  onSave={(v) => updateDailyStat(dayIndex, "totalCost", v)}
-                                  className="text-white"
-                                  inputClassName="text-white"
-                                />
-                             ) : day.dailyStats.totalCost}
-                           </span>
-                        </div>
-                      </div>
-                    </CardFooter>
                   </Card>
                 </div>
               </div>

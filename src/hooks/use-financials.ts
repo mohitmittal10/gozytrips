@@ -482,7 +482,7 @@ export function useFinancials(
             agentName: userName || agencySettings?.brand_name || "Travel Agent",
             agentEmail: userEmail,
             // company name from DB (brand_name), not a hardcoded string
-            companyName: agencySettings?.brand_name ?? "GozyTrips",
+            companyName: agencySettings?.brand_name ?? "Wander Labs",
         };
     };
 

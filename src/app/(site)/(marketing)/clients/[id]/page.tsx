@@ -204,8 +204,8 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                 isOpen={isEditorOpen}
                 onOpenChange={setIsEditorOpen}
                 trip={selectedItinerary}
-                onSave={async (id, data, status, theme) => {
-                    await updateItineraryData(id, data, status, theme);
+                onSave={async (id, updates) => {
+                    await updateItineraryData(id, updates);
                     setIsEditorOpen(false);
                 }}
                 clientName={client?.name}

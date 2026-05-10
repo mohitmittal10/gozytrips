@@ -149,7 +149,7 @@ export class BackupService {
 
     const fileBlob = await this.generateBackupData(supabase, userId);
     const dateStr = new Date().toISOString().split('T')[0];
-    const filename = `GozyTrips_Backup_${dateStr}.json`;
+    const filename = `WanderLabs_Backup_${dateStr}.json`;
 
     await this.uploadToGoogleDrive(accessToken, fileBlob, filename);
 
@@ -163,7 +163,7 @@ export class BackupService {
    * Lists backup files stored in Google Drive.
    */
   static async listBackups(accessToken: string): Promise<any[]> {
-    const query = encodeURIComponent("name contains 'GozyTrips_Backup_' and trashed = false");
+    const query = encodeURIComponent("name contains 'WanderLabs_Backup_' and trashed = false");
     const response = await fetch(
       `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,createdTime)&orderBy=createdTime desc`,
       { headers: { Authorization: `Bearer ${accessToken}` } },

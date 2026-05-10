@@ -4,7 +4,7 @@ import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 
-export const MinimalistTheme = ({ itinerary, title, agent }: ThemeProps) => {
+export const MinimalistTheme = ({ itinerary, title, agent, finalTotal = 0 }: ThemeProps) => {
     const accent = agent.primaryColor || "#000000";
     const totalActivities = itinerary.itinerary.reduce((s, d) => s + d.timeline.length, 0);
     return (
@@ -42,7 +42,7 @@ export const MinimalistTheme = ({ itinerary, title, agent }: ThemeProps) => {
                     <div style={{ display: "flex", gap: "16px", marginBottom: "35px", pageBreakInside: "avoid" }}>
                         {[
                             { label: "Duration", value: `${itinerary.itinerary.length} Days` },
-                            { label: "Est. Budget", value: formatCurrency(getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY) },
+                            { label: "Est. Budget", value: formatCurrency(finalTotal || getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY) },
                             { label: "Activities", value: `${totalActivities}+` },
                         ].map((stat, i) => (
                             <div key={i} style={{ flex: 1, padding: "18px 20px", borderTop: `3px solid ${accent}`, background: "#f8f9fa" }}>
@@ -94,7 +94,9 @@ export const MinimalistTheme = ({ itinerary, title, agent }: ThemeProps) => {
                                 <div style={{ display: "flex", gap: "16px", marginTop: "5px", fontSize: "11px", color: "#999", textTransform: "uppercase", letterSpacing: "1.5px" }}>
                                     {day.date && <span>{formatDate(day.date)}</span>}
                                     {(day.dailyStats as any)?.walkingDistance && <span>{formatDistance((day.dailyStats as any).walkingDistance)} km walk</span>}
-                                    {day.dailyStats?.totalCost && <span>{formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>}
+                                    {day.dailyStats?.totalCost && (!itinerary.pricing || itinerary.pricing.costingType !== 'manual') && (
+                                        <span>{formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>
+                                    )}
                                 </div>
                             </div>
                         </div>

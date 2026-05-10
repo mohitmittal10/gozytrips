@@ -81,7 +81,7 @@ export default function SignUp() {
   return (
     <AuthLayout
       title="Create Account"
-      description="Join Odyssey Luxe and start planning your luxury trips"
+      description="Join Wander Labs and start planning your luxury trips"
     >
       <form onSubmit={handleSignUp} className="space-y-4">
         <div className="space-y-2">

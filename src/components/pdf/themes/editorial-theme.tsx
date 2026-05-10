@@ -5,7 +5,7 @@ import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { getThematicBackground, glassStyles } from '../styles';
 
-export const EditorialTheme = ({ itinerary, title, agent }: ThemeProps) => {
+export const EditorialTheme = ({ itinerary, title, agent, finalTotal = 0 }: ThemeProps) => {
     const gold = "#b8860b";
     return (
         <div style={{ fontFamily: "'Georgia', 'Times New Roman', serif", backgroundColor: "#fdfcfa", backgroundImage: `url("${getThematicBackground(itinerary, 'editorial', gold)}")`, backgroundRepeat: "repeat", color: "#2c2c2c", width: "100%" }}>
@@ -48,7 +48,7 @@ export const EditorialTheme = ({ itinerary, title, agent }: ThemeProps) => {
                         </div>
                         <div style={{ width: "1px", background: "#ddd" }} />
                         <div>
-                            <p style={{ fontSize: "36px", fontWeight: "normal", color: gold, margin: "0 0 5px 0", fontStyle: "italic" }}>{formatCurrency(getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY)}</p>
+                            <p style={{ fontSize: "36px", fontWeight: "normal", color: gold, margin: "0 0 5px 0", fontStyle: "italic" }}>{formatCurrency(finalTotal || getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY)}</p>
                             <p style={{ fontSize: "12px", textTransform: "uppercase", letterSpacing: "3px", color: "#999", fontFamily: "'Helvetica Neue', sans-serif", margin: 0 }}>Estimated Budget</p>
                         </div>
                         <div style={{ width: "1px", background: "#ddd" }} />
@@ -83,7 +83,9 @@ export const EditorialTheme = ({ itinerary, title, agent }: ThemeProps) => {
 
                     <div style={{ display: "flex", gap: "30px", marginTop: "15px", fontSize: "12px", color: "#999", fontFamily: "'Helvetica Neue', sans-serif", pageBreakInside: "avoid" }}>
                         {(day.dailyStats as any)?.walkingDistance && <span>{formatDistance((day.dailyStats as any).walkingDistance)} km walking</span>}
-                        {day.dailyStats?.totalCost && <span>Est. {formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>}
+                        {day.dailyStats?.totalCost && (!itinerary.pricing || itinerary.pricing.costingType !== 'manual') && (
+                            <span>Est. {formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>
+                        )}
                     </div>
                 </div>
             ))}

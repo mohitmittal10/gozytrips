@@ -60,30 +60,37 @@ export function useClientItineraries(clientId: string) {
 
   const updateItineraryData = async (
     itineraryId: string, 
-    newData: TravelItineraryOutput,
-    newStatus?: string,
-    newTheme?: string
+    updates: {
+      itinerary_data: TravelItineraryOutput;
+      status?: string;
+      selected_theme?: string;
+      title?: string;
+      start_date?: string;
+      end_date?: string;
+      [key: string]: any;
+    }
   ) => {
     if (!user) throw new Error("Must be logged in to update");
     
     setError(null);
     try {
-      const updates: any = {
-        itinerary_data: newData,
-        updated_at: new Date().toISOString()
+      const { itinerary_data, status, selected_theme, title, start_date, end_date, ...rest } = updates;
+      
+      const payload: any = {
+        itinerary_data,
+        updated_at: new Date().toISOString(),
+        ...rest
       };
       
-      if (newStatus) {
-        updates.status = newStatus;
-      }
-
-      if (newTheme) {
-        updates.selected_theme = newTheme;
-      }
+      if (status) payload.status = status;
+      if (selected_theme) payload.selected_theme = selected_theme;
+      if (title) payload.title = title;
+      if (start_date) payload.start_date = start_date;
+      if (end_date) payload.end_date = end_date;
       
       const { data, error } = await supabase
         .from('itineraries')
-        .update(updates)
+        .update(payload)
         .eq('id', itineraryId)
         .eq('user_id', user.id)
         .select()

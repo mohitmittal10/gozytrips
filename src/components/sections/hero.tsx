@@ -118,11 +118,7 @@ const Hero = () => {
 
             <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-10 items-center relative z-10 h-full">
                 <div className="space-y-4 md:space-y-6">
-                    {/* Badge */}
-                    <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full border border-purple-500/20 bg-purple-500/[0.06] text-purple-300 text-[9px] md:text-[10px] font-black tracking-[0.2em] uppercase backdrop-blur-xl w-max">
-                        <Sparkles className="w-3 h-3 md:w-4 md:h-4 animate-pulse" />
-                        <span>Midnight AI Engine Active</span>
-                    </div>
+                    
 
                     {/* Headline */}
                     <h1 className="text-4xl md:text-5xl lg:text-[4.5rem] font-extrabold tracking-tighter leading-[1.05] text-white">

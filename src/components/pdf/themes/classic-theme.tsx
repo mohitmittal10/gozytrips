@@ -5,9 +5,14 @@ import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getAgentInfo, getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { getThematicBackground, glassStyles } from '../styles';
 
-export type ThemeProps = { itinerary: TravelItineraryOutput; title: string; agent: ReturnType<typeof getAgentInfo> };
+export type ThemeProps = { 
+    itinerary: TravelItineraryOutput; 
+    title: string; 
+    agent: ReturnType<typeof getAgentInfo>;
+    finalTotal?: number;
+};
 
-export const ClassicTheme = ({ itinerary, title, agent }: ThemeProps) => (
+export const ClassicTheme = ({ itinerary, title, agent, finalTotal = 0 }: ThemeProps) => (
     <div style={{ fontFamily: "'Inter', sans-serif", backgroundColor: "#f8fafc", backgroundImage: `url("${getThematicBackground(itinerary, 'classic', agent.primaryColor)}")`, backgroundRepeat: "repeat", color: "#1e293b", width: "100%" }}>
         {/* Hero — cover section */}
         <div data-pdf-section="cover">
@@ -47,7 +52,7 @@ export const ClassicTheme = ({ itinerary, title, agent }: ThemeProps) => (
                     </div>
                     <div style={{ flex: 1, borderRadius: "12px", padding: "20px", borderLeft: "4px solid #ec4899", ...glassStyles }}>
                         <h3 style={{ margin: "0 0 5px 0", fontSize: "14px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px" }}>Total Budget</h3>
-                        <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>{formatCurrency(getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY)}</p>
+                        <p style={{ margin: 0, fontSize: "24px", fontWeight: "bold", color: "#0f172a" }}>{formatCurrency(finalTotal || getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY)}</p>
                     </div>
                 </div>
 
@@ -79,7 +84,9 @@ export const ClassicTheme = ({ itinerary, title, agent }: ThemeProps) => (
                     ))}
                     <div style={{ marginTop: "18px", paddingTop: "15px", borderTop: "1px solid rgba(255,255,255,0.4)", display: "flex", gap: "20px", fontSize: "13px", color: "#64748b", fontWeight: 500, pageBreakInside: "avoid", breakInside: "avoid" }}>
                         <div>🏃‍♂️ Distance: {formatDistance((day.dailyStats as any)?.walkingDistance)} km</div>
-                        <div>💰 Budget: {formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</div>
+                        {day.dailyStats?.totalCost && (!itinerary.pricing || itinerary.pricing.costingType !== 'manual') && (
+                            <div>💰 Budget: {formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</div>
+                        )}
                     </div>
                 </div>
             </div>

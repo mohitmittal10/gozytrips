@@ -20,25 +20,6 @@ export const PdfPricingPage = ({ pricing, baseCost = 0, agent }: { pricing: Pric
             </h2>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "30px", marginBottom: "40px" }}>
-                {/* Manual Cost Breakdown if applicable */}
-                {isManual && pricing.manualOptions && pricing.manualOptions.length > 0 && (
-                    <div style={{ backgroundColor: "#fdf8f6", padding: "20px", borderRadius: "12px", border: "1px solid #fee2e2", marginBottom: "10px" }}>
-                        <h3 style={{ margin: "0 0 15px 0", fontSize: "14px", color: "#b91c1c", textTransform: "uppercase", letterSpacing: "0.5px", fontWeight: "bold" }}>Internal Cost Breakdown</h3>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                            {pricing.manualOptions.map((option, idx) => (
-                                <div key={option.id} style={{ display: "flex", justifyContent: "space-between", fontSize: "14px", borderBottom: "1px solid #fee2e2", paddingBottom: "5px" }}>
-                                    <div>
-                                        <span style={{ fontWeight: "600", color: "#1e293b" }}>{option.name}</span>
-                                        <span style={{ marginLeft: "8px", fontSize: "11px", color: "#ef4444", backgroundColor: "#fef2f2", padding: "2px 6px", borderRadius: "4px" }}>{option.category}</span>
-                                        {option.type === "per-person" && <span style={{ marginLeft: "8px", fontSize: "11px", color: "#64748b" }}>({formatMoneyWithDecimals(option.amount, currency)} x {totalPax} Pax)</span>}
-                                    </div>
-                                    <span style={{ fontWeight: "bold" }}>{formatMoneyWithDecimals(option.type === 'per-person' ? option.amount * totalPax : option.amount, currency)}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                )}
-
                 <div style={{ flex: 1, backgroundColor: "#f8fafc", padding: "25px", borderRadius: "12px", border: "1px solid #e2e8f0", pageBreakInside: "avoid" }}>
                     <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px" }}>Client Quote</h3>
 

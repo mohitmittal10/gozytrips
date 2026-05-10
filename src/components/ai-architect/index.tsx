@@ -29,7 +29,6 @@ import AiArchitectMobileTabs from "./AiArchitectMobileTabs";
 import AiArchitectSummaryPanel from "./AiArchitectSummaryPanel";
 import AiArchitectHero from "./AiArchitectHero";
 import AiArchitectTabContent from "./AiArchitectTabContent";
-import { AiArchitectBackConfirmDialog } from "./AiArchitectBackConfirmDialog";
 import { AiArchitectPdfPreview } from "./AiArchitectPdfPreview";
 import type { PdfTheme } from "@/components/pdf-template";
 
@@ -45,7 +44,6 @@ export default function AiArchitect() {
   const [isEditing, setIsEditing] = useState(false);
   const [showTimestamps, setShowTimestamps] = useState(true);
   const [showPrices, setShowPrices] = useState(true);
-  const [showBackConfirm, setShowBackConfirm] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
 
@@ -70,7 +68,24 @@ export default function AiArchitect() {
   const [pdfOverrides, setPdfOverrides] = useState<any>(EMPTY_OBJECT);
 
   const { saveItinerary, isSaving } = useItinerarySave({ currentTripId, setCurrentTripId });
-  const { baseCost } = useBaseCostCalculator({ itinerary, flights, hotels, cabs, buses, pricing });
+  const { baseCost, finalTotal, currencySymbol } = useBaseCostCalculator({ itinerary, flights, hotels, cabs, buses, pricing });
+
+  const tripTitle = useMemo(() => {
+    if (!tripMetadata) return `Trip to ${itinerary?.itinerary?.[0]?.areaFocus?.split(',')[0] || 'Destination'}`;
+    const startLoc = tripMetadata.startingLocation;
+    const dests = tripMetadata.destinations;
+    let title = dests ? (startLoc ? `${startLoc} to ${dests}` : `Trip to ${dests}`) : "Untitled Architectural Draft";
+    
+    if (tripMetadata.startDate && tripMetadata.endDate) {
+      const s = new Date(tripMetadata.startDate);
+      const e = new Date(tripMetadata.endDate);
+      if (!isNaN(s.getTime()) && !isNaN(e.getTime()) && e > s) {
+        const totalDays = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24));
+        title += ` ${totalDays}N ${totalDays + 1}D`;
+      }
+    }
+    return title;
+  }, [tripMetadata, itinerary]);
 
   const form = useForm<AiArchitectFormValues>({
     resolver: zodResolver(formSchema),
@@ -197,7 +212,7 @@ export default function AiArchitect() {
 
 
   return (
-    <section id="ai-architect" className="w-full mx-auto pt-0 pb-10 overflow-x-hidden">
+    <section id="ai-architect" className="w-full mx-auto pt-0 pb-10">
 <div className="w-full sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5">
 <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
       <AiArchitectHeader 
@@ -213,12 +228,9 @@ export default function AiArchitect() {
         setShowPrices={setShowPrices} 
         isEditing={isEditing} 
         setIsEditing={setIsEditing} 
-        handleCreateNew={handleCreateNew} 
         handleDownloadPdf={() => setIsPreviewOpen(true)} 
         handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount })} 
         isSaving={isSaving} 
-        setShowBackConfirm={setShowBackConfirm} 
-        setItinerary={setItinerary}
         activeArchitectTab={activeArchitectTab}
       />
 </div>
@@ -233,10 +245,6 @@ export default function AiArchitect() {
             setIsSidebarExpanded={setIsSidebarExpanded} 
             activeArchitectTab={activeArchitectTab} 
             setActiveArchitectTab={setActiveArchitectTab} 
-            isEditing={isEditing} 
-            setShowBackConfirm={setShowBackConfirm} 
-            setItinerary={setItinerary} 
-            setCurrentStep={setCurrentStep}
             handleCreateNew={handleCreateNew}
             // Props for the integrated form
             form={form}
@@ -301,14 +309,16 @@ export default function AiArchitect() {
                 optimizationCount={optimizationCount} 
                 isGenerating={isGenerating} 
                 onOptimize={(feedback) => { onSubmit(form.getValues(), feedback); setOptimizationCount(p => p + 1); }} 
+                finalTotal={finalTotal}
+                currencySymbol={currencySymbol}
               />
             )}
           </div>
         </div>
       </div>
 
-      <AiArchitectPdfPreview isPreviewOpen={isPreviewOpen} setIsPreviewOpen={setIsPreviewOpen} itinerary={itinerary} hotels={hotels} flights={flights} pricing={pricing} baseCost={baseCost} />
-      <AiArchitectBackConfirmDialog showBackConfirm={showBackConfirm} setShowBackConfirm={setShowBackConfirm} setItinerary={setItinerary} setIsEditing={setIsEditing} handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount })} />
+      <AiArchitectPdfPreview isPreviewOpen={isPreviewOpen} setIsPreviewOpen={setIsPreviewOpen} itinerary={itinerary} hotels={hotels} flights={flights} pricing={pricing} baseCost={baseCost} tripTitle={tripTitle} />
+
     </section>
   );
 }

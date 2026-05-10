@@ -1,7 +1,7 @@
 
-# Odyssey Luxe - AI Travel Architect
+# Wander Labs - AI Travel Architect
 
-Welcome to Odyssey Luxe, a luxurious travel planning application powered by AI. This project uses Next.js and Google's Gemini to generate personalized, detailed, and optimized travel itineraries.
+Welcome to Wander Labs, a luxurious travel planning application powered by AI. This project uses Next.js and Google's Gemini to generate personalized, detailed, and optimized travel itineraries.
 
 ## Features
 
@@ -42,8 +42,8 @@ Follow these instructions to get a local copy of the project up and running.
 
 1.  **Clone the repository** (or download the source code):
     ```bash
-    git clone https://github.com/your-username/odyssey-luxe.git
-    cd odyssey-luxe
+    git clone https://github.com/your-username/wander-labs.git
+    cd wander-labs
     ```
 
 2.  **Install dependencies**:
@@ -89,7 +89,7 @@ Once both servers are running, you can open your browser to `http://localhost:90
 
 ## 🔐 Authentication & Database
 
-Odyssey Luxe includes a **complete authentication and database system** powered by Supabase.
+Wander Labs includes a **complete authentication and database system** powered by Supabase.
 
 ### Key Features
 

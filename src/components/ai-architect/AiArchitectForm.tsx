@@ -25,6 +25,8 @@ import { useAuth } from "@/contexts/auth-context";
 import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 
+const LabelClass = "text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1.5 block";
+
 interface AiArchitectFormProps {
   form: UseFormReturn<AiArchitectFormValues>;
   currentStep: number;
@@ -36,44 +38,32 @@ interface AiArchitectFormProps {
 }
 
 const StepDestinations = React.memo(({ form }: { form: UseFormReturn<AiArchitectFormValues> }) => (
-  <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700">
+  <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-700">
     <FormField control={form.control} name="startingLocation" render={({ field }) => (
-      <FormItem>
-        <div className="flex items-baseline justify-between mb-2">
-          <FormLabel className="text-lg font-medium tracking-tight">Starting Location</FormLabel>
-        </div>
-        <div className="relative group">
-          <FormControl>
-            <Input placeholder="e.g., New Delhi, India" autoFocus {...field} className="h-12 sm:h-14 text-sm sm:text-base border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
-          </FormControl>
-        </div>
-        <FormMessage />
+      <FormItem className="space-y-1">
+        <FormLabel className={LabelClass}>Starting Location</FormLabel>
+        <FormControl>
+          <Input placeholder="e.g., New Delhi, India" autoFocus {...field} className="h-10 sm:h-11 text-sm border-white/10 focus:border-primary/50 bg-white/5 backdrop-blur rounded-xl" />
+        </FormControl>
+        <FormMessage className="text-[10px]" />
       </FormItem>
     )} />
     <FormField control={form.control} name="destinations" render={({ field }) => (
-      <FormItem>
-        <div className="flex items-baseline justify-between mb-2">
-          <FormLabel className="text-lg font-medium tracking-tight">Destinations to Visit (comma-separated)</FormLabel>
-        </div>
-        <div className="relative group">
-          <FormControl>
-            <Input placeholder="e.g., Paris, Rome, Florence" {...field} className="h-12 sm:h-14 text-sm sm:text-base border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
-          </FormControl>
-        </div>
-        <FormMessage />
+      <FormItem className="space-y-1">
+        <FormLabel className={LabelClass}>Destinations to Visit</FormLabel>
+        <FormControl>
+          <Input placeholder="e.g., Paris, Rome, Florence" {...field} className="h-10 sm:h-11 text-sm border-white/10 focus:border-primary/50 bg-white/5 backdrop-blur rounded-xl" />
+        </FormControl>
+        <FormMessage className="text-[10px]" />
       </FormItem>
     )} />
     <FormField control={form.control} name="endingLocation" render={({ field }) => (
-      <FormItem>
-        <div className="flex items-baseline justify-between mb-2">
-          <FormLabel className="text-lg font-medium tracking-tight">Ending Location (Optional)</FormLabel>
-        </div>
-        <div className="relative group">
-          <FormControl>
-            <Input placeholder="Leave empty to return to starting location" {...field} value={field.value || ''} className="h-12 sm:h-14 text-sm sm:text-base border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur" />
-          </FormControl>
-        </div>
-        <FormMessage />
+      <FormItem className="space-y-1">
+        <FormLabel className={LabelClass}>Ending Location (Optional)</FormLabel>
+        <FormControl>
+          <Input placeholder="Return location" {...field} value={field.value || ''} className="h-10 sm:h-11 text-sm border-white/10 focus:border-primary/50 bg-white/5 backdrop-blur rounded-xl" />
+        </FormControl>
+        <FormMessage className="text-[10px]" />
       </FormItem>
     )} />
   </div>
@@ -81,47 +71,43 @@ const StepDestinations = React.memo(({ form }: { form: UseFormReturn<AiArchitect
 StepDestinations.displayName = 'StepDestinations';
 
 const StepDates = React.memo(({ form, sidebarMode }: { form: UseFormReturn<AiArchitectFormValues>, sidebarMode?: boolean }) => (
-  <div className={cn("grid gap-6 animate-in fade-in slide-in-from-bottom-2 duration-700", sidebarMode ? "grid-cols-1" : "md:grid-cols-2")}>
+  <div className={cn("grid gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700", sidebarMode ? "grid-cols-1" : "grid-cols-2")}>
     <FormField control={form.control} name="startDate" render={({ field }) => (
-      <FormItem>
-        <div className="flex items-baseline justify-between mb-2">
-          <FormLabel className="text-lg font-medium tracking-tight">Trip Start Date</FormLabel>
-        </div>
+      <FormItem className="space-y-1">
+        <FormLabel className={LabelClass}>Start Date</FormLabel>
         <Popover>
           <PopoverTrigger asChild>
             <FormControl>
-              <Button type="button" variant="outline" className={cn("w-full justify-start text-left font-normal px-4 py-2.5 h-14 text-base border-border/50 bg-background/50 backdrop-blur rounded-lg", !field.value && "text-muted-foreground/70")}>
-                <CalendarIcon className="mr-3 h-5 w-5 flex-shrink-0 text-foreground/60" />
-                {field.value ? <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span> : <span>Select start date</span>}
+              <Button type="button" variant="outline" className={cn("w-full justify-start text-left font-normal px-3 py-2 h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl", !field.value && "text-muted-foreground/50")}>
+                <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-foreground/40" />
+                {field.value ? <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span> : <span>Select date</span>}
               </Button>
             </FormControl>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 border border-border/50 bg-background/95 backdrop-blur shadow-lg rounded-lg" align="start">
+          <PopoverContent className="w-auto p-0 border border-white/10 bg-zinc-900 shadow-2xl rounded-xl" align="start">
             <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))} initialFocus />
           </PopoverContent>
         </Popover>
-        <FormMessage />
+        <FormMessage className="text-[10px]" />
       </FormItem>
     )} />
     <FormField control={form.control} name="endDate" render={({ field }) => (
-      <FormItem>
-        <div className="flex items-baseline justify-between mb-2">
-          <FormLabel className="text-lg font-medium tracking-tight">Trip End Date</FormLabel>
-        </div>
+      <FormItem className="space-y-1">
+        <FormLabel className={LabelClass}>End Date</FormLabel>
         <Popover>
           <PopoverTrigger asChild>
             <FormControl>
-              <Button type="button" variant="outline" className={cn("w-full justify-start text-left font-normal px-4 py-2.5 h-14 text-base border-border/50 bg-background/50 backdrop-blur rounded-lg", !field.value && "text-muted-foreground/70")}>
-                <CalendarIcon className="mr-3 h-5 w-5 flex-shrink-0 text-foreground/60" />
-                {field.value ? <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span> : <span>Select end date</span>}
+              <Button type="button" variant="outline" className={cn("w-full justify-start text-left font-normal px-3 py-2 h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl", !field.value && "text-muted-foreground/50")}>
+                <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-foreground/40" />
+                {field.value ? <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span> : <span>Select date</span>}
               </Button>
             </FormControl>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 border border-border/50 bg-background/95 backdrop-blur shadow-lg rounded-lg" align="start">
+          <PopoverContent className="w-auto p-0 border border-white/10 bg-zinc-900 shadow-2xl rounded-xl" align="start">
             <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => { const startDate = form.getValues("startDate"); return date < (startDate || new Date()); }} initialFocus />
           </PopoverContent>
         </Popover>
-        <FormMessage />
+        <FormMessage className="text-[10px]" />
       </FormItem>
     )} />
   </div>
@@ -133,92 +119,77 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
   const currencySymbol = getCurrencySymbol((agencySettings as any)?.default_currency || DEFAULT_CURRENCY);
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <div className="grid md:grid-cols-1 gap-6">
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
+      <div className="grid grid-cols-2 gap-4">
         <FormField control={form.control} name="budget" render={({ field }) => (
-          <FormItem>
-            <div className="flex items-baseline justify-between mb-2">
-              <FormLabel className={cn("font-medium tracking-tight", sidebarMode ? "text-sm" : "text-lg")}>Total Trip Budget ({currencySymbol})</FormLabel>
-            </div>
+          <FormItem className="space-y-1">
+            <FormLabel className={LabelClass}>Budget ({currencySymbol})</FormLabel>
             <FormControl>
-              <Input type="number" placeholder="Optional, e.g., 50000" {...field} value={field.value || ''} className={cn("border-border/50 focus:border-foreground/20 bg-background/50 backdrop-blur", sidebarMode ? "h-10 text-sm" : "h-12 sm:h-14 text-sm sm:text-base")} />
+              <Input type="number" placeholder="Total budget" {...field} value={field.value || ''} className="h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl" />
             </FormControl>
-            <FormMessage />
+            <FormMessage className="text-[10px]" />
+          </FormItem>
+        )} />
+        <FormField control={form.control} name="travelTimePreference" render={({ field }) => (
+          <FormItem className="space-y-1">
+            <FormLabel className={LabelClass}>Timing Preference</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger className="h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl">
+                  <SelectValue placeholder="Preference" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent className="bg-zinc-900 border-white/10">
+                <SelectItem value="no_preference">No preference</SelectItem>
+                <SelectItem value="avoid_night_travel">Avoid night</SelectItem>
+                <SelectItem value="prefer_morning_travel">Morning</SelectItem>
+                <SelectItem value="prefer_afternoon_travel">Afternoon</SelectItem>
+                <SelectItem value="prefer_night_travel">Night</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage className="text-[10px]" />
           </FormItem>
         )} />
       </div>
-    <div className={cn("grid gap-4 sm:gap-6", sidebarMode ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2")}>
-      <FormField control={form.control} name="mustInclude" render={({ field }) => (
-        <FormItem>
-          <div className="flex items-baseline justify-between mb-2">
-            <FormLabel className={cn("font-medium tracking-tight", sidebarMode ? "text-sm" : "text-lg")}>Must-Include Attractions</FormLabel>
-          </div>
-          <FormControl>
-            <Textarea placeholder="Optional, e.g., Eiffel Tower" {...field} value={field.value || ''} className="min-h-[100px] border-border/50 bg-background/50 backdrop-blur rounded-xl p-4 resize-none text-sm" />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )} />
-      <FormField control={form.control} name="avoid" render={({ field }) => (
-        <FormItem>
-          <div className="flex items-baseline justify-between mb-2">
-            <FormLabel className={cn("font-medium tracking-tight", sidebarMode ? "text-sm" : "text-lg")}>Things to Avoid</FormLabel>
-          </div>
-          <FormControl>
-            <Textarea placeholder="Optional, e.g., Tourist traps" {...field} value={field.value || ''} className="min-h-[100px] border-border/50 bg-background/50 backdrop-blur rounded-xl p-4 resize-none text-sm" />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )} />
-    </div>
-    <div className={cn("grid gap-4 sm:gap-6", sidebarMode ? "grid-cols-1" : "grid-cols-1 md:grid-cols-2")}>
-      <FormField control={form.control} name="leisureTime" render={({ field }) => (
-        <FormItem className="flex flex-row items-center justify-between rounded-xl border border-border/50 bg-background/50 backdrop-blur p-4">
-          <div className="space-y-0.5">
-            <FormLabel className={cn("font-medium tracking-tight", sidebarMode ? "text-sm" : "text-lg")}>Include Leisure Time</FormLabel>
-            {!sidebarMode && <div className="text-sm text-muted-foreground/80">Deliberately add unstructured time</div>}
-          </div>
-          <FormControl><Switch checked={!!field.value} onCheckedChange={field.onChange} /></FormControl>
-        </FormItem>
-      )} />
-      <FormField control={form.control} name="leisureDay" render={({ field }) => (
-        <FormItem className={cn("transition-opacity duration-300", !form.watch("leisureTime") && "opacity-50 pointer-events-none")}>
-          <div className="flex items-baseline justify-between mb-2">
-            <FormLabel className={cn("font-medium tracking-tight", sidebarMode ? "text-sm" : "text-lg")}>Leisure Day Preference</FormLabel>
-          </div>
-          <FormControl>
-            <Input type="number" placeholder="Optional, e.g., 2" {...field} value={field.value || ''} className={cn("border-border/50 bg-background/50 backdrop-blur", sidebarMode ? "h-10 text-sm" : "h-12 sm:h-14")} />
-          </FormControl>
-          <FormMessage />
-        </FormItem>
-      )} />
-    </div>
-    <div className="grid md:grid-cols-1 gap-6">
-      <FormField control={form.control} name="travelTimePreference" render={({ field }) => (
-        <FormItem>
-          <div className="flex items-baseline justify-between mb-2">
-            <FormLabel className="text-lg font-medium tracking-tight">Travel Timing Preference</FormLabel>
-          </div>
-          <Select onValueChange={field.onChange} defaultValue={field.value}>
+
+      <div className="grid grid-cols-2 gap-4">
+        <FormField control={form.control} name="mustInclude" render={({ field }) => (
+          <FormItem className="space-y-1">
+            <FormLabel className={LabelClass}>Must-Include</FormLabel>
             <FormControl>
-              <SelectTrigger className="h-12 sm:h-14 border-border/50 bg-background/50 backdrop-blur">
-                <SelectValue placeholder="Select a travel preference" />
-              </SelectTrigger>
+              <Textarea placeholder="e.g., Eiffel Tower" {...field} value={field.value || ''} className="min-h-[80px] border-white/10 bg-white/5 backdrop-blur rounded-xl p-3 resize-none text-xs" />
             </FormControl>
-            <SelectContent>
-              <SelectItem value="no_preference">No specific preference</SelectItem>
-              <SelectItem value="avoid_night_travel">Avoid night travel</SelectItem>
-              <SelectItem value="prefer_morning_travel">Prefer morning travel</SelectItem>
-              <SelectItem value="prefer_afternoon_travel">Prefer afternoon travel</SelectItem>
-              <SelectItem value="prefer_night_travel">Prefer night travel</SelectItem>
-            </SelectContent>
-          </Select>
-          <FormMessage />
-        </FormItem>
-      )} />
+            <FormMessage className="text-[10px]" />
+          </FormItem>
+        )} />
+        <FormField control={form.control} name="avoid" render={({ field }) => (
+          <FormItem className="space-y-1">
+            <FormLabel className={LabelClass}>Things to Avoid</FormLabel>
+            <FormControl>
+              <Textarea placeholder="e.g., Long queues" {...field} value={field.value || ''} className="min-h-[80px] border-white/10 bg-white/5 backdrop-blur rounded-xl p-3 resize-none text-xs" />
+            </FormControl>
+            <FormMessage className="text-[10px]" />
+          </FormItem>
+        )} />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <FormField control={form.control} name="leisureTime" render={({ field }) => (
+          <FormItem className="flex flex-row items-center justify-between rounded-xl border border-white/10 bg-white/5 backdrop-blur px-3 py-2">
+            <FormLabel className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 m-0">Leisure Time</FormLabel>
+            <FormControl><Switch className="scale-75 origin-right" checked={!!field.value} onCheckedChange={field.onChange} /></FormControl>
+          </FormItem>
+        )} />
+        <FormField control={form.control} name="leisureDay" render={({ field }) => (
+          <FormItem className={cn("space-y-1 transition-opacity duration-300", !form.watch("leisureTime") && "opacity-30 pointer-events-none")}>
+            <FormControl>
+              <Input type="number" placeholder="Day Preference" {...field} value={field.value || ''} className="h-9 text-[11px] border-white/10 bg-white/5 backdrop-blur rounded-xl" />
+            </FormControl>
+          </FormItem>
+        )} />
+      </div>
     </div>
-  </div>
-);
+  );
 });
 StepPreferences.displayName = 'StepPreferences';
 
@@ -255,34 +226,33 @@ const AiArchitectForm = React.memo(function AiArchitectForm({
         {!sidebarMode && (
           <>
             {/* Progress Bar & Indicators */}
-            <div className="mb-6 sm:mb-10 flex items-center justify-center gap-2 sm:gap-3">
+            <div className="mb-4 flex items-center justify-center gap-2 sm:gap-3">
               {aiArchitectSteps.map((step, index) => (
-                <div key={step.id} className="flex items-center gap-3">
+                <div key={step.id} className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => { if (index < currentStep) setCurrentStep(index); }}
                     disabled={index > currentStep}
                     className={cn(
-                      "group relative flex h-9 w-9 items-center justify-center rounded-full transition-all duration-700 ease-out disabled:cursor-not-allowed",
+                      "group relative flex h-7 w-7 items-center justify-center rounded-full transition-all duration-700 ease-out disabled:cursor-not-allowed",
                       index < currentStep && "bg-foreground/10 text-foreground/60",
-                      index === currentStep && "bg-foreground text-background shadow-[0_0_20px_-5px_rgba(0,0,0,0.3)]",
+                      index === currentStep && "bg-foreground text-background shadow-lg",
                       index > currentStep && "bg-muted/50 text-muted-foreground/40",
                     )}
                   >
-                    {index < currentStep ? <Check className="h-4 w-4 animate-in zoom-in duration-500" strokeWidth={2.5} /> : <span className="text-sm font-medium tabular-nums">{step.id}</span>}
-                    {index === currentStep && <div className="absolute inset-0 rounded-full bg-foreground/20 blur-md animate-pulse" />}
+                    {index < currentStep ? <Check className="h-3 w-3 animate-in zoom-in duration-500" strokeWidth={2.5} /> : <span className="text-[10px] font-bold tabular-nums">{step.id}</span>}
                   </button>
                   {index < aiArchitectSteps.length - 1 && (
-                    <div className="relative h-[1.5px] w-6 sm:w-12 md:w-16">
-                      <div className="absolute inset-0 bg-[rgba(207,207,207,0.4)]" />
+                    <div className="relative h-[1px] w-4 sm:w-8 md:w-10">
+                      <div className="absolute inset-0 bg-white/10" />
                       <div className="absolute inset-0 bg-foreground/30 transition-all duration-700 ease-out origin-left" style={{ transform: `scaleX(${index < currentStep ? 1 : 0})` }} />
                     </div>
                   )}
                 </div>
               ))}
             </div>
-            <div className="mb-8 overflow-hidden rounded-full bg-muted/30 h-[2px]">
-              <div className="h-full bg-gradient-to-r from-foreground/60 to-foreground transition-all duration-1000 ease-out" style={{ width: `${((currentStep + 1) / aiArchitectSteps.length) * 100}%` }} />
+            <div className="mb-4 overflow-hidden rounded-full bg-white/5 h-[1px]">
+              <div className="h-full bg-foreground/60 transition-all duration-1000 ease-out" style={{ width: `${((currentStep + 1) / aiArchitectSteps.length) * 100}%` }} />
             </div>
           </>
         )}
@@ -293,17 +263,17 @@ const AiArchitectForm = React.memo(function AiArchitectForm({
 
 
         {/* Actions */}
-        <div className="space-y-4 pt-4">
+        <div className="space-y-3 pt-2">
           {currentStep < aiArchitectSteps.length - 1 ? (
-            <Button key="btn-continue" type="button" onClick={(e) => { e.preventDefault(); onNext(); }} className="w-full h-11 sm:h-12 group transition-all duration-300 hover:shadow-lg bg-primary text-white rounded-xl">
-              <span className="flex items-center justify-center gap-2 font-medium">Continue <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 duration-300" strokeWidth={2} /></span>
+            <Button key="btn-continue" type="button" onClick={(e) => { e.preventDefault(); onNext(); }} className="w-full h-10 group transition-all duration-300 hover:shadow-lg bg-primary text-white rounded-xl">
+              <span className="flex items-center justify-center gap-2 text-sm font-bold">Continue <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 duration-300" strokeWidth={2} /></span>
             </Button>
           ) : (
-            <Button key="btn-generate" type="submit" disabled={isGenerating} className="w-full h-11 sm:h-12 hover:shadow-lg bg-primary text-white rounded-xl">
-              <span className="flex items-center justify-center gap-2 font-medium">{isGenerating ? "Crafting Your Journey..." : "Generate Optimized Trip"} {!isGenerating && <Check className="h-4 w-4 ml-1" strokeWidth={2} />}</span>
+            <Button key="btn-generate" type="submit" disabled={isGenerating} className="w-full h-10 hover:shadow-lg bg-primary text-white rounded-xl">
+              <span className="flex items-center justify-center gap-2 text-sm font-bold">{isGenerating ? "Crafting Your Journey..." : "Generate Optimized Trip"} {!isGenerating && <Check className="h-4 w-4 ml-1" strokeWidth={2} />}</span>
             </Button>
           )}
-          {currentStep > 0 && <button type="button" onClick={() => setCurrentStep(currentStep - 1)} className="w-full text-center text-sm text-muted-foreground/60 hover:text-foreground/80">Go back</button>}
+          {currentStep > 0 && <button type="button" onClick={() => setCurrentStep(currentStep - 1)} className="w-full text-center text-[11px] font-bold uppercase tracking-widest text-zinc-600 hover:text-zinc-400">Go back</button>}
         </div>
       </form>
     </Form>

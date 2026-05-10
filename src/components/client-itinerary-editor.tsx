@@ -8,12 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MapPin, Save, Plane, DollarSign, Eye, AlertCircle } from "lucide-react";
+import { Plane, DollarSign, Eye, AlertCircle, Edit2 } from "lucide-react";
 import { PdfPreviewEditor } from "@/components/pdf-preview-editor";
 import ItineraryTimeline from "@/components/itinerary-timeline";
 import HotelFlightEditor from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
 import { type PdfTheme } from "@/components/pdf-template";
+import { Input } from "@/components/ui/input";
+import { addDays, format, parseISO } from "date-fns";
+import { calcPricingBreakdown } from "@/services/financial/FinancialService";
+import { defaultPricingConfig } from "@/types/pricing";
 import { useToast } from "@/hooks/use-toast";
 import { useReferenceOptions } from "@/hooks/use-reference-options";
 import { createClient } from "@/lib/supabase/client";
@@ -27,7 +31,7 @@ import { useItinerary } from "@/hooks/use-itinerary";
 interface InnerEditorProps {
   trip: ClientItinerary;
   clientName?: string;
-  onSave: (id: string, newData: any, newStatus?: string, newTheme?: string) => Promise<void>;
+  onSave: (id: string, updates: any) => Promise<void>;
   onOpenChange: (open: boolean) => void;
 }
 
@@ -56,26 +60,70 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
 
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<string>(trip.status || "draft");
+  const [title, setTitle] = useState<string>(trip.title || "");
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<PdfTheme>((trip.selected_theme as PdfTheme) || "classic");
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
-      // getSerializable() pulls the current canonical state
+      const canonicalState = getSerializable();
+      
+      // Calculate latest financial columns
+      const pricingCfg = canonicalState.pricing || defaultPricingConfig;
+      const breakdown = calcPricingBreakdown({
+        itinerary: canonicalState.itinerary || [],
+        hotels: canonicalState.hotels || [],
+        flights: canonicalState.flights || [],
+        cabs: canonicalState.cabs || [],
+        buses: canonicalState.buses || [],
+        pricing: pricingCfg
+      });
+
+      // Sync duration
+      let startDate = trip.start_date;
+      let endDate = trip.end_date;
+      if (startDate && canonicalState.itinerary?.length > 0) {
+          const dtStart = parseISO(startDate);
+          const dtEnd = addDays(dtStart, canonicalState.itinerary.length - 1);
+          endDate = format(dtEnd, 'yyyy-MM-dd');
+      }
+
       const mergedData = {
         ...trip.itinerary_data,
-        ...getSerializable(),
+        ...canonicalState,
+        title,
       };
 
-      await onSave(trip.id, mergedData, status, selectedTheme);
+      const updates = {
+          itinerary_data: mergedData,
+          status,
+          selected_theme: selectedTheme,
+          title,
+          start_date: startDate,
+          end_date: endDate,
+          client_price: breakdown.finalTotal,
+          budget: breakdown.finalTotal, // Sync total budget for CRM display
+          markup_value: pricingCfg.markupValue || 0,
+          markup_type: pricingCfg.markupType || 'percentage',
+          tax_percentage: pricingCfg.taxPercentage || 0,
+          adult_pax: pricingCfg.adultPax || 0,
+          child_pax: pricingCfg.childPax || 0,
+          infant_pax: pricingCfg.infantPax || 0,
+          currency: pricingCfg.currency || 'INR',
+          updated_financial_at: new Date().toISOString()
+      };
+
+      await onSave(trip.id, updates);
       markClean();
 
       toast({
-        title: "Quote Updated",
-        description: "Your changes have been saved to this client's profile.",
+        title: "Itinerary Updated",
+        description: "All changes, including pricing and metadata, have been synced.",
       });
     } catch (error) {
+      console.error("Save error:", error);
       toast({
         title: "Error",
         description: "Failed to save itinerary modifications.",
@@ -86,33 +134,55 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
     }
   };
 
-  const pdfFilename = `${clientName ? `${clientName.replace(/\s+/g, "_")}_` : ""}${trip.title.replace(/\s+/g, "_")}_Quote.pdf`;
+  // ── Derived Data for PDF ──────────────────────────────────────────────────
+  const { baseCost, finalTotal } = useItineraryPricing();
 
-  // PDF template props — read from store (no local state)
   const activeThemeProps = {
     itinerary: { ...trip.itinerary_data, itinerary },
-    title: trip.title,
+    title: title,
     userProfile,
     theme: selectedTheme,
     hotels,
     flights,
     pricing,
-    // baseCost is derived inside PdfTemplate via the same calculator
+    baseCost,
+    finalTotal
   };
+
+  const pdfFilename = `${(title || trip.title || "Itinerary").replace(/\s+/g, "_")}.pdf`;
 
   return (
     <>
       {/* Sticky Header */}
       <div className="sticky top-0 z-50 bg-black/80 backdrop-blur-xl border-b border-white/10 px-6 py-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <DialogTitle className="text-xl md:text-2xl text-white">
-            {trip.title}
-            {isDirty && (
-              <span className="ml-2 text-xs font-normal text-amber-400 align-middle">
-                ● unsaved
-              </span>
+          <div className="flex items-center gap-2 group">
+            {isEditingTitle ? (
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onBlur={() => setIsEditingTitle(false)}
+                onKeyDown={(e) => e.key === 'Enter' && setIsEditingTitle(false)}
+                className="h-8 py-0 px-2 text-xl md:text-2xl font-bold bg-white/5 border-white/20 text-white w-auto min-w-[200px]"
+                autoFocus
+              />
+            ) : (
+              <DialogTitle className="text-xl md:text-2xl text-white flex items-center gap-2">
+                {title}
+                <button 
+                  onClick={() => setIsEditingTitle(true)}
+                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded transition-all"
+                >
+                  <Edit2 className="w-4 h-4 text-gray-400" />
+                </button>
+                {isDirty && (
+                  <span className="ml-2 text-xs font-normal text-amber-400 align-middle">
+                    ● unsaved
+                  </span>
+                )}
+              </DialogTitle>
             )}
-          </DialogTitle>
+          </div>
           <div className="flex items-center gap-3 mt-1.5 text-sm text-gray-400">
             <span className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5" /> {trip.starting_location}
@@ -281,7 +351,7 @@ interface ClientItineraryEditorProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   trip: ClientItinerary | null;
-  onSave: (id: string, newData: any, newStatus?: string, newTheme?: string) => Promise<void>;
+  onSave: (id: string, updates: any) => Promise<void>;
   clientName?: string;
 }
 

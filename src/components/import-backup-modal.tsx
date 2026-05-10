@@ -83,7 +83,7 @@ export function ImportBackupModal({ isDataEmpty, onImportSuccess, isOpen: extern
       const availableBackups = await BackupService.listBackups(access_token);
       
       if (availableBackups.length === 0) {
-        setErrorMessage("No GozyTrips backups found in your Google Drive.");
+        setErrorMessage("No Wander Labs backups found in your Google Drive.");
         setStep("error");
         return;
       }
@@ -152,7 +152,7 @@ export function ImportBackupModal({ isDataEmpty, onImportSuccess, isOpen: extern
     }}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Welcome to GozyTrips</DialogTitle>
+          <DialogTitle>Welcome to Wander Labs</DialogTitle>
           <DialogDescription>
             {step === "welcome" && "It looks like your workspace is empty. You can start fresh or restore your data from a Google Drive backup."}
             {step === "loading" && "Connecting to Google Drive..."}

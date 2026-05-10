@@ -11,6 +11,7 @@ interface AiArchitectPdfPreviewProps {
   flights: any[];
   pricing: any;
   baseCost: number;
+  tripTitle: string;
 }
 
 export function AiArchitectPdfPreview({
@@ -21,6 +22,7 @@ export function AiArchitectPdfPreview({
   flights,
   pricing,
   baseCost,
+  tripTitle,
 }: AiArchitectPdfPreviewProps) {
   const { userProfile } = useAuth();
 
@@ -30,7 +32,7 @@ export function AiArchitectPdfPreview({
       onOpenChange={setIsPreviewOpen}
       templateProps={{
         itinerary,
-        title: `Trip to ${itinerary?.itinerary?.[0]?.areaFocus?.split(',')[0] || 'Destination'}`,
+        title: tripTitle,
         userProfile,
         hotels,
         flights,
@@ -38,7 +40,7 @@ export function AiArchitectPdfPreview({
         baseCost,
       }}
       initialTheme="classic"
-      filename="OdysseyLuxe_Itinerary.pdf"
+      filename="WanderLabs_Itinerary.pdf"
     />
   );
 }

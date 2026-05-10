@@ -13,11 +13,14 @@ interface AiArchitectSummaryPanelProps {
   optimizationCount: number;
   isGenerating: boolean;
   onOptimize: (feedback: string) => void;
+  finalTotal?: number;
+  currencySymbol?: string;
 }
 
 const AiArchitectSummaryPanel = React.memo(function AiArchitectSummaryPanel({
   itinerary, selectedStatus, clients, selectedClientId,
-  optimizationCount, isGenerating, onOptimize
+  optimizationCount, isGenerating, onOptimize,
+  finalTotal, currencySymbol
 }: AiArchitectSummaryPanelProps) {
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
   
@@ -29,7 +32,56 @@ const AiArchitectSummaryPanel = React.memo(function AiArchitectSummaryPanel({
     <div className="w-[100vw] -ml-3 sm:-ml-2 md:-ml-4 lg:ml-0 lg:w-auto lg:col-span-4 space-y-3 sm:space-y-4 lg:sticky lg:top-24 order-1 lg:order-2 self-start px-3 sm:px-2 md:px-4 lg:px-0">
       
       {/* Journey Summary */}
-      <div className="glass-panel rounded-xl sm:rounded-2xl p-3 mb-3 sm:mb-4 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 bg-obsidian-dark/80 backdrop-blur-lg border border-white/5">
+      <div className="glass-panel relative rounded-xl sm:rounded-2xl p-3 mb-3 sm:mb-4 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 bg-obsidian-dark/80 backdrop-blur-lg border border-white/5 overflow-hidden">
+        {/* Status Badge - Top Right */}
+        <div className="absolute top-0 right-0">
+          <div className={cn(
+            "px-3 py-1 rounded-bl-xl border-l border-b border-white/5 flex items-center gap-2",
+            statusOption?.metadata?.color === 'purple' && "bg-purple-500/10",
+            statusOption?.metadata?.color === 'pink' && "bg-pink-500/10",
+            statusOption?.metadata?.color === 'blue' && "bg-blue-500/10",
+            statusOption?.metadata?.color === 'green' && "bg-emerald-500/10",
+            statusOption?.metadata?.color === 'amber' && "bg-amber-500/10",
+            statusOption?.metadata?.color === 'red' && "bg-rose-500/10",
+            !statusOption && "bg-white/5"
+          )}>
+            <div className={cn(
+              "w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]",
+              statusOption?.metadata?.color === 'purple' && "bg-purple-400 shadow-purple-400/20",
+              statusOption?.metadata?.color === 'pink' && "bg-pink-400 shadow-pink-400/20",
+              statusOption?.metadata?.color === 'blue' && "bg-blue-400 shadow-blue-400/20",
+              statusOption?.metadata?.color === 'green' && "bg-emerald-400 shadow-emerald-500/20",
+              statusOption?.metadata?.color === 'amber' && "bg-amber-400 shadow-amber-500/20",
+              statusOption?.metadata?.color === 'red' && "bg-rose-400 shadow-rose-500/20",
+              !statusOption && (
+                selectedStatus === 'draft' ? "bg-zinc-400 shadow-zinc-400/20" :
+                selectedStatus === 'sent' ? "bg-primary shadow-primary/20" :
+                selectedStatus === 'confirmed' || selectedStatus === 'booked' ? "bg-emerald-400 shadow-emerald-500/20" :
+                selectedStatus === 'rejected' ? "bg-rose-400 shadow-rose-500/20" :
+                "bg-zinc-500"
+              )
+            )} />
+            <span className={cn(
+              "text-[9px] font-black uppercase tracking-widest leading-none",
+              statusOption?.metadata?.color === 'purple' && "text-purple-400",
+              statusOption?.metadata?.color === 'pink' && "text-pink-400",
+              statusOption?.metadata?.color === 'blue' && "text-blue-400",
+              statusOption?.metadata?.color === 'green' && "text-emerald-400",
+              statusOption?.metadata?.color === 'amber' && "text-amber-400",
+              statusOption?.metadata?.color === 'red' && "text-rose-400",
+              !statusOption && (
+                selectedStatus === 'draft' ? "text-zinc-400" :
+                selectedStatus === 'sent' ? "text-primary" :
+                selectedStatus === 'confirmed' || selectedStatus === 'booked' ? "text-emerald-400" :
+                selectedStatus === 'rejected' ? "text-rose-400" :
+                "text-zinc-500"
+              )
+            )}>
+              {statusOption?.label || selectedStatus}
+            </span>
+          </div>
+        </div>
+
         <div className="w-full sm:w-auto">
           <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-2 block">Journey Summary</h3>
           <div className="flex flex-wrap gap-3 sm:gap-4 md:gap-8">
@@ -41,47 +93,14 @@ const AiArchitectSummaryPanel = React.memo(function AiArchitectSummaryPanel({
               <span className="text-[9px] font-black text-secondary uppercase tracking-widest mb-0.5">Duration</span>
               <span className="text-white text-xs font-bold leading-none">{itinerary.itinerary.length} Days</span>
             </div>
-            <div className="flex flex-col">
-              <span className="text-[9px] font-black text-tertiary uppercase tracking-widest mb-1.5">Status</span>
-              <div className="flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/5 border border-white/5 transition-all">
-                <div className={cn(
-                  "w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)]",
-                  statusOption?.metadata?.color === 'purple' && "bg-purple-400 shadow-purple-400/20",
-                  statusOption?.metadata?.color === 'pink' && "bg-pink-400 shadow-pink-400/20",
-                  statusOption?.metadata?.color === 'blue' && "bg-blue-400 shadow-blue-400/20",
-                  statusOption?.metadata?.color === 'green' && "bg-emerald-400 shadow-emerald-500/20",
-                  statusOption?.metadata?.color === 'amber' && "bg-amber-400 shadow-amber-500/20",
-                  statusOption?.metadata?.color === 'red' && "bg-rose-400 shadow-rose-500/20",
-                  // Fallback for missing metadata
-                  !statusOption && (
-                    selectedStatus === 'draft' ? "bg-zinc-400 shadow-zinc-400/20" :
-                    selectedStatus === 'sent' ? "bg-primary shadow-primary/20" :
-                    selectedStatus === 'confirmed' || selectedStatus === 'booked' ? "bg-emerald-400 shadow-emerald-500/20" :
-                    selectedStatus === 'rejected' ? "bg-rose-400 shadow-rose-500/20" :
-                    "bg-zinc-500"
-                  )
-                )} />
-                <span className={cn(
-                  "text-[10px] font-black uppercase tracking-wider leading-none",
-                  statusOption?.metadata?.color === 'purple' && "text-purple-400",
-                  statusOption?.metadata?.color === 'pink' && "text-pink-400",
-                  statusOption?.metadata?.color === 'blue' && "text-blue-400",
-                  statusOption?.metadata?.color === 'green' && "text-emerald-400",
-                  statusOption?.metadata?.color === 'amber' && "text-amber-400",
-                  statusOption?.metadata?.color === 'red' && "text-rose-400",
-                  // Fallback
-                  !statusOption && (
-                    selectedStatus === 'draft' ? "text-zinc-400" :
-                    selectedStatus === 'sent' ? "text-primary" :
-                    selectedStatus === 'confirmed' || selectedStatus === 'booked' ? "text-emerald-400" :
-                    selectedStatus === 'rejected' ? "text-rose-400" :
-                    "text-zinc-500"
-                  )
-                )}>
-                  {statusOption?.label || selectedStatus}
+            {finalTotal !== undefined && finalTotal > 0 && (
+              <div className="flex flex-col">
+                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-0.5">Total Cost</span>
+                <span className="text-white text-xs font-bold leading-none">
+                  {currencySymbol}{finalTotal.toLocaleString('en-IN')}
                 </span>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

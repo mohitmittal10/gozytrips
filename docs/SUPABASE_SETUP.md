@@ -2,7 +2,7 @@
 
 ## Overview
 
-This guide covers the complete Supabase setup for **Odyssey Luxe**, including authentication and database tables for user profiles and saved itineraries.
+This guide covers the complete Supabase setup for **Wander Labs**, including authentication and database tables for user profiles and saved itineraries.
 
 ---
 

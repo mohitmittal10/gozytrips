@@ -40,6 +40,7 @@ interface SavedItinerary {
   status: string;
   is_favourite: boolean | null;
   itinerary_data: TravelItineraryOutput;
+  currency: string | null;
   created_at: string;
   updated_at: string;
 }

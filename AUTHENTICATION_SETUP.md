@@ -2,7 +2,7 @@
 
 ## 🎯 What Was Implemented
 
-Your Odyssey Luxe application now has a **complete full-fledged authentication and database system** with:
+Your Wander Labs application now has a **complete full-fledged authentication and database system** with:
 
 - ✅ User registration & login with Supabase Auth
 - ✅ Email/password authentication
@@ -55,7 +55,7 @@ src/
 1. Go to [supabase.com](https://supabase.com)
 2. Click **"New Project"**
 3. Choose your organization
-4. Enter project name: `odyssey-luxe`
+4. Enter project name: `wander-labs`
 5. Set a strong password (save this!)
 6. Select database region closest to you
 7. Click **"Create new project"** and wait (1-2 minutes)

@@ -132,7 +132,7 @@ On Vercel or similar:
 ## 📁 File Structure
 
 ```
-gozytrips/
+wander-labs/
 ├── .env                    ← ONLY env file here
 ├── .env.example            ← Template for developers
 ├── .gitignore              ← Contains: .env*

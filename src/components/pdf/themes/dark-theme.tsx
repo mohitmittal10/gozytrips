@@ -4,7 +4,7 @@ import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 
-export const DarkTheme = ({ itinerary, title, agent }: ThemeProps) => {
+export const DarkTheme = ({ itinerary, title, agent, finalTotal = 0 }: ThemeProps) => {
     const accent = agent.primaryColor || "#a855f7";
     const totalActivities = itinerary.itinerary?.reduce((sum, d) => sum + (d.timeline?.length || 0), 0) || 0;
     return (
@@ -39,7 +39,7 @@ export const DarkTheme = ({ itinerary, title, agent }: ThemeProps) => {
                     <div style={{ display: "flex", gap: "14px", marginBottom: "32px", pageBreakInside: "avoid" }}>
                         {[
                             { label: "Duration", value: `${itinerary.itinerary?.length || 0} Days` },
-                            { label: "Est. Budget", value: formatCurrency(getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY) },
+                            { label: "Est. Budget", value: formatCurrency(finalTotal || getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY) },
                             { label: "Activities", value: `${totalActivities}+` },
                         ].map((stat, i) => (
                             <div key={i} style={{ flex: 1, padding: "18px 20px", borderTop: `3px solid ${accent}`, background: "rgba(255,255,255,0.04)", borderRadius: "0 0 8px 8px" }}>
@@ -89,7 +89,9 @@ export const DarkTheme = ({ itinerary, title, agent }: ThemeProps) => {
                                 <div style={{ display: "flex", gap: "14px", marginTop: "5px", fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px" }}>
                                     {day.date && <span>{formatDate(day.date)}</span>}
                                     {(day.dailyStats as any)?.walkingDistance && <span>{formatDistance((day.dailyStats as any).walkingDistance)} km walk</span>}
-                                    {day.dailyStats?.totalCost && <span style={{ color: accent }}>{formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>}
+                                    {day.dailyStats?.totalCost && (!itinerary.pricing || itinerary.pricing.costingType !== 'manual') && (
+                                        <span style={{ color: accent }}>{formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -109,7 +111,7 @@ export const DarkTheme = ({ itinerary, title, agent }: ThemeProps) => {
 
             {/* ── Footer ── */}
             <div data-pdf-section="footer" style={{ padding: "18px 48px", borderTop: `3px solid ${accent}`, display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(255,255,255,0.03)" }}>
-                <p style={{ margin: 0, fontSize: "11px", color: "#334155", textTransform: "uppercase", letterSpacing: "2px" }}>Powered by GozyTrips</p>
+                <p style={{ margin: 0, fontSize: "11px", color: "#334155", textTransform: "uppercase", letterSpacing: "2px" }}>Powered by Wander Labs</p>
                 <p style={{ margin: 0, fontSize: "13px", color: accent, fontWeight: 700, letterSpacing: "1px" }}>{agent.companyName}</p>
             </div>
         </div>

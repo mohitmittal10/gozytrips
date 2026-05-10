@@ -50,10 +50,6 @@ const TravelItineraryOutputSchema = z.object({
           imageSearchTerm: z.string().optional().describe('A specific Unsplash search term for this activity, e.g. "Eiffel Tower", "Statue of Liberty", "Sushi restaurant". Only include if highly relevant and visual.'),
         })
       ),
-      dailyStats: z.object({
-        totalCost: z.string(),
-        walkingDistance: z.string().optional(),
-      }),
     })
   ),
   optimizations: z.array(
@@ -141,10 +137,9 @@ You are an expert travel planner. Generate a detailed, day-by-day travel itinera
 ══════════════════════════════════════════════════════
   COST ESTIMATION (ALL VALUES IN INR)
 ══════════════════════════════════════════════════════
-  1. Every cost value MUST be an integer number (e.g. 500, not "₹500" or "500 INR").
-  2. Use realistic, current prices: entry tickets, local transport (cab/auto/metro/bus), and meals at well-reviewed local restaurants.
-  3. Provide a "totalCost" string in dailyStats for every day (e.g. "₹2,400").
-  {{#if budget}}4. The SUM of all daily costs must stay within the total budget of INR {{budget}}.{{/if}}
+  3. Every cost value MUST be an integer number (e.g. 500, not "₹500" or "500 INR").
+  4. Use realistic, current prices: entry tickets, local transport (cab/auto/metro/bus), and meals at well-reviewed local restaurants.
+  {{#if budget}}5. The SUM of all activity costs must stay within the total budget of INR {{budget}}.{{/if}}
 
 ══════════════════════════════════════════════════════
   IMAGE SEARCH TERMS (for Unsplash)

@@ -14,8 +14,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Odyssey Luxe",
-  description: "Curated luxury travel experiences.",
+  title: "Wander Labs",
+  description: "Curated luxury travel experiences and AI-powered planning.",
 };
 
 export default function RootLayout({

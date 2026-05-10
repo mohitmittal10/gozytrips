@@ -7,7 +7,7 @@ const Logo = ({ className }: { className?: string }) => {
     <Link href="/" className={cn("flex items-center gap-2", className)}>
       <Compass className="h-6 w-6 text-primary" />
       <span className="font-headline text-xl font-bold text-foreground">
-        Odyssey Luxe
+        Wander Labs
       </span>
     </Link>
   );

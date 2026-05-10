@@ -2,7 +2,7 @@
 
 ## ✅ Mission Complete!
 
-Your **Odyssey Luxe** application now has a **production-ready, full-fledged authentication and database system** with:
+Your **Wander Labs** application now has a **production-ready, full-fledged authentication and database system** with:
 
 ---
 
@@ -473,4 +473,4 @@ You now have a **production-ready, fully-authenticated travel planning applicati
 
 ---
 
-**Thank you for using Odyssey Luxe! Enjoy your luxury travel planning application! 🌍✈️**
+**Thank you for using Wander Labs! Enjoy your luxury travel planning application! 🌍✈️**

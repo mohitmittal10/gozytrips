@@ -1,6 +1,6 @@
 // Collapsible desktop side navigation
 import React from 'react';
-import { ArrowLeft, Calendar as CalendarIcon, Plane, DollarSign, Settings, ChevronLeft, ChevronRight, History, Plus } from 'lucide-react';
+import { Calendar as CalendarIcon, Plane, DollarSign, Settings, ChevronLeft, ChevronRight, History, Plus } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import type { ActiveArchitectTab } from '@/types/ai-architect';
 
@@ -9,10 +9,6 @@ interface AiArchitectSidebarProps {
   setIsSidebarExpanded: (expanded: boolean) => void;
   activeArchitectTab: ActiveArchitectTab;
   setActiveArchitectTab: (tab: ActiveArchitectTab) => void;
-  isEditing: boolean;
-  setShowBackConfirm: (show: boolean) => void;
-  setItinerary: (itinerary: null) => void;
-  setCurrentStep: (step: number) => void;
   handleCreateNew: () => void;
   onSubmit?: (values: any) => void;
   isGenerating?: boolean;
@@ -21,7 +17,7 @@ interface AiArchitectSidebarProps {
 const AiArchitectSidebar = React.memo(function AiArchitectSidebar({
   activeArchitectTab, setActiveArchitectTab,
   isSidebarExpanded, setIsSidebarExpanded,
-  isEditing, setShowBackConfirm, setItinerary, setCurrentStep, handleCreateNew
+  handleCreateNew
 }: AiArchitectSidebarProps) {
   const isFormOpened = activeArchitectTab === 'new';
 
@@ -31,35 +27,10 @@ const AiArchitectSidebar = React.memo(function AiArchitectSidebar({
       isSidebarExpanded ? "w-64" : "w-16"
     )}>
       <div className={cn(
-        "flex flex-col items-center w-full bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300",
+        "flex flex-col items-center w-full bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300 overflow-x-hidden",
         "h-[calc(100vh-110px)] max-h-[900px] py-4 px-2"
       )}>
         
-        {/* Back Button */}
-        <button
-          onClick={() => {
-            if (isEditing) setShowBackConfirm(true);
-            else {
-              setActiveArchitectTab('new');
-              setCurrentStep(0);
-            }
-          }}
-          className={cn(
-            "group relative flex items-center transition-all duration-200 text-zinc-500 hover:text-white mb-2",
-            isSidebarExpanded ? "w-full px-4 gap-3 h-10" : "justify-center w-10 h-10"
-          )}
-          title={isSidebarExpanded ? undefined : "Back to Form"}
-        >
-          <ArrowLeft className={cn(isSidebarExpanded ? "w-3.5 h-3.5" : "w-4 h-4")} />
-          {isSidebarExpanded && <span className="text-[10px] font-black uppercase tracking-widest whitespace-nowrap">Back</span>}
-          
-          {!isSidebarExpanded && (
-            <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
-              Back to Form
-              <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
-            </div>
-          )}
-        </button>
 
         {/* Plus Button */}
         <button
@@ -93,7 +64,7 @@ const AiArchitectSidebar = React.memo(function AiArchitectSidebar({
         <div className={cn("w-8 h-px bg-white/5 my-2 mx-auto", isSidebarExpanded && "w-full px-4")} />
 
         {/* Top Navigation - Scrollable Area */}
-        <div className="flex flex-col items-center gap-1 w-full overflow-y-auto no-scrollbar py-1">
+        <div className="flex flex-col items-center gap-1 w-full overflow-y-auto overflow-x-hidden no-scrollbar py-1">
           {[
             { id: 'itinerary' as const, icon: CalendarIcon, label: 'Timeline' },
             { id: 'flights-hotels' as const, icon: Plane, label: 'Logistics' },

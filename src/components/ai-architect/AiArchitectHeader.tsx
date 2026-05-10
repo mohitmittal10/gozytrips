@@ -1,6 +1,6 @@
 // Sticky top bar including selections, toggles, back/edit buttons.
 import React from 'react';
-import { ArrowLeft, Pencil, Plus, Eye, Save } from 'lucide-react';
+import { Pencil, Eye, Save } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -22,12 +22,9 @@ interface AiArchitectHeaderProps {
   setShowPrices: (show: boolean) => void;
   isEditing: boolean;
   setIsEditing: (editing: boolean) => void;
-  handleCreateNew: () => void;
   handleDownloadPdf: () => void;
   handleSaveItinerary: () => void;
   isSaving: boolean;
-  setShowBackConfirm: (show: boolean) => void;
-  setItinerary: (itinerary: null) => void;
   activeArchitectTab: string;
 }
 
@@ -35,7 +32,7 @@ const AiArchitectHeader = React.memo(function AiArchitectHeader({
   itinerary, clients, selectedClientId, setSelectedClientId,
   selectedStatus, setSelectedStatus, showTimestamps, setShowTimestamps,
   showPrices, setShowPrices, isEditing, setIsEditing,
-  handleCreateNew, handleDownloadPdf, handleSaveItinerary, isSaving, setShowBackConfirm, setItinerary,
+  handleDownloadPdf, handleSaveItinerary, isSaving,
   activeArchitectTab
 }: AiArchitectHeaderProps) {
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
@@ -46,22 +43,7 @@ const AiArchitectHeader = React.memo(function AiArchitectHeader({
     <div className="bg-transparent py-2 sm:py-3 z-30 mb-0 w-full">
       <div className="w-full flex flex-wrap justify-between items-center gap-2 sm:gap-4">
         <div className="flex flex-wrap items-center gap-2 sm:gap-4 md:space-x-6">
-          <button
-            onClick={() => {
-              if (itinerary) {
-                setShowBackConfirm(true);
-              } else {
-                setItinerary(null);
-                setIsEditing(false);
-              }
-            }}
-            className="flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 transition-all text-[10px] sm:text-xs font-bold uppercase tracking-widest min-h-[44px] sm:min-h-0"
-            title="Return to form"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back
-          </button>
-          
+
           <div className="hidden sm:flex items-center gap-2 sm:gap-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Client</label>
             <Select value={selectedClientId} onValueChange={setSelectedClientId}>
@@ -148,15 +130,6 @@ const AiArchitectHeader = React.memo(function AiArchitectHeader({
         </div>
 
         <div className="flex items-center space-x-2 sm:space-x-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleCreateNew}
-            className="px-3 sm:px-5 py-2 sm:py-2.5 bg-white/5 border border-white/10 text-zinc-300 rounded-lg text-xs sm:text-sm font-semibold hover:bg-white/10 transition-all flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 min-h-[44px] sm:min-h-0"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden xs:inline">Create New</span>
-          </Button>
           <Button
             variant="outline"
             size="sm"

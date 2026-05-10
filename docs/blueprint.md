@@ -1,4 +1,4 @@
-# **App Name**: Odyssey Luxe
+# **App Name**: Wander Labs
 
 ## Core Features:
 

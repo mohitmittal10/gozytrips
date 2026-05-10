@@ -151,7 +151,7 @@ export default function ProfilePage() {
           <Card className="glass-main border-white/10">
             <CardHeader>
               <CardTitle>Account Information</CardTitle>
-              <CardDescription>Your Odyssey Luxe account details</CardDescription>
+              <CardDescription>Your Wander Labs account details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -200,7 +200,7 @@ export default function ProfilePage() {
                       type="text"
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
-                      placeholder="e.g. Odyssey Luxe Travel"
+                      placeholder="e.g. Wander Labs Travel"
                       className="glass-input border-white/10"
                     />
                   </div>

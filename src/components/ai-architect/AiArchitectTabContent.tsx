@@ -204,7 +204,7 @@ const AiArchitectTabContent = React.memo(function AiArchitectTabContent({
            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-emerald-500/20 flex items-center justify-center mb-8 border border-white/5 shadow-2xl">
               <Sparkles className="w-10 h-10 text-purple-400 animate-pulse" />
            </div>
-           <h2 className="text-3xl font-serif font-bold text-white mb-4 uppercase tracking-wider">Odyssey Luxe</h2>
+           <h2 className="text-3xl font-serif font-bold text-white mb-4 uppercase tracking-wider">Wander Labs</h2>
            <p className="text-zinc-500 max-w-md mx-auto text-sm leading-relaxed mb-8">
              Select a trip from your history or click the Plus button to start designing your next journey.
            </p>

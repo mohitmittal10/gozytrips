@@ -41,7 +41,7 @@ const Footer = () => {
         {/* Glow Header Area */}
         <div className="flex flex-col items-center justify-center mb-8 relative">
           <h2 className="md:text-6xl text-3xl lg:text-8xl font-bold text-center text-white relative z-20">
-            Odyssey Luxe
+            Wander Labs
           </h2>
           <div className="w-[40rem] max-w-full h-4 relative mt-2">
             <div className="absolute inset-x-10 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm" />
@@ -113,7 +113,7 @@ const Footer = () => {
         </div>
 
         <div className="mt-10 pt-6 border-t border-white/10 text-center text-sm text-neutral-500">
-          <p>&copy; {new Date().getFullYear()} Odyssey Luxe. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Wander Labs. All rights reserved.</p>
         </div>
       </div>
     </footer>

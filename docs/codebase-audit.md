@@ -6,7 +6,7 @@
 ⚫ NAMING & CONSISTENCY VIOLATIONS
 📁 FILE: `src/app/layout.tsx`
 📌 LINE(S): 10, 11
-🔍 ISSUE: Brand inconsistency. Metadata title is "Odyssey Luxe" but the project/repo name is "GozyTrips".
+🔍 ISSUE: Brand inconsistency. Metadata title is "Wander Labs" but the project/repo name was formerly "Wander Labs".
 ⚠️  IMPACT: Confusion for users and developers; inconsistent SEO.
 ✅ FIX: Standardize branding across metadata and UI components.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

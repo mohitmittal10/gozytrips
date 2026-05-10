@@ -232,7 +232,7 @@ Map old `confirmed` rows to `booked` in a migration.
 **🔴 ISSUE TYPE: [Hardcoded / Missing DB Column]**  
 **📁 FILE:** `src/components/pdf-template.tsx`, `src/components/pdf-preview-editor.tsx`, `src/app/my-trips/page.tsx`, `src/app/crm/page.tsx`, `src/app/crm/components/TimelineView.tsx`, `src/components/client-itinerary-editor.tsx`  
 **📌 LINE(S):** `pdf-template.tsx:7`, `26-27`, `84`, `231`, `235`, `802`, `929-951`; `pdf-preview-editor.tsx:41-42`, `47-59`, `206-210`; `my-trips/page.tsx:58`, `349-353`; `crm/page.tsx:126`, `1542-1546`; `TimelineView.tsx:92-96`; `client-itinerary-editor.tsx:54`  
-**🔍 WHAT IT IS:** PDF themes (`classic`, `editorial`, `minimalist`, `dark`, `corporate`), fallback branding (`Your Travel Architect`, `OdysseyLuxe`, `Your Tailored Itinerary`, `Journey Dossier`), and selected theme state are hardcoded.  
+**🔍 WHAT IT IS:** PDF themes (`classic`, `editorial`, `minimalist`, `dark`, `corporate`), fallback branding (`Your Travel Architect`, `WanderLabs`, `Your Tailored Itinerary`, `Journey Dossier`), and selected theme state are hardcoded.  
 **⚠️ PROBLEM:** Theme choices are not editable in data, not consistent across pages, and selected theme is not stored per itinerary/user.  
 **✅ FIX:** Use:
 - `reference_options(scope='pdf_theme')`
@@ -423,7 +423,7 @@ For the WhatsApp number specifically, either store it in `site_content` or `agen
 **🔴 ISSUE TYPE: [Hardcoded]**  
 **📁 FILE:** `src/components/layout/header.tsx`, `src/components/layout/footer.tsx`, `src/components/layout/logo.tsx`, `src/app/layout.tsx`  
 **📌 LINE(S):** `header.tsx:34-39`; `footer.tsx:8-20`; `logo.tsx:7-11`; `app/layout.tsx:10-13`  
-**🔍 WHAT IT IS:** Navigation labels, legal links, brand name “Odyssey Luxe,” and root metadata title/description are hardcoded.  
+**🔍 WHAT IT IS:** Navigation labels, legal links, brand name “Wander Labs,” and root metadata title/description are hardcoded.  
 **⚠️ PROBLEM:** Brand and navigation cannot be changed without a redeploy.  
 **✅ FIX:** Use `navigation_items` and `site_content`:
 - `site_content['brand.name']`

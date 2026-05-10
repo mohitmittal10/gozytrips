@@ -1,4 +1,4 @@
-# 🚀 Odyssey Luxe - Authentication System Quick Reference
+# 🚀 Wander Labs - Authentication System Quick Reference
 
 ## ✅ What's Been Implemented
 

@@ -57,7 +57,7 @@ export default function Login() {
   return (
     <AuthLayout 
       title="Welcome Back" 
-      description="Sign in to your Odyssey Luxe account"
+      description="Sign in to your Wander Labs account"
     >
       <form onSubmit={handleLogin} className="space-y-4">
         <div className="space-y-2">

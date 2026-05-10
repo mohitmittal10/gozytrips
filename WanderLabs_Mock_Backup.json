@@ -17128,12 +17128,12 @@
     "user_profiles": [
       {
         "id": "00000000-0000-4000-a000-000000000000",
-        "email": "agent@gozytrips.com",
+        "email": "agent@wanderlabs.com",
         "full_name": "Demo Agent",
-        "company_name": "GozyTrips Demo Agency",
-        "business_email": "hello@gozytrips.com",
+        "company_name": "Wander Labs Demo Agency",
+        "business_email": "hello@wanderlabs.com",
         "business_phone": "+91 9999999999",
-        "website": "www.gozytrips.com",
+        "website": "www.wanderlabs.com",
         "brand_color": "#7c3aed",
         "created_at": "2026-03-28T23:27:59.009617",
         "updated_at": "2026-03-28T23:27:59.009617"
@@ -17150,7 +17150,7 @@
         "gst_number": "29AAAAA0000A1Z5",
         "bank_details": "HDFC Bank, Acc: 5010000000000, IFSC: HDFC0000001",
         "terms_conditions": "Terms and conditions apply.",
-        "agent_signature": "Best regards, GozyTrips Team",
+        "agent_signature": "Best regards, Wander Labs Team",
         "created_at": "2026-03-28T23:27:59.009617",
         "updated_at": "2026-03-28T23:27:59.009617"
       }
