@@ -8,7 +8,6 @@ import { Sparkles, MapPin, Zap, Users, Info } from "lucide-react";
 export default function HowItWorksTimeline() {
     const images = {
         step1: "https://images.unsplash.com/photo-1436450412740-6b988f486c6b?auto=format&fit=crop&w=800&q=80",
-        step2: "https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&w=800&q=80",
         step3: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
         step4: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
     };
@@ -57,11 +56,12 @@ export default function HowItWorksTimeline() {
                         Our advanced The Lab takes over, meticulously planning every detail of your trip. From flights and accommodations to daily activities and local hidden gems, we curate a personalized itinerary just for you.
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Image
-                            src={images.step2}
-                            alt="Map and planning"
-                            width={800}
-                            height={500}
+                        <video
+                            src="/d_b_a_f_mp_.mp4"
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
                             className="rounded-xl object-cover h-48 md:h-72 lg:h-80 w-full shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset]"
                         />
                     </div>
