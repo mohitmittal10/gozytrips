@@ -62,3 +62,4 @@ export type StandaloneBookingDetails =
   | BusBookingDetails
   | TrainBookingDetails
   | HotelBookingDetails;
+

@@ -87,3 +87,4 @@ export async function checkSupabaseConnection() {
     console.error('💥 Fatal error during diagnostics:', error);
   }
 }
+

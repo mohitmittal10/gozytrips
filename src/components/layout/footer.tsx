@@ -1,8 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import Logo from "./logo";
 import { Button } from "../ui/button";
-import { Sparkles, Globe, Users } from "lucide-react";
-import { SparklesCore } from "@/components/ui/sparkles";
+import { Sparkles, Globe, Users, Github, Twitter, Instagram, ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 const Footer = () => {
   const navLinks = [
@@ -17,56 +19,53 @@ const Footer = () => {
   const legalLinks = [
     { name: "Privacy Policy", href: "#" },
     { name: "Terms of Service", href: "#" },
+    { name: "Cookie Policy", href: "#" },
+  ];
+
+  const socialLinks = [
+    { name: "Twitter", href: "#", icon: <Twitter className="w-5 h-5" /> },
+    { name: "Instagram", href: "#", icon: <Instagram className="w-5 h-5" /> },
+    { name: "GitHub", href: "#", icon: <Github className="w-5 h-5" /> },
   ];
 
   return (
-    <footer className="relative mt-auto border-t bg-black overflow-hidden">
-      {/* Sparkles background effect */}
-      <div className="absolute inset-0 w-full h-full pointer-events-none">
-        <SparklesCore
-          id="footer-sparkles"
-          background="transparent"
-          minSize={0.4}
-          maxSize={1}
-          particleDensity={30}
-          className="w-full h-full"
-          particleColor="#FFFFFF"
-          speed={0.5}
-        />
-        {/* Radial Gradient to fade out edges */}
-        <div className="absolute inset-0 w-full h-full bg-black/50 [mask-image:radial-gradient(350px_200px_at_top,transparent_20%,white)]"></div>
+    <footer className="relative bg-black pt-24 pb-12 overflow-hidden border-t border-white/[0.05]">
+      {/* Ambient Background Elements */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-600/[0.05] rounded-full blur-[120px]" />
+        <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-600/[0.05] rounded-full blur-[120px]" />
       </div>
 
-      <div className="container relative z-20 mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        {/* Glow Header Area */}
-        <div className="flex flex-col items-center justify-center mb-8 relative">
-          <h2 className="md:text-6xl text-3xl lg:text-8xl font-bold text-center text-white relative z-20">
-            Wander Labs
-          </h2>
-          <div className="w-[40rem] max-w-full h-4 relative mt-2">
-            <div className="absolute inset-x-10 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-[2px] w-3/4 blur-sm" />
-            <div className="absolute inset-x-10 top-0 bg-gradient-to-r from-transparent via-indigo-500 to-transparent h-px w-3/4" />
-            <div className="absolute inset-x-1/4 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-[5px] w-1/4 blur-sm" />
-            <div className="absolute inset-x-1/4 top-0 bg-gradient-to-r from-transparent via-sky-500 to-transparent h-px w-1/4" />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-1 space-y-4">
-            <div className="inline-block bg-black/40 p-2 rounded-lg backdrop-blur-sm border border-white/10">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
+        <div className="grid grid-cols-12 gap-12 mb-20">
+          {/* Brand Section */}
+          <div className="col-span-12 lg:col-span-4 space-y-6">
+            <div className="flex items-center gap-2">
               <Logo />
             </div>
-            <p className="text-sm text-neutral-300">
-              Curating unforgettable luxury travel experiences around the globe.
+            <p className="text-zinc-400 text-base max-w-sm leading-relaxed font-light">
+              We empower travel agents with cutting-edge AI tools to craft breathtaking journeys. Experience the future of travel planning.
             </p>
+            <div className="flex gap-4">
+              {socialLinks.map((social) => (
+                <Link
+                  key={social.name}
+                  href={social.href}
+                  className="w-10 h-10 rounded-full bg-white/[0.03] border border-white/[0.08] flex items-center justify-center text-zinc-400 hover:text-white hover:bg-white/[0.08] hover:border-purple-500/30 transition-all duration-300"
+                >
+                  {social.icon}
+                </Link>
+              ))}
+            </div>
           </div>
 
-          <div className="md:col-span-1">
-            <h3 className="font-headline text-lg font-semibold text-white/90">Explore</h3>
-            <ul className="mt-4 space-y-2">
-              {navLinks.map((link) => (
+          {/* Links Sections */}
+          <div className="col-span-6 md:col-span-3 lg:col-span-2 space-y-6">
+            <h3 className="text-white font-bold text-lg tracking-tight">Product</h3>
+            <ul className="space-y-4">
+              {navLinks.slice(0, 4).map((link) => (
                 <li key={link.name}>
-                  <Link href={link.href} className="text-sm text-neutral-400 hover:text-white transition-colors">
+                  <Link href={link.href} className="text-zinc-400 hover:text-purple-400 transition-colors duration-300 text-sm font-light">
                     {link.name}
                   </Link>
                 </li>
@@ -74,12 +73,19 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="md:col-span-1">
-            <h3 className="font-headline text-lg font-semibold text-white/90">Legal</h3>
-            <ul className="mt-4 space-y-2">
-              {legalLinks.map((link) => (
+          <div className="col-span-6 md:col-span-3 lg:col-span-2 space-y-6">
+            <h3 className="text-white font-bold text-lg tracking-tight">Company</h3>
+            <ul className="space-y-4">
+              {navLinks.slice(4).map((link) => (
                 <li key={link.name}>
-                  <Link href={link.href} className="text-sm text-neutral-400 hover:text-white transition-colors">
+                  <Link href={link.href} className="text-zinc-400 hover:text-purple-400 transition-colors duration-300 text-sm font-light">
+                    {link.name}
+                  </Link>
+                </li>
+              ))}
+              {legalLinks.slice(0, 1).map((link) => (
+                <li key={link.name}>
+                  <Link href={link.href} className="text-zinc-400 hover:text-purple-400 transition-colors duration-300 text-sm font-light">
                     {link.name}
                   </Link>
                 </li>
@@ -87,33 +93,47 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="md:col-span-1">
-            <h3 className="font-headline text-lg font-semibold text-white/90">Connect</h3>
-            <div className="flex mt-4 space-x-4">
-              <Button variant="ghost" size="icon" className="hover:bg-white/10 text-neutral-400 hover:text-white" asChild>
-                <Link href="#" target="_blank" rel="noopener noreferrer">
-                  <Sparkles className="h-5 w-5" />
-                  <span className="sr-only">Social</span>
-                </Link>
-              </Button>
-              <Button variant="ghost" size="icon" className="hover:bg-white/10 text-neutral-400 hover:text-white" asChild>
-                <Link href="#" target="_blank" rel="noopener noreferrer">
-                  <Users className="h-5 w-5" />
-                  <span className="sr-only">Community</span>
-                </Link>
-              </Button>
-              <Button variant="ghost" size="icon" className="hover:bg-white/10 text-neutral-400 hover:text-white" asChild>
-                <Link href="#" target="_blank" rel="noopener noreferrer">
-                  <Globe className="h-5 w-5" />
-                  <span className="sr-only">Website</span>
+          {/* Newsletter/CTA Section */}
+          <div className="col-span-12 md:col-span-6 lg:col-span-4 space-y-6">
+            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/[0.06] backdrop-blur-xl relative overflow-hidden group">
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <h3 className="text-white font-bold text-lg mb-2 relative z-10">Start planning today</h3>
+              <p className="text-zinc-400 text-sm mb-6 relative z-10 font-light leading-relaxed">
+                Join 500+ agents already using Wander Labs to elevate their business.
+              </p>
+              <Button asChild className="w-full bg-white text-black hover:bg-zinc-200 rounded-2xl h-12 font-bold transition-all duration-300 relative z-10 group/btn">
+                <Link href="/the-lab" className="flex items-center justify-center gap-2">
+                  Launch The Lab
+                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
                 </Link>
               </Button>
             </div>
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-white/10 text-center text-sm text-neutral-500">
-          <p>&copy; {new Date().getFullYear()} Wander Labs. All rights reserved.</p>
+        {/* Bottom Bar */}
+        <div className="pt-12 border-t border-white/[0.05] flex flex-col md:flex-row items-center justify-between gap-6">
+          <p className="text-zinc-500 text-xs font-light">
+            &copy; {new Date().getFullYear()} Wander Labs. All rights reserved.
+          </p>
+          <div className="flex gap-8">
+            {legalLinks.map((link) => (
+              <Link
+                key={link.name}
+                href={link.href}
+                className="text-zinc-500 hover:text-zinc-300 transition-colors duration-300 text-xs font-light"
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Big Background Text */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 pointer-events-none select-none opacity-[0.02] z-0 whitespace-nowrap">
+          <h2 className="text-[20vw] font-black tracking-tighter text-white">
+            WANDER LABS
+          </h2>
         </div>
       </div>
     </footer>
@@ -121,3 +141,4 @@ const Footer = () => {
 };
 
 export default Footer;
+

@@ -19,25 +19,25 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { aiArchitectSteps } from "@/constants/ai-architect";
-import type { AiArchitectFormValues } from "@/types/ai-architect";
+import { theLabSteps } from "@/constants/the-lab";
+import type { TheLabFormValues } from "@/types/the-lab";
 import { useAuth } from "@/contexts/auth-context";
 import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 
 const LabelClass = "text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1.5 block";
 
-interface AiArchitectFormProps {
-  form: UseFormReturn<AiArchitectFormValues>;
+interface TheLabFormProps {
+  form: UseFormReturn<TheLabFormValues>;
   currentStep: number;
   setCurrentStep: (step: number) => void;
   onNext: () => void;
-  onSubmit: (values: AiArchitectFormValues) => void;
+  onSubmit: (values: TheLabFormValues) => void;
   isGenerating: boolean;
   sidebarMode?: boolean;
 }
 
-const StepDestinations = React.memo(({ form }: { form: UseFormReturn<AiArchitectFormValues> }) => (
+const StepDestinations = React.memo(({ form }: { form: UseFormReturn<TheLabFormValues> }) => (
   <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-700">
     <FormField control={form.control} name="startingLocation" render={({ field }) => (
       <FormItem className="space-y-1">
@@ -70,7 +70,7 @@ const StepDestinations = React.memo(({ form }: { form: UseFormReturn<AiArchitect
 ));
 StepDestinations.displayName = 'StepDestinations';
 
-const StepDates = React.memo(({ form, sidebarMode }: { form: UseFormReturn<AiArchitectFormValues>, sidebarMode?: boolean }) => (
+const StepDates = React.memo(({ form, sidebarMode }: { form: UseFormReturn<TheLabFormValues>, sidebarMode?: boolean }) => (
   <div className={cn("grid gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700", sidebarMode ? "grid-cols-1" : "grid-cols-2")}>
     <FormField control={form.control} name="startDate" render={({ field }) => (
       <FormItem className="space-y-1">
@@ -114,7 +114,7 @@ const StepDates = React.memo(({ form, sidebarMode }: { form: UseFormReturn<AiArc
 ));
 StepDates.displayName = 'StepDates';
 
-const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn<AiArchitectFormValues>, sidebarMode?: boolean }) => {
+const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn<TheLabFormValues>, sidebarMode?: boolean }) => {
   const { agencySettings } = useAuth();
   const currencySymbol = getCurrencySymbol((agencySettings as any)?.default_currency || DEFAULT_CURRENCY);
 
@@ -194,14 +194,14 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
 StepPreferences.displayName = 'StepPreferences';
 
 
-const AiArchitectForm = React.memo(function AiArchitectForm({
+const TheLabForm = React.memo(function TheLabForm({
   form, currentStep, setCurrentStep, onNext, onSubmit, isGenerating, sidebarMode
-}: AiArchitectFormProps) {
+}: TheLabFormProps) {
   return (
     <Form {...form}>
       <form
         onSubmit={(e) => {
-          if (currentStep < aiArchitectSteps.length - 1) {
+          if (currentStep < theLabSteps.length - 1) {
             e.preventDefault();
             onNext();
           } else {
@@ -212,7 +212,7 @@ const AiArchitectForm = React.memo(function AiArchitectForm({
         onKeyDown={(e) => {
           if (e.key === "Enter") {
             // Prevent default Enter key behavior and call onNext if not on last step
-            if (currentStep < aiArchitectSteps.length - 1) {
+            if (currentStep < theLabSteps.length - 1) {
               const target = e.target as HTMLElement;
               // Don't interfere with textareas or buttons that might have their own behavior
               if (target.tagName !== "TEXTAREA" && target.getAttribute("role") !== "button" && target.tagName !== "BUTTON") {
@@ -227,7 +227,7 @@ const AiArchitectForm = React.memo(function AiArchitectForm({
           <>
             {/* Progress Bar & Indicators */}
             <div className="mb-4 flex items-center justify-center gap-2 sm:gap-3">
-              {aiArchitectSteps.map((step, index) => (
+              {theLabSteps.map((step, index) => (
                 <div key={step.id} className="flex items-center gap-2">
                   <button
                     type="button"
@@ -242,7 +242,7 @@ const AiArchitectForm = React.memo(function AiArchitectForm({
                   >
                     {index < currentStep ? <Check className="h-3 w-3 animate-in zoom-in duration-500" strokeWidth={2.5} /> : <span className="text-[10px] font-bold tabular-nums">{step.id}</span>}
                   </button>
-                  {index < aiArchitectSteps.length - 1 && (
+                  {index < theLabSteps.length - 1 && (
                     <div className="relative h-[1px] w-4 sm:w-8 md:w-10">
                       <div className="absolute inset-0 bg-white/10" />
                       <div className="absolute inset-0 bg-foreground/30 transition-all duration-700 ease-out origin-left" style={{ transform: `scaleX(${index < currentStep ? 1 : 0})` }} />
@@ -252,7 +252,7 @@ const AiArchitectForm = React.memo(function AiArchitectForm({
               ))}
             </div>
             <div className="mb-4 overflow-hidden rounded-full bg-white/5 h-[1px]">
-              <div className="h-full bg-foreground/60 transition-all duration-1000 ease-out" style={{ width: `${((currentStep + 1) / aiArchitectSteps.length) * 100}%` }} />
+              <div className="h-full bg-foreground/60 transition-all duration-1000 ease-out" style={{ width: `${((currentStep + 1) / theLabSteps.length) * 100}%` }} />
             </div>
           </>
         )}
@@ -264,7 +264,7 @@ const AiArchitectForm = React.memo(function AiArchitectForm({
 
         {/* Actions */}
         <div className="space-y-3 pt-2">
-          {currentStep < aiArchitectSteps.length - 1 ? (
+          {currentStep < theLabSteps.length - 1 ? (
             <Button key="btn-continue" type="button" onClick={(e) => { e.preventDefault(); onNext(); }} className="w-full h-10 group transition-all duration-300 hover:shadow-lg bg-primary text-white rounded-xl">
               <span className="flex items-center justify-center gap-2 text-sm font-bold">Continue <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 duration-300" strokeWidth={2} /></span>
             </Button>
@@ -280,4 +280,6 @@ const AiArchitectForm = React.memo(function AiArchitectForm({
   );
 });
 
-export default AiArchitectForm;
+export default TheLabForm;
+
+

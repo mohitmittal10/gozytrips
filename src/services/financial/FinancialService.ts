@@ -217,3 +217,4 @@ export function extractTripCost(trip: any): number {
 export { getCurrencySymbol, formatMoney };
 export { DEFAULT_CURRENCY };
 export type { Currency };
+

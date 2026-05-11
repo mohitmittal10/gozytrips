@@ -66,3 +66,4 @@ export const defaultPricingConfig: PricingConfig = {
   costingType: 'automatic',
   manualOptions: [],
 };
+

@@ -2,10 +2,10 @@
 import React from 'react';
 import { cn } from "@/lib/utils";
 import { MorphingSquare } from "@/components/ui/morphing-square";
-import { MAX_AI_OPTIMIZATIONS } from "@/constants/ai-architect";
+import { MAX_AI_OPTIMIZATIONS } from "@/constants/the-lab";
 import { useReferenceOptions } from '@/hooks/use-reference-options';
 
-interface AiArchitectSummaryPanelProps {
+interface TheLabSummaryPanelProps {
   itinerary: any;
   selectedStatus: string;
   clients: any[];
@@ -17,11 +17,11 @@ interface AiArchitectSummaryPanelProps {
   currencySymbol?: string;
 }
 
-const AiArchitectSummaryPanel = React.memo(function AiArchitectSummaryPanel({
+const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
   itinerary, selectedStatus, clients, selectedClientId,
   optimizationCount, isGenerating, onOptimize,
   finalTotal, currencySymbol
-}: AiArchitectSummaryPanelProps) {
+}: TheLabSummaryPanelProps) {
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
   
   if (!itinerary || !itinerary.itinerary || itinerary.itinerary.length === 0) return null;
@@ -249,4 +249,6 @@ const AiArchitectSummaryPanel = React.memo(function AiArchitectSummaryPanel({
   );
 });
 
-export default AiArchitectSummaryPanel;
+export default TheLabSummaryPanel;
+
+

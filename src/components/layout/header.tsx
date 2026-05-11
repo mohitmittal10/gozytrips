@@ -33,12 +33,12 @@ const Header = () => {
 
   const navItems = [
     { name: "Home", url: "/", icon: Home },
-    { name: "AI Architect", url: "/ai-architect", icon: Sparkles },
+    { name: "The Lab", url: "/the-lab", icon: Sparkles },
     { name: "CRM", url: "/crm", icon: Users },
     { name: "Why Us?", url: "/#about", icon: Info },
   ];
 
-  const isAiArchitectPage = pathname === '/ai-architect';
+  const isTheLabPage = pathname === '/the-lab';
 
   return (
     <nav className={cn(
@@ -219,3 +219,4 @@ const Header = () => {
 };
 
 export default Header;
+

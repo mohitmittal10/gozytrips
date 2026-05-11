@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { buildLineItems } from "@/lib/helpers/trip-line-items";
-import type { SaveItineraryOptions } from "@/types/ai-architect";
+import type { SaveItineraryOptions } from "@/types/the-lab";
 import { calcPricingBreakdown } from "@/services/financial";
 import { defaultPricingConfig } from "@/types/pricing";
 
@@ -163,3 +163,5 @@ export function useItinerarySave({
 
   return { saveItinerary, isSaving };
 }
+
+

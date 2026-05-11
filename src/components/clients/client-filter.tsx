@@ -29,3 +29,4 @@ export function ClientFilter({ uniqueTags, selectedTag, onTagChange }: ClientFil
         </div>
     );
 }
+

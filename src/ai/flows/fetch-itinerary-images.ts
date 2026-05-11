@@ -16,3 +16,4 @@ export async function fetchItineraryImages(
 
     return fetchImagesForTerms(searchTerms, areaNames);
 }
+

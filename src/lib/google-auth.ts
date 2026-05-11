@@ -7,3 +7,4 @@ export function getGoogleOAuth2Client(origin: string) {
     `${origin}/api/google/callback`
   );
 }
+

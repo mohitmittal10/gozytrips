@@ -4,7 +4,7 @@ import { useToast } from "@/hooks/use-toast";
 import { generateTravelItinerary, type TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
 import { fetchItineraryImages } from "@/ai/flows/fetch-itinerary-images";
 import { format } from "date-fns";
-import type { AiArchitectFormValues, TripMetadata } from "@/types/ai-architect";
+import type { TheLabFormValues, TripMetadata } from "@/types/the-lab";
 
 export function useItineraryGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -12,7 +12,7 @@ export function useItineraryGeneration() {
   const { toast } = useToast();
 
   const generate = useCallback(async (
-    values: AiArchitectFormValues,
+    values: TheLabFormValues,
     feedback?: string,
     tripMetadata?: TripMetadata | null
   ) => {
@@ -113,3 +113,5 @@ export function useItineraryGeneration() {
 
   return { isGenerating, itinerary, setItinerary, generate };
 }
+
+

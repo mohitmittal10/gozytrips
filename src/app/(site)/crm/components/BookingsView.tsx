@@ -82,3 +82,4 @@ export const BookingsView = ({
         </div>
     );
 };
+

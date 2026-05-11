@@ -9,7 +9,7 @@ import { useReferenceOptions } from '@/hooks/use-reference-options';
 
 type Client = any; // Fallback from useClients
 
-interface AiArchitectHeaderProps {
+interface TheLabHeaderProps {
   itinerary: any;
   clients: Client[];
   selectedClientId: string;
@@ -25,19 +25,19 @@ interface AiArchitectHeaderProps {
   handleDownloadPdf: () => void;
   handleSaveItinerary: () => void;
   isSaving: boolean;
-  activeArchitectTab: string;
+  activeLabTab: string;
 }
 
-const AiArchitectHeader = React.memo(function AiArchitectHeader({
+const TheLabHeader = React.memo(function TheLabHeader({
   itinerary, clients, selectedClientId, setSelectedClientId,
   selectedStatus, setSelectedStatus, showTimestamps, setShowTimestamps,
   showPrices, setShowPrices, isEditing, setIsEditing,
   handleDownloadPdf, handleSaveItinerary, isSaving,
-  activeArchitectTab
-}: AiArchitectHeaderProps) {
+  activeLabTab
+}: TheLabHeaderProps) {
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
   
-  if (!itinerary || ['history','settings'].includes(activeArchitectTab)) return null;
+  if (!itinerary || ['history','settings'].includes(activeLabTab)) return null;
 
   return (
     <div className="bg-transparent py-2 sm:py-3 z-30 mb-0 w-full">
@@ -154,4 +154,6 @@ const AiArchitectHeader = React.memo(function AiArchitectHeader({
   );
 });
 
-export default AiArchitectHeader;
+export default TheLabHeader;
+
+

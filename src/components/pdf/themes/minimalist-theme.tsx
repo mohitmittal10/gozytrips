@@ -122,3 +122,4 @@ export const MinimalistTheme = ({ itinerary, title, agent, finalTotal = 0 }: The
         </div>
     );
 };
+

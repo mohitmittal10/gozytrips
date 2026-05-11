@@ -70,3 +70,4 @@ export function useVendorEnquiryAi({ onGenerateSuccess }: UseVendorEnquiryAiProp
     resetAiState
   };
 }
+

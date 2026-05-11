@@ -95,8 +95,9 @@ export const ClassicTheme = ({ itinerary, title, agent, finalTotal = 0 }: ThemeP
         {/* Footer */}
         <div data-pdf-section="footer" style={{ marginTop: "40px", padding: "30px 40px", background: "#0f172a", color: "white", textAlign: "center" }}>
             <div style={{ fontSize: "20px", fontWeight: "bold", marginBottom: "10px", background: "linear-gradient(to right, #a855f7, #ec4899)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{agent.companyName}</div>
-            <p style={{ margin: "0 0 5px 0", color: "#94a3b8", fontSize: "14px" }}>Your Personal AI Travel Architect</p>
+            <p style={{ margin: "0 0 5px 0", color: "#94a3b8", fontSize: "14px" }}>Crafted in The Lab</p>
             <p style={{ margin: 0, color: "#64748b", fontSize: "12px" }}>Generated on: {new Date().toLocaleDateString()}</p>
         </div>
     </div>
 );
+

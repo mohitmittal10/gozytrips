@@ -42,7 +42,7 @@ export default function Login() {
         description: 'You have been logged in successfully.',
       });
 
-      router.push('/ai-architect');
+      router.push('/the-lab');
     } catch (error) {
       toast({
         title: 'Error',
@@ -119,3 +119,4 @@ export default function Login() {
     </AuthLayout>
   );
 }
+

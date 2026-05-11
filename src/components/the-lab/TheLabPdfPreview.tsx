@@ -3,7 +3,7 @@ import React from 'react';
 import { PdfPreviewEditor } from "@/components/pdf-preview-editor";
 import { useAuth } from "@/contexts/auth-context";
 
-interface AiArchitectPdfPreviewProps {
+interface TheLabPdfPreviewProps {
   isPreviewOpen: boolean;
   setIsPreviewOpen: (open: boolean) => void;
   itinerary: any;
@@ -14,7 +14,7 @@ interface AiArchitectPdfPreviewProps {
   tripTitle: string;
 }
 
-export function AiArchitectPdfPreview({
+export function TheLabPdfPreview({
   isPreviewOpen,
   setIsPreviewOpen,
   itinerary,
@@ -23,7 +23,7 @@ export function AiArchitectPdfPreview({
   pricing,
   baseCost,
   tripTitle,
-}: AiArchitectPdfPreviewProps) {
+}: TheLabPdfPreviewProps) {
   const { userProfile } = useAuth();
 
   return (
@@ -44,3 +44,5 @@ export function AiArchitectPdfPreview({
     />
   );
 }
+
+

@@ -46,3 +46,4 @@ export interface EnquiryTypeOption {
   bg: string;
   border: string;
 }
+

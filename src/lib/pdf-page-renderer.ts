@@ -310,3 +310,4 @@ export function downloadPdfFromPages(
 
     pdf.save(filename);
 }
+

@@ -114,3 +114,4 @@ declare module 'date-fns' {
   export function setMonth(date: Date | number, month: number): Date;
   export function setYear(date: Date | number, year: number): Date;
 }
+

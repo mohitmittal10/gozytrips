@@ -18,3 +18,4 @@ export const getActivityFallbackUrl = (index: number, fallbackPhotos: string[] =
   if (slug.startsWith('http')) return slug;
   return `https://images.unsplash.com/${slug}?q=60&w=120&auto=format&fit=crop`;
 };
+

@@ -37,3 +37,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Failed to refresh token' }, { status: 500 });
   }
 }
+

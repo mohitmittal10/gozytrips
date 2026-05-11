@@ -13,7 +13,7 @@ import {
   DollarSign
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { ActiveArchitectTab } from '@/types/ai-architect';
+import type { activeLabTab } from '@/types/the-lab';
 import { useAuth } from '@/contexts/auth-context';
 import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
@@ -30,15 +30,15 @@ interface ItineraryRecord {
   client_price?: number;
 }
 
-interface AiArchitectHistoryProps {
+interface TheLabHistoryProps {
   setCurrentTripId: (id: string | null) => void;
-  setActiveArchitectTab: (tab: ActiveArchitectTab) => void;
+  setactiveLabTab: (tab: activeLabTab) => void;
   handleCreateNew: () => void;
 }
 
-export const AiArchitectHistory: React.FC<AiArchitectHistoryProps> = ({ 
+export const TheLabHistory: React.FC<TheLabHistoryProps> = ({ 
   setCurrentTripId, 
-  setActiveArchitectTab,
+  setactiveLabTab,
   handleCreateNew
 }) => {
   const [itineraries, setItineraries] = useState<ItineraryRecord[]>([]);
@@ -83,7 +83,7 @@ export const AiArchitectHistory: React.FC<AiArchitectHistoryProps> = ({
 
   const handleLoad = (id: string) => {
     setCurrentTripId(id);
-    setActiveArchitectTab('itinerary');
+    setactiveLabTab('itinerary');
   };
 
   const filteredItineraries = itineraries.filter(item => {
@@ -134,7 +134,7 @@ export const AiArchitectHistory: React.FC<AiArchitectHistoryProps> = ({
         </div>
         <h3 className="text-3xl font-serif font-bold text-white mb-4 uppercase tracking-wider">The Archive is Empty</h3>
         <p className="text-zinc-500 max-w-sm mx-auto text-sm leading-relaxed mb-10">
-          Your architectural wonders await. Start a new generation to begin cataloging your travel masterpieces.
+          Your travel masterpieces await. Start a new generation to begin cataloging your travel experiences.
         </p>
         <button 
           onClick={handleCreateNew}
@@ -259,7 +259,7 @@ export const AiArchitectHistory: React.FC<AiArchitectHistoryProps> = ({
                   <div className="flex items-center gap-10">
                     <div className="flex flex-col items-end opacity-0 group-hover:opacity-100 transition-all duration-700 transform translate-x-12 group-hover:translate-x-0 hidden sm:flex">
                        <span className="text-[10px] text-purple-400 font-black uppercase tracking-[0.3em] flex items-center gap-2">
-                        Execute Architect <ArrowUpRight className="w-3 h-3" />
+                        Launch The Lab <ArrowUpRight className="w-3 h-3" />
                        </span>
                        <span className="text-[10px] text-zinc-600 font-semibold mt-1 italic">Ready for optimization</span>
                     </div>
@@ -282,3 +282,5 @@ export const AiArchitectHistory: React.FC<AiArchitectHistoryProps> = ({
     </div>
   );
 };
+
+

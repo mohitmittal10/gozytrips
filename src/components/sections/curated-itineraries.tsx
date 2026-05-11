@@ -9,7 +9,7 @@ const ITINERARY_ITEMS: FocusRailItem[] = [
         description: "Sleek and sophisticated night-mode design perfect for showcasing high-end evening tours, nightlife experiences, and premium stays.",
         meta: "Format • PDF",
         imageSrc: "/dark.png",
-        href: "/ai-architect",
+        href: "/the-lab",
     },
     {
         id: 2,
@@ -17,7 +17,7 @@ const ITINERARY_ITEMS: FocusRailItem[] = [
         description: "A magazine-style layout featuring bold typography and expansive imagery for the ultimate visual storytelling experience.",
         meta: "Format • PDF",
         imageSrc: "/editorial.png",
-        href: "/ai-architect",
+        href: "/the-lab",
     },
     {
         id: 3,
@@ -25,14 +25,14 @@ const ITINERARY_ITEMS: FocusRailItem[] = [
         description: "Clean lines, ample white space, and a refined focus on trip details. The essential choice for modern, clutter-free itineraries.",
         meta: "Format • PDF",
         imageSrc: "/minimalist.png",
-        href: "/ai-architect",
+        href: "/the-lab",
     },
 ];
 
 export default function CuratedItineraries() {
     return (
         <section className="w-full bg-black">
-            <div className="mx-auto max-w-7xl px-4 pt-10 pb-2 text-center">
+            <div className="mx-auto max-w-7xl px-4 md:px-8 pt-24 pb-12 text-center">
                 <p className="text-xs font-medium uppercase tracking-[0.3em] text-emerald-400 mb-1">
                     Curated by Wander Labs
                 </p>
@@ -50,3 +50,4 @@ export default function CuratedItineraries() {
         </section>
     );
 }
+

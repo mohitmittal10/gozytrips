@@ -19,3 +19,4 @@ export function ShiningText({text}: {text: string}) {
     </motion.h1>
   );
 }
+

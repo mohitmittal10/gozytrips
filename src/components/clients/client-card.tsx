@@ -105,3 +105,4 @@ export function ClientCard({ client, onClick, onEdit, onDelete }: ClientCardProp
         </Card>
     );
 }
+

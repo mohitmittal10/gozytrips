@@ -125,7 +125,7 @@ export function FocusRail({
     return (
         <div
             className={cn(
-                "group relative flex h-auto py-24 md:py-32 w-full flex-col overflow-hidden bg-neutral-950 text-white outline-none select-none",
+                "group relative flex h-auto py-24 md:py-32 w-full flex-col overflow-hidden bg-black text-white outline-none select-none",
                 className
             )}
             onMouseEnter={() => setIsHovering(true)}
@@ -156,7 +156,12 @@ export function FocusRail({
                         }}
                     />
                 ))}
-                <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/50 to-transparent" />
+                {/* Ambient Gradient Orbs */}
+                <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+                    <div className="absolute top-[-10%] left-[-5%] w-[400px] h-[400px] bg-purple-600/[0.05] rounded-full blur-[100px]"></div>
+                    <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-indigo-600/[0.05] rounded-full blur-[100px]"></div>
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
             </div>
 
             {/* Main Stage */}
@@ -306,3 +311,4 @@ export function FocusRail({
         </div>
     );
 }
+

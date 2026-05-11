@@ -83,3 +83,4 @@ export function formatMoneyWithDecimals(
     maximumFractionDigits: 2,
   }).format(amount);
 }
+

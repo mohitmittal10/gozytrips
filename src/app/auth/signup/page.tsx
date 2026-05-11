@@ -65,7 +65,7 @@ export default function SignUp() {
           description: 'Account created successfully. Redirecting...',
         });
 
-        router.push('/ai-architect');
+        router.push('/the-lab');
       }
     } catch (error) {
       toast({
@@ -158,3 +158,4 @@ export default function SignUp() {
     </AuthLayout>
   );
 }
+

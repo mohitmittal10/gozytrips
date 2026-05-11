@@ -1,7 +1,7 @@
 // Handles debounced localized reading & writing of itinerary data using Supabase itineraries table
 import { useState, useEffect, useRef, useCallback } from "react";
 import { format } from "date-fns";
-import type { LoadedPersistenceData } from "@/types/ai-architect";
+import type { LoadedPersistenceData } from "@/types/the-lab";
 import { createClient } from "@/lib/supabase/client";
 import { calcPricingBreakdown } from "@/services/financial";
 import { defaultPricingConfig, DEFAULT_CURRENCY } from "@/types/pricing";
@@ -168,7 +168,7 @@ export function useItineraryPersistence({
         }
       }
 
-      let generatedTitle = "Untitled Architectural Draft";
+      let generatedTitle = "Untitled Lab Draft";
       if (dests) {
         if (startLoc) {
           generatedTitle = `${startLoc} to ${dests}${nightsDaysSuffix}`;
@@ -333,3 +333,5 @@ function getEmptyData(): LoadedPersistenceData {
     draftSourceItineraryId: null
   };
 }
+
+

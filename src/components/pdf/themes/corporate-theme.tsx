@@ -106,3 +106,4 @@ export const CorporateTheme = ({ itinerary, title, agent, finalTotal = 0 }: Them
         </div>
     );
 };
+

@@ -1,6 +1,6 @@
-// Runtime constants for AiArchitect module
+// Runtime constants for The Lab module
 
-export const aiArchitectSteps = [
+export const theLabSteps = [
   { id: 1, label: "Destinations", fields: ["startingLocation", "destinations", "endingLocation"] as const },
   { id: 2, label: "Dates", fields: ["startDate", "endDate"] as const },
   { id: 3, label: "Preferences", fields: ["budget", "mustInclude", "avoid", "leisureTime", "leisureDay", "travelTimePreference"] as const },
@@ -16,3 +16,4 @@ export const loadingTexts = [
   "Optimizing travel routes...",
   "Crafting your perfect itinerary...",
 ];
+

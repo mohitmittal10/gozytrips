@@ -25,3 +25,4 @@ export async function generatePdfFromSections(
     const { pages } = await renderPdfPages(container, { scale });
     downloadPdfFromPages(pages, filename, imageQuality);
 }
+

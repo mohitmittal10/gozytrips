@@ -1,4 +1,4 @@
-// Thin orchestrator shell for AiArchitect wiring hooks and components together (<150 lines)
+// Thin orchestrator shell for The Lab wiring hooks and components together (<150 lines)
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
@@ -15,30 +15,30 @@ import { useAuth } from "@/contexts/auth-context";
 import { createClient } from "@/lib/supabase/client";
 import { updateItineraryStatus } from "@/lib/services/itinerary-status";
 import { useClients } from "@/lib/hooks/use-clients";
-import { formSchema, type AiArchitectFormValues, type ActiveArchitectTab } from "@/types/ai-architect";
-import { aiArchitectSteps, loadingTexts, MAX_AI_OPTIMIZATIONS } from "@/constants/ai-architect";
-import { useItineraryGeneration } from "@/hooks/ai-architect/useItineraryGeneration";
-import { useItineraryPersistence } from "@/hooks/ai-architect/useItineraryPersistence";
-import { useItinerarySave } from "@/hooks/ai-architect/useItinerarySave";
-import { useBaseCostCalculator } from "@/hooks/ai-architect/useBaseCostCalculator";
+import { formSchema, type TheLabFormValues, type ActiveLabTab } from "@/types/the-lab";
+import { theLabSteps, loadingTexts, MAX_AI_OPTIMIZATIONS } from "@/constants/the-lab";
+import { useItineraryGeneration } from "@/hooks/the-lab/useItineraryGeneration";
+import { useItineraryPersistence } from "@/hooks/the-lab/useItineraryPersistence";
+import { useItinerarySave } from "@/hooks/the-lab/useItinerarySave";
+import { useBaseCostCalculator } from "@/hooks/the-lab/useBaseCostCalculator";
 
-import AiArchitectForm from "./AiArchitectForm";
-import AiArchitectHeader from "./AiArchitectHeader";
-import AiArchitectSidebar from "./AiArchitectSidebar";
-import AiArchitectMobileTabs from "./AiArchitectMobileTabs";
-import AiArchitectSummaryPanel from "./AiArchitectSummaryPanel";
-import AiArchitectHero from "./AiArchitectHero";
-import AiArchitectTabContent from "./AiArchitectTabContent";
-import { AiArchitectPdfPreview } from "./AiArchitectPdfPreview";
+import TheLabForm from "./TheLabForm";
+import TheLabHeader from "./TheLabHeader";
+import TheLabSidebar from "./TheLabSidebar";
+import TheLabMobileTabs from "./TheLabMobileTabs";
+import TheLabSummaryPanel from "./TheLabSummaryPanel";
+import TheLabHero from "./TheLabHero";
+import TheLabTabContent from "./TheLabTabContent";
+import { TheLabPdfPreview } from "./TheLabPdfPreview";
 import type { PdfTheme } from "@/components/pdf-template";
 
 const EMPTY_ARRAY: any[] = [];
 const EMPTY_OBJECT: any = {};
 
-export default function AiArchitect() {
+export default function TheLab() {
   const searchParams = useSearchParams();
   const itineraryIdFromUrl = searchParams.get('itineraryId');
-  const [activeArchitectTab, setActiveArchitectTab] = useState<ActiveArchitectTab>(itineraryIdFromUrl ? 'itinerary' : 'new');
+  const [activeLabTab, setActiveLabTab] = useState<ActiveLabTab>(itineraryIdFromUrl ? 'itinerary' : 'new');
   const [currentStep, setCurrentStep] = useState(0);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -74,7 +74,7 @@ export default function AiArchitect() {
     if (!tripMetadata) return `Trip to ${itinerary?.itinerary?.[0]?.areaFocus?.split(',')[0] || 'Destination'}`;
     const startLoc = tripMetadata.startingLocation;
     const dests = tripMetadata.destinations;
-    let title = dests ? (startLoc ? `${startLoc} to ${dests}` : `Trip to ${dests}`) : "Untitled Architectural Draft";
+    let title = dests ? (startLoc ? `${startLoc} to ${dests}` : `Trip to ${dests}`) : "Untitled Lab Draft";
     
     if (tripMetadata.startDate && tripMetadata.endDate) {
       const s = new Date(tripMetadata.startDate);
@@ -87,7 +87,7 @@ export default function AiArchitect() {
     return title;
   }, [tripMetadata, itinerary]);
 
-  const form = useForm<AiArchitectFormValues>({
+  const form = useForm<TheLabFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: { startingLocation: "", endingLocation: "", startDate: undefined, endDate: undefined, destinations: "", travelTimePreference: "no_preference", leisureTime: false },
   });
@@ -155,7 +155,7 @@ export default function AiArchitect() {
     // Reset persistence WITHOUT writing to DB. This cancels pending auto-save
     // timers and nulls the ref so no phantom records get created.
     resetForNewTrip();
-    setActiveArchitectTab('new');
+    setActiveLabTab('new');
   }, [form, setItinerary, resetForNewTrip]);
 
   const handleStatusChangeAction = useCallback(async (newStatus: string) => {
@@ -170,11 +170,11 @@ export default function AiArchitect() {
   }, [currentTripId, user?.id, supabase]);
 
   const handleNext = useCallback(async () => {
-    const fields = aiArchitectSteps[currentStep].fields;
-    if (await form.trigger(fields as any) && currentStep < aiArchitectSteps.length - 1) setCurrentStep(c => c + 1);
+    const fields = theLabSteps[currentStep].fields;
+    if (await form.trigger(fields as any) && currentStep < theLabSteps.length - 1) setCurrentStep(c => c + 1);
   }, [currentStep, form]);
 
-  const onSubmit = useCallback(async (values: AiArchitectFormValues, feedback?: string) => {
+  const onSubmit = useCallback(async (values: TheLabFormValues, feedback?: string) => {
     setTripMetadata(values);
     
     if (!feedback) {
@@ -205,17 +205,17 @@ export default function AiArchitect() {
           optimizationCount: 0,
         }, null); // explicitId=null → INSERT a new record
       }
-      setActiveArchitectTab('itinerary');
+      setActiveLabTab('itinerary');
     }
   }, [generate, tripMetadata, setCurrentTripId, saveNow, resetForNewTrip, pricing]);
 
 
 
   return (
-    <section id="ai-architect" className="w-full mx-auto pt-0 pb-10">
+    <section id="the-lab" className="w-full mx-auto pt-0 pb-10">
 <div className="w-full sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5">
 <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-      <AiArchitectHeader 
+      <TheLabHeader 
         itinerary={itinerary} 
         clients={clients} 
         selectedClientId={selectedClientId} 
@@ -231,20 +231,20 @@ export default function AiArchitect() {
         handleDownloadPdf={() => setIsPreviewOpen(true)} 
         handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount })} 
         isSaving={isSaving} 
-        activeArchitectTab={activeArchitectTab}
+        activeLabTab={activeLabTab}
       />
 </div>
 </div>
 
       <div className="w-full max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-20 sm:pb-10">
-        <AiArchitectMobileTabs activeArchitectTab={activeArchitectTab} setActiveArchitectTab={setActiveArchitectTab} clients={clients} selectedClientId={selectedClientId} setSelectedClientId={setSelectedClientId} selectedStatus={selectedStatus} setSelectedStatus={handleStatusChangeAction} handleCreateNew={handleCreateNew} />
+        <TheLabMobileTabs activeLabTab={activeLabTab} setActiveLabTab={setActiveLabTab} clients={clients} selectedClientId={selectedClientId} setSelectedClientId={setSelectedClientId} selectedStatus={selectedStatus} setSelectedStatus={handleStatusChangeAction} handleCreateNew={handleCreateNew} />
         
         <div className="flex flex-row items-start gap-4 lg:gap-6">
-          <AiArchitectSidebar 
+          <TheLabSidebar 
             isSidebarExpanded={isSidebarExpanded} 
             setIsSidebarExpanded={setIsSidebarExpanded} 
-            activeArchitectTab={activeArchitectTab} 
-            setActiveArchitectTab={setActiveArchitectTab} 
+            activeLabTab={activeLabTab} 
+            setActiveLabTab={setActiveLabTab} 
             handleCreateNew={handleCreateNew}
             // Props for the integrated form
             form={form}
@@ -254,8 +254,8 @@ export default function AiArchitect() {
             isGenerating={isGenerating}
           />
           
-          <div className={['history','settings'].includes(activeArchitectTab) ? "flex-1 min-w-0 flex flex-col" : "flex-1 min-w-0 flex flex-col lg:grid lg:grid-cols-12 gap-4"}>
-            <div className={['history','settings'].includes(activeArchitectTab) ? "w-full" : "lg:col-span-8 order-2 lg:order-1"}>
+          <div className={['history','settings'].includes(activeLabTab) ? "flex-1 min-w-0 flex flex-col" : "flex-1 min-w-0 flex flex-col lg:grid lg:grid-cols-12 gap-4"}>
+            <div className={['history','settings'].includes(activeLabTab) ? "w-full" : "lg:col-span-8 order-2 lg:order-1"}>
               {isGenerating && !itinerary ? (
                 <div className="py-24 flex flex-col items-center min-h-[400px] space-y-12">
                   <UniqueLoading variant="morph" size="lg" />
@@ -263,9 +263,9 @@ export default function AiArchitect() {
                 </div>
               ) : (
                 <>
-                  {itinerary && !['history','settings'].includes(activeArchitectTab) && <AiArchitectHero itinerary={itinerary} />}
-                  <AiArchitectTabContent 
-                    activeArchitectTab={activeArchitectTab} 
+                  {itinerary && !['history','settings'].includes(activeLabTab) && <TheLabHero itinerary={itinerary} />}
+                  <TheLabTabContent 
+                    activeLabTab={activeLabTab} 
                     isGenerating={isGenerating} 
                     itinerary={itinerary} 
                     setItinerary={setItinerary} 
@@ -287,7 +287,7 @@ export default function AiArchitect() {
                     handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount })} 
                     isSaving={isSaving} 
                     setCurrentTripId={setCurrentTripId} 
-                    setActiveArchitectTab={setActiveArchitectTab} 
+                    setActiveLabTab={setActiveLabTab} 
                     // Form props
                     form={form}
                     currentStep={currentStep}
@@ -300,8 +300,8 @@ export default function AiArchitect() {
               )}
             </div>
             
-            {itinerary && !['history','settings'].includes(activeArchitectTab) && (
-              <AiArchitectSummaryPanel 
+            {itinerary && !['history','settings'].includes(activeLabTab) && (
+              <TheLabSummaryPanel 
                 itinerary={itinerary} 
                 selectedStatus={selectedStatus} 
                 clients={clients} 
@@ -317,8 +317,10 @@ export default function AiArchitect() {
         </div>
       </div>
 
-      <AiArchitectPdfPreview isPreviewOpen={isPreviewOpen} setIsPreviewOpen={setIsPreviewOpen} itinerary={itinerary} hotels={hotels} flights={flights} pricing={pricing} baseCost={baseCost} tripTitle={tripTitle} />
+      <TheLabPdfPreview isPreviewOpen={isPreviewOpen} setIsPreviewOpen={setIsPreviewOpen} itinerary={itinerary} hotels={hotels} flights={flights} pricing={pricing} baseCost={baseCost} tripTitle={tripTitle} />
 
     </section>
   );
 }
+
+

@@ -31,3 +31,4 @@ export function AuthLayout({ children, title, description }: AuthLayoutProps) {
     </div>
   );
 }
+

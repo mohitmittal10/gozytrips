@@ -29,3 +29,4 @@ export function useItineraryPricing(): PricingBreakdown {
     [state.itinerary, state.hotels, state.flights, state.pricing]
   );
 }
+

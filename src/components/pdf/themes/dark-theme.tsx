@@ -117,3 +117,4 @@ export const DarkTheme = ({ itinerary, title, agent, finalTotal = 0 }: ThemeProp
         </div>
     );
 };
+

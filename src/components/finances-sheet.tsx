@@ -225,3 +225,4 @@ export function FinancesSheet({ trip, isOpen, onOpenChange }: FinancesSheetProps
     </Sheet>
   );
 }
+

@@ -507,3 +507,4 @@ export const DashboardView = (props: DashboardViewProps) => {
         </div>
     );
 };
+

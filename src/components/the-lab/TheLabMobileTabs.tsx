@@ -3,14 +3,14 @@ import React from 'react';
 import { Calendar as CalendarIcon, Plane, DollarSign, Settings, History, Plus } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import type { ActiveArchitectTab } from '@/types/ai-architect';
+import type { activeLabTab } from '@/types/the-lab';
 import { useReferenceOptions } from '@/hooks/use-reference-options';
 
 type Client = any;
 
-interface AiArchitectMobileTabsProps {
-  activeArchitectTab: ActiveArchitectTab;
-  setActiveArchitectTab: (tab: ActiveArchitectTab) => void;
+interface TheLabMobileTabsProps {
+  activeLabTab: activeLabTab;
+  setactiveLabTab: (tab: activeLabTab) => void;
   clients: Client[];
   selectedClientId: string;
   setSelectedClientId: (id: string) => void;
@@ -19,11 +19,11 @@ interface AiArchitectMobileTabsProps {
   handleCreateNew: () => void;
 }
 
-const AiArchitectMobileTabs = React.memo(function AiArchitectMobileTabs({
-  activeArchitectTab, setActiveArchitectTab,
+const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
+  activeLabTab, setactiveLabTab,
   clients, selectedClientId, setSelectedClientId,
   selectedStatus, setSelectedStatus, handleCreateNew
-}: AiArchitectMobileTabsProps) {
+}: TheLabMobileTabsProps) {
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
 
   return (
@@ -41,11 +41,11 @@ const AiArchitectMobileTabs = React.memo(function AiArchitectMobileTabs({
             key={item.id}
             onClick={() => {
               if (item.id === 'new') handleCreateNew();
-              else setActiveArchitectTab(item.id);
+              else setactiveLabTab(item.id);
             }}
             className={cn(
               "flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg transition-all duration-200 whitespace-nowrap flex-1 min-w-[70px] min-h-[44px]",
-              activeArchitectTab === item.id
+              activeLabTab === item.id
                 ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
                 : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
             )}
@@ -56,7 +56,7 @@ const AiArchitectMobileTabs = React.memo(function AiArchitectMobileTabs({
         ))}
       </div>
 
-      {!['history','settings'].includes(activeArchitectTab) && (
+      {!['history','settings'].includes(activeLabTab) && (
         <div className="sm:hidden flex flex-col gap-2 mb-4">
           <div className="flex items-center gap-2">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 w-12 flex-shrink-0">Client</label>
@@ -100,4 +100,6 @@ const AiArchitectMobileTabs = React.memo(function AiArchitectMobileTabs({
   );
 });
 
-export default AiArchitectMobileTabs;
+export default TheLabMobileTabs;
+
+

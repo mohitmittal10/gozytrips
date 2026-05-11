@@ -43,3 +43,4 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/profile?error=OAuthFailed`);
   }
 }
+

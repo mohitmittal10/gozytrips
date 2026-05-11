@@ -89,3 +89,4 @@ export function validateItineraryState(state: ItineraryState): string[] {
 
   return errors;
 }
+

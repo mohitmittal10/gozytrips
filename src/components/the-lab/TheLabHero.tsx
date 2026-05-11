@@ -1,11 +1,11 @@
 // Top destination header containing dynamically fetched Unsplash banners.
 import React from 'react';
 
-interface AiArchitectHeroProps {
+interface TheLabHeroProps {
   itinerary: any;
 }
 
-const AiArchitectHero = React.memo(function AiArchitectHero({ itinerary }: AiArchitectHeroProps) {
+const TheLabHero = React.memo(function TheLabHero({ itinerary }: TheLabHeroProps) {
   if (!itinerary || !itinerary.itinerary || itinerary.itinerary.length === 0) return null;
 
   return (
@@ -29,4 +29,6 @@ const AiArchitectHero = React.memo(function AiArchitectHero({ itinerary }: AiArc
   );
 });
 
-export default AiArchitectHero;
+export default TheLabHero;
+
+

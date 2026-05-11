@@ -25,3 +25,4 @@ export type CrmPipelineFields = {
 
 /** @deprecated Use CountRow from @/services/crm if needed */
 export type CountRow = { name: string; count: number };
+

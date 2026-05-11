@@ -226,10 +226,10 @@ export default function MyTripsPage() {
 
       toast({
         title: 'Success',
-        description: 'Opening a copy in the AI Architect...',
+        description: 'Opening a copy in the The Lab...',
       });
 
-      router.push(`/ai-architect?itineraryId=${newTrip.id}`);
+      router.push(`/the-lab?itineraryId=${newTrip.id}`);
     } catch (error: any) {
       console.error(error);
       toast({
@@ -257,7 +257,7 @@ export default function MyTripsPage() {
               <h1 className="text-4xl font-bold mb-2">My Trips</h1>
               <p className="text-muted-foreground">Your saved travel itineraries</p>
             </div>
-            <Link href="/ai-architect">
+            <Link href="/the-lab">
               <Button className="glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 gap-2">
                 <Plus className="w-4 h-4" />
                 New Trip
@@ -338,9 +338,9 @@ export default function MyTripsPage() {
                   <MapPin className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                   <h2 className="text-xl font-semibold mb-2">No trips yet</h2>
                   <p className="text-muted-foreground mb-6">
-                    Start creating your first luxurious travel itinerary with AI Architect
+                    Start creating your first luxurious travel itinerary with The Lab
                   </p>
-                  <Link href="/ai-architect">
+                  <Link href="/the-lab">
                     <Button className="glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0">
                       Create Your First Trip
                     </Button>
@@ -467,3 +467,4 @@ export default function MyTripsPage() {
     </div>
   );
 }
+

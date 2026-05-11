@@ -1,7 +1,7 @@
 // Handles the conditional rendering of the 4 tabs, each wrapped in an Error Boundary
 import React, { useEffect, useRef } from 'react';
 import { Sparkles } from 'lucide-react';
-import type { ActiveArchitectTab } from '@/types/ai-architect';
+import type { activeLabTab } from '@/types/the-lab';
 import { ItineraryErrorBoundary } from './ItineraryErrorBoundary';
 
 // Components
@@ -10,8 +10,8 @@ import HotelFlightEditor from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
 import { CrmSettings } from "@/components/crm-settings";
 import { ItineraryProvider, ItineraryContext } from "@/contexts/itinerary-context";
-import { AiArchitectHistory } from "./AiArchitectHistory";
-import AiArchitectForm from "./AiArchitectForm";
+import { TheLabHistory } from "./TheLabHistory";
+import TheLabForm from "./TheLabForm";
 
 // Memoized versions
 const MemoizedItineraryTimeline = React.memo(ItineraryTimeline);
@@ -40,8 +40,8 @@ const PricingSync = React.memo(({ onChange }: { onChange: (pricing: any) => void
   return null;
 });
 
-interface AiArchitectTabContentProps {
-  activeArchitectTab: ActiveArchitectTab;
+interface TheLabTabContentProps {
+  activeLabTab: activeLabTab;
   isGenerating: boolean;
   itinerary: any;
   setItinerary: (val: any) => void;
@@ -63,7 +63,7 @@ interface AiArchitectTabContentProps {
   handleSaveItinerary: () => void;
   isSaving: boolean;
   setCurrentTripId: (id: string | null) => void;
-  setActiveArchitectTab: (tab: ActiveArchitectTab) => void;
+  setactiveLabTab: (tab: activeLabTab) => void;
   // Form props
   form: any;
   currentStep: number;
@@ -72,19 +72,19 @@ interface AiArchitectTabContentProps {
   onSubmit: (values: any) => void;
 }
 
-const AiArchitectTabContent = React.memo(function AiArchitectTabContent({
-  activeArchitectTab, isGenerating, itinerary, setItinerary,
+const TheLabTabContent = React.memo(function TheLabTabContent({
+  activeLabTab, isGenerating, itinerary, setItinerary,
   isEditing, setIsEditing, hotels, setHotels, flights, setFlights, cabs, setCabs, buses, setBuses,
   showTimestamps, showPrices, pricing, setPricing, 
   agencySettings, handleSaveItinerary, isSaving,
-  setCurrentTripId, setActiveArchitectTab,
+  setCurrentTripId, setactiveLabTab,
   form, currentStep, setCurrentStep, onNext, onSubmit
-}: AiArchitectTabContentProps) {
+}: TheLabTabContentProps) {
 
   return (
     <>
       {/* Tab Content - Timeline */}
-      {activeArchitectTab === 'itinerary' && (
+      {activeLabTab === 'itinerary' && (
         <ItineraryErrorBoundary onReset={() => setItinerary(null)} fallbackMessage="Timeline failed to render.">
           <div className="relative rounded-xl sm:rounded-2xl border border-white/[0.06] p-2 sm:p-4 md:p-6 backdrop-blur-sm overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(10,10,11,0.9) 0%, rgba(18,18,20,0.95) 50%, rgba(10,10,11,0.9) 100%)' }}>
             <MemoizedItineraryTimeline
@@ -110,7 +110,7 @@ const AiArchitectTabContent = React.memo(function AiArchitectTabContent({
       )}
 
       {/* Tab Content - Logistics (Hotels & Flights) */}
-      {activeArchitectTab === 'flights-hotels' && !isGenerating && (
+      {activeLabTab === 'flights-hotels' && !isGenerating && (
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Logistics editor failed to load.">
           <MemoizedHotelFlightEditor
             hotels={hotels}
@@ -128,7 +128,7 @@ const AiArchitectTabContent = React.memo(function AiArchitectTabContent({
       )}
 
       {/* Tab Content - Financials (Pricing) */}
-      {activeArchitectTab === 'pricing' && !isGenerating && (
+      {activeLabTab === 'pricing' && !isGenerating && (
         <ItineraryErrorBoundary onReset={() => setPricing(undefined)} fallbackMessage="Pricing module failed to load.">
           <ItineraryProvider
             key={JSON.stringify(itinerary?.itinerary?.length)}
@@ -157,7 +157,7 @@ const AiArchitectTabContent = React.memo(function AiArchitectTabContent({
       )}
 
       {/* Tab Content - Settings */}
-      {activeArchitectTab === 'settings' && (
+      {activeLabTab === 'settings' && (
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Settings failed to load.">
           <div className="mt-4">
             <CrmSettings />
@@ -166,26 +166,23 @@ const AiArchitectTabContent = React.memo(function AiArchitectTabContent({
       )}
       
       {/* Tab Content - History */}
-      {activeArchitectTab === 'history' && (
+      {activeLabTab === 'history' && (
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="History failed to load.">
-          <AiArchitectHistory setCurrentTripId={setCurrentTripId} setActiveArchitectTab={setActiveArchitectTab} />
+          <TheLabHistory setCurrentTripId={setCurrentTripId} setactiveLabTab={setactiveLabTab} />
         </ItineraryErrorBoundary>
       )}
 
       {/* Tab Content - New Trip */}
-      {activeArchitectTab === 'new' && (
+      {activeLabTab === 'new' && (
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Form failed to load.">
           <div className="mt-4 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="w-full max-w-3xl bg-[#0a0a0b]/80 border border-white/[0.08] backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 lg:p-12 shadow-[0_24px_48px_rgba(0,0,0,0.5)]">
               <div className="mb-10 text-center">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/10 border border-purple-500/20 text-[10px] font-black uppercase tracking-widest text-purple-400 mb-4">
-                  <Sparkles className="w-3 h-3" />
-                  Designer Core
-                </div>
+                
                 <h2 className="text-3xl font-serif font-bold text-white uppercase tracking-tight">Plan Your Escape</h2>
-                <p className="text-zinc-500 text-sm mt-3">Define the parameters of your next architectural wonder.</p>
+                <p className="text-zinc-500 text-sm mt-3">Define the parameters of your next unforgettable journey.</p>
               </div>
-              <AiArchitectForm 
+              <TheLabForm 
                 form={form} 
                 currentStep={currentStep} 
                 setCurrentStep={setCurrentStep} 
@@ -199,7 +196,7 @@ const AiArchitectTabContent = React.memo(function AiArchitectTabContent({
       )}
 
       {/* Tab Content - Empty/Welcome State */}
-      {!itinerary && !isGenerating && activeArchitectTab !== 'history' && activeArchitectTab !== 'new' && (
+      {!itinerary && !isGenerating && activeLabTab !== 'history' && activeLabTab !== 'new' && (
         <div className="flex flex-col items-center justify-center py-24 text-center px-4 animate-in fade-in duration-1000">
            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-emerald-500/20 flex items-center justify-center mb-8 border border-white/5 shadow-2xl">
               <Sparkles className="w-10 h-10 text-purple-400 animate-pulse" />
@@ -214,4 +211,6 @@ const AiArchitectTabContent = React.memo(function AiArchitectTabContent({
   );
 });
 
-export default AiArchitectTabContent;
+export default TheLabTabContent;
+
+

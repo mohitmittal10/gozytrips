@@ -170,3 +170,4 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
         </div>
     );
 }
+

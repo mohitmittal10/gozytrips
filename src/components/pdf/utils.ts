@@ -2,7 +2,7 @@ import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary
 
 export const getAgentInfo = (userProfile: any, agencySettings?: any) => ({
     primaryColor: userProfile?.brand_color || "#a855f7",
-    agentName: userProfile?.full_name || agencySettings?.brand_name || "Your Travel Architect",
+    agentName: userProfile?.full_name || agencySettings?.brand_name || "The Lab",
     companyName: userProfile?.company_name || agencySettings?.brand_name || "Wander Labs",
     agentPhone: userProfile?.business_phone || "",
     agentEmail: userProfile?.business_email || "",
@@ -56,3 +56,4 @@ export const getSanitizedTitle = (title: string, itinerary: TravelItineraryOutpu
     }
     return displayTitle;
 };
+

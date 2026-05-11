@@ -97,3 +97,4 @@ export const PdfFlightAndHotelSummary = ({ flights, hotels, accentColor }: { fli
         </div>
     );
 };
+

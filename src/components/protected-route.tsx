@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-const protectedRoutes = ['/ai-architect', '/my-trips', '/profile', '/clients'];
+const protectedRoutes = ['/the-lab', '/my-trips', '/profile', '/clients'];
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();
@@ -45,3 +45,4 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // On public routes, or when user is authenticated on protected routes, show children
   return <>{children}</>;
 }
+

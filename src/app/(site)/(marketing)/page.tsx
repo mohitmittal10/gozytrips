@@ -4,7 +4,7 @@ import { HeroParallax } from '@/components/ui/hero-parallax';
 import AnimatedTypography from '@/components/sections/animated-typography';
 import CuratedItineraries from '@/components/sections/curated-itineraries';
 import HowItWorksTimeline from '@/components/sections/how-it-works-timeline';
-import { FeatureStepsDemo } from '@/components/sections/feature-steps-section';
+import FeaturesGrid from '@/components/sections/features-grid';
 import { PARALLAX_PRODUCTS } from '@/constants/marketing';
 
 export default function Home() {
@@ -13,10 +13,11 @@ export default function Home() {
       <Hero />
       <HeroParallax products={PARALLAX_PRODUCTS} />
       <HowItWorksTimeline />
-      <FeatureStepsDemo />
+      <FeaturesGrid />
       <AnimatedTypography />
       <CuratedItineraries />
       <CleanTestimonialDemo />
     </>
   );
 }
+

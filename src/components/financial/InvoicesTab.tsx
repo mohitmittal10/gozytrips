@@ -86,3 +86,4 @@ export function InvoicesTab({ financials, cs, fm, onOpenFinances }: InvoicesTabP
         </div>
     );
 }
+

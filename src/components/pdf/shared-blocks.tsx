@@ -53,3 +53,4 @@ export const PdfHotelBlock = ({ hotel, accentColor, bgColor, textColor }: { hote
         </div>
     );
 };
+

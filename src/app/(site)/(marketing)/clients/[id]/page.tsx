@@ -131,9 +131,9 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                                 <MapPin className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
                                 <h3 className="text-xl font-semibold mb-2 text-white">No Itineraries Found</h3>
                                 <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-                                    This client does not have any attached quotes or itineraries yet. Create one in the AI Architect and link it to them.
+                                    This client does not have any attached quotes or itineraries yet. Create one in The Lab and link it to them.
                                 </p>
-                                <Button onClick={() => router.push('/ai-architect')} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                                <Button onClick={() => router.push('/the-lab')} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                                     Build New Itinerary
                                 </Button>
                             </CardContent>

@@ -28,3 +28,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Failed to initialize OAuth client' }, { status: 500 });
   }
 }
+

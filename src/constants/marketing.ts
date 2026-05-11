@@ -80,3 +80,4 @@ export const PARALLAX_PRODUCTS = [
     thumbnail: "/image/home/algivari-rizchy-Bg93ltNBTDQ-unsplash.jpg",
   },
 ];
+

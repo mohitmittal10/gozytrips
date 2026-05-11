@@ -1,4 +1,4 @@
-// Type definitions and Zod Schema for AiArchitect module
+// Type definitions and Zod Schema for TheLab module
 import { z } from "zod";
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
 import { type HotelInfo, type FlightInfo, type CabInfo, type BusInfo } from "@/components/hotel-flight-editor";
@@ -33,11 +33,11 @@ export const formSchema = z.object({
   path: ["endDate"],
 });
 
-export type AiArchitectFormValues = z.infer<typeof formSchema>;
+export type TheLabFormValues = z.infer<typeof formSchema>;
 
-export type ActiveArchitectTab = 'itinerary' | 'flights-hotels' | 'pricing' | 'history' | 'settings' | 'new';
+export type ActiveLabTab = 'itinerary' | 'flights-hotels' | 'pricing' | 'history' | 'settings' | 'new';
 
-export interface TripMetadata extends Partial<AiArchitectFormValues> {
+export interface TripMetadata extends Partial<TheLabFormValues> {
   // Can carry any parsed metadata
 }
 
@@ -62,3 +62,4 @@ export interface LoadedPersistenceData {
 export interface SaveItineraryOptions {
   pricingOverride?: PricingConfig;
 }
+

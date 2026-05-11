@@ -92,7 +92,7 @@ export const ClientProfileSheet = ({
                                         }}>Edit Info</Button>
                                     <Button variant="outline" size="sm" className="h-8 border-purple-500/30 bg-purple-500/5 text-purple-400 hover:bg-purple-500/10"
                                         onClick={() => {
-                                            window.open(`/architect?clientId=${selectedClient.id}`, '_blank');
+                                            window.open(`/the-lab?clientId=${selectedClient.id}`, '_blank');
                                         }}>New Itinerary</Button>
                                 </div>
                             </div>
@@ -344,3 +344,4 @@ export const ClientProfileSheet = ({
         </Sheet>
     );
 };
+

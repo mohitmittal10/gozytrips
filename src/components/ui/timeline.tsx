@@ -99,3 +99,4 @@ export const Timeline = ({ data, title, description }: TimelineProps) => {
         </div>
     );
 };
+

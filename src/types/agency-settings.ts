@@ -27,3 +27,4 @@ export interface AgencySettings {
   created_at: string;
   updated_at: string;
 }
+

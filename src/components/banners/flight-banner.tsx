@@ -35,3 +35,4 @@ export function FlightBanner({ flight }: FlightBannerProps) {
     </div>
   );
 }
+

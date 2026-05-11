@@ -2,24 +2,24 @@
 import React from 'react';
 import { Calendar as CalendarIcon, Plane, DollarSign, Settings, ChevronLeft, ChevronRight, History, Plus } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import type { ActiveArchitectTab } from '@/types/ai-architect';
+import type { activeLabTab } from '@/types/the-lab';
 
-interface AiArchitectSidebarProps {
+interface TheLabSidebarProps {
   isSidebarExpanded: boolean;
   setIsSidebarExpanded: (expanded: boolean) => void;
-  activeArchitectTab: ActiveArchitectTab;
-  setActiveArchitectTab: (tab: ActiveArchitectTab) => void;
+  activeLabTab: activeLabTab;
+  setactiveLabTab: (tab: activeLabTab) => void;
   handleCreateNew: () => void;
   onSubmit?: (values: any) => void;
   isGenerating?: boolean;
 }
 
-const AiArchitectSidebar = React.memo(function AiArchitectSidebar({
-  activeArchitectTab, setActiveArchitectTab,
+const TheLabSidebar = React.memo(function TheLabSidebar({
+  activeLabTab, setactiveLabTab,
   isSidebarExpanded, setIsSidebarExpanded,
   handleCreateNew
-}: AiArchitectSidebarProps) {
-  const isFormOpened = activeArchitectTab === 'new';
+}: TheLabSidebarProps) {
+  const isFormOpened = activeLabTab === 'new';
 
   return (
     <div className={cn(
@@ -38,7 +38,7 @@ const AiArchitectSidebar = React.memo(function AiArchitectSidebar({
           className={cn(
             "group relative flex items-center transition-all duration-200 rounded-xl mb-4",
             isSidebarExpanded ? "w-full px-4 gap-3 h-12" : "justify-center w-10 h-10",
-            activeArchitectTab === 'new'
+            activeLabTab === 'new'
               ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25'
               : 'text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10'
           )}
@@ -46,7 +46,7 @@ const AiArchitectSidebar = React.memo(function AiArchitectSidebar({
         >
           <div className={cn(
             "flex items-center justify-center rounded-lg transition-colors",
-            activeArchitectTab === 'new' ? "bg-white/20" : "bg-emerald-500/10",
+            activeLabTab === 'new' ? "bg-white/20" : "bg-emerald-500/10",
             isSidebarExpanded ? "p-1.5" : "w-8 h-8"
           )}>
             <Plus className={cn(isSidebarExpanded ? "w-4 h-4" : "w-5 h-5")} />
@@ -73,11 +73,11 @@ const AiArchitectSidebar = React.memo(function AiArchitectSidebar({
           ].map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveArchitectTab(item.id)}
+              onClick={() => setactiveLabTab(item.id)}
               className={cn(
                 "relative group flex items-center rounded-xl transition-all duration-200",
                 isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10",
-                activeArchitectTab === item.id
+                activeLabTab === item.id
                   ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
                   : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
               )}
@@ -100,11 +100,11 @@ const AiArchitectSidebar = React.memo(function AiArchitectSidebar({
         {/* Bottom Toggle & Settings */}
         <div className="flex flex-col items-center gap-1 w-full mt-auto pt-4 border-t border-white/5">
           <button
-            onClick={() => setActiveArchitectTab('settings')}
+            onClick={() => setactiveLabTab('settings')}
             className={cn(
               "relative group flex items-center rounded-xl transition-all duration-200",
               isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10",
-              activeArchitectTab === 'settings'
+              activeLabTab === 'settings'
                 ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
                 : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
             )}
@@ -150,4 +150,6 @@ const AiArchitectSidebar = React.memo(function AiArchitectSidebar({
   );
 });
 
-export default AiArchitectSidebar;
+export default TheLabSidebar;
+
+

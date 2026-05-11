@@ -22,3 +22,4 @@ export function ClientSearch({ searchTerm, onSearchChange }: ClientSearchProps) 
         </div>
     );
 }
+

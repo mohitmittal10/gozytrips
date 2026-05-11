@@ -54,7 +54,7 @@ export default function HowItWorksTimeline() {
                         </h4>
                     </div>
                     <p className="text-neutral-600 dark:text-neutral-400 text-sm md:text-lg font-normal mb-8 leading-relaxed max-w-2xl">
-                        Our advanced AI Architect takes over, meticulously planning every detail of your trip. From flights and accommodations to daily activities and local hidden gems, we curate a personalized itinerary just for you.
+                        Our advanced The Lab takes over, meticulously planning every detail of your trip. From flights and accommodations to daily activities and local hidden gems, we curate a personalized itinerary just for you.
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <Image
@@ -125,7 +125,7 @@ export default function HowItWorksTimeline() {
     ];
 
     return (
-        <section className="w-full py-2 bg-black">
+        <section className="w-full py-24 bg-black">
             <Timeline
                 data={data}
                 title={<>How <span className="bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 bg-clip-text text-transparent">it works</span></>}
@@ -134,3 +134,4 @@ export default function HowItWorksTimeline() {
         </section>
     );
 }
+

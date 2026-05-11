@@ -131,7 +131,7 @@ function Field({ label, value, onChange, placeholder, className, type = "text" }
                 value={value ?? ""}
                 onChange={(e) => onChange(e.target.value)}
                 placeholder={placeholder}
-                className="ai-architect-input h-8 text-sm"
+                className="the-lab-input h-8 text-sm"
             />
         </div>
     );
@@ -409,7 +409,7 @@ export default function HotelFlightEditor({
     const itemCount = hotels.length + flights.length + cabs.length + buses.length;
 
     return (
-        <Card className="glass-card ai-architect-page-card border-white/5 bg-obsidian-dark/40">
+        <Card className="glass-card the-lab-page-card border-white/5 bg-obsidian-dark/40">
             <CardHeader className="bg-white/5 pb-4 border-b border-white/5">
                 <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-3 text-lg font-bold tracking-tight text-white">
@@ -530,3 +530,4 @@ export default function HotelFlightEditor({
         </Card>
     );
 }
+

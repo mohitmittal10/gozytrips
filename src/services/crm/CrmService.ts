@@ -403,3 +403,4 @@ export function computeRecentActivity(enrichedClients: EnrichedClient[]): any[] 
   });
   return activities.sort((a, b) => b.time.getTime() - a.time.getTime()).slice(0, 50);
 }
+

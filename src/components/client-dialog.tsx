@@ -241,3 +241,4 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
         </Dialog>
     );
 }
+

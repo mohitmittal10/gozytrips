@@ -87,8 +87,8 @@ export function CrmModals() {
                 .single();
 
             if (error) throw error;
-            toast({ title: 'Success', description: 'Opening a copy in the AI Architect...' });
-            router.push(`/ai-architect?itineraryId=${newTrip.id}`);
+            toast({ title: 'Success', description: 'Opening a copy in the The Lab...' });
+            router.push(`/the-lab?itineraryId=${newTrip.id}`);
         } catch (error: any) {
             console.error(error);
             toast({ title: 'Error', description: error.message || 'Failed to duplicate trip', variant: 'destructive' });
@@ -316,3 +316,4 @@ export function CrmModals() {
         </>
     );
 }
+

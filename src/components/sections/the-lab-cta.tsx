@@ -5,7 +5,7 @@ import { Card } from '../ui/card';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
-const AiArchitectCta = () => {
+const TheLabCta = () => {
     const ctaImage = PlaceHolderImages.find(img => img.id === 'gallery-4');
 
     return (
@@ -20,10 +20,10 @@ const AiArchitectCta = () => {
                         Craft Your Dream Trip with AI
                     </h2>
                     <p className="mt-4 text-foreground/80 leading-relaxed">
-                        Why settle for standard packages? Our revolutionary AI Travel Architect empowers you to design a completely personalized itinerary in seconds. Describe your perfect vacation—your destination, your style, your pace—and watch as it builds a unique, day-by-day plan just for you.
+                        Why settle for standard packages? Our revolutionary The Lab empowers you to design a completely personalized itinerary in seconds. Describe your perfect vacation—your destination, your style, your pace—and watch as it builds a unique, day-by-day plan just for you.
                     </p>
                     <Button size="lg" asChild className="mt-8">
-                        <Link href="/ai-architect">
+                        <Link href="/the-lab">
                             Design Your Journey
                             <ArrowRight className="ml-2 h-4 w-4" />
                         </Link>
@@ -33,7 +33,7 @@ const AiArchitectCta = () => {
                     {ctaImage && (
                         <Image 
                             src={ctaImage.imageUrl}
-                            alt="AI Architect generating a travel plan over a map"
+                            alt="The Lab generating a travel plan over a map"
                             fill
                             className="object-cover"
                             data-ai-hint="Santorini greece"
@@ -46,4 +46,5 @@ const AiArchitectCta = () => {
     );
 }
 
-export default AiArchitectCta;
+export default TheLabCta;
+

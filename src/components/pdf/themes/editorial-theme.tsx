@@ -98,3 +98,4 @@ export const EditorialTheme = ({ itinerary, title, agent, finalTotal = 0 }: Them
         </div>
     );
 };
+

@@ -36,7 +36,7 @@ export const TimelineView = ({
             <div className="mt-4 glass-main border border-white/10 rounded-xl p-16 text-center text-gray-400 flex flex-col items-center justify-center">
                 <Calendar className="w-12 h-12 text-gray-600 mb-4" />
                 <h3 className="text-xl font-medium text-white mb-2">No Trips Yet</h3>
-                <p>Create an itinerary in the AI Architect to see the timeline here.</p>
+                <p>Create an itinerary in the The Lab to see the timeline here.</p>
             </div>
         );
     }
@@ -136,3 +136,4 @@ export const TimelineView = ({
         </div>
     );
 };
+

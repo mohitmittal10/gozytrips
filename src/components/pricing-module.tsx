@@ -138,7 +138,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <Card className="glass-card overflow-hidden ai-architect-page-card">
+    <Card className="glass-card overflow-hidden the-lab-page-card">
       <CardHeader className="bg-white/5 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -550,3 +550,4 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
     </Card>
   );
 }
+
