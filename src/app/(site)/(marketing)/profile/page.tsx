@@ -178,6 +178,28 @@ export default function ProfilePage() {
 
           <Card className="glass-main border-white/10">
             <CardHeader>
+              <CardTitle>Subscription Plan</CardTitle>
+              <CardDescription>Manage your Wander Labs subscription</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-slate-300">Current Plan</p>
+                  <p className="text-xl font-bold capitalize text-amber-300">
+                    {userProfile?.plan_type || 'Starter'}
+                  </p>
+                </div>
+                <Link href="/pricing">
+                  <Button variant="outline" className="glass-button">
+                    {userProfile?.plan_type === 'starter' ? 'Upgrade Plan' : 'Manage Subscription'}
+                  </Button>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="glass-main border-white/10">
+            <CardHeader>
               <CardTitle>Travel Agent Profile</CardTitle>
               <CardDescription>Update your professional branding and contact info for generated itineraries</CardDescription>
             </CardHeader>

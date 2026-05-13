@@ -685,6 +685,7 @@ export type Database = {
           google_refresh_token: string | null
           id: string
           last_backup_date: string | null
+          plan_type: Database["public"]["Enums"]["plan_tier"] | null
           updated_at: string | null
           website: string | null
         }
@@ -703,6 +704,7 @@ export type Database = {
           google_refresh_token?: string | null
           id: string
           last_backup_date?: string | null
+          plan_type?: Database["public"]["Enums"]["plan_tier"] | null
           updated_at?: string | null
           website?: string | null
         }
@@ -721,6 +723,7 @@ export type Database = {
           google_refresh_token?: string | null
           id?: string
           last_backup_date?: string | null
+          plan_type?: Database["public"]["Enums"]["plan_tier"] | null
           updated_at?: string | null
           website?: string | null
         }
@@ -799,6 +802,8 @@ export type Database = {
     Enums: {
       booking_service_type: "flight" | "cab" | "bus" | "train" | "hotel"
       booking_status: "draft" | "quoted" | "confirmed" | "cancelled"
+      plan_tier: "starter" | "pro" | "agency"
+      subscription_status: "active" | "past_due" | "cancelled" | "created" | "authenticated" | "halted" | "pending"
     }
     CompositeTypes: {
       [_ in never]: never

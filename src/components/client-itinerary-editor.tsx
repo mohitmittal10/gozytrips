@@ -235,28 +235,51 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
 
           <div className="w-px h-6 bg-white/20 hidden md:block mx-1" />
 
-          <Select 
-            value={selectedTheme} 
-            onValueChange={(value) => setSelectedTheme(value as PdfTheme)}
-          >
-            <SelectTrigger className="w-[130px] h-9 glass-button border-white/20 hidden md:flex">
-              <SelectValue placeholder="PDF Format" />
-            </SelectTrigger>
-            <SelectContent>
-              {themeOptions.length > 0 ? (
-                themeOptions.map(opt => (
-                  <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                ))
-              ) : (
-                <>
-                  <SelectItem value="classic">Classic</SelectItem>
-                  <SelectItem value="editorial">Editorial</SelectItem>
-                  <SelectItem value="minimalist">Minimalist</SelectItem>
-                  <SelectItem value="corporate">Corporate</SelectItem>
-                </>
-              )}
-            </SelectContent>
-          </Select>
+          {(() => {
+            const planType = userProfile?.plan_type || 'starter';
+            const hasPremiumPdf = planType !== 'starter';
+
+            return (
+              <Select 
+                value={selectedTheme} 
+                onValueChange={(value) => {
+                  if (!hasPremiumPdf && value !== 'classic') {
+                    toast({
+                      title: "Premium Feature",
+                      description: "Please upgrade to Pro to unlock premium PDF themes.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+                  setSelectedTheme(value as PdfTheme);
+                }}
+              >
+                <SelectTrigger className="w-[150px] h-9 glass-button border-white/20 hidden md:flex">
+                  <SelectValue placeholder="PDF Format" />
+                </SelectTrigger>
+                <SelectContent>
+                  {themeOptions.length > 0 ? (
+                    themeOptions.map(opt => (
+                      <SelectItem 
+                        key={opt.value} 
+                        value={opt.value}
+                        disabled={!hasPremiumPdf && opt.value !== 'classic'}
+                      >
+                        {opt.label} {!hasPremiumPdf && opt.value !== 'classic' && '🔒'}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <>
+                      <SelectItem value="classic">Classic</SelectItem>
+                      <SelectItem value="editorial" disabled={!hasPremiumPdf}>Editorial {!hasPremiumPdf && '🔒'}</SelectItem>
+                      <SelectItem value="minimalist" disabled={!hasPremiumPdf}>Minimalist {!hasPremiumPdf && '🔒'}</SelectItem>
+                      <SelectItem value="corporate" disabled={!hasPremiumPdf}>Corporate {!hasPremiumPdf && '🔒'}</SelectItem>
+                    </>
+                  )}
+                </SelectContent>
+              </Select>
+            );
+          })()}
 
           <Button
             onClick={() => setIsPreviewOpen(true)}

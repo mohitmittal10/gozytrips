@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetDescription } from "@/components/ui/sheet";
-import { Menu, LogOut, User, MapPin, Users, Home, Info, Sparkles } from "lucide-react";
+import { Menu, LogOut, User, MapPin, Users, Home, Info, Sparkles, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Logo from "./logo";
 import { usePathname } from "next/navigation";
@@ -34,6 +34,7 @@ const Header = () => {
   const navItems = [
     { name: "Home", url: "/", icon: Home },
     { name: "The Lab", url: "/the-lab", icon: Sparkles },
+    { name: "Pricing", url: "/pricing", icon: CreditCard },
     { name: "CRM", url: "/crm", icon: Users },
     { name: "Why Us?", url: "/#about", icon: Info },
   ];
@@ -219,4 +220,3 @@ const Header = () => {
 };
 
 export default Header;
-

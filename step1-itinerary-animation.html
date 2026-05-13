@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Step 1 — Create Itinerary · Wander Labs</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #05050f;
+    --surface: rgba(255,255,255,0.04);
+    --surface-hover: rgba(255,255,255,0.07);
+    --border: rgba(139,92,246,0.18);
+    --border-active: rgba(139,92,246,0.55);
+    --violet: #8B5CF6;
+    --indigo: #6366F1;
+    --violet-light: #a78bfa;
+    --text-primary: #e8e4ff;
+    --text-secondary: #7c6fcf;
+    --text-muted: #3d3668;
+    --input-bg: rgba(255,255,255,0.05);
+    --card-bg: rgba(13,10,35,0.85);
+    --success: #34d399;
+    --cursor-color: #a78bfa;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    font-family: 'Outfit', sans-serif;
+    overflow: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(99,102,241,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orbs */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(90px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .orb-1 { width: 500px; height: 500px; background: rgba(99,102,241,0.12); top: -120px; left: -100px; }
+  .orb-2 { width: 400px; height: 400px; background: rgba(139,92,246,0.1); bottom: -80px; right: -80px; }
+
+  .screen {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    z-index: 1;
+    padding: 24px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    width: 100%; max-width: 520px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    padding: 40px 44px 36px;
+    backdrop-filter: blur(32px);
+    -webkit-backdrop-filter: blur(32px);
+    box-shadow: 0 0 0 1px rgba(139,92,246,0.08), 0 32px 80px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(139,92,246,0.5), transparent);
+  }
+
+  /* ── STEP INDICATOR ── */
+  .step-indicator {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 32px;
+  }
+  .step-dot {
+    width: 28px; height: 4px;
+    border-radius: 2px;
+    background: var(--text-muted);
+    transition: background 0.4s, width 0.4s;
+  }
+  .step-dot.active { background: var(--violet); width: 40px; }
+  .step-dot.done { background: var(--indigo); }
+
+  /* ── HEADER ── */
+  .card-header { margin-bottom: 28px; }
+  .step-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--violet);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s, transform 0.5s;
+  }
+  .card-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s 0.08s, transform 0.5s 0.08s;
+  }
+  .card-sub {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+    font-weight: 300;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.5s 0.14s, transform 0.5s 0.14s;
+  }
+
+  .card-header.visible .step-label,
+  .card-header.visible .card-title,
+  .card-header.visible .card-sub { opacity: 1; transform: translateY(0); }
+
+  /* ── FORM FIELDS ── */
+  .field {
+    margin-bottom: 20px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.45s, transform 0.45s;
+  }
+  .field.visible { opacity: 1; transform: translateY(0); }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .input-wrap {
+    position: relative;
+  }
+
+  .field-icon {
+    position: absolute;
+    left: 14px; top: 50%; transform: translateY(-50%);
+    width: 18px; height: 18px;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .field input, .field textarea, .field select {
+    width: 100%;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 16px 13px 42px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+    caret-color: var(--cursor-color);
+  }
+  .field input.no-icon, .field textarea.no-icon { padding-left: 16px; }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    border-color: var(--border-active);
+    background: rgba(139,92,246,0.06);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+  }
+  .field input::placeholder, .field textarea::placeholder { color: var(--text-muted); }
+  .field textarea { resize: none; padding-top: 13px; min-height: 90px; }
+
+  /* tag input */
+  .tag-input-wrap {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+    min-height: 52px;
+    align-items: center;
+    transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
+  }
+  .tag-input-wrap.focused {
+    border-color: var(--border-active);
+    background: rgba(139,92,246,0.06);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+  }
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: rgba(139,92,246,0.2);
+    border: 1px solid rgba(139,92,246,0.3);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 12px;
+    color: var(--violet-light);
+    font-weight: 500;
+    opacity: 0;
+    transform: scale(0.8);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .tag.visible { opacity: 1; transform: scale(1); }
+
+  /* two-col */
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+  /* ── BUTTON ── */
+  .btn-continue {
+    width: 100%;
+    margin-top: 8px;
+    padding: 15px;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border: none;
+    border-radius: 14px;
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.4s, transform 0.4s, box-shadow 0.3s;
+    box-shadow: 0 4px 24px rgba(99,102,241,0.35);
+  }
+  .btn-continue.visible { opacity: 1; transform: translateY(0); }
+  .btn-continue::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+    border-radius: inherit;
+    pointer-events: none;
+  }
+  /* shimmer on button click */
+  .btn-continue .shimmer {
+    position: absolute;
+    top: 0; left: -100%;
+    width: 60%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.4s;
+  }
+  .btn-continue.clicked .shimmer { left: 160%; }
+
+  /* ── CURSOR ── */
+  .cursor {
+    position: fixed;
+    width: 8px; height: 20px;
+    background: var(--cursor-color);
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 999;
+    opacity: 0;
+    transition: opacity 0.2s;
+    box-shadow: 0 0 8px rgba(167,139,250,0.6);
+  }
+  .cursor.visible { opacity: 1; }
+
+  /* ── TYPING CURSOR inside input ── */
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+  .typing-cursor {
+    display: inline-block;
+    width: 2px; height: 14px;
+    background: var(--cursor-color);
+    vertical-align: middle;
+    margin-left: 1px;
+    animation: blink 0.9s infinite;
+  }
+
+  /* ── TRANSITIONS between forms ── */
+  .form-panel {
+    transition: opacity 0.4s, transform 0.4s;
+  }
+  .form-panel.exit {
+    opacity: 0;
+    transform: translateX(-30px);
+    pointer-events: none;
+    position: absolute; width: 100%;
+  }
+  .form-panel.enter {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  .form-panel.enter-active {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* ── DATE PICKER style ── */
+  .date-display {
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 16px 13px 42px;
+    font-size: 14px;
+    color: var(--text-muted);
+    position: relative;
+    min-height: 48px;
+    transition: border-color 0.3s, color 0.3s, box-shadow 0.3s;
+  }
+  .date-display.filled { color: var(--text-primary); border-color: rgba(139,92,246,0.3); }
+  .date-display.active {
+    border-color: var(--border-active);
+    background: rgba(139,92,246,0.06);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+  }
+
+  /* range slider */
+  .slider-wrap { position: relative; padding: 8px 0; }
+  .slider-track {
+    width: 100%; height: 4px;
+    background: rgba(139,92,246,0.15);
+    border-radius: 2px;
+    position: relative;
+  }
+  .slider-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    border-radius: 2px;
+    width: 45%;
+    transition: width 0.8s ease;
+  }
+  .slider-thumb {
+    position: absolute;
+    top: 50%; right: 55%; transform: translate(50%,-50%);
+    width: 18px; height: 18px;
+    background: #8b5cf6;
+    border-radius: 50%;
+    border: 2px solid #c4b5fd;
+    box-shadow: 0 0 12px rgba(139,92,246,0.6);
+    transition: right 0.8s ease;
+    cursor: pointer;
+  }
+
+  /* pill options */
+  .pill-group { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pill {
+    padding: 6px 14px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.25s;
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  .pill.visible { opacity: 1; transform: scale(1); }
+  .pill.selected {
+    background: rgba(139,92,246,0.2);
+    border-color: rgba(139,92,246,0.5);
+    color: var(--violet-light);
+  }
+
+  /* ── FORM 3 SPECIFIC ── */
+  .budget-display {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    text-align: center;
+    margin-bottom: 8px;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .budget-display.visible { opacity: 1; }
+
+  /* scrollable for form 3 */
+  .form3-scroll { max-height: 420px; overflow-y: auto; padding-right: 4px; }
+  .form3-scroll::-webkit-scrollbar { width: 3px; }
+  .form3-scroll::-webkit-scrollbar-track { background: transparent; }
+  .form3-scroll::-webkit-scrollbar-thumb { background: var(--text-muted); border-radius: 2px; }
+
+  /* ── COMPLETE STATE ── */
+  .complete-overlay {
+    position: absolute; inset: 0;
+    background: var(--card-bg);
+    border-radius: 24px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.5s;
+    z-index: 10;
+    backdrop-filter: blur(20px);
+  }
+  .complete-overlay.visible { opacity: 1; pointer-events: auto; }
+
+  .check-circle {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: rgba(52,211,153,0.12);
+    border: 2px solid rgba(52,211,153,0.4);
+    display: flex; align-items: center; justify-content: center;
+    transform: scale(0.5);
+    transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .complete-overlay.visible .check-circle { transform: scale(1); }
+
+  .check-svg { width: 32px; height: 32px; }
+  .check-path {
+    stroke: var(--success);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    fill: none;
+    stroke-dasharray: 50;
+    stroke-dashoffset: 50;
+    transition: stroke-dashoffset 0.6s 0.3s ease;
+  }
+  .complete-overlay.visible .check-path { stroke-dashoffset: 0; }
+
+  .complete-title {
+    font-size: 20px; font-weight: 700;
+    color: var(--text-primary);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.4s 0.4s, transform 0.4s 0.4s;
+  }
+  .complete-overlay.visible .complete-title { opacity: 1; transform: translateY(0); }
+  .complete-sub {
+    font-size: 13px; color: var(--text-secondary);
+    font-weight: 300;
+    opacity: 0; transform: translateY(8px);
+    transition: opacity 0.4s 0.5s, transform 0.4s 0.5s;
+  }
+  .complete-overlay.visible .complete-sub { opacity: 1; transform: translateY(0); }
+
+  @keyframes progress-anim {
+    from { width: 0; }
+    to { width: 100%; }
+  }
+  .progress-bar-wrap {
+    width: 200px; height: 3px;
+    background: rgba(139,92,246,0.15);
+    border-radius: 2px; overflow: hidden;
+    margin-top: 8px;
+    opacity: 0;
+    transition: opacity 0.3s 0.5s;
+  }
+  .complete-overlay.visible .progress-bar-wrap { opacity: 1; }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #6366f1, #8b5cf6);
+    border-radius: 2px;
+    width: 0;
+  }
+  .complete-overlay.visible .progress-bar-fill {
+    animation: progress-anim 1.8s 0.7s ease forwards;
+  }
+  .progress-label {
+    font-size: 11px; color: var(--text-muted);
+    letter-spacing: 0.1em;
+    opacity: 0;
+    transition: opacity 0.3s 0.7s;
+  }
+  .complete-overlay.visible .progress-label { opacity: 1; }
+
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+
+<div class="screen">
+  <div class="card" id="card">
+
+    <!-- Step indicator -->
+    <div class="step-indicator" id="stepIndicator">
+      <div class="step-dot active" id="dot1"></div>
+      <div class="step-dot" id="dot2"></div>
+      <div class="step-dot" id="dot3"></div>
+    </div>
+
+    <!-- ════ FORM 1: Locations ════ -->
+    <div class="form-panel" id="form1">
+      <div class="card-header" id="header1">
+        <div class="step-label">Step 1 of 3</div>
+        <div class="card-title">Where are you headed?</div>
+        <div class="card-sub">Tell us your journey's starting point and destinations</div>
+      </div>
+
+      <div class="field" id="f1_1" style="transition-delay:0.2s">
+        <label>Starting Location</label>
+        <div class="input-wrap">
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2">
+            <circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+          </svg>
+          <input type="text" id="in_start" placeholder="Enter starting city" class=""/>
+        </div>
+      </div>
+
+      <div class="field" id="f1_2" style="transition-delay:0.3s">
+        <label>Destinations to Visit</label>
+        <div class="input-wrap">
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2">
+            <path d="M3 12h18M3 6h18M3 18h18"/>
+          </svg>
+          <input type="text" id="in_dest" placeholder="Add destinations (press Enter)" class=""/>
+        </div>
+        <div style="margin-top:10px" id="destTags"></div>
+      </div>
+
+      <div class="field" id="f1_3" style="transition-delay:0.4s">
+        <label>Ending Location</label>
+        <div class="input-wrap">
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          <input type="text" id="in_end" placeholder="Enter ending city" class=""/>
+        </div>
+      </div>
+
+      <button class="btn-continue" id="btn1" onclick="clickBtn1()">
+        <div class="shimmer"></div>
+        Continue
+      </button>
+    </div>
+
+    <!-- ════ FORM 2: Dates ════ -->
+    <div class="form-panel enter" id="form2" style="display:none">
+      <div class="card-header" id="header2">
+        <div class="step-label">Step 2 of 3</div>
+        <div class="card-title">When's the trip?</div>
+        <div class="card-sub">Choose your travel window and duration</div>
+      </div>
+
+      <div class="field" id="f2_1" style="transition-delay:0.15s">
+        <label>Start Date</label>
+        <div class="input-wrap">
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          <div class="date-display" id="date_start">Select date</div>
+        </div>
+      </div>
+
+      <div class="field" id="f2_2" style="transition-delay:0.25s">
+        <label>End Date</label>
+        <div class="input-wrap">
+          <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+          </svg>
+          <div class="date-display" id="date_end">Select date</div>
+        </div>
+      </div>
+
+      <div class="field" id="f2_3" style="transition-delay:0.35s">
+        <label>Duration</label>
+        <div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);border-radius:12px;padding:16px 18px;">
+          <div class="budget-display" id="dur_display">7 nights</div>
+          <div class="slider-wrap">
+            <div class="slider-track">
+              <div class="slider-fill" id="dur_fill" style="width:35%"></div>
+              <div class="slider-thumb" id="dur_thumb" style="right:65%"></div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;">
+            <span style="font-size:11px;color:var(--text-muted)">1 night</span>
+            <span style="font-size:11px;color:var(--text-muted)">30 nights</span>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-continue" id="btn2" onclick="clickBtn2()">
+        <div class="shimmer"></div>
+        Continue
+      </button>
+    </div>
+
+    <!-- ════ FORM 3: Preferences ════ -->
+    <div class="form-panel enter" id="form3" style="display:none">
+      <div class="card-header" id="header3">
+        <div class="step-label">Step 3 of 3</div>
+        <div class="card-title">Personalise your trip</div>
+        <div class="card-sub">Help our AI craft the perfect itinerary for you</div>
+      </div>
+
+      <div class="form3-scroll">
+
+        <div class="field" id="f3_1" style="transition-delay:0.1s">
+          <label>Total Budget (₹)</label>
+          <div style="background:rgba(139,92,246,0.06);border:1px solid rgba(139,92,246,0.15);border-radius:12px;padding:16px 18px;">
+            <div class="budget-display" id="budget_display">₹ 45,000</div>
+            <div class="slider-wrap">
+              <div class="slider-track">
+                <div class="slider-fill" id="budget_fill" style="width:0%"></div>
+                <div class="slider-thumb" id="budget_thumb" style="right:100%"></div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:8px;">
+              <span style="font-size:11px;color:var(--text-muted)">₹5k</span>
+              <span style="font-size:11px;color:var(--text-muted)">₹2L+</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field" id="f3_2" style="transition-delay:0.2s">
+          <label>Timing Preference</label>
+          <div class="pill-group" id="timingPills">
+            <div class="pill" onclick="togglePill(this)">Early Bird 🌅</div>
+            <div class="pill" onclick="togglePill(this)">Mid Morning</div>
+            <div class="pill" onclick="togglePill(this)">Afternoon</div>
+            <div class="pill" onclick="togglePill(this)">Evening Owl 🌙</div>
+            <div class="pill" onclick="togglePill(this)">Flexible</div>
+          </div>
+        </div>
+
+        <div class="field" id="f3_3" style="transition-delay:0.3s">
+          <label>Must Include</label>
+          <div class="input-wrap">
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2">
+              <path d="M12 5v14M5 12h14"/>
+            </svg>
+            <input type="text" id="in_must" placeholder="e.g. local food, trekking, sunset views" class=""/>
+          </div>
+          <div style="margin-top:8px" id="mustTags"></div>
+        </div>
+
+        <div class="field" id="f3_4" style="transition-delay:0.4s">
+          <label>Things to Avoid</label>
+          <div class="input-wrap">
+            <svg class="field-icon" viewBox="0 0 24 24" fill="none" stroke="#8B5CF6" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><path d="M4.93 4.93l14.14 14.14"/>
+            </svg>
+            <input type="text" id="in_avoid" placeholder="e.g. crowded spots, spicy food" class=""/>
+          </div>
+          <div style="margin-top:8px" id="avoidTags"></div>
+        </div>
+
+        <div class="field" id="f3_5" style="transition-delay:0.5s">
+          <label>Leisure Time per Day</label>
+          <div class="pill-group" id="leisurePills">
+            <div class="pill" onclick="togglePill(this)">Packed</div>
+            <div class="pill" onclick="togglePill(this)">Balanced</div>
+            <div class="pill selected" onclick="togglePill(this)">Relaxed</div>
+            <div class="pill" onclick="togglePill(this)">Very Free</div>
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-continue" id="btn3" style="margin-top:20px" onclick="clickBtn3()">
+        <div class="shimmer"></div>
+        Generate Itinerary ✦
+      </button>
+    </div>
+
+    <!-- ════ COMPLETE ════ -->
+    <div class="complete-overlay" id="completeOverlay">
+      <div class="check-circle">
+        <svg class="check-svg" viewBox="0 0 32 32">
+          <polyline class="check-path" points="6,17 13,24 26,10"/>
+        </svg>
+      </div>
+      <div class="complete-title">Itinerary Created!</div>
+      <div class="complete-sub">AI is crafting your perfect Manali trip</div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill"></div>
+      </div>
+      <div class="progress-label">Generating personalised routes...</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── Helpers ──────────────────────────────────────────────
+// ── Helpers ──────────────────────────────────────────────
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function typeInto(el, text, delay = 55) {
+  el.focus();
+  el.value = '';
+  for (let ch of text) {
+    el.value += ch;
+    await sleep(delay + Math.random() * 30);
+  }
+}
+
+function makeTag(container, text, colorClass) {
+  const t = document.createElement('span');
+  t.className = 'tag';
+  t.style.marginRight = '6px';
+  t.style.marginBottom = '4px';
+  if (colorClass === 'avoid') {
+    t.style.background = 'rgba(239,68,68,0.12)';
+    t.style.borderColor = 'rgba(239,68,68,0.25)';
+    t.style.color = '#fca5a5';
+  }
+  t.textContent = text;
+  container.appendChild(t);
+  requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('visible')));
+}
+
+function showPills(containerId) {
+  document.querySelectorAll('#' + containerId + ' .pill').forEach((p,i) => {
+    setTimeout(() => p.classList.add('visible'), i * 90);
+  });
+}
+
+function togglePill(el) {
+  el.classList.toggle('selected');
+}
+
+function showFields(...ids) {
+  ids.forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('visible');
+    }, i * 120);
+  });
+}
+
+async function shimmerBtn(btn) {
+  btn.classList.add('clicked');
+  await sleep(400);
+  btn.classList.remove('clicked');
+}
+
+// ── Step dots ──────────────────────────────────────────────
+function updateDots(active) {
+  [1,2,3].forEach(i => {
+    const d = document.getElementById('dot'+i);
+    d.className = 'step-dot';
+    if (i < active) d.classList.add('done');
+    if (i === active) d.classList.add('active');
+  });
+}
+
+// ── Panel transitions ──────────────────────────────────────
+async function transitionForms(fromId, toId) {
+  const from = document.getElementById(fromId);
+  const to   = document.getElementById(toId);
+  from.classList.add('exit');
+  await sleep(380);
+  from.style.display = 'none';
+  from.classList.remove('exit');
+  to.style.display   = 'block';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    to.classList.remove('enter');
+    to.classList.add('enter-active');
+  }));
+}
+
+// ── FORM 1 ──────────────────────────────────────────────────
+async function runForm1() {
+  await sleep(400);
+  document.getElementById('header1').classList.add('visible');
+  await sleep(500);
+  showFields('f1_1','f1_2','f1_3');
+  await sleep(700);
+
+  await typeInto(document.getElementById('in_start'), 'New Delhi', 60);
+  await sleep(400);
+
+  const destInput = document.getElementById('in_dest');
+  const destTags  = document.getElementById('destTags');
+  await typeInto(destInput, 'Manali', 65);
+  await sleep(300);
+  destInput.value = '';
+  makeTag(destTags, '📍 Manali');
+  await sleep(200);
+  await typeInto(destInput, 'Jibhi', 65);
+  await sleep(300);
+  destInput.value = '';
+  makeTag(destTags, '📍 Jibhi');
+  await sleep(400);
+
+  await typeInto(document.getElementById('in_end'), 'New Delhi', 60);
+  await sleep(800); // Wait for user to "see" the completed form
+
+  document.getElementById('btn1').classList.add('visible');
+  await sleep(600);
+  clickBtn1(); // Refactored: Auto-click
+}
+
+async function clickBtn1() {
+  await shimmerBtn(document.getElementById('btn1'));
+  await sleep(100);
+  updateDots(2);
+  await transitionForms('form1','form2');
+  runForm2();
+}
+
+// ── FORM 2 ──────────────────────────────────────────────────
+async function runForm2() {
+  document.getElementById('header2').classList.add('visible');
+  await sleep(400);
+  showFields('f2_1','f2_2','f2_3');
+  await sleep(600);
+
+  const d1 = document.getElementById('date_start');
+  d1.classList.add('active');
+  await sleep(300);
+  d1.textContent = ''; 
+  const d1Text = '15 June 2025';
+  for (let ch of d1Text) { d1.textContent += ch; await sleep(60); }
+  d1.classList.remove('active');
+  d1.classList.add('filled');
+  await sleep(400);
+
+  const d2 = document.getElementById('date_end');
+  d2.classList.add('active');
+  await sleep(300);
+  d2.textContent = '';
+  const d2Text = '22 June 2025';
+  for (let ch of d2Text) { d2.textContent += ch; await sleep(60); }
+  d2.classList.remove('active');
+  d2.classList.add('filled');
+  await sleep(500);
+
+  document.getElementById('dur_display').classList.add('visible');
+  await sleep(200);
+  document.getElementById('dur_fill').style.width = '35%';
+  document.getElementById('dur_thumb').style.right = '65%';
+  await sleep(1200);
+
+  document.getElementById('btn2').classList.add('visible');
+  await sleep(600);
+  clickBtn2(); // Refactored: Auto-click
+}
+
+async function clickBtn2() {
+  await shimmerBtn(document.getElementById('btn2'));
+  await sleep(100);
+  updateDots(3);
+  await transitionForms('form2','form3');
+  runForm3();
+}
+
+// ── FORM 3 ──────────────────────────────────────────────────
+async function runForm3() {
+  document.getElementById('header3').classList.add('visible');
+  await sleep(400);
+  showFields('f3_1','f3_2','f3_3','f3_4','f3_5');
+  await sleep(500);
+
+  document.getElementById('budget_display').classList.add('visible');
+  await sleep(300);
+  let pct = 0;
+  const budgetInterval = setInterval(() => {
+    pct = Math.min(pct + 1.2, 45);
+    document.getElementById('budget_fill').style.width = pct + '%';
+    document.getElementById('budget_thumb').style.right = (100 - pct) + '%';
+    const val = Math.round((pct / 100) * 200000);
+    document.getElementById('budget_display').textContent = '₹ ' + val.toLocaleString('en-IN');
+    if (pct >= 45) {
+      clearInterval(budgetInterval);
+      document.getElementById('budget_display').textContent = '₹ 45,000';
+    }
+  }, 18);
+  await sleep(1500);
+
+  showPills('timingPills');
+  await sleep(800);
+  const timingPills = document.querySelectorAll('#timingPills .pill');
+  timingPills[0].classList.add('selected');
+  await sleep(400);
+  timingPills[4].classList.add('selected');
+  await sleep(500);
+
+  const mustInput = document.getElementById('in_must');
+  const mustTags  = document.getElementById('mustTags');
+  const items = ['Snow trekking', 'Riverside café', 'Local food'];
+  for(let item of items) {
+      await typeInto(mustInput, item, 55);
+      await sleep(250);
+      mustInput.value = '';
+      makeTag(mustTags, '✓ ' + item);
+      await sleep(150);
+  }
+  await sleep(400);
+
+  const avoidInput = document.getElementById('in_avoid');
+  const avoidTags  = document.getElementById('avoidTags');
+  const avoids = ['Crowded tourist spots', 'Long drives at night'];
+  for(let avoid of avoids) {
+      await typeInto(avoidInput, avoid, 55);
+      await sleep(250);
+      avoidInput.value = '';
+      makeTag(avoidTags, '✕ ' + avoid, 'avoid');
+      await sleep(150);
+  }
+  await sleep(400);
+
+  showPills('leisurePills');
+  await sleep(600);
+  const leisurePills = document.querySelectorAll('#leisurePills .pill');
+  leisurePills[1].classList.add('selected');
+  await sleep(1000);
+
+  document.getElementById('btn3').classList.add('visible');
+  await sleep(800);
+  clickBtn3(); // Refactored: Auto-click
+}
+
+async function clickBtn3() {
+  await shimmerBtn(document.getElementById('btn3'));
+  await sleep(200);
+  document.getElementById('completeOverlay').classList.add('visible');
+}
+
+window.addEventListener('load', () => {
+  setTimeout(runForm1, 600);
+});
+</script>
+</body>
+</html>

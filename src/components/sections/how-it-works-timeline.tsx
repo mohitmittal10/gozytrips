@@ -4,6 +4,10 @@ import Image from "next/image";
 import React from "react";
 import { Timeline } from "@/components/ui/timeline";
 import { Sparkles, MapPin, Zap, Users, Info } from "lucide-react";
+import Step1Animation from "./step1-animation";
+import Step2Animation from "./step2-animation";
+import Step3Animation from "./step3-animation";
+import Step4Animation from "./step4-animation";
 
 export default function HowItWorksTimeline() {
     const images = {
@@ -29,13 +33,7 @@ export default function HowItWorksTimeline() {
                         Simply describe your dream vacation. Whether it&apos;s a relaxing beach retreat in Bali or an adventurous trek in Patagonia, just let us know your destination, dates, and preferences.
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Image
-                            src={images.step1}
-                            alt="Globe and map"
-                            width={800}
-                            height={500}
-                            className="rounded-xl object-cover h-48 md:h-72 lg:h-80 w-full shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset]"
-                        />
+                        <Step1Animation />
                     </div>
                 </div>
             ),
@@ -56,14 +54,7 @@ export default function HowItWorksTimeline() {
                         Our advanced The Lab takes over, meticulously planning every detail of your trip. From flights and accommodations to daily activities and local hidden gems, we curate a personalized itinerary just for you.
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <video
-                            src="/d_b_a_f_mp_.mp4"
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="rounded-xl object-cover h-48 md:h-72 lg:h-80 w-full shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset]"
-                        />
+                        <Step2Animation />
                     </div>
                 </div>
             ),
@@ -84,13 +75,7 @@ export default function HowItWorksTimeline() {
                         Once the plan is perfected, we automatically generate a beautifully designed, ready-to-share PDF. Your entire trip is organized, detailed, and optimized for both digital viewing and printing.
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Image
-                            src={images.step3}
-                            alt="PDF Document preview"
-                            width={800}
-                            height={500}
-                            className="rounded-xl object-cover h-48 md:h-72 lg:h-80 w-full shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset]"
-                        />
+                        <Step3Animation />
                     </div>
                 </div>
             ),
@@ -111,13 +96,7 @@ export default function HowItWorksTimeline() {
                         Keep track of your clients, their preferences, and past itineraries using our integrated CRM Lite. A simple and effective way to manage your travel agency business all in one place.
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Image
-                            src={images.step4}
-                            alt="CRM Dashboard preview"
-                            width={800}
-                            height={500}
-                            className="rounded-xl object-cover h-48 md:h-72 lg:h-80 w-full shadow-[0_0_24px_rgba(34,_42,_53,_0.06),_0_1px_1px_rgba(0,_0,_0,_0.05),_0_0_0_1px_rgba(34,_42,_53,_0.04),_0_0_4px_rgba(34,_42,_53,_0.08),_0_16px_68px_rgba(47,_48,_55,_0.05),_0_1px_0_rgba(255,_255,_255,_0.1)_inset]"
-                        />
+                        <Step4Animation />
                     </div>
                 </div>
             ),

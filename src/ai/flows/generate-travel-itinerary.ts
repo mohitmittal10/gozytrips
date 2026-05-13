@@ -65,6 +65,25 @@ export type TravelItineraryOutput = z.infer<typeof TravelItineraryOutputSchema>;
 
 export async function generateTravelItinerary(input: TravelItineraryInput): Promise<TravelItineraryOutput> {
   console.log('--- SERVER ACTION: generateTravelItinerary ---');
+  
+  // Dynamic import to avoid circular dependency issues at the top level if any
+  const { createServerComponentClient } = await import('@/lib/supabase/server');
+  const { checkSubscriptionAccess } = await import('@/lib/subscription-check');
+  
+  const supabase = await createServerComponentClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('Unauthorized: You must be logged in to generate itineraries.');
+  }
+
+  const { canGenerateItinerary, planType } = await checkSubscriptionAccess(user.id);
+  const isAllowed = await canGenerateItinerary();
+
+  if (!isAllowed) {
+    throw new Error(`Plan limit reached: Your ${planType} plan has reached its monthly AI itinerary limit. Please upgrade to Pro for unlimited generations.`);
+  }
+
   console.log('Input keys:', Object.keys(input));
   console.log('Input values:', JSON.stringify(input, null, 2));
   return generateTravelItineraryFlow(input);
