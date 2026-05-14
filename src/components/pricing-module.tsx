@@ -17,6 +17,7 @@ import { debounce } from "@/lib/utils";
 import { formatMoney } from "@/lib/utils/currency";
 import React, { useState, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { motion } from "framer-motion";
 
 // Fallback defaults if DB is not populated
 const DEFAULT_CURRENCIES: { value: Currency; label: string }[] = [
@@ -138,7 +139,12 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <Card className="glass-card overflow-hidden the-lab-page-card">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, ease: "easeOut" }}
+    >
+      <Card className="glass-card overflow-hidden the-lab-page-card">
       <CardHeader className="bg-white/5 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -548,6 +554,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
         </div>
       </CardContent>
     </Card>
+    </motion.div>
   );
-}
+};
 

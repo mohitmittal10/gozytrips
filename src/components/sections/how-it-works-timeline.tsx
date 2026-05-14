@@ -3,27 +3,21 @@
 import Image from "next/image";
 import React from "react";
 import { Timeline } from "@/components/ui/timeline";
-import { Sparkles, MapPin, Zap, Users, Info } from "lucide-react";
+import { TextCursorInput, Workflow, FileStack, Database } from "lucide-react";
 import Step1Animation from "./step1-animation";
 import Step2Animation from "./step2-animation";
 import Step3Animation from "./step3-animation";
 import Step4Animation from "./step4-animation";
 
 export default function HowItWorksTimeline() {
-    const images = {
-        step1: "https://images.unsplash.com/photo-1436450412740-6b988f486c6b?auto=format&fit=crop&w=800&q=80",
-        step3: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
-        step4: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=800&q=80",
-    };
-
     const data = [
         {
             title: "Step 1",
             content: (
                 <div>
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                            <Info className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+                        <div className="p-2.5 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md shadow-lg shadow-indigo-500/5">
+                            <TextCursorInput className="h-5 w-5 text-indigo-400" />
                         </div>
                         <h4 className="text-xl md:text-2xl font-bold text-neutral-800 dark:text-neutral-200">
                             Tell us where you want to go
@@ -43,8 +37,8 @@ export default function HowItWorksTimeline() {
             content: (
                 <div>
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg">
-                            <MapPin className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />
+                        <div className="p-2.5 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md shadow-lg shadow-indigo-500/5">
+                            <Workflow className="h-5 w-5 text-indigo-400" />
                         </div>
                         <h4 className="text-xl md:text-2xl font-bold text-neutral-800 dark:text-neutral-200">
                             AI maps it out
@@ -64,8 +58,8 @@ export default function HowItWorksTimeline() {
             content: (
                 <div>
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                            <Zap className="h-6 w-6 text-purple-600 dark:text-purple-400" />
+                        <div className="p-2.5 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md shadow-lg shadow-indigo-500/5">
+                            <FileStack className="h-5 w-5 text-indigo-400" />
                         </div>
                         <h4 className="text-xl md:text-2xl font-bold text-neutral-800 dark:text-neutral-200">
                             We prepare your PDF
@@ -85,8 +79,8 @@ export default function HowItWorksTimeline() {
             content: (
                 <div>
                     <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                            <Users className="h-6 w-6 text-orange-600 dark:text-orange-400" />
+                        <div className="p-2.5 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md shadow-lg shadow-indigo-500/5">
+                            <Database className="h-5 w-5 text-indigo-400" />
                         </div>
                         <h4 className="text-xl md:text-2xl font-bold text-neutral-800 dark:text-neutral-200">
                             Manage with CRM Lite
@@ -107,8 +101,8 @@ export default function HowItWorksTimeline() {
         <section className="w-full py-24 bg-black">
             <Timeline
                 data={data}
-                title={<>How <span className="bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 bg-clip-text text-transparent">it works</span></>}
-                description="Booking your next unforgettable journey is as easy as 1, 2, 3, and 4. Let our AI handle the heavy lifting while you focus on the excitement of travel."
+                title={<>How <span className="bg-gradient-to-r from-indigo-400 via-indigo-300 to-indigo-500 bg-clip-text text-transparent">it works</span></>}
+                description="Booking your next unforgettable journey is as easy as 1, 2, 3, and 4. Our system handles the heavy lifting while you focus on the architecture of travel."
             />
         </section>
     );

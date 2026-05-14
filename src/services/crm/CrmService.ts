@@ -36,9 +36,11 @@ export interface DashboardFinanceRollup {
   tripLineNet: number;
   tripLineMarkup: number;
   tripLineGross: number;
+  tripLineCount: number;
   standaloneNet: number;
   standaloneMarkup: number;
   standaloneGross: number;
+  standaloneCount: number;
 }
 
 export interface CrmMetrics {
@@ -286,10 +288,7 @@ export function computeCrmMetrics(
       c.latestStatus.toLowerCase() !== 'rejected',
   ).length;
 
-  const bookedCount = enrichedClients.filter(
-    (c) =>
-      c.latestStatus.toLowerCase() === 'booked' || c.latestStatus.toLowerCase() === 'confirmed',
-  ).length;
+  const bookedCount = financeRollup.tripLineCount + financeRollup.standaloneCount;
 
   const totalProposals = enrichedClients.reduce((acc, c) => acc + (c.allTrips?.length || 0), 0);
   const conversionRate = totalProposals === 0 ? 0 : Math.round((bookedCount / totalProposals) * 100);

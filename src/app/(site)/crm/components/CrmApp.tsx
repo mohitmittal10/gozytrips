@@ -4,7 +4,7 @@ import React from "react";
 import { 
     Users, Calendar, CheckCircle2, Clock, Search, Plus, 
     ListFilter, Compass, FileText, Settings, LayoutDashboard, TrendingUp, 
-    Archive, Sliders, LayoutGrid, List, DollarSign, Mail, RefreshCw, Info, Filter, Bookmark, Save, X
+    Archive, Sliders, LayoutGrid, List, DollarSign, Mail, RefreshCw, Info, Filter, Bookmark, Save, X, ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -64,11 +64,6 @@ export function CrmApp() {
                             "flex flex-col w-full bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300",
                             "h-[calc(100vh-110px)] max-h-[900px] py-4 px-2"
                         )}>
-                            <div className="space-y-1.5 pb-4 px-1 border-b border-white/[0.08]">
-                                <Button variant="ghost" size="icon" onClick={() => setIsSidebarExpanded(!isSidebarExpanded)} className="h-9 w-9 text-gray-400 hover:text-white hover:bg-white/5 transition-all">
-                                    <Sliders className="w-4 h-4" />
-                                </Button>
-                            </div>
                             <nav className="flex-1 py-4 space-y-1.5 overflow-y-auto crm-nav-scroll px-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                                 {[
                                     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -82,14 +77,33 @@ export function CrmApp() {
                                 ].map((tab) => (
                                     <Button key={tab.id} onClick={() => setActiveTab(tab.id)} variant={activeTab === tab.id ? 'secondary' : 'ghost'} className={cn("w-full justify-start h-10 px-3 hover:bg-white/10 transition-all group", activeTab === tab.id ? "bg-white/10 text-white" : "text-gray-400 hover:text-white", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
                                         <tab.icon className={cn("w-4 h-4 shrink-0", activeTab === tab.id ? "text-purple-400" : "text-gray-500 group-hover:text-purple-400")} />
-                                        {isSidebarExpanded && <span className="ml-3 text-sm font-medium">{tab.label}</span>}
+                                        <span className={cn(
+                                            "text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden",
+                                            isSidebarExpanded ? "ml-3 w-32 opacity-100" : "w-0 opacity-0 ml-0"
+                                        )}>
+                                            {tab.label}
+                                        </span>
                                     </Button>
                                 ))}
                             </nav>
                             <div className="pt-4 border-t border-white/[0.08] px-1 space-y-1.5 mt-auto">
+                                <Button onClick={() => setIsSidebarExpanded(!isSidebarExpanded)} variant="ghost" className={cn("w-full justify-start h-10 px-3 hover:bg-white/10 transition-all group text-gray-400 hover:text-white", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
+                                    <ChevronRight className={cn("w-4 h-4 shrink-0 transition-transform duration-300", isSidebarExpanded ? "rotate-180" : "")} />
+                                    <span className={cn(
+                                        "text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden",
+                                        isSidebarExpanded ? "ml-3 w-32 opacity-100" : "w-0 opacity-0 ml-0"
+                                    )}>
+                                        Collapse
+                                    </span>
+                                </Button>
                                 <Button onClick={() => setActiveTab('settings')} variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className={cn("w-full justify-start h-10 px-3 hover:bg-white/10 transition-all group", activeTab === 'settings' ? "bg-white/10 text-white" : "text-gray-400 hover:text-white", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
                                     <Settings className={cn("w-4 h-4 shrink-0", activeTab === 'settings' ? "text-purple-400" : "text-gray-500 group-hover:text-purple-400")} />
-                                    {isSidebarExpanded && <span className="ml-3 text-sm font-medium">Settings</span>}
+                                    <span className={cn(
+                                        "text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden",
+                                        isSidebarExpanded ? "ml-3 w-32 opacity-100" : "w-0 opacity-0 ml-0"
+                                    )}>
+                                        Settings
+                                    </span>
                                 </Button>
                             </div>
                         </div>

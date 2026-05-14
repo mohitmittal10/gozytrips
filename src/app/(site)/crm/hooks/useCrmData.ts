@@ -35,9 +35,11 @@ export function useCrmData() {
         tripLineNet: 0,
         tripLineMarkup: 0,
         tripLineGross: 0,
+        tripLineCount: 0,
         standaloneNet: 0,
         standaloneMarkup: 0,
         standaloneGross: 0,
+        standaloneCount: 0,
     });
 
     const supabaseRef = useRef(createClient());
@@ -51,8 +53,8 @@ export function useCrmData() {
 
         try {
             setDashboardFinanceRollup({
-                tripLineNet: 0, tripLineMarkup: 0, tripLineGross: 0,
-                standaloneNet: 0, standaloneMarkup: 0, standaloneGross: 0,
+                tripLineNet: 0, tripLineMarkup: 0, tripLineGross: 0, tripLineCount: 0,
+                standaloneNet: 0, standaloneMarkup: 0, standaloneGross: 0, standaloneCount: 0,
             });
 
             const { data: itineraries, error } = await supabase
@@ -74,9 +76,10 @@ export function useCrmData() {
             }
             setBookingsLoading(false);
 
-            let tripLineNet = 0; let tripLineMarkup = 0; let tripLineGross = 0;
+            let tripLineNet = 0; let tripLineMarkup = 0; let tripLineGross = 0; let tripLineCount = 0;
             (itineraries || []).forEach((itinerary: any) => {
                 if (isBookedTripStatus(itinerary.status || "")) {
+                    tripLineCount++;
                     itinerary.trip_line_items?.forEach((item: { net_cost?: number; markup_percentage?: number }) => {
                         const net = Number(item.net_cost) || 0;
                         const m = Number(item.markup_percentage) || 0;
@@ -87,8 +90,9 @@ export function useCrmData() {
                 }
             });
 
-            let standaloneNet = 0; let standaloneMarkup = 0; let standaloneGross = 0;
+            let standaloneNet = 0; let standaloneMarkup = 0; let standaloneGross = 0; let standaloneCount = 0;
             (standaloneData || []).forEach((b: { net_cost?: number | null; markup_percentage?: number | null }) => {
+                standaloneCount++;
                 const net = Number(b.net_cost) || 0;
                 const m = Number(b.markup_percentage) || 0;
                 standaloneNet += net;
@@ -97,8 +101,8 @@ export function useCrmData() {
             });
 
             setDashboardFinanceRollup({
-                tripLineNet, tripLineMarkup, tripLineGross,
-                standaloneNet, standaloneMarkup, standaloneGross,
+                tripLineNet, tripLineMarkup, tripLineGross, tripLineCount,
+                standaloneNet, standaloneMarkup, standaloneGross, standaloneCount,
             });
 
             const combined = enrichClients({

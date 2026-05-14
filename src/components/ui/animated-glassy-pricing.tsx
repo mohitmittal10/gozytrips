@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { RippleButton } from "@/components/ui/multi-type-ripple-buttons";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 // --- Internal Helper Components (Not exported) --- //
 
@@ -144,7 +145,15 @@ const ShaderCanvas = () => {
     };
   }, []);
 
-  return <canvas ref={canvasRef} className="fixed top-0 left-0 w-full h-full block z-0 bg-background opacity-50" />;
+  return (
+    <motion.canvas 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 0.5 }}
+      transition={{ duration: 2 }}
+      ref={canvasRef} 
+      className="fixed top-0 left-0 w-full h-full block z-0 bg-background" 
+    />
+  );
 };
 
 
@@ -188,7 +197,14 @@ export const PricingCard = ({
   );
 
   return (
-    <div className={cardClasses}>
+    <motion.div 
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+      }}
+      whileHover={{ y: -8, transition: { duration: 0.3 } }}
+      className={cardClasses}
+    >
       {isPopular && (
         <div className="absolute -top-4 right-4 px-3 py-1 text-[12px] font-semibold rounded-full bg-cyan-400 text-black">
           Most Popular
@@ -218,7 +234,7 @@ export const PricingCard = ({
       >
         {isLoading ? 'Processing...' : isCurrent ? 'Current Plan' : buttonText}
       </RippleButton>
-    </div>
+    </motion.div>
   );
 };
 
@@ -246,17 +262,60 @@ export const ModernPricingPage = ({
     <div className="bg-background text-foreground min-h-screen w-full overflow-x-hidden pt-20">
       {showAnimatedBackground && <ShaderCanvas />}
       <main className="relative w-full min-h-screen flex flex-col items-center justify-start px-4 py-8 z-10">
-        <div className="w-full max-w-5xl mx-auto text-center mb-14">
-          <h1 className="text-[48px] md:text-[64px] font-bold leading-tight tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-cyan-500 to-blue-600 dark:from-white dark:via-cyan-300 dark:to-blue-400">
+        <motion.div 
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0, y: -20 },
+            visible: { 
+              opacity: 1, 
+              y: 0,
+              transition: {
+                staggerChildren: 0.1,
+                duration: 0.8,
+                ease: "easeOut"
+              }
+            }
+          }}
+          className="w-full max-w-5xl mx-auto text-center mb-14"
+        >
+          <motion.h1 
+            variants={{
+              hidden: { opacity: 0, y: -20 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            className="text-[48px] md:text-[64px] font-bold leading-tight tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-cyan-500 to-blue-600 dark:from-white dark:via-cyan-300 dark:to-blue-400"
+          >
             {title}
-          </h1>
-          <p className="mt-3 text-[16px] md:text-[18px] text-foreground/80 max-w-2xl mx-auto font-sans">
+          </motion.h1>
+          <motion.p 
+            variants={{
+              hidden: { opacity: 0, y: -20 },
+              visible: { opacity: 1, y: 0 }
+            }}
+            className="mt-3 text-[16px] md:text-[18px] text-foreground/80 max-w-2xl mx-auto font-sans"
+          >
             {subtitle}
-          </p>
-        </div>
-        <div className="flex flex-col md:flex-row gap-8 md:gap-6 justify-center items-stretch w-full max-w-6xl mb-20">
+          </motion.p>
+        </motion.div>
+
+        <motion.div 
+          initial="hidden"
+          animate="visible"
+          variants={{
+            hidden: { opacity: 0 },
+            visible: { 
+              opacity: 1,
+              transition: {
+                staggerChildren: 0.15,
+                delayChildren: 0.4
+              }
+            }
+          }}
+          className="flex flex-col md:flex-row gap-8 md:gap-6 justify-center items-stretch w-full max-w-6xl mb-20"
+        >
           {plans.map((plan) => <PricingCard key={plan.planName} {...plan} />)}
-        </div>
+        </motion.div>
       </main>
     </div>
   );

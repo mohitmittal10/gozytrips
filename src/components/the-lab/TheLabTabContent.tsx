@@ -1,7 +1,7 @@
 // Handles the conditional rendering of the 4 tabs, each wrapped in an Error Boundary
 import React, { useEffect, useRef } from 'react';
 import { Sparkles } from 'lucide-react';
-import type { activeLabTab } from '@/types/the-lab';
+import type { ActiveLabTab } from '@/types/the-lab';
 import { ItineraryErrorBoundary } from './ItineraryErrorBoundary';
 
 // Components
@@ -41,7 +41,7 @@ const PricingSync = React.memo(({ onChange }: { onChange: (pricing: any) => void
 });
 
 interface TheLabTabContentProps {
-  activeLabTab: activeLabTab;
+  activeLabTab: ActiveLabTab;
   isGenerating: boolean;
   itinerary: any;
   setItinerary: (val: any) => void;
@@ -63,7 +63,7 @@ interface TheLabTabContentProps {
   handleSaveItinerary: () => void;
   isSaving: boolean;
   setCurrentTripId: (id: string | null) => void;
-  setactiveLabTab: (tab: activeLabTab) => void;
+  setActiveLabTab: (tab: ActiveLabTab) => void;
   // Form props
   form: any;
   currentStep: number;
@@ -77,14 +77,14 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
   isEditing, setIsEditing, hotels, setHotels, flights, setFlights, cabs, setCabs, buses, setBuses,
   showTimestamps, showPrices, pricing, setPricing, 
   agencySettings, handleSaveItinerary, isSaving,
-  setCurrentTripId, setactiveLabTab,
+  setCurrentTripId, setActiveLabTab,
   form, currentStep, setCurrentStep, onNext, onSubmit
 }: TheLabTabContentProps) {
 
   return (
     <>
       {/* Tab Content - Timeline */}
-      {activeLabTab === 'itinerary' && (
+      {activeLabTab === 'itinerary' && itinerary && (
         <ItineraryErrorBoundary onReset={() => setItinerary(null)} fallbackMessage="Timeline failed to render.">
           <div className="relative rounded-xl sm:rounded-2xl border border-white/[0.06] p-2 sm:p-4 md:p-6 backdrop-blur-sm overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(10,10,11,0.9) 0%, rgba(18,18,20,0.95) 50%, rgba(10,10,11,0.9) 100%)' }}>
             <MemoizedItineraryTimeline
@@ -168,7 +168,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
       {/* Tab Content - History */}
       {activeLabTab === 'history' && (
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="History failed to load.">
-          <TheLabHistory setCurrentTripId={setCurrentTripId} setactiveLabTab={setactiveLabTab} />
+          <TheLabHistory setCurrentTripId={setCurrentTripId} setActiveLabTab={setActiveLabTab} />
         </ItineraryErrorBoundary>
       )}
 
@@ -178,7 +178,6 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
           <div className="mt-4 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="w-full max-w-3xl bg-[#0a0a0b]/80 border border-white/[0.08] backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 lg:p-12 shadow-[0_24px_48px_rgba(0,0,0,0.5)]">
               <div className="mb-10 text-center">
-                
                 <h2 className="text-3xl font-serif font-bold text-white uppercase tracking-tight">Plan Your Escape</h2>
                 <p className="text-zinc-500 text-sm mt-3">Define the parameters of your next unforgettable journey.</p>
               </div>

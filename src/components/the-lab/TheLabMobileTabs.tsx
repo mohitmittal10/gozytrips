@@ -3,14 +3,14 @@ import React from 'react';
 import { Calendar as CalendarIcon, Plane, DollarSign, Settings, History, Plus } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import type { activeLabTab } from '@/types/the-lab';
+import type { ActiveLabTab } from '@/types/the-lab';
 import { useReferenceOptions } from '@/hooks/use-reference-options';
 
 type Client = any;
 
 interface TheLabMobileTabsProps {
-  activeLabTab: activeLabTab;
-  setactiveLabTab: (tab: activeLabTab) => void;
+  activeLabTab: ActiveLabTab;
+  setActiveLabTab: (tab: ActiveLabTab) => void;
   clients: Client[];
   selectedClientId: string;
   setSelectedClientId: (id: string) => void;
@@ -20,7 +20,7 @@ interface TheLabMobileTabsProps {
 }
 
 const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
-  activeLabTab, setactiveLabTab,
+  activeLabTab, setActiveLabTab,
   clients, selectedClientId, setSelectedClientId,
   selectedStatus, setSelectedStatus, handleCreateNew
 }: TheLabMobileTabsProps) {
@@ -41,7 +41,7 @@ const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
             key={item.id}
             onClick={() => {
               if (item.id === 'new') handleCreateNew();
-              else setactiveLabTab(item.id);
+              else setActiveLabTab(item.id);
             }}
             className={cn(
               "flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg transition-all duration-200 whitespace-nowrap flex-1 min-w-[70px] min-h-[44px]",

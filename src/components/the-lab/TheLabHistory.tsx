@@ -13,7 +13,7 @@ import {
   DollarSign
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { activeLabTab } from '@/types/the-lab';
+import type { ActiveLabTab } from '@/types/the-lab';
 import { useAuth } from '@/contexts/auth-context';
 import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
@@ -32,13 +32,13 @@ interface ItineraryRecord {
 
 interface TheLabHistoryProps {
   setCurrentTripId: (id: string | null) => void;
-  setactiveLabTab: (tab: activeLabTab) => void;
+  setActiveLabTab: (tab: ActiveLabTab) => void;
   handleCreateNew: () => void;
 }
 
 export const TheLabHistory: React.FC<TheLabHistoryProps> = ({ 
   setCurrentTripId, 
-  setactiveLabTab,
+  setActiveLabTab,
   handleCreateNew
 }) => {
   const [itineraries, setItineraries] = useState<ItineraryRecord[]>([]);
@@ -83,7 +83,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
 
   const handleLoad = (id: string) => {
     setCurrentTripId(id);
-    setactiveLabTab('itinerary');
+    setActiveLabTab('itinerary');
   };
 
   const filteredItineraries = itineraries.filter(item => {

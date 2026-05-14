@@ -113,7 +113,7 @@ const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="pt-12 border-t border-white/[0.05] flex flex-col md:flex-row items-center justify-between gap-6">
-          <p className="text-zinc-500 text-xs font-light">
+          <p className="text-zinc-400 text-xs font-medium">
             &copy; {new Date().getFullYear()} Wander Labs. All rights reserved.
           </p>
           <div className="flex gap-8">
@@ -130,7 +130,7 @@ const Footer = () => {
         </div>
 
         {/* Big Background Text */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 pointer-events-none select-none opacity-[0.02] z-0 whitespace-nowrap">
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 pointer-events-none select-none opacity-[0.05] z-0 whitespace-nowrap">
           <h2 className="text-[20vw] font-black tracking-tighter text-white">
             WANDER LABS
           </h2>

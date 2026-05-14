@@ -38,6 +38,8 @@ const EMPTY_OBJECT: any = {};
 export default function TheLab() {
   const searchParams = useSearchParams();
   const itineraryIdFromUrl = searchParams.get('itineraryId');
+  const queryFromUrl = searchParams.get('q');
+  
   const [activeLabTab, setActiveLabTab] = useState<ActiveLabTab>(itineraryIdFromUrl ? 'itinerary' : 'new');
   const [currentStep, setCurrentStep] = useState(0);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
@@ -116,8 +118,14 @@ export default function TheLab() {
           form.reset(loadedData.tripMetadata as any);
         }
       }
+    } else if (queryFromUrl) {
+      // Pre-fill from 'q' parameter if no persistence data
+      const currentVals = form.getValues();
+      if (!currentVals.destinations) {
+        form.setValue('destinations', queryFromUrl);
+      }
     }
-  }, [loadedData, setItinerary, form]);
+  }, [loadedData, setItinerary, form, queryFromUrl]);
 
   // Cleanup legacy localStorage keys one-time
   useEffect(() => {
@@ -211,33 +219,42 @@ export default function TheLab() {
 
 
 
+  const isDesigningNew = activeLabTab === 'new';
+
   return (
     <section id="the-lab" className="w-full mx-auto pt-0 pb-10">
-<div className="w-full sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5">
-<div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-      <TheLabHeader 
-        itinerary={itinerary} 
-        clients={clients} 
-        selectedClientId={selectedClientId} 
-        setSelectedClientId={setSelectedClientId} 
-        selectedStatus={selectedStatus} 
-        setSelectedStatus={handleStatusChangeAction} 
-        showTimestamps={showTimestamps} 
-        setShowTimestamps={setShowTimestamps} 
-        showPrices={showPrices} 
-        setShowPrices={setShowPrices} 
-        isEditing={isEditing} 
-        setIsEditing={setIsEditing} 
-        handleDownloadPdf={() => setIsPreviewOpen(true)} 
-        handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount })} 
-        isSaving={isSaving} 
-        activeLabTab={activeLabTab}
-      />
-</div>
-</div>
+      {!isDesigningNew && (
+        <div className="w-full sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5">
+          <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
+            <TheLabHeader 
+              itinerary={itinerary} 
+              clients={clients} 
+              selectedClientId={selectedClientId} 
+              setSelectedClientId={setSelectedClientId} 
+              selectedStatus={selectedStatus} 
+              setSelectedStatus={handleStatusChangeAction} 
+              showTimestamps={showTimestamps} 
+              setShowTimestamps={setShowTimestamps} 
+              showPrices={showPrices} 
+              setShowPrices={setShowPrices} 
+              isEditing={isEditing} 
+              setIsEditing={setIsEditing} 
+              handleDownloadPdf={() => setIsPreviewOpen(true)} 
+              handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount })} 
+              isSaving={isSaving} 
+              activeLabTab={activeLabTab}
+            />
+          </div>
+        </div>
+      )}
 
-      <div className="w-full max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 mt-8 pb-20 sm:pb-10">
-        <TheLabMobileTabs activeLabTab={activeLabTab} setActiveLabTab={setActiveLabTab} clients={clients} selectedClientId={selectedClientId} setSelectedClientId={setSelectedClientId} selectedStatus={selectedStatus} setSelectedStatus={handleStatusChangeAction} handleCreateNew={handleCreateNew} />
+      <div className={cn(
+        "w-full max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-10",
+        isDesigningNew ? "pt-4" : "mt-8"
+      )}>
+        {!isDesigningNew && (
+          <TheLabMobileTabs activeLabTab={activeLabTab} setActiveLabTab={setActiveLabTab} clients={clients} selectedClientId={selectedClientId} setSelectedClientId={setSelectedClientId} selectedStatus={selectedStatus} setSelectedStatus={handleStatusChangeAction} handleCreateNew={handleCreateNew} />
+        )}
         
         <div className="flex flex-row items-start gap-4 lg:gap-6">
           <TheLabSidebar 
@@ -254,8 +271,15 @@ export default function TheLab() {
             isGenerating={isGenerating}
           />
           
-          <div className={['history','settings'].includes(activeLabTab) ? "flex-1 min-w-0 flex flex-col" : "flex-1 min-w-0 flex flex-col lg:grid lg:grid-cols-12 gap-4"}>
-            <div className={['history','settings'].includes(activeLabTab) ? "w-full" : "lg:col-span-8 order-2 lg:order-1"}>
+          <div className={cn(
+            "flex-1 min-w-0 flex flex-col",
+            !itinerary && !['history', 'settings'].includes(activeLabTab) ? "items-center justify-center" : 
+            (['history','settings'].includes(activeLabTab) ? "" : "lg:grid lg:grid-cols-12 gap-4")
+          )}>
+            <div className={cn(
+              ['history','settings'].includes(activeLabTab) ? "w-full" : 
+              (!itinerary ? "w-full max-w-5xl" : "lg:col-span-8 order-2 lg:order-1")
+            )}>
               {isGenerating && !itinerary ? (
                 <div className="py-24 flex flex-col items-center min-h-[400px] space-y-12">
                   <UniqueLoading variant="morph" size="lg" />

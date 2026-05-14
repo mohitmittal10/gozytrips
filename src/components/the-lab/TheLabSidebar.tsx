@@ -2,20 +2,20 @@
 import React from 'react';
 import { Calendar as CalendarIcon, Plane, DollarSign, Settings, ChevronLeft, ChevronRight, History, Plus } from 'lucide-react';
 import { cn } from "@/lib/utils";
-import type { activeLabTab } from '@/types/the-lab';
+import type { ActiveLabTab } from '@/types/the-lab';
 
 interface TheLabSidebarProps {
   isSidebarExpanded: boolean;
   setIsSidebarExpanded: (expanded: boolean) => void;
-  activeLabTab: activeLabTab;
-  setactiveLabTab: (tab: activeLabTab) => void;
+  activeLabTab: ActiveLabTab;
+  setActiveLabTab: (tab: ActiveLabTab) => void;
   handleCreateNew: () => void;
   onSubmit?: (values: any) => void;
   isGenerating?: boolean;
 }
 
 const TheLabSidebar = React.memo(function TheLabSidebar({
-  activeLabTab, setactiveLabTab,
+  activeLabTab, setActiveLabTab,
   isSidebarExpanded, setIsSidebarExpanded,
   handleCreateNew
 }: TheLabSidebarProps) {
@@ -73,7 +73,7 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
           ].map((item) => (
             <button
               key={item.id}
-              onClick={() => setactiveLabTab(item.id)}
+              onClick={() => setActiveLabTab(item.id)}
               className={cn(
                 "relative group flex items-center rounded-xl transition-all duration-200",
                 isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10",
@@ -100,7 +100,7 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
         {/* Bottom Toggle & Settings */}
         <div className="flex flex-col items-center gap-1 w-full mt-auto pt-4 border-t border-white/5">
           <button
-            onClick={() => setactiveLabTab('settings')}
+            onClick={() => setActiveLabTab('settings')}
             className={cn(
               "relative group flex items-center rounded-xl transition-all duration-200",
               isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10",
