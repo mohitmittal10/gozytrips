@@ -14,6 +14,7 @@ export function useItineraryPersistence({
   setCurrentTripId: (id: string | null) => void;
 }) {
   const [loadedData, setLoadedData] = useState<LoadedPersistenceData | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const saveTimer = useRef<NodeJS.Timeout | null>(null);
   const lastPayloadRef = useRef<string>("");
   const supabase = createClient();
@@ -40,6 +41,7 @@ export function useItineraryPersistence({
 
     const loadDraft = async () => {
       try {
+        if (currentTripId) setIsLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
 
         // If not authenticated, we can't load from Supabase - default to empty state
@@ -126,6 +128,7 @@ export function useItineraryPersistence({
         if (active) setLoadedData(getEmptyData());
       } finally {
         initialized.current = true;
+        if (active) setIsLoading(false);
       }
     };
 
@@ -311,7 +314,7 @@ export function useItineraryPersistence({
     lastPayloadRef.current = ""; // Reset dirty-check so next real save always writes
   }, []);
 
-  return { loadedData, saveAll, saveNow, resetForNewTrip };
+  return { loadedData, isLoading, saveAll, saveNow, resetForNewTrip };
 }
 
 function getEmptyData(): LoadedPersistenceData {

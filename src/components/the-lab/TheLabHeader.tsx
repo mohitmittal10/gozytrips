@@ -40,11 +40,11 @@ const TheLabHeader = React.memo(function TheLabHeader({
   if (!itinerary || ['history','settings'].includes(activeLabTab)) return null;
 
   return (
-    <div className="bg-transparent py-2 sm:py-3 z-30 mb-0 w-full">
-      <div className="w-full flex flex-wrap justify-between items-center gap-2 sm:gap-4">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-4 md:space-x-6">
-
-          <div className="hidden sm:flex items-center gap-2 sm:gap-3">
+    <div className="bg-transparent py-3 sm:py-4 z-30 mb-0 w-full">
+      <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
+        {/* Controls Group */}
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-6">
+          <div className="hidden sm:flex items-center gap-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Client</label>
             <Select value={selectedClientId} onValueChange={setSelectedClientId}>
               <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-zinc-700 h-9 min-w-[140px] sm:min-w-[180px]">
@@ -59,7 +59,7 @@ const TheLabHeader = React.memo(function TheLabHeader({
             </Select>
           </div>
           
-          <div className="hidden sm:flex items-center gap-2 sm:gap-3">
+          <div className="hidden sm:flex items-center gap-3">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Status</label>
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
               <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-zinc-700 h-9">
@@ -82,34 +82,36 @@ const TheLabHeader = React.memo(function TheLabHeader({
             </Select>
           </div>
           
-          <div className="flex items-center space-x-1.5 sm:space-x-2 px-1.5 sm:px-2 py-1 rounded-md border border-white/5 bg-black/20">
-            <Switch
-              id="show-timestamps-main"
-              checked={showTimestamps}
-              onCheckedChange={setShowTimestamps}
-              className="scale-75 origin-right"
-            />
-            <label htmlFor="show-timestamps-main" className="text-[9px] sm:text-[10px] font-bold uppercase text-zinc-600 select-none whitespace-nowrap cursor-pointer">
-              Time
-            </label>
-          </div>
-          
-          <div className="flex items-center space-x-1.5 sm:space-x-2 px-1.5 sm:px-2 py-1 rounded-md border border-white/5 bg-black/20">
-            <Switch
-              id="show-prices-main"
-              checked={showPrices}
-              onCheckedChange={setShowPrices}
-              className="scale-75 origin-right"
-            />
-            <label htmlFor="show-prices-main" className="text-[9px] sm:text-[10px] font-bold uppercase text-zinc-600 select-none whitespace-nowrap cursor-pointer">
-              Price
-            </label>
+          <div className="flex items-center gap-4 bg-black/20 rounded-xl p-1 border border-white/5">
+            <div className="flex items-center space-x-2 px-2 py-1">
+              <Switch
+                id="show-timestamps-header"
+                checked={showTimestamps}
+                onCheckedChange={setShowTimestamps}
+                className="scale-75"
+              />
+              <label htmlFor="show-timestamps-header" className="text-[10px] font-bold uppercase text-zinc-500 select-none cursor-pointer">
+                Time
+              </label>
+            </div>
+            
+            <div className="flex items-center space-x-2 px-2 py-1">
+              <Switch
+                id="show-prices-header"
+                checked={showPrices}
+                onCheckedChange={setShowPrices}
+                className="scale-75"
+              />
+              <label htmlFor="show-prices-header" className="text-[10px] font-bold uppercase text-zinc-500 select-none cursor-pointer">
+                Price
+              </label>
+            </div>
           </div>
 
           <button
             onClick={() => setIsEditing(!isEditing)}
             className={cn(
-              "p-2 rounded-lg transition-all duration-300 flex items-center justify-center",
+              "w-10 h-10 rounded-xl transition-all duration-300 flex items-center justify-center flex-shrink-0",
               isEditing
                 ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_0_15px_rgba(255,92,51,0.2)]"
                 : "bg-white/5 text-zinc-400 border border-white/5 hover:bg-white/10 hover:text-zinc-300"
@@ -129,21 +131,22 @@ const TheLabHeader = React.memo(function TheLabHeader({
           </button>
         </div>
 
-        <div className="flex items-center space-x-2 sm:space-x-3">
+        {/* Actions Group */}
+        <div className="flex items-center gap-3">
           <Button
             variant="outline"
             size="sm"
             onClick={handleDownloadPdf}
-            className="px-3 sm:px-5 py-2 sm:py-2.5 bg-white/5 border border-white/10 text-zinc-300 rounded-lg text-xs sm:text-sm font-semibold hover:bg-white/10 transition-all flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 min-h-[44px] sm:min-h-0"
+            className="flex-1 sm:flex-none px-4 sm:px-5 py-2.5 bg-white/5 border border-white/10 text-zinc-300 rounded-xl text-xs sm:text-sm font-semibold hover:bg-white/10 transition-all flex items-center justify-center gap-2 h-11 sm:h-10"
           >
             <Eye className="w-4 h-4" />
-            <span className="hidden xs:inline">Preview</span>
+            <span className="xs:inline">Preview</span>
           </Button>
           <Button
             size="sm"
             onClick={handleSaveItinerary}
             disabled={isSaving}
-            className="px-3 sm:px-6 py-2 sm:py-2.5 aurora-gradient text-white rounded-lg text-xs sm:text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-1.5 sm:gap-2 h-9 sm:h-10 border-none min-h-[44px] sm:min-h-0"
+            className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 aurora-gradient text-white rounded-xl text-xs sm:text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 h-11 sm:h-10 border-none"
           >
             <Save className="w-4 h-4" />
             {isSaving ? "Saving..." : "Save"}

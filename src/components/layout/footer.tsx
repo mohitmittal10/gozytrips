@@ -36,8 +36,8 @@ const Footer = () => {
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-600/[0.05] rounded-full blur-[120px]" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 md:px-8 relative z-10">
-        <div className="grid grid-cols-12 gap-12 mb-20">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
+        <div className="grid grid-cols-12 gap-y-12 md:gap-12 mb-20">
           {/* Brand Section */}
           <div className="col-span-12 lg:col-span-4 space-y-6">
             <div className="flex items-center gap-2">
@@ -60,7 +60,7 @@ const Footer = () => {
           </div>
 
           {/* Links Sections */}
-          <div className="col-span-6 md:col-span-3 lg:col-span-2 space-y-6">
+          <div className="col-span-6 sm:col-span-3 lg:col-span-2 space-y-6">
             <h3 className="text-white font-bold text-lg tracking-tight">Product</h3>
             <ul className="space-y-4">
               {navLinks.slice(0, 4).map((link) => (
@@ -73,7 +73,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          <div className="col-span-6 md:col-span-3 lg:col-span-2 space-y-6">
+          <div className="col-span-6 sm:col-span-3 lg:col-span-2 space-y-6">
             <h3 className="text-white font-bold text-lg tracking-tight">Company</h3>
             <ul className="space-y-4">
               {navLinks.slice(4).map((link) => (
@@ -94,19 +94,21 @@ const Footer = () => {
           </div>
 
           {/* Newsletter/CTA Section */}
-          <div className="col-span-12 md:col-span-6 lg:col-span-4 space-y-6">
-            <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/[0.06] backdrop-blur-xl relative overflow-hidden group">
+          <div className="col-span-12 md:col-span-6 lg:col-span-4">
+            <div className="p-6 sm:p-8 rounded-[2rem] bg-white/[0.02] border border-white/[0.06] backdrop-blur-xl relative overflow-hidden group">
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              <h3 className="text-white font-bold text-lg mb-2 relative z-10">Start planning today</h3>
-              <p className="text-zinc-400 text-sm mb-6 relative z-10 font-light leading-relaxed">
-                Join 500+ agents already using Wander Labs to elevate their business.
-              </p>
-              <Button asChild className="w-full bg-white text-black hover:bg-zinc-200 rounded-2xl h-12 font-bold transition-all duration-300 relative z-10 group/btn">
-                <Link href="/the-lab" className="flex items-center justify-center gap-2">
-                  Launch The Lab
-                  <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
+              <div className="relative z-10">
+                <h3 className="text-white font-bold text-xl mb-2">Start planning today</h3>
+                <p className="text-zinc-400 text-sm mb-6 font-light leading-relaxed">
+                  Join 500+ agents already using Wander Labs to elevate their business.
+                </p>
+                <Button asChild className="w-full bg-white text-black hover:bg-zinc-200 rounded-2xl h-12 font-bold transition-all duration-300 group/btn">
+                  <Link href="/the-lab" className="flex items-center justify-center gap-2">
+                    Launch The Lab
+                    <ArrowRight className="w-4 h-4 group-hover/btn:translate-x-1 transition-transform" />
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>

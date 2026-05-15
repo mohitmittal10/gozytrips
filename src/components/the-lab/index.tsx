@@ -54,7 +54,7 @@ export default function TheLab() {
   const { user } = useAuth();
   const supabase = createClient();
   const [currentTripId, setCurrentTripId] = useState<string | null>(itineraryIdFromUrl);
-  const { loadedData, saveAll, saveNow, resetForNewTrip } = useItineraryPersistence({ currentTripId, setCurrentTripId });
+  const { loadedData, isLoading, saveAll, saveNow, resetForNewTrip } = useItineraryPersistence({ currentTripId, setCurrentTripId });
   const { isGenerating, itinerary, setItinerary, generate } = useItineraryGeneration();
 
   // Local state mapped from loadedData
@@ -223,7 +223,7 @@ export default function TheLab() {
 
   return (
     <section id="the-lab" className="w-full mx-auto pt-0 pb-10">
-      {!isDesigningNew && (
+      {!isDesigningNew && itinerary?.itinerary?.length > 0 && !['history', 'settings'].includes(activeLabTab) && (
         <div className="w-full sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5">
           <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
             <TheLabHeader 
@@ -280,14 +280,14 @@ export default function TheLab() {
               ['history','settings'].includes(activeLabTab) ? "w-full" : 
               (!itinerary ? "w-full max-w-5xl" : "lg:col-span-8 order-2 lg:order-1")
             )}>
-              {isGenerating && !itinerary ? (
-                <div className="py-24 flex flex-col items-center min-h-[400px] space-y-12">
+              {(isGenerating && !itinerary) || (isLoading) ? (
+                <div className="py-24 flex flex-col items-center min-h-[400px] justify-center space-y-12">
                   <UniqueLoading variant="morph" size="lg" />
-                  <div className="h-8"><ShiningText text={loadingTexts[loadingTextIndex]} /></div>
+                  <div className="h-8"><ShiningText text={isLoading ? "Restoring from Archive..." : loadingTexts[loadingTextIndex]} /></div>
                 </div>
               ) : (
                 <>
-                  {itinerary && !['history','settings'].includes(activeLabTab) && <TheLabHero itinerary={itinerary} />}
+                  {itinerary?.itinerary?.length > 0 && !['history','settings'].includes(activeLabTab) && <TheLabHero itinerary={itinerary} />}
                   <TheLabTabContent 
                     activeLabTab={activeLabTab} 
                     isGenerating={isGenerating} 
