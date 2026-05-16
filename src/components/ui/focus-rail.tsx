@@ -143,15 +143,21 @@ export function FocusRail({
                 {items.map((item, i) => (
                     <motion.div
                         key={item.id}
-                        className="absolute inset-0 blur-2xl md:blur-[48px] saturate-200"
+                        className="absolute inset-0 overflow-hidden"
                         animate={{ opacity: i === active ? 0.4 : 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
-                        style={{
-                            backgroundImage: `url(${item.imageSrc})`,
-                            backgroundSize: "cover",
-                            backgroundPosition: "center",
-                        }}
-                    />
+                    >
+                        <Image
+                            src={item.imageSrc}
+                            alt=""
+                            fill
+                            sizes="100vw"
+                            quality={60}
+                            className="object-cover blur-[48px] saturate-200 pointer-events-none"
+                            priority={i === 0}
+                            aria-hidden
+                        />
+                    </motion.div>
                 ))}
                 {/* Ambient Gradient Orbs */}
                 <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">

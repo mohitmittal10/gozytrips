@@ -8,6 +8,8 @@ import HowItWorksTimeline from '@/components/sections/how-it-works-timeline';
 import FeaturesGrid from '@/components/sections/features-grid';
 import { PARALLAX_PRODUCTS } from '@/constants/marketing';
 
+export const dynamic = 'force-static';
+
 export default function Home() {
   return (
     <>

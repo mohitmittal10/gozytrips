@@ -34,7 +34,7 @@ export const TypingText = ({
   }, [currentText, isDeleting, currentTextIndex, texts]);
 
   return (
-    <span className={cn("inline-block min-w-[20px] border-r-[4px] border-primary pr-2 animate-[pulse_1s_ease-in-out_infinite]", className)}>
+    <span className={cn("inline-block min-w-[160px] border-r-[4px] border-primary pr-2 animate-[pulse_1s_ease-in-out_infinite]", className)}>
       {currentText || "\u00A0"}
     </span>
   );

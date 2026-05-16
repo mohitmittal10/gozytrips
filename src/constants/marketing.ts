@@ -12,12 +12,12 @@ export const PARALLAX_PRODUCTS = [
   {
     title: "Dashboard Overview",
     link: "#",
-    thumbnail: "/image/home/Screenshot 2026-03-30 231051.jpg",
+    thumbnail: "/image/home/screen2.3.jpg",
   },
   {
     title: "Premium Travel Suite",
     link: "#",
-    thumbnail: "/image/home/Screenshot 2026-03-30 231201.jpg",
+    thumbnail: "/image/home/screen0.3.jpg",
   },
   {
     title: "Lush Greenery",
@@ -72,7 +72,7 @@ export const PARALLAX_PRODUCTS = [
   {
     title: "Premium Travel Suite",
     link: "#",
-    thumbnail: "/image/home/Screenshot 2026-03-30 231201.jpg",
+    thumbnail: "/image/home/screen1.1.jpg",
   },
   {
     title: "Lush Greenery",
