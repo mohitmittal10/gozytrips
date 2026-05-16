@@ -338,7 +338,7 @@ const Hero = () => {
                         transition={{ delay: 0.2 }}
                         className="text-base md:text-lg text-zinc-500 max-w-2xl leading-relaxed font-medium"
                     >
-                        Turn a 3-hour planning session into 3 minutes. AI-built itineraries, a CRM that knows your clients, and workflows that run themselves.
+                        Turn a 3-hour planning session into 3 minutes.
                     </motion.p>
 
                     <motion.div 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerComponentClient } from '@/lib/supabase/server';
-import { razorpay, RAZORPAY_PLANS } from '@/lib/razorpay';
+import { getRazorpay, RAZORPAY_PLANS } from '@/lib/razorpay';
 import { cookies } from 'next/headers';
 
 export async function POST(req: NextRequest) {
@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     // For simplicity, we are directly creating a subscription here.
     
     // 2. Create the subscription
+    const razorpay = getRazorpay();
     const subscription = await razorpay.subscriptions.create({
       plan_id: planId,
       customer_notify: 1, // Let Razorpay handle notifications

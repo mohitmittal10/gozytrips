@@ -143,16 +143,13 @@ export function FocusRail({
                 {items.map((item, i) => (
                     <motion.div
                         key={item.id}
-                        className="absolute inset-0"
+                        className="absolute inset-0 blur-2xl md:blur-[48px] saturate-200"
                         animate={{ opacity: i === active ? 0.4 : 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
                         style={{
                             backgroundImage: `url(${item.imageSrc})`,
                             backgroundSize: "cover",
                             backgroundPosition: "center",
-                            // CSS filter in style (not Framer animate) — handled by
-                            // the browser compositor, not JS animation frames.
-                            filter: "blur(48px) saturate(2)",
                         }}
                     />
                 ))}
@@ -198,7 +195,7 @@ export function FocusRail({
                             <motion.div
                                 key={item.id}
                                 className={cn(
-                                    "absolute w-[260px] md:w-[320px] lg:w-[400px] h-[300px] rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-3xl shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden",
+                                    "absolute w-[260px] md:w-[320px] lg:w-[400px] h-[300px] rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-xl md:backdrop-blur-3xl shadow-lg md:shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden",
                                     isCenter
                                         ? "z-20 ring-1 ring-white/20 shadow-[0_32px_64px_rgba(0,0,0,0.6)]"
                                         : "z-10"
@@ -256,7 +253,7 @@ export function FocusRail({
                                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                                 exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
                                 transition={{ duration: 0.3 }}
-                                className="space-y-3 rounded-3xl bg-white/[0.03] p-6 backdrop-blur-[40px] border border-white/10 shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
+                                className="space-y-3 rounded-3xl bg-white/[0.03] p-6 backdrop-blur-xl md:backdrop-blur-[40px] border border-white/10 shadow-xl md:shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
                             >
                                 {activeItem.meta && (
                                     <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 text-xs font-semibold uppercase tracking-wider text-emerald-400 ring-1 ring-emerald-500/20">
@@ -276,7 +273,7 @@ export function FocusRail({
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1 rounded-full bg-white/[0.03] p-1.5 ring-1 ring-white/10 backdrop-blur-[40px] shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                        <div className="flex items-center gap-1 rounded-full bg-white/[0.03] p-1.5 ring-1 ring-white/10 backdrop-blur-xl md:backdrop-blur-[40px] shadow-lg md:shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                             <button
                                 onClick={handlePrev}
                                 className="rounded-full p-3 text-neutral-400 transition hover:bg-white/10 hover:text-white active:scale-95"
@@ -299,7 +296,7 @@ export function FocusRail({
                         {activeItem.href && (
                             <Link
                                 href={activeItem.href}
-                                className="group flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-[40px] px-6 py-3.5 text-sm font-semibold text-white border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all hover:bg-white/20 hover:scale-105 active:scale-95"
+                                className="group flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-xl md:backdrop-blur-[40px] px-6 py-3.5 text-sm font-semibold text-white border border-white/10 shadow-lg md:shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all hover:bg-white/20 hover:scale-105 active:scale-95"
                             >
                                 Explore
                                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
