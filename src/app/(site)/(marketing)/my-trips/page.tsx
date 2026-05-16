@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
-import { MapPin, Calendar, DollarSign, Trash2, Eye, Plus, ArrowLeft, Heart } from 'lucide-react';
+import { MapPin, Calendar, DollarSign, Trash2, Eye, Plus, ArrowLeft, Heart, Clock, Copy, ArrowRight, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import ItineraryTimeline from '@/components/itinerary-timeline';
@@ -22,10 +22,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { TripCard } from '@/components/trip-card';
 import { FinancesSheet } from '@/components/finances-sheet';
 import { getCurrencySymbol } from "@/lib/utils/currency";
 import { useReferenceOptions } from '@/hooks/use-reference-options';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import { DEFAULT_CURRENCY } from "@/types/pricing";
 
 interface SavedItinerary {
   id: string;
@@ -248,7 +250,7 @@ export default function MyTripsPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#05070a] bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.08),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,92,51,0.08),transparent_50%)]">
+    <div className="flex flex-col min-h-screen bg-transparent">
 
       <main className="flex-grow container mx-auto px-4 py-20">
         <div className="mb-8">
@@ -350,27 +352,130 @@ export default function MyTripsPage() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(showFavouritesOnly ? trips.filter(t => t.is_favourite) : trips).map((trip) => (
-              <TripCard
-                key={trip.id}
-                trip={trip as any}
-                clients={clients}
-                agencySettings={agencySettings}
-                onToggleFavourite={handleToggleFavourite}
-                onDuplicate={handleDuplicateTrip}
-                onView={(trip) => {
-                  setSelectedTrip(trip as any);
-                  setShowModal(true);
-                }}
-                onFinances={(trip) => {
-                  setSelectedTrip(trip as any);
-                  setShowFinances(true);
-                }}
-                onDelete={handleDeleteTrip}
-                deletingId={deleting}
-              />
-            ))}
+          <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden mt-6 shadow-2xl backdrop-blur-xl">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[800px]">
+                <thead>
+                  <tr className="border-b border-white/10 bg-white/[0.01]">
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Trip Info</th>
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Client</th>
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Travel Dates</th>
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Budget</th>
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
+                    <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {(showFavouritesOnly ? trips.filter(t => t.is_favourite) : trips).map((trip) => {
+                    const client = clients.find(c => c.id === trip.client_id);
+                    return (
+                      <tr 
+                        key={trip.id} 
+                        className="hover:bg-white/[0.04] transition-colors group cursor-pointer"
+                        onClick={() => {
+                          setSelectedTrip(trip);
+                          setShowModal(true);
+                        }}
+                      >
+                        <td className="p-4">
+                          <div className="flex items-center gap-4">
+                            <div className="inline-flex w-10 h-10 rounded-xl items-center justify-center text-sm font-bold text-white bg-gradient-to-br from-purple-500/20 to-pink-500/20 shrink-0 shadow-lg border border-white/10">
+                              <MapPin className="w-5 h-5 text-purple-400" />
+                            </div>
+                            <div className="max-w-[200px]">
+                              <p className="font-bold text-white group-hover:text-primary transition-colors line-clamp-1">{trip.title}</p>
+                              <p className="text-xs text-slate-500 font-medium line-clamp-1">{trip.description || trip.starting_location}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          {client ? (
+                            <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-bold px-2.5 py-0.5 text-[10px] uppercase tracking-wider">
+                              {client.name}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-slate-600 font-medium italic">Unassigned</span>
+                          )}
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2 text-sm text-slate-400 font-medium whitespace-nowrap">
+                            <Calendar className="w-3.5 h-3.5 text-blue-400" />
+                            {new Date(trip.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - {new Date(trip.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-1.5 text-sm font-bold text-emerald-400">
+                            <span className="text-xs">₹</span>
+                            {trip.budget?.toLocaleString() || '0'}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <Badge variant="secondary" className={cn(
+                            "font-bold px-2.5 py-0.5 text-[10px] uppercase tracking-wider",
+                            trip.status === 'draft' ? "bg-slate-500/10 text-slate-400 border-slate-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                          )}>
+                            {trip.status}
+                          </Badge>
+                        </td>
+                        <td className="p-4 text-right">
+                          <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-slate-400 hover:text-pink-500 hover:bg-pink-500/10 rounded-lg"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleFavourite(trip);
+                              }}
+                            >
+                              <Heart className="w-4 h-4" fill={trip.is_favourite ? "currentColor" : "none"} />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-slate-400 hover:text-primary hover:bg-primary/10 rounded-lg"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDuplicateTrip(trip);
+                              }}
+                              title="Duplicate"
+                            >
+                              <Copy className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-slate-400 hover:text-emerald-400 hover:bg-emerald-400/10 rounded-lg"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setSelectedTrip(trip);
+                                setShowFinances(true);
+                              }}
+                              title="Finances"
+                            >
+                              <DollarSign className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeleteTrip(trip.id);
+                              }}
+                              disabled={deleting === trip.id}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                            <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-primary transition-colors ml-3" />
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </main>

@@ -6,8 +6,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { BackupService } from '@/lib/backup-service';
 import { createClient } from '@/lib/supabase/client';
-import { Cloud, Download, Loader2 } from 'lucide-react';
+import { Cloud, Download } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import UniqueLoading from '../ui/morph-loading';
 
 export default function BackupSettings({ userId, userProfile }: { userId: string; userProfile: any }) {
   const { toast } = useToast();
@@ -121,7 +122,7 @@ export default function BackupSettings({ userId, userProfile }: { userId: string
                 disabled={loading}
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
-                {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+                {loading ? <UniqueLoading variant="morph" size="sm" className="w-5 h-5 mr-2" /> : <Download className="w-4 h-4 mr-2" />}
                 Backup Now
               </Button>
             </div>

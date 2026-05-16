@@ -3,6 +3,7 @@ import React from 'react';
 import { Calendar as CalendarIcon, Plane, DollarSign, Settings, ChevronLeft, ChevronRight, History, Plus } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import type { ActiveLabTab } from '@/types/the-lab';
+import Logo from '../layout/logo';
 
 interface TheLabSidebarProps {
   isSidebarExpanded: boolean;
@@ -12,12 +13,13 @@ interface TheLabSidebarProps {
   handleCreateNew: () => void;
   onSubmit?: (values: any) => void;
   isGenerating?: boolean;
+  isLoading?: boolean;
 }
 
 const TheLabSidebar = React.memo(function TheLabSidebar({
   activeLabTab, setActiveLabTab,
   isSidebarExpanded, setIsSidebarExpanded,
-  handleCreateNew
+  handleCreateNew, isGenerating, isLoading
 }: TheLabSidebarProps) {
   const isFormOpened = activeLabTab === 'new';
 
@@ -30,7 +32,17 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
         "flex flex-col items-center w-full bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300 overflow-x-hidden",
         "h-[calc(100vh-110px)] max-h-[900px] py-4 px-2"
       )}>
-        
+        {/* Logo Section */}
+        <div className={cn(
+          "mb-6 transition-all duration-300 flex items-center",
+          isSidebarExpanded ? "px-4 w-full" : "justify-center w-10"
+        )}>
+          <Logo 
+            className={cn(isSidebarExpanded ? "gap-3" : "gap-0")} 
+            isLoading={isGenerating || isLoading} 
+            hideText={!isSidebarExpanded}
+          />
+        </div>
 
         {/* Plus Button */}
         <button

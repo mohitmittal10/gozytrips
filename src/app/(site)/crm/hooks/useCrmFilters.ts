@@ -118,6 +118,23 @@ export function useCrmFilters() {
         });
     };
 
+    const savePreset = async (name: string) => {
+        if (!name.trim()) return;
+        const preset: FilterPreset = {
+            name, searchQuery, clientsActivityFilter, clientsTagFilter,
+            tripsPipelineFilter, dateFrom, dateTo, budgetMin, budgetMax
+        };
+        const updated = [...savedPresets, preset];
+        setSavedPresets(updated);
+        await updatePreferences({ crm_filter_presets: updated });
+    };
+
+    const deletePreset = async (index: number) => {
+        const updated = savedPresets.filter((_, i) => i !== index);
+        setSavedPresets(updated);
+        await updatePreferences({ crm_filter_presets: updated });
+    };
+
     const clearAllFilters = () => {
         setSearchQuery(''); 
         setClientsActivityFilter('all'); 
@@ -156,6 +173,8 @@ export function useCrmFilters() {
         toggleColumn,
         toggleSelectAll,
         toggleSelectOne,
+        savePreset,
+        deletePreset,
         clearAllFilters
     };
 }

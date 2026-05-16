@@ -59,7 +59,7 @@ export function useCrmData() {
 
             const { data: itineraries, error } = await supabase
                 .from("itineraries")
-                .select("id, client_id, title, status, destinations, start_date, end_date, budget, client_price, currency, commission_rate, markup_value, markup_type, tax_percentage, adult_pax, child_pax, infant_pax, created_at, updated_at, itinerary_data, starting_location, ending_location, trip_line_items(net_cost, markup_percentage)")
+                .select("id, client_id, title, status, destinations, start_date, end_date, budget, client_price, currency, commission_rate, markup_value, markup_type, tax_percentage, adult_pax, child_pax, infant_pax, created_at, updated_at, itinerary_data, starting_location, ending_location, share_token, share_enabled, trip_line_items(net_cost, markup_percentage)")
                 .eq("user_id", user.id)
                 .order("updated_at", { ascending: false });
 

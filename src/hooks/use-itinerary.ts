@@ -10,7 +10,7 @@
 
 import { useItineraryContext } from "@/contexts/itinerary-context";
 import type { DayData } from "@/types/itinerary-store";
-import type { HotelInfo, FlightInfo } from "@/components/hotel-flight-editor";
+import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from "@/components/hotel-flight-editor";
 import type { PricingConfig } from "@/types/pricing";
 
 export function useItinerary() {
@@ -58,6 +58,14 @@ export function useItinerary() {
   const removeFlight = (index: number) =>
     dispatch({ type: "REMOVE_FLIGHT", payload: { index } });
 
+  // ── Cab & Bus actions ──────────────────────────────────────────────────────
+
+  const setCabs = (cabs: CabInfo[]) =>
+    dispatch({ type: "SET_CABS", payload: cabs });
+
+  const setBuses = (buses: BusInfo[]) =>
+    dispatch({ type: "SET_BUSES", payload: buses });
+
   // ── Pricing actions ────────────────────────────────────────────────────────
 
   const updatePricing = (updates: Partial<PricingConfig>) =>
@@ -67,11 +75,12 @@ export function useItinerary() {
 
   const markClean = () => dispatch({ type: "MARK_CLEAN" });
 
-  /** Returns the serialisable payload to persist to Supabase itinerary_data */
   const getSerializable = () => ({
     itinerary: state.itinerary,
     hotels: state.hotels,
     flights: state.flights,
+    cabs: state.cabs,
+    buses: state.buses,
     pricing: state.pricing,
   });
 
@@ -83,6 +92,8 @@ export function useItinerary() {
     itinerary: state.itinerary,
     hotels: state.hotels,
     flights: state.flights,
+    cabs: state.cabs,
+    buses: state.buses,
     pricing: state.pricing,
     isDirty: state.isDirty,
     validationErrors: state.validationErrors,
@@ -101,6 +112,8 @@ export function useItinerary() {
     addFlight,
     updateFlight,
     removeFlight,
+    setCabs,
+    setBuses,
     updatePricing,
     markClean,
     getSerializable,

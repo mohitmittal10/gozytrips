@@ -30,12 +30,7 @@ export function CrmApp() {
     
     const saveCurrentPreset = async () => {
         if (!filters.presetName.trim()) return;
-        const preset = {
-            name: filters.presetName, searchQuery: filters.searchQuery, clientsActivityFilter: filters.clientsActivityFilter, clientsTagFilter: filters.clientsTagFilter,
-            tripsPipelineFilter: filters.tripsPipelineFilter, dateFrom: filters.dateFrom, dateTo: filters.dateTo, budgetMin: filters.budgetMin, budgetMax: filters.budgetMax
-        };
-        const updated = [...filters.savedPresets, preset];
-        filters.setSavedPresets(updated);
+        await filters.savePreset(filters.presetName);
         filters.setPresetName('');
         filters.setShowPresetSave(false);
     };
@@ -282,9 +277,9 @@ export function CrmApp() {
                                         <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent my-4" />
 
                                         <div className="flex flex-col xl:flex-row justify-between gap-4 relative z-10 w-full pb-1">
-                                            <div className="flex-1 overflow-hidden min-w-0 flex items-center">
+                                            <div className="flex-1 overflow-hidden min-w-0 flex items-center gap-4">
                                                 {activeTab === 'clients' && dataHook.data.uniqueTags.length > 0 && (
-                                                    <div className="flex gap-2 w-full overflow-x-auto no-scrollbar items-center px-4 -mx-4 py-1" style={{ WebkitMaskImage: 'linear-gradient(to right, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%)' }}>
+                                                    <div className="flex gap-2 overflow-x-auto no-scrollbar items-center py-1 flex-1" style={{ WebkitMaskImage: 'linear-gradient(to right, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%)', maskImage: 'linear-gradient(to right, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%)' }}>
                                                         <span className="text-xs text-gray-500 uppercase tracking-wider mr-2 font-medium shrink-0 flex items-center"><Filter className="w-3 h-3 mr-1" /> Tags</span>
                                                         <button onClick={(e) => { filters.setClientsTagFilter('all'); e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }} className={cn("px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap shrink-0", filters.clientsTagFilter === 'all' ? "bg-purple-500 text-white border-purple-400 shadow-[0_0_10px_rgba(168,85,247,0.3)]" : "bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10")}>All</button>
                                                         {dataHook.data.uniqueTags.map((tag: string) => (
@@ -292,8 +287,13 @@ export function CrmApp() {
                                                         ))}
                                                     </div>
                                                 )}
-                                                {(activeTab === 'trips' || activeTab === 'archive') && (
-                                                    <span className="text-xs text-gray-500 uppercase tracking-wider font-medium flex items-center"><Sliders className="w-3 h-3 mr-1" /> Advanced Filters</span>
+                                                {(activeTab === 'clients' || activeTab === 'trips' || activeTab === 'archive') && (
+                                                    <span className={cn(
+                                                        "text-xs text-gray-500 uppercase tracking-wider font-medium flex items-center shrink-0",
+                                                        activeTab === 'clients' && dataHook.data.uniqueTags.length > 0 ? "border-l border-white/10 pl-4" : ""
+                                                    )}>
+                                                        <Sliders className="w-3 h-3 mr-1" /> Advanced Filters
+                                                    </span>
                                                 )}
                                             </div>
 
@@ -330,7 +330,7 @@ export function CrmApp() {
                                                                     {filters.savedPresets.map((p, idx) => (
                                                                         <div key={idx} className="flex items-center justify-between px-2 py-2 hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
                                                                             <button onClick={() => applyPreset(p)} className="text-xs text-gray-200 flex-1 text-left truncate pr-2 font-medium">{p.name}</button>
-                                                                            <button onClick={(e) => { e.stopPropagation(); filters.setSavedPresets(filters.savedPresets.filter((_, i) => i !== idx)); }} className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-opacity p-1 bg-transparent hover:bg-red-400/10 rounded">
+                                                                            <button onClick={(e) => { e.stopPropagation(); filters.deletePreset(idx); }} className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-opacity p-1 bg-transparent hover:bg-red-400/10 rounded">
                                                                                 <X className="w-3.5 h-3.5" />
                                                                             </button>
                                                                         </div>

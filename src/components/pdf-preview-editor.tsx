@@ -18,10 +18,10 @@ import {
     ChevronRight,
     Minus,
     Plus,
-    Loader,
     Eye,
     Settings,
 } from "lucide-react";
+import UniqueLoading from "./ui/morph-loading";
 import { PdfTemplate, type PdfTheme, type PdfTemplateProps } from "@/components/pdf-template";
 import { useToast } from "@/hooks/use-toast";
 import { useReferenceOptions } from "@/hooks/use-reference-options";
@@ -346,7 +346,7 @@ export function PdfPreviewEditor({
                                 disabled={isDownloading || pages.length === 0}
                                 className="h-8 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-0 text-sm px-4"
                             >
-                                {isDownloading ? <Loader className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
+                                {isDownloading ? <UniqueLoading variant="morph" size="sm" className="w-5 h-5 mr-2" /> : <Download className="w-4 h-4 mr-2" />}
                                 Download
                             </Button>
                         </div>
@@ -360,9 +360,15 @@ export function PdfPreviewEditor({
                             className="flex-1 overflow-auto flex items-start justify-center p-6 bg-gray-900/80"
                         >
                             {isRendering ? (
-                                <div className="flex flex-col items-center justify-center gap-3 h-full text-white/60">
-                                    <Loader className="w-8 h-8 animate-spin" />
-                                    <p className="text-sm">Rendering preview…</p>
+                                <div className="flex flex-col items-center justify-center gap-6 h-full text-white/60">
+                                    <div className="relative">
+                                        <div className="absolute -inset-4 bg-purple-500/20 rounded-full blur-2xl opacity-50 animate-pulse" />
+                                        <UniqueLoading variant="morph" size="lg" className="relative z-10" />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-white font-medium tracking-tight">Generating Preview</p>
+                                        <p className="text-[10px] text-white/40 uppercase tracking-widest mt-1">Applying theme & layout logic</p>
+                                    </div>
                                 </div>
                             ) : currentCanvas ? (
                                 <div style={{
@@ -517,9 +523,9 @@ export function PdfPreviewEditor({
                                             }`}
                                     >
                                         {isRendering ? (
-                                            <><Loader className="w-4 h-4 mr-2 animate-spin" />Re-rendering…</>
+                                            <><UniqueLoading variant="morph" size="sm" className="w-4 h-4 mr-2" />Re-rendering…</>
                                         ) : isSaving ? (
-                                            <><Loader className="w-4 h-4 mr-2 animate-spin" />Saving…</>
+                                            <><UniqueLoading variant="morph" size="sm" className="w-4 h-4 mr-2" />Saving…</>
                                         ) : hasUnappliedChanges ? (
                                             <><span className="mr-2">↻</span>Apply & Save Changes</>
                                         ) : (

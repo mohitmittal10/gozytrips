@@ -36,6 +36,10 @@ export interface TripsViewProps {
     enrichedClients: EnrichedClient[];
     tripsPipelineFilter: string;
     searchQuery: string;
+    dateFrom: string;
+    dateTo: string;
+    budgetMin: string;
+    budgetMax: string;
     viewMode: "table" | "kanban";
     itineraryStatuses: { value: string; label: string; metadata?: any }[];
     loading: boolean;
@@ -81,6 +85,8 @@ export function flattenTrips(clients: EnrichedClient[]): FlatTrip[] {
                 clientName: client.name,
                 clientEmail: client.email ?? null,
                 tripCost,
+                share_token: trip.share_token,
+                share_enabled: trip.share_enabled,
             });
         });
     });
@@ -410,6 +416,10 @@ export const TripsView = ({
     enrichedClients,
     tripsPipelineFilter,
     searchQuery,
+    dateFrom,
+    dateTo,
+    budgetMin,
+    budgetMax,
     viewMode,
     itineraryStatuses,
     loading,
@@ -446,13 +456,34 @@ export const TripsView = ({
             );
         }
 
+        // Date Filters
+        if (dateFrom) {
+            const from = new Date(dateFrom);
+            trips = trips.filter(t => t.start_date && new Date(t.start_date) >= from);
+        }
+        if (dateTo) {
+            const to = new Date(dateTo);
+            to.setHours(23, 59, 59);
+            trips = trips.filter(t => t.start_date && new Date(t.start_date) <= to);
+        }
+
+        // Budget Filters
+        if (budgetMin) {
+            const min = parseFloat(budgetMin);
+            trips = trips.filter(t => (t.tripCost || 0) >= min);
+        }
+        if (budgetMax) {
+            const max = parseFloat(budgetMax);
+            trips = trips.filter(t => (t.tripCost || 0) <= max);
+        }
+
         // Sort: most recently updated first
         trips.sort(
             (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
         );
 
         return trips;
-    }, [enrichedClients, tripsPipelineFilter, searchQuery]);
+    }, [enrichedClients, tripsPipelineFilter, searchQuery, dateFrom, dateTo, budgetMin, budgetMax]);
 
     return (
         <div className="space-y-4">

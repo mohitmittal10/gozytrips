@@ -220,10 +220,11 @@ export default function TheLab() {
 
 
   const isDesigningNew = activeLabTab === 'new';
+  const isViewingItinerary = ['itinerary', 'flights-hotels', 'pricing'].includes(activeLabTab);
 
   return (
     <section id="the-lab" className="w-full mx-auto pt-0 pb-10">
-      {!isDesigningNew && itinerary?.itinerary?.length > 0 && !['history', 'settings'].includes(activeLabTab) && (
+      {isViewingItinerary && itinerary?.itinerary?.length > 0 && (
         <div className="w-full sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5">
           <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
             <TheLabHeader 
@@ -263,22 +264,21 @@ export default function TheLab() {
             activeLabTab={activeLabTab} 
             setActiveLabTab={setActiveLabTab} 
             handleCreateNew={handleCreateNew}
-            // Props for the integrated form
             form={form}
             currentStep={currentStep}
             onNext={handleNext}
             onSubmit={onSubmit}
             isGenerating={isGenerating}
+            isLoading={isLoading}
           />
           
           <div className={cn(
             "flex-1 min-w-0 flex flex-col",
-            !itinerary && !['history', 'settings'].includes(activeLabTab) ? "items-center justify-center" : 
-            (['history','settings'].includes(activeLabTab) ? "" : "lg:grid lg:grid-cols-12 gap-4")
+            isDesigningNew || !itinerary || ['history', 'settings'].includes(activeLabTab) ? "items-center justify-center" : "lg:grid lg:grid-cols-12 gap-4"
           )}>
             <div className={cn(
               ['history','settings'].includes(activeLabTab) ? "w-full" : 
-              (!itinerary ? "w-full max-w-5xl" : "lg:col-span-8 order-2 lg:order-1")
+              (isDesigningNew || !itinerary ? "w-full max-w-5xl" : "lg:col-span-8 order-2 lg:order-1")
             )}>
               {(isGenerating && !itinerary) || (isLoading) ? (
                 <div className="py-24 flex flex-col items-center min-h-[400px] justify-center space-y-12">
@@ -287,7 +287,7 @@ export default function TheLab() {
                 </div>
               ) : (
                 <>
-                  {itinerary?.itinerary?.length > 0 && !['history','settings'].includes(activeLabTab) && <TheLabHero itinerary={itinerary} />}
+                  {isViewingItinerary && itinerary?.itinerary?.length > 0 && <TheLabHero itinerary={itinerary} />}
                   <TheLabTabContent 
                     activeLabTab={activeLabTab} 
                     isGenerating={isGenerating} 
@@ -312,7 +312,6 @@ export default function TheLab() {
                     isSaving={isSaving} 
                     setCurrentTripId={setCurrentTripId} 
                     setActiveLabTab={setActiveLabTab} 
-                    // Form props
                     form={form}
                     currentStep={currentStep}
                     setCurrentStep={setCurrentStep}
@@ -324,7 +323,7 @@ export default function TheLab() {
               )}
             </div>
             
-            {itinerary && !['history','settings'].includes(activeLabTab) && (
+            {isViewingItinerary && itinerary && (
               <TheLabSummaryPanel 
                 itinerary={itinerary} 
                 selectedStatus={selectedStatus} 

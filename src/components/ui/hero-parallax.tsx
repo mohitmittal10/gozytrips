@@ -55,7 +55,7 @@ export const HeroParallax = ({
         springConfig
     );
     return (
-        <div className="overflow-hidden w-full h-[220vh] bg-black">
+        <div className="overflow-hidden w-full h-[120vh] md:h-[220vh] bg-black">
             <div
                 ref={ref}
                 className="h-full pt-0 pb-0 antialiased relative flex flex-col self-auto [perspective:1000px] [transform-style:preserve-3d]"

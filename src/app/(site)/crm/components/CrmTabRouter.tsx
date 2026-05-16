@@ -73,27 +73,29 @@ export function CrmTabRouter() {
 
         if (filters.dateFrom) {
             const from = new Date(filters.dateFrom);
-            result = result.filter(c => {
-                const tripDate = c.allTrips[0]?.start_date;
-                return tripDate && new Date(tripDate) >= from;
-            });
+            result = result.filter(c => 
+                c.allTrips.some(t => t.start_date && new Date(t.start_date) >= from)
+            );
         }
         if (filters.dateTo) {
             const to = new Date(filters.dateTo);
             to.setHours(23, 59, 59);
-            result = result.filter(c => {
-                const tripDate = c.allTrips[0]?.start_date;
-                return tripDate && new Date(tripDate) <= to;
-            });
+            result = result.filter(c => 
+                c.allTrips.some(t => t.start_date && new Date(t.start_date) <= to)
+            );
         }
 
         if (filters.budgetMin) {
             const min = parseFloat(filters.budgetMin);
-            result = result.filter(c => (c.latestRawBudget || 0) >= min);
+            result = result.filter(c => 
+                c.allTrips.some(t => (t.client_price || t.budget || 0) >= min)
+            );
         }
         if (filters.budgetMax) {
             const max = parseFloat(filters.budgetMax);
-            result = result.filter(c => (c.latestRawBudget || 0) <= max);
+            result = result.filter(c => 
+                c.allTrips.some(t => (t.client_price || t.budget || 0) <= max)
+            );
         }
 
         return result;
@@ -138,7 +140,7 @@ export function CrmTabRouter() {
         URL.revokeObjectURL(url);
     };
 
-    const archivedClients = data.enrichedClients.filter(c => c.latestStatus.toLowerCase() === 'completed');
+    const archivedClients = displayClients.filter(c => c.latestStatus.toLowerCase() === 'completed');
 
     const handleTripStatusChange = React.useCallback(async (tripId: string, newStatus: string) => {
         const ownerClient = data.enrichedClients.find(c => c.allTrips.some(t => t.id === tripId));
@@ -235,6 +237,10 @@ export function CrmTabRouter() {
         enrichedClients={data.enrichedClients}
         tripsPipelineFilter={filters.tripsPipelineFilter}
         searchQuery={filters.searchQuery}
+        dateFrom={filters.dateFrom}
+        dateTo={filters.dateTo}
+        budgetMin={filters.budgetMin}
+        budgetMax={filters.budgetMax}
         viewMode={filters.tripsViewMode}
         itineraryStatuses={itineraryStatuses}
         loading={loading.clientsLoading || loading.isComputing}

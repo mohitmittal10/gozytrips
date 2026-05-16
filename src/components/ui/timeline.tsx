@@ -44,7 +44,7 @@ export const Timeline = ({ data, title, description }: TimelineProps) => {
             ref={containerRef}
         >
             {(title || description) && (
-                <div className="max-w-7xl mx-auto py-10 px-4 md:px-8 lg:px-10">
+                <div className="max-w-7xl mx-auto py-5 md:py-10 px-4 md:px-8 lg:px-10">
                     {title && (
                         <h2 className="text-3xl md:text-5xl font-bold mb-2 text-white max-w-4xl">
                             {title}

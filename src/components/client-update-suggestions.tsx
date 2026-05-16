@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  Sparkles, Send, LoaderCircle, MessageCirclePlus, CheckCircle2,
+  Sparkles, Send, MessageCirclePlus, CheckCircle2,
   Clock, Wallet, Pencil, RefreshCw, ChevronDown, ChevronUp,
 } from "lucide-react";
+import UniqueLoading from "./ui/morph-loading";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -190,9 +191,9 @@ export default function ClientUpdateSuggestions({
           Show AI Suggestions
         </Button>
       ) : isLoadingSuggestions && !hasFetched ? (
-        <div className="flex items-center justify-center py-6 gap-2 text-gray-400 text-sm">
-          <LoaderCircle className="w-4 h-4 animate-spin" />
-          Loading AI suggestions...
+        <div className="flex flex-col items-center justify-center py-8 gap-3 text-gray-400 text-sm">
+          <UniqueLoading variant="morph" size="sm" />
+          <p className="text-[11px] animate-pulse">Consulting AI Intelligence...</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -250,7 +251,7 @@ export default function ClientUpdateSuggestions({
                         disabled={isGenerating || (isCustom && !customMessage.trim())}
                       >
                         {isGenerating ? (
-                          <LoaderCircle className="w-3 h-3 animate-spin" />
+                          <UniqueLoading variant="morph" size="sm" className="w-4 h-4" />
                         ) : (
                           <>
                             <Sparkles className="w-3 h-3" />

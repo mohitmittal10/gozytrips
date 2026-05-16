@@ -4,8 +4,9 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { History, LoaderCircle, Trash2 } from "lucide-react";
+import { History, Trash2 } from "lucide-react";
 import { VendorEnquiry } from "@/types/vendor-enquiry";
+import UniqueLoading from "../ui/morph-loading";
 
 interface EnquiryHistoryProps {
   enquiries: VendorEnquiry[];
@@ -40,7 +41,7 @@ export function EnquiryHistory({ enquiries, isLoading, onLoad, onDelete }: Enqui
         <div className="mt-6 space-y-4 overflow-y-auto max-h-[calc(100vh-180px)] pr-2">
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
-              <LoaderCircle className="w-6 h-6 animate-spin text-purple-500" />
+              <UniqueLoading variant="morph" size="sm" />
             </div>
           ) : enquiries.length === 0 ? (
             <div className="text-center py-12">

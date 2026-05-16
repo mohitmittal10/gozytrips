@@ -1,4 +1,5 @@
 import Hero from '@/components/sections/hero';
+import TrustedMarquee from '@/components/sections/trusted-marquee';
 import { CleanTestimonialDemo } from '@/components/sections/clean-testimonial-demo';
 import { HeroParallax } from '@/components/ui/hero-parallax';
 import AnimatedTypography from '@/components/sections/animated-typography';
@@ -11,6 +12,7 @@ export default function Home() {
   return (
     <>
       <Hero />
+      <TrustedMarquee />
       <HeroParallax products={PARALLAX_PRODUCTS} />
       <HowItWorksTimeline />
       <FeaturesGrid />

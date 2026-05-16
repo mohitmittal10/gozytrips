@@ -1,6 +1,7 @@
 "use client"
 
 import { cn } from "@/lib/utils"
+import AnimatedLogo from "./animated-logo"
 
 interface UniqueLoadingProps {
   variant?: "morph"
@@ -21,19 +22,8 @@ export default function UniqueLoading({
 
   if (variant === "morph") {
     return (
-      <div className={cn("relative", containerSizes[size], className)}>
-        <div className="absolute inset-0 flex items-center justify-center">
-          {[0, 1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="absolute w-4 h-4 bg-black dark:bg-white"
-              style={{
-                animation: `morph-${i} 2s infinite ease-in-out`,
-                animationDelay: `${i * 0.2}s`,
-              }}
-            />
-          ))}
-        </div>
+      <div className={cn("relative flex items-center justify-center", containerSizes[size], className)}>
+        <AnimatedLogo isLoading={true} size={size === "lg" ? "xl" : size} />
       </div>
     )
   }

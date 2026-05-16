@@ -8,14 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plane, DollarSign, Eye, AlertCircle, Edit2 } from "lucide-react";
+import { Plane, DollarSign, Eye, AlertCircle, Edit, MapPin, Save } from "lucide-react";
 import { PdfPreviewEditor } from "@/components/pdf-preview-editor";
 import ItineraryTimeline from "@/components/itinerary-timeline";
 import HotelFlightEditor from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
 import { type PdfTheme } from "@/components/pdf-template";
 import { Input } from "@/components/ui/input";
-import { addDays, format, parseISO } from "date-fns";
+import { addDays, format } from "date-fns";
 import { calcPricingBreakdown } from "@/services/financial/FinancialService";
 import { defaultPricingConfig } from "@/types/pricing";
 import { useToast } from "@/hooks/use-toast";
@@ -25,6 +25,7 @@ import { createClient } from "@/lib/supabase/client";
 // Store
 import { ItineraryProvider } from "@/contexts/itinerary-context";
 import { useItinerary } from "@/hooks/use-itinerary";
+import { useItineraryPricing } from "@/hooks/use-itinerary-pricing";
 
 // ── Inner editor (must be inside ItineraryProvider) ────────────────────────────
 
@@ -47,6 +48,8 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
     itinerary,
     hotels,
     flights,
+    cabs,
+    buses,
     pricing,
     isDirty,
     validationErrors,
@@ -54,6 +57,8 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
     setItinerary,
     setHotels,
     setFlights,
+    setCabs,
+    setBuses,
     markClean,
     getSerializable,
   } = useItinerary();
@@ -85,7 +90,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
       let startDate = trip.start_date;
       let endDate = trip.end_date;
       if (startDate && canonicalState.itinerary?.length > 0) {
-          const dtStart = parseISO(startDate);
+          const dtStart = new Date(startDate);
           const dtEnd = addDays(dtStart, canonicalState.itinerary.length - 1);
           endDate = format(dtEnd, 'yyyy-MM-dd');
       }
@@ -103,8 +108,8 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
           title,
           start_date: startDate,
           end_date: endDate,
-          client_price: breakdown.finalTotal,
-          budget: breakdown.finalTotal, // Sync total budget for CRM display
+          client_price: Math.round(breakdown.finalTotal),
+          budget: Math.round(breakdown.finalTotal), // Sync total budget for CRM display
           markup_value: pricingCfg.markupValue || 0,
           markup_type: pricingCfg.markupType || 'percentage',
           tax_percentage: pricingCfg.taxPercentage || 0,
@@ -144,6 +149,8 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
     theme: selectedTheme,
     hotels,
     flights,
+    cabs,
+    buses,
     pricing,
     baseCost,
     finalTotal
@@ -173,7 +180,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
                   onClick={() => setIsEditingTitle(true)}
                   className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded transition-all"
                 >
-                  <Edit2 className="w-4 h-4 text-gray-400" />
+                  <Edit className="w-4 h-4 text-gray-400" />
                 </button>
                 {isDirty && (
                   <span className="ml-2 text-xs font-normal text-amber-400 align-middle">
@@ -236,7 +243,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
           <div className="w-px h-6 bg-white/20 hidden md:block mx-1" />
 
           {(() => {
-            const planType = userProfile?.plan_type || 'starter';
+            const planType = (userProfile as any)?.plan_type || 'starter';
             const hasPremiumPdf = planType !== 'starter';
 
             return (
@@ -331,14 +338,17 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
 
           <TabsContent value="logistics" className="mt-0 outline-none">
             <div className="max-w-4xl mx-auto">
-              {/* HotelFlightEditor dispatches to store via setHotels/setFlights */}
+              {/* HotelFlightEditor dispatches to store via setHotels/setFlights/setCabs/setBuses */}
               <HotelFlightEditor
                 hotels={hotels}
                 flights={flights}
+                cabs={cabs}
+                buses={buses}
                 onHotelsChange={setHotels}
                 onFlightsChange={setFlights}
+                onCabsChange={setCabs}
+                onBusesChange={setBuses}
                 totalDays={itinerary?.length || 1}
-                currency={pricing?.currency}
               />
             </div>
           </TabsContent>

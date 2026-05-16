@@ -3,7 +3,7 @@
 import { useAuth } from '@/contexts/auth-context';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
-import { LoaderCircle } from 'lucide-react';
+import UniqueLoading from './ui/morph-loading';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -27,10 +27,10 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   // Only show the loading state if we are trying to access a protected route
   if (loading && isProtectedRoute) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-secondary/10 to-background">
-        <div className="text-center space-y-4">
-          <LoaderCircle className="w-12 h-12 animate-spin mx-auto text-primary" />
-          <p className="text-muted-foreground">Loading...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#050505]">
+        <div className="relative group">
+          <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl opacity-50 group-hover:opacity-75 transition-opacity" />
+          <UniqueLoading variant="morph" size="lg" className="relative z-10" />
         </div>
       </div>
     );

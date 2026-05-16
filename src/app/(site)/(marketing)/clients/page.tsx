@@ -7,11 +7,12 @@ import { useClients, type Client } from "@/lib/hooks/use-clients";
 import { ClientDialog } from "@/components/client-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, User } from "lucide-react";
+import { Plus, User, ArrowRight, Clock, Edit, Trash2 } from "lucide-react";
 import { AuthRequired } from "@/components/auth/auth-required";
 import { ClientSearch } from "@/components/clients/client-search";
 import { ClientFilter } from "@/components/clients/client-filter";
-import { ClientCard } from "@/components/clients/client-card";
+import { Badge } from "@/components/ui/badge";
+import { cn, getAvatarColor } from "@/lib/utils";
 
 export default function ClientsPage() {
     const router = useRouter();
@@ -42,7 +43,7 @@ export default function ClientsPage() {
 
     if (authLoading || (clientsLoading && clients.length === 0)) {
         return (
-            <div className="flex flex-col min-h-screen bg-[#05070a] bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.08),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,92,51,0.08),transparent_50%)]">
+            <div className="flex flex-col min-h-screen bg-transparent">
                 <div className="flex-1 flex justify-center items-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
                 </div>
@@ -79,7 +80,7 @@ export default function ClientsPage() {
     };
 
     return (
-        <div className="flex flex-col min-h-screen bg-[#05070a] bg-[radial-gradient(circle_at_20%_20%,rgba(124,58,237,0.08),transparent_50%),radial-gradient(circle_at_80%_80%,rgba(255,92,51,0.08),transparent_50%)]">
+        <div className="flex flex-col min-h-screen bg-transparent">
 
             <main className="flex-grow container mx-auto px-4 pt-24 pb-16">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
@@ -107,7 +108,7 @@ export default function ClientsPage() {
                 )}
 
                 {filteredClients.length === 0 && !clientsLoading ? (
-                    <Card className="glass-main border-white/10 text-center py-24 rounded-3xl">
+                    <Card className="glass-main border-white/10 text-center py-24 rounded-3xl shadow-2xl">
                         <CardContent>
                             <div className="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <User className="w-12 h-12 text-slate-600" />
@@ -124,16 +125,86 @@ export default function ClientsPage() {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {filteredClients.map(client => (
-                            <ClientCard
-                                key={client.id}
-                                client={client}
-                                onClick={() => router.push(`/clients/${client.id}`)}
-                                onEdit={handleOpenEdit}
-                                onDelete={handleDelete}
-                            />
-                        ))}
+                    <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden mt-6 shadow-2xl backdrop-blur-xl">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse min-w-[600px]">
+                                <thead>
+                                    <tr className="border-b border-white/10 bg-white/[0.01]">
+                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Client Info</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tags</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Last Updated</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/5">
+                                    {filteredClients.map((client) => (
+                                        <tr 
+                                            key={client.id} 
+                                            className="hover:bg-white/[0.04] transition-colors group cursor-pointer"
+                                            onClick={() => router.push(`/clients/${client.id}`)}
+                                        >
+                                            <td className="p-4">
+                                                <div className="flex items-center gap-4">
+                                                    <div className={cn("inline-flex w-10 h-10 rounded-full items-center justify-center text-sm font-bold text-white bg-gradient-to-br shrink-0 shadow-lg border border-white/10", getAvatarColor(client.name))}>
+                                                        {client.name.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-bold text-white group-hover:text-primary transition-colors">{client.name}</p>
+                                                        <p className="text-xs text-slate-500 font-medium">{client.email || 'No email provided'}</p>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="flex flex-wrap gap-1.5">
+                                                    {client.tags && client.tags.length > 0 ? (
+                                                        client.tags.map((tag: string, idx: number) => (
+                                                            <Badge key={idx} variant="secondary" className="bg-primary/10 text-primary border border-primary/20 font-bold px-2.5 py-0.5 text-[10px] uppercase tracking-wider">
+                                                                {tag}
+                                                            </Badge>
+                                                        ))
+                                                    ) : (
+                                                        <span className="text-xs text-slate-600 font-medium italic">No tags</span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-sm text-slate-500 font-medium">
+                                                <div className="flex items-center gap-2">
+                                                    <Clock className="w-3.5 h-3.5 text-slate-600" />
+                                                    {new Date(client.updated_at || client.created_at || Date.now()).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                </div>
+                                            </td>
+                                            <td className="p-4 text-right">
+                                                <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="h-8 w-8 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleOpenEdit(client);
+                                                        }}
+                                                    >
+                                                        <Edit className="w-4 h-4" />
+                                                    </Button>
+                                                    <Button 
+                                                        variant="ghost" 
+                                                        size="icon" 
+                                                        className="h-8 w-8 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleDelete(client.id, client.name);
+                                                        }}
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </Button>
+                                                    <ArrowRight className="w-4 h-4 text-slate-600 group-hover:text-primary transition-colors ml-3" />
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
 

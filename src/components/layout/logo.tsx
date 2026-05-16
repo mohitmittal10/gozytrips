@@ -1,14 +1,16 @@
 import { cn } from "@/lib/utils";
-import { Compass } from "lucide-react";
 import Link from "next/link";
+import AnimatedLogo from "../ui/animated-logo";
 
-const Logo = ({ className }: { className?: string }) => {
+const Logo = ({ className, isLoading = false, hideText = false }: { className?: string, isLoading?: boolean, hideText?: boolean }) => {
   return (
-    <Link href="/" className={cn("flex items-center gap-2", className)}>
-      <Compass className="h-6 w-6 text-primary" />
-      <span className="font-headline text-xl font-bold text-foreground">
-        Wander Labs
-      </span>
+    <Link href="/" className={cn("flex items-center gap-3", className)}>
+      <AnimatedLogo isLoading={isLoading} size="sm" className="text-primary" />
+      {!hideText && (
+        <span className="font-headline text-xl font-bold tracking-tight text-foreground">
+          Wander Labs
+        </span>
+      )}
     </Link>
   );
 };

@@ -30,11 +30,18 @@ import {
     Users,
     Plane,
     ArrowRight,
+    Receipt,
+    ExternalLink,
+    Check,
+    LoaderCircle,
+    AlertCircle,
+    ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { useAuth } from "@/contexts/auth-context";
+import { useToast } from "@/hooks/use-toast";
 
 /** Flat trip shape used in the Trips view — itinerary row augmented with clientName */
 export interface FlatTrip {
@@ -56,6 +63,8 @@ export interface FlatTrip {
     clientName: string | null;
     clientEmail: string | null;
     tripCost: number;
+    share_token?: string | null;
+    share_enabled?: boolean;
 }
 
 interface TripDetailSheetProps {
@@ -103,6 +112,85 @@ export const TripDetailSheet = ({
     deleting,
 }: TripDetailSheetProps) => {
     const { agencySettings } = useAuth();
+    const { toast } = useToast();
+
+    const [isGenerating, setIsGenerating] = React.useState(false);
+    const [invoiceUrl, setInvoiceUrl] = React.useState<string | null>(
+        trip?.share_token && trip?.share_enabled
+            ? `${window?.location?.origin || ""}/invoice/${trip.share_token}`
+            : null
+    );
+    const [copied, setCopied] = React.useState(false);
+
+    // Sync invoice URL when trip prop changes
+    React.useEffect(() => {
+        if (trip?.share_token && trip?.share_enabled) {
+            setInvoiceUrl(`${window.location.origin}/invoice/${trip.share_token}`);
+        } else {
+            setInvoiceUrl(null);
+        }
+    }, [trip?.id, trip?.share_token, trip?.share_enabled]);
+
+    const handleGenerateInvoice = React.useCallback(async () => {
+        if (!trip?.id) return;
+        setIsGenerating(true);
+        try {
+            const res = await fetch("/api/itineraries/generate-invoice-link", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ itineraryId: trip.id }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "Failed to generate invoice");
+            }
+
+            const fullUrl = `${window.location.origin}/invoice/${data.share_token}`;
+            setInvoiceUrl(fullUrl);
+
+            toast({
+                title: data.already_existed ? "Invoice Already Exists" : "Invoice Generated!",
+                description: data.already_existed
+                    ? "An invoice link for this trip already exists."
+                    : "Your invoice has been created with a secure shareable link.",
+            });
+        } catch (err: any) {
+            console.error("Invoice generation error:", err);
+            toast({
+                title: "Failed to Generate Invoice",
+                description: err.message || "Something went wrong. Please try again.",
+                variant: "destructive",
+            });
+        } finally {
+            setIsGenerating(false);
+        }
+    }, [trip?.id, toast]);
+
+    const handleCopyLink = React.useCallback(async () => {
+        if (!invoiceUrl) return;
+        try {
+            await navigator.clipboard.writeText(invoiceUrl);
+            setCopied(true);
+            toast({
+                title: "Link Copied!",
+                description: "The invoice URL has been copied to your clipboard.",
+            });
+            setTimeout(() => setCopied(false), 2500);
+        } catch {
+            toast({
+                title: "Copy Failed",
+                description: "Could not copy to clipboard. Please copy the link manually.",
+                variant: "destructive",
+            });
+        }
+    }, [invoiceUrl, toast]);
+
+    const handleViewInvoice = React.useCallback(() => {
+        if (!invoiceUrl) return;
+        window.open(invoiceUrl, "_blank", "noopener,noreferrer");
+    }, [invoiceUrl]);
     const currencySymbol = getCurrencySymbol(
         trip?.currency || agencySettings?.default_currency || DEFAULT_CURRENCY
     );
@@ -278,6 +366,80 @@ export const TripDetailSheet = ({
                                     )}
                                 </SelectContent>
                             </Select>
+                        </div>
+
+                        {/* --- Invoice Section --- */}
+                        <div className="p-5 bg-white/[0.03] border border-white/10 rounded-xl space-y-3">
+                            <h5 className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2 flex items-center gap-2">
+                                <Receipt className="w-3.5 h-3.5" /> Invoice
+                            </h5>
+
+                            {invoiceUrl ? (
+                                <>
+                                    {/* Invoice URL Display */}
+                                    <div className="flex items-center gap-2 bg-black/30 border border-white/10 rounded-lg p-2.5">
+                                        <p className="text-xs text-gray-400 truncate flex-1 font-mono">{invoiceUrl}</p>
+                                    </div>
+
+                                    {/* Invoice Actions */}
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className="border-purple-500/30 bg-purple-500/5 text-purple-400 hover:bg-purple-500/10 h-9"
+                                            onClick={handleViewInvoice}
+                                        >
+                                            <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                                            View Invoice
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            className={cn(
+                                                "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 h-9 transition-all",
+                                                copied && "border-green-500/30 bg-green-500/5 text-green-400"
+                                            )}
+                                            onClick={handleCopyLink}
+                                        >
+                                            {copied ? (
+                                                <><Check className="w-3.5 h-3.5 mr-1.5" /> Copied!</>
+                                            ) : (
+                                                <><Copy className="w-3.5 h-3.5 mr-1.5" /> Copy Link</>
+                                            )}
+                                        </Button>
+                                    </div>
+
+                                    <p className="text-[10px] text-gray-600 flex items-center gap-1">
+                                        <AlertCircle className="w-3 h-3" />
+                                        This link is accessible to you and the assigned client.
+                                    </p>
+
+                                    {/* Regenerate option */}
+                                    <button
+                                        onClick={handleGenerateInvoice}
+                                        disabled={isGenerating}
+                                        className="text-[11px] text-gray-600 hover:text-purple-400 transition-colors flex items-center gap-1"
+                                    >
+                                        <ChevronRight className="w-3 h-3" />
+                                        {isGenerating ? "Regenerating..." : "Regenerate Invoice Link"}
+                                    </button>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-xs text-gray-500">Generate a secure invoice link to share with your client.</p>
+                                    <Button
+                                        className="w-full aurora-gradient text-white border-none hover:brightness-110 h-10"
+                                        onClick={handleGenerateInvoice}
+                                        disabled={isGenerating}
+                                    >
+                                        {isGenerating ? (
+                                            <><LoaderCircle className="w-4 h-4 mr-2 animate-spin" /> Generating...</>
+                                        ) : (
+                                            <><Receipt className="w-4 h-4 mr-2" /> Generate Invoice</>
+                                        )}
+                                    </Button>
+                                </>
+                            )}
                         </div>
 
                         {/* --- Actions --- */}

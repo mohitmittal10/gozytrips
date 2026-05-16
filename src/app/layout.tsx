@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { AppBackground } from "@/components/layout/app-background";
 
 const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -29,10 +30,10 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet" />
       </head>
       <body className={cn(
-        "font-body antialiased min-h-screen bg-background text-foreground",
-        "bg-gradient-to-br from-background via-secondary/10 to-background"
+        "font-body antialiased min-h-screen bg-transparent text-foreground"
       )}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+          <AppBackground />
           <AuthProvider>
             <ProtectedRoute>
               {children}

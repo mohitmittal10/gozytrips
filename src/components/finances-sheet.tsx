@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useTripFinances } from '@/lib/hooks/use-trip-finances';
 import { SavedItinerary } from './trip-card';
-import { Trash2, ExternalLink, Plus, Loader } from 'lucide-react';
+import { Trash2, ExternalLink, Plus } from 'lucide-react';
+import UniqueLoading from './ui/morph-loading';
 import { useToast } from '@/hooks/use-toast';
 import { createClient } from '@/lib/supabase/client';
 import { useAuth } from '@/contexts/auth-context';
@@ -147,9 +148,9 @@ export function FinancesSheet({ trip, isOpen, onOpenChange }: FinancesSheetProps
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
-                      <Loader className="w-6 h-6 animate-spin mx-auto mb-2" />
-                      Loading finances...
+                    <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
+                      <UniqueLoading variant="morph" size="sm" className="mx-auto mb-3" />
+                      <p className="text-xs uppercase tracking-widest opacity-50 font-bold">Syncing Ledger</p>
                     </TableCell>
                   </TableRow>
                 ) : lineItems.length === 0 ? (
@@ -215,7 +216,7 @@ export function FinancesSheet({ trip, isOpen, onOpenChange }: FinancesSheetProps
               </div>
             </div>
             <Button type="submit" disabled={isAdding} className="w-full glass-button bg-primary/20 hover:bg-primary/30 text-primary mt-2">
-              {isAdding ? <Loader className="w-4 h-4 animate-spin mr-2" /> : null}
+              {isAdding ? <UniqueLoading variant="morph" size="sm" className="w-4 h-4 mr-2" /> : null}
               Add Line Item
             </Button>
           </form>

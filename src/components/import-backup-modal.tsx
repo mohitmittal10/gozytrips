@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CloudDownload, Rocket, Loader2, AlertCircle, HardDrive, Upload } from "lucide-react";
+import { CloudDownload, Rocket, AlertCircle, HardDrive, Upload } from "lucide-react";
+import UniqueLoading from "./ui/morph-loading";
 import { BackupService } from "@/services/backup";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -225,7 +226,7 @@ export function ImportBackupModal({ isDataEmpty, onImportSuccess, isOpen: extern
 
         {step === "loading" && (
           <div className="flex flex-col items-center justify-center py-10">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <UniqueLoading variant="morph" size="md" />
             <p className="mt-4 text-sm text-muted-foreground">Checking Google Drive...</p>
           </div>
         )}
@@ -256,7 +257,7 @@ export function ImportBackupModal({ isDataEmpty, onImportSuccess, isOpen: extern
 
         {step === "importing" && (
           <div className="flex flex-col items-center justify-center py-10">
-            <Loader2 className="h-10 w-10 animate-spin text-primary" />
+            <UniqueLoading variant="morph" size="md" />
             <p className="mt-4 text-sm text-muted-foreground animate-pulse">Restoring data... Please do not close this window.</p>
           </div>
         )}

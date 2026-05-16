@@ -10,9 +10,10 @@ import {
 } from "@/components/ui/select";
 import {
   Building2, Car, Compass, FileCheck, Shield, Sparkles, Send,
-  LoaderCircle, Check, AlertCircle, Pencil, RotateCcw,
+  Check, AlertCircle, Pencil, RotateCcw,
   Save, Copy
 } from "lucide-react";
+import UniqueLoading from "./ui/morph-loading";
 
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
@@ -343,7 +344,7 @@ export default function VendorEnquiry() {
   if (optionsLoading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <LoaderCircle className="w-8 h-8 animate-spin text-purple-500" />
+        <UniqueLoading variant="morph" size="md" />
       </div>
     );
   }
@@ -557,7 +558,7 @@ export default function VendorEnquiry() {
               >
                 {isGenerating ? (
                   <>
-                    <LoaderCircle className="w-4 h-4 animate-spin" />
+                    <UniqueLoading variant="morph" size="sm" className="w-5 h-5" />
                     Generating...
                   </>
                 ) : (
@@ -585,8 +586,9 @@ export default function VendorEnquiry() {
             </div>
           ) : isGenerating ? (
             <div className="flex flex-col items-center justify-center h-full min-h-[400px] bg-white/[0.02] border border-white/10 rounded-xl p-8">
-              <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4 animate-pulse">
-                <Sparkles className="w-7 h-7 text-purple-400 animate-spin" />
+              <div className="relative mb-6">
+                <div className="absolute -inset-4 bg-purple-500/20 rounded-full blur-xl opacity-50 animate-pulse" />
+                <UniqueLoading variant="morph" size="md" className="relative z-10" />
               </div>
               <h3 className="text-lg font-semibold text-gray-300 mb-2">Generating Email...</h3>
               <p className="text-sm text-gray-500 text-center">AI is crafting a professional enquiry email for you.</p>

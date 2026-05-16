@@ -5,7 +5,6 @@ import {
   History, 
   Calendar, 
   ChevronRight, 
-  Loader2, 
   Clock,
   Sparkles,
   Search,
@@ -17,6 +16,7 @@ import type { ActiveLabTab } from '@/types/the-lab';
 import { useAuth } from '@/contexts/auth-context';
 import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
+import UniqueLoading from '../ui/morph-loading';
 
 interface ItineraryRecord {
   id: string;
@@ -94,14 +94,14 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 space-y-6">
-        <div className="relative">
-          <Loader2 className="w-12 h-12 text-purple-500 animate-spin" />
-          <div className="absolute inset-0 blur-xl bg-purple-500/20 animate-pulse" />
+      <div className="flex flex-col items-center justify-center py-32 space-y-8">
+        <div className="relative group">
+          <div className="absolute -inset-4 bg-purple-500/20 rounded-full blur-2xl opacity-50 group-hover:opacity-75 transition-opacity" />
+          <UniqueLoading variant="morph" size="lg" className="relative z-10" />
         </div>
         <div className="text-center space-y-2">
           <p className="text-white font-medium tracking-tight">Retrieving Archive</p>
-          <p className="text-zinc-500 text-xs uppercase tracking-widest font-black opacity-50">Syncing with cloud repository</p>
+          <p className="text-zinc-500 text-xs uppercase tracking-widest font-black opacity-30">Syncing with cloud repository</p>
         </div>
       </div>
     );

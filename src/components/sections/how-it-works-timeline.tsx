@@ -98,7 +98,7 @@ export default function HowItWorksTimeline() {
     ];
 
     return (
-        <section className="w-full py-24 bg-black">
+        <section className="w-full py-10 md:py-24 bg-black">
             <Timeline
                 data={data}
                 title={<>How <span className="bg-gradient-to-r from-indigo-400 via-indigo-300 to-indigo-500 bg-clip-text text-transparent">it works</span></>}
