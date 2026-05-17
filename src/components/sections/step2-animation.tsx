@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Sparkles, Plane, Hotel, Map, MapPin, Navigation, Clock, CheckCircle2, ShieldCheck, BrainCircuit } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AnimatedLogo from "../ui/animated-logo";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -54,9 +55,9 @@ export default function Step2Animation() {
     ];
 
     return (
-        <div ref={ref} className="relative w-full max-w-[380px] md:ml-auto mx-auto perspective-1000 h-[380px]">
+        <div ref={ref} className="relative w-full max-w-[380px] md:ml-auto mx-auto perspective-1000 h-[420px] xs:h-[390px] sm:h-[380px]">
             <motion.div 
-                className="bg-zinc-950/40 backdrop-blur-md rounded-3xl p-6 h-full relative overflow-hidden border border-white/5 shadow-2xl flex flex-col"
+                className="bg-zinc-950/40 backdrop-blur-md rounded-3xl p-4 sm:p-6 h-full relative overflow-hidden border border-white/5 shadow-2xl flex flex-col"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -123,7 +124,7 @@ export default function Step2Animation() {
                                     }}
                                     transition={{ duration: 2, repeat: Infinity }}
                                 >
-                                    <BrainCircuit className="w-8 h-8 text-indigo-400" />
+                                    <AnimatedLogo isLoading={true} size="sm" className="text-indigo-400" />
                                 </motion.div>
                                 <div className="text-sm font-mono text-indigo-300">Connecting to Wander Labs AI...</div>
                                 <div className="w-32 h-1 bg-white/10 rounded-full overflow-hidden mt-2">
@@ -193,13 +194,13 @@ export default function Step2Animation() {
                                     Plotting Optimal Route
                                 </div>
                                 
-                                <div className="relative flex-1 flex flex-col justify-between px-6 pb-2">
+                                <div className="relative flex-1 flex flex-col justify-between px-3 sm:px-6 pb-2">
                                     {/* Timeline line */}
-                                    <div className="absolute left-[39px] top-4 bottom-8 w-[2px] bg-white/10" />
+                                    <div className="absolute left-[27px] sm:left-[39px] top-4 bottom-8 w-[2px] bg-white/10" />
                                     
                                     {/* Timeline progress */}
                                     <motion.div 
-                                        className="absolute left-[39px] top-4 w-[2px] bg-gradient-to-b from-emerald-400 to-cyan-500"
+                                        className="absolute left-[27px] sm:left-[39px] top-4 w-[2px] bg-gradient-to-b from-emerald-400 to-cyan-500"
                                         initial={{ height: "0%" }}
                                         animate={{ height: "100%" }}
                                         transition={{ duration: 3, ease: "linear" }}

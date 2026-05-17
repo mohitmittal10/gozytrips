@@ -23,6 +23,7 @@ import { RippleButton } from "@/components/ui/multi-type-ripple-buttons";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import AnimatedGlassySearchBar from "@/components/ui/animated-glassy-search-bar";
+import AnimatedLogo from "@/components/ui/animated-logo";
 
 const ITINERARIES = [
     { id: 1, name: "Amalfi Coast Drift", type: "4 Guests • 12 Days", price: "$42,500", status: "In Progress" },
@@ -405,7 +406,7 @@ const Hero = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
-                        className="col-span-1 rounded-3xl p-6 sm:p-8 border border-white/10 bg-[#0a0a1a] shadow-2xl relative overflow-hidden group hover:border-indigo-500/30 transition-all h-[260px] sm:h-[290px]"
+                        className="col-span-1 rounded-3xl p-5 sm:p-6 border border-white/10 bg-[#0a0a1a] shadow-2xl relative overflow-hidden group hover:border-indigo-500/30 transition-all h-[340px] sm:h-[380px]"
                     >
                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                             <Workflow className="w-32 h-32 text-indigo-500 -rotate-12 translate-x-8 -translate-y-8" />
@@ -414,8 +415,8 @@ const Hero = () => {
                         <div className="relative z-10 h-full flex flex-col justify-between">
                             <div>
                                 <div className="flex items-center gap-2 mb-6">
-                                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-                                        <Cpu className="w-4 h-4 text-indigo-400" />
+                                    <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center overflow-hidden">
+                                        <AnimatedLogo isLoading={true} size="sm" className="text-indigo-400 scale-[0.7]" />
                                     </div>
                                     <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest">Synthesis Engine</span>
                                 </div>

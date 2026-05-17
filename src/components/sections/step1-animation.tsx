@@ -4,13 +4,14 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Calendar as CalendarIcon, Check, ArrowRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AnimatedLogo from "../ui/animated-logo";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-const LabelClass = "text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1.5 block";
-const InputClass = "flex h-10 sm:h-11 w-full text-sm border border-white/10 bg-white/5 backdrop-blur rounded-xl px-3 py-2 text-white placeholder-zinc-500 transition-all outline-none";
+const LabelClass = "text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1 sm:mb-1.5 block";
+const InputClass = "flex h-9 sm:h-11 items-center w-full text-xs sm:text-sm border border-white/10 bg-white/5 backdrop-blur rounded-xl px-2.5 sm:px-3 py-1.5 sm:py-2 text-white placeholder-zinc-500 transition-all outline-none";
 const InputActiveClass = "border-primary/50 ring-1 ring-primary/20";
-const TextareaClass = "flex min-h-[80px] w-full border border-white/10 bg-white/5 backdrop-blur rounded-xl p-3 resize-none text-xs text-white placeholder-zinc-500 transition-all outline-none";
+const TextareaClass = "flex min-h-[70px] sm:min-h-[80px] w-full border border-white/10 bg-white/5 backdrop-blur rounded-xl p-2.5 sm:p-3 resize-none text-[10px] sm:text-xs text-white placeholder-zinc-500 transition-all outline-none";
 
 export default function Step1Animation() {
     const [step, setStep] = useState(0); // 0, 1, 2
@@ -192,7 +193,7 @@ export default function Step1Animation() {
             `}</style>
 
             <motion.div 
-                className="bg-zinc-950/40 backdrop-blur-md rounded-3xl p-6 relative overflow-hidden border border-white/5 shadow-2xl"
+                className="bg-zinc-950/40 backdrop-blur-md rounded-3xl p-4 sm:p-6 relative overflow-hidden border border-white/5 shadow-2xl"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -226,7 +227,7 @@ export default function Step1Animation() {
                         </div>
                     </div>
 
-                <div className="h-[310px] w-full">
+                <div className="h-[340px] xs:h-[320px] sm:h-[310px] w-full">
                     <AnimatePresence mode="wait">
                     {step === 0 && (
                         <motion.div
@@ -400,12 +401,12 @@ export default function Step1Animation() {
                             exit={{ opacity: 0 }}
                         >
                             <motion.div 
-                                className="w-16 h-16 rounded-full bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-4"
+                                className="mb-4"
                                 initial={{ scale: 0.5 }}
                                 animate={{ scale: 1 }}
                                 transition={{ type: "spring", damping: 12 }}
                             >
-                                <Check className="w-8 h-8 text-emerald-400" />
+                                <AnimatedLogo isLoading={true} size="lg" className="text-primary" />
                             </motion.div>
                             <h4 className="text-lg font-bold text-white mb-2">Generating Trip...</h4>
                             <div className="w-40 h-1 bg-white/10 rounded-full overflow-hidden">

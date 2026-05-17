@@ -2,7 +2,7 @@ import { Testimonial } from "@/components/ui/clean-testimonial"
 
 export function CleanTestimonialDemo() {
     return (
-        <section className="testimonial-theme bg-black py-24 overflow-hidden relative">
+        <section id="testimonials" className="testimonial-theme bg-black py-24 overflow-hidden relative">
             <div className="max-w-7xl mx-auto px-4 md:px-8">
                 <div className="text-center mb-8">
                     <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 mb-2">

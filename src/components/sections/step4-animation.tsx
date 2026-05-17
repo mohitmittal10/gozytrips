@@ -17,6 +17,7 @@ import {
     MapPin
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AnimatedLogo from "../ui/animated-logo";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -89,9 +90,9 @@ export default function Step4Animation() {
     };
 
     return (
-        <div ref={ref} className="relative w-full max-w-[380px] md:ml-0 mx-auto perspective-1000 h-[420px]">
+        <div ref={ref} className="relative w-full max-w-[380px] md:ml-0 mx-auto perspective-1000 h-[450px] xs:h-[430px] sm:h-[420px]">
             <motion.div 
-                className="bg-zinc-950/40 backdrop-blur-md rounded-3xl p-5 h-full relative overflow-hidden border border-white/5 shadow-2xl flex flex-col"
+                className="bg-zinc-950/40 backdrop-blur-md rounded-3xl p-4 sm:p-5 h-full relative overflow-hidden border border-white/5 shadow-2xl flex flex-col"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -141,8 +142,8 @@ export default function Step4Animation() {
                     {/* Top Nav */}
                     <div className="h-10 border-b border-white/5 flex items-center justify-between px-3 bg-white/[0.02]">
                         <div className="flex items-center gap-2">
-                            <div className="w-5 h-5 rounded-md bg-orange-500 flex items-center justify-center">
-                                <Users className="w-3 h-3 text-white" />
+                            <div className="w-5 h-5 rounded-md bg-zinc-800/80 border border-white/10 flex items-center justify-center overflow-hidden">
+                                <AnimatedLogo size="sm" className="text-primary w-3.5 h-3.5 scale-[0.65]" />
                             </div>
                             <span className="text-xs font-semibold text-white">CRM Lite</span>
                         </div>

@@ -6,6 +6,7 @@ import AnimatedTypography from '@/components/sections/animated-typography';
 import CuratedItineraries from '@/components/sections/curated-itineraries';
 import HowItWorksTimeline from '@/components/sections/how-it-works-timeline';
 import FeaturesGrid from '@/components/sections/features-grid';
+import Contact from '@/components/sections/contact';
 import { PARALLAX_PRODUCTS } from '@/constants/marketing';
 
 export const dynamic = 'force-static';
@@ -21,7 +22,10 @@ export default function Home() {
       <AnimatedTypography />
       <CuratedItineraries />
       <CleanTestimonialDemo />
+      <Contact />
     </>
   );
 }
+
+
 

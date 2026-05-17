@@ -4,6 +4,7 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { Card } from '../ui/card';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import AnimatedLogo from '../ui/animated-logo';
 
 const TheLabCta = () => {
     const ctaImage = PlaceHolderImages.find(img => img.id === 'gallery-4');
@@ -13,7 +14,7 @@ const TheLabCta = () => {
             <Card className="relative grid md:grid-cols-2 items-center overflow-hidden">
                 <div className="p-8 md:p-12 order-2 md:order-1">
                     <div className="flex items-center gap-2 mb-4">
-                        <Sparkles className="w-6 h-6 text-primary" />
+                        <AnimatedLogo isLoading={true} size="sm" className="text-primary w-6 h-6" />
                         <h3 className="text-sm font-bold uppercase tracking-widest text-primary">The Future of Travel</h3>
                     </div>
                     <h2 className="font-headline text-3xl md:text-4xl font-bold text-foreground">

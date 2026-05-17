@@ -4,6 +4,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, useInView } from "framer-motion";
 import { FileText, Download, Check, Sparkles, Layout, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AnimatedLogo from "../ui/animated-logo";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -41,9 +42,9 @@ export default function Step3Animation() {
     ];
 
     return (
-        <div ref={ref} className="relative w-full max-w-[380px] md:ml-0 mx-auto perspective-1000 h-[380px]">
+        <div ref={ref} className="relative w-full max-w-[380px] md:ml-0 mx-auto perspective-1000 h-[420px] xs:h-[390px] sm:h-[380px]">
             <motion.div 
-                className="bg-zinc-950/40 backdrop-blur-md rounded-3xl p-6 h-full relative overflow-hidden border border-white/5 shadow-2xl flex flex-col"
+                className="bg-zinc-950/40 backdrop-blur-md rounded-3xl p-4 sm:p-6 h-full relative overflow-hidden border border-white/5 shadow-2xl flex flex-col"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -173,6 +174,9 @@ export default function Step3Animation() {
                                     {/* Simulated image background */}
                                     <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1436450412740-6b988f486c6b?auto=format&fit=crop&w=300&q=80')] bg-cover bg-center opacity-60 mix-blend-overlay" />
                                     <div className="absolute inset-0 bg-gradient-to-r from-primary/60 to-transparent" />
+                                    <div className="absolute top-2 right-2">
+                                        <AnimatedLogo size="sm" className="text-white/80 scale-[0.6]" />
+                                    </div>
                                     <div className="absolute bottom-2 left-3 right-2">
                                         <div className="h-[2px] w-8 bg-white/70 rounded-full mb-1" />
                                         <div className="h-3.5 w-3/4 bg-white rounded-sm font-bold shadow-sm" />
@@ -244,6 +248,7 @@ export default function Step3Animation() {
                                     >
                                         <div className="absolute top-0 right-0 w-6 h-6 bg-zinc-200/50 rounded-bl-2xl border-b border-l border-white/50 backdrop-blur-md z-20" />
                                         <div className="absolute inset-0 bg-gradient-to-br from-white to-zinc-100 z-0" />
+                                        <AnimatedLogo size="sm" className="absolute top-2 left-2 text-zinc-300 scale-[0.6]" />
                                         <FileText className="w-10 h-10 text-rose-500 relative z-10 drop-shadow-md" />
                                     </motion.div>
                                     

@@ -133,6 +133,10 @@ export function CursorDrivenParticleTypography({
             containerWidth = container.clientWidth;
             containerHeight = container.clientHeight;
 
+            if (containerWidth === 0 || containerHeight === 0) {
+                return;
+            }
+
             const dpr = window.devicePixelRatio || 1;
             canvas.width = containerWidth * dpr;
             canvas.height = containerHeight * dpr;

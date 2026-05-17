@@ -82,7 +82,7 @@ const itemVariants = {
 
 export default function FeaturesGrid() {
   return (
-    <section className="py-24 bg-black relative overflow-hidden">
+    <section id="about" className="py-24 bg-black relative overflow-hidden">
       {/* Background Decorative Elements */}
       <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-indigo-600/[0.03] rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-600/[0.03] rounded-full blur-[120px] pointer-events-none" />
