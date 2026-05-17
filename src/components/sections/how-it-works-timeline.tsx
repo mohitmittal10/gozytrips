@@ -102,7 +102,7 @@ export default function HowItWorksTimeline() {
             <Timeline
                 data={data}
                 title={<>How <span className="bg-gradient-to-r from-indigo-400 via-indigo-300 to-indigo-500 bg-clip-text text-transparent">it works</span></>}
-                description="Booking your next unforgettable journey is as easy as 1, 2, 3, and 4. Our system handles the heavy lifting while you focus on the architecture of travel."
+                description="Booking your next unforgettable journey is as easy as 1, 2, 3, and 4. Our system handles the heavy lifting while you focus on delivering exceptional experiences."
             />
         </section>
     );

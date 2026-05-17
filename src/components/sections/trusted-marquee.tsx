@@ -18,7 +18,7 @@ export default function TrustedMarquee() {
     <section className="w-full bg-[#020205] py-12 border-y border-white/5 overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 mb-6">
         <p className="text-[10px] font-black text-zinc-600 uppercase tracking-[0.3em] text-center">
-          Trusted by Architects at
+          Trusted by Travel Agents at
         </p>
       </div>
       

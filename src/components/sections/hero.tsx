@@ -63,7 +63,7 @@ const StatusRotator = () => {
         "Neural mapping of global flight corridors active",
         "GDS pipeline synchronization at 99.8% stability",
         "Predictive pricing models successfully deployed",
-        "Multi-modal routing architecture optimized",
+        "Multi-modal itinerary routing optimized",
         "Vectorizing destination-specific amenities"
     ];
     const [index, setIndex] = useState(0);
@@ -295,7 +295,7 @@ const Hero = () => {
     };
 
     return (
-        <section id="home" className="relative min-h-screen w-full flex flex-col items-center justify-center px-4 sm:px-8 overflow-hidden bg-[#020205] pt-20 pb-12">
+        <section id="home" className="relative min-h-screen w-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#020205] pt-20 pb-12">
             <HeroShaderCanvas />
             
             <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
@@ -304,28 +304,21 @@ const Hero = () => {
             </div>
 
             <div className="max-w-7xl mx-auto w-full relative z-10">
-                <div className="flex flex-col items-center text-center space-y-6 mb-10">
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-[10px] md:text-xs font-bold text-indigo-400 tracking-widest uppercase"
-                    >
-                        <Orbit className="w-3 h-3" />
-                        Modern Travel Architecture
-                    </motion.div>
+                <div className="flex flex-col items-center text-center space-y-5 sm:space-y-6 mb-8 sm:mb-10">
+                    
 
                     <motion.h1 
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.95] text-white max-w-4xl"
+                        className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[0.95] text-white max-w-4xl"
                     >
                         Your Trip, <br />
                         <TypingText 
                             texts={[
                                 "Synthesized.",
                                 "Structured.",
-                                "Architected.",
+                                "Refined.",
                                 "Elevated."
                             ]} 
                             className="bg-gradient-to-r from-indigo-400 via-indigo-300 to-indigo-500 bg-clip-text text-transparent" 
@@ -336,7 +329,7 @@ const Hero = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-base md:text-lg text-zinc-500 max-w-2xl leading-relaxed font-medium"
+                        className="text-sm sm:text-base md:text-lg text-zinc-500 max-w-2xl leading-relaxed font-medium"
                     >
                         Turn a 3-hour planning session into 3 minutes.
                     </motion.p>
@@ -354,33 +347,33 @@ const Hero = () => {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.4 }}
-                        className="flex flex-wrap justify-center items-center gap-8 pt-4"
+                        className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 pt-2"
                     >
-                        <div className="flex items-center gap-3">
-                            <div className="flex -space-x-3">
+                        <div className="flex items-center gap-2.5">
+                            <div className="flex -space-x-2">
                                 {[1,2,3,4].map((i) => (
-                                    <div key={i} className="w-8 h-8 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-[10px] font-black text-zinc-500 backdrop-blur-sm">
+                                    <div key={i} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-zinc-900 border border-white/10 flex items-center justify-center text-[9px] sm:text-[10px] font-black text-zinc-500 backdrop-blur-sm">
                                         {i}
                                     </div>
                                 ))}
                             </div>
-                            <span className="text-xs text-zinc-600 font-bold tracking-tight uppercase">500+ Architecture Partners</span>
+                            <span className="text-[11px] sm:text-xs text-zinc-600 font-bold tracking-tight uppercase">500+ Travel Partners</span>
                         </div>
-                        <div className="h-4 w-px bg-white/5 hidden sm:block" />
+                        <div className="h-4 w-px bg-white/5" />
                         <div className="flex items-center gap-2 text-zinc-600">
-                            <Globe className="w-4 h-4 text-indigo-400/40" />
-                            <span className="text-xs font-bold tracking-tight uppercase">Global Coverage</span>
+                            <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400/40" />
+                            <span className="text-[11px] sm:text-xs font-bold tracking-tight uppercase">Global Coverage</span>
                         </div>
                     </motion.div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 lg:gap-6 mt-6 sm:mt-8">
                     <motion.div 
                         initial={{ opacity: 0, y: 40 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        className="col-span-1 md:col-span-1 rounded-3xl p-6 border border-white/10 bg-white/[0.02] backdrop-blur-2xl flex flex-col h-[290px] overflow-hidden group hover:border-indigo-500/30 transition-all relative"
+                        className="col-span-1 sm:col-span-2 md:col-span-1 rounded-3xl p-5 sm:p-6 border border-white/10 bg-white/[0.02] backdrop-blur-2xl flex flex-col h-[260px] sm:h-[290px] overflow-hidden group hover:border-indigo-500/30 transition-all relative"
                     >
                         <LiquidGlassBackground />
                         
@@ -412,7 +405,7 @@ const Hero = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.2 }}
-                        className="col-span-1 md:col-span-1 rounded-3xl p-8 border border-white/10 bg-[#0a0a1a] shadow-2xl relative overflow-hidden group hover:border-indigo-500/30 transition-all"
+                        className="col-span-1 rounded-3xl p-6 sm:p-8 border border-white/10 bg-[#0a0a1a] shadow-2xl relative overflow-hidden group hover:border-indigo-500/30 transition-all h-[260px] sm:h-[290px]"
                     >
                         <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
                             <Workflow className="w-32 h-32 text-indigo-500 -rotate-12 translate-x-8 -translate-y-8" />
@@ -487,7 +480,7 @@ const Hero = () => {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.3 }}
-                        className="col-span-1 md:col-span-1 rounded-3xl p-8 border border-white/10 bg-white/[0.02] backdrop-blur-2xl flex flex-col justify-between h-[290px] group relative overflow-hidden hover:border-indigo-500/30 transition-all"
+                        className="col-span-1 rounded-3xl p-6 sm:p-8 border border-white/10 bg-white/[0.02] backdrop-blur-2xl flex flex-col justify-between h-[260px] sm:h-[290px] group relative overflow-hidden hover:border-indigo-500/30 transition-all"
                     >
                         <LiquidGlassBackground />
                         
@@ -525,7 +518,7 @@ const Hero = () => {
                             <div className="mt-auto pt-6 flex items-center gap-3">
                                 <div className="flex-grow h-px bg-white/5" />
                                 <div className="text-[10px] font-black text-zinc-600 uppercase tracking-widest">
-                                    Architectural Efficiency
+                                    Planning Efficiency
                                 </div>
                             </div>
                         </div>
