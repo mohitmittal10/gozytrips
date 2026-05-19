@@ -54,6 +54,8 @@ export function useItineraryGeneration() {
         endDate: endDateStr,
         destinations: effectiveValues.destinations,
         budget: effectiveValues.budget ?? undefined,
+        strictBudget: effectiveValues.strictBudget,
+        travelMethods: effectiveValues.travelMethods,
         mustInclude: effectiveValues.mustInclude || "",
         avoid: effectiveValues.avoid || "",
         leisureTime: !!effectiveValues.leisureTime,

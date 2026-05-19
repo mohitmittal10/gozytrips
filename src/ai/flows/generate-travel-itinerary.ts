@@ -20,6 +20,8 @@ const TravelItineraryInputSchema = z.object({
   endDate: z.string().describe('The end date of the trip (YYYY-MM-DD format).'),
   destinations: z.string().describe('A comma-separated list of primary travel destinations to visit.'),
   budget: z.coerce.number().int().positive().optional().describe('The total trip budget in INR.'),
+  strictBudget: z.boolean().default(false).describe('If true, strictly enforce the budget constraint.'),
+  travelMethods: z.array(z.string()).default([]).describe('Selected modes of transport (e.g. Flight, Train, Bus, Cab).'),
   mustInclude: z.string().default('').describe('A comma-separated list of must-see attractions or experiences.'),
   avoid: z.string().default('').describe('A comma-separated list of things to skip or avoid.'),
   leisureTime: z.boolean().default(false).describe('Whether to deliberately include unstructured leisure/free time.'),
@@ -105,7 +107,8 @@ You are an expert travel planner. Generate a detailed, day-by-day travel itinera
   Trip start date : {{startDate}}
   Trip end date   : {{endDate}}
   DESTINATIONS    : {{destinations}}
-  {{#if budget}}Total budget    : INR {{budget}} (for the entire trip){{/if}}
+  {{#if budget}}Total budget    : INR {{budget}} (for the entire trip){{#if strictBudget}} - STRICTLY ENFORCED{{else}} - Flexible/Soft target{{/if}}{{/if}}
+  {{#if travelMethods}}Preferred Transport : {{travelMethods}}{{/if}}
   {{#if mustInclude}}Must include    : {{mustInclude}}{{/if}}
   {{#if avoid}}Avoid           : {{avoid}}{{/if}}
 
@@ -154,11 +157,20 @@ You are an expert travel planner. Generate a detailed, day-by-day travel itinera
   9. First and last day must logically begin from {{startingLocation}} and end at {{#if endingLocation}}{{endingLocation}}{{else}}{{startingLocation}}{{/if}}.
 
 ══════════════════════════════════════════════════════
-  COST ESTIMATION (ALL VALUES IN INR)
+  COST ESTIMATION & TRANSPORT (ALL VALUES IN INR)
 ══════════════════════════════════════════════════════
   3. Every cost value MUST be an integer number (e.g. 500, not "₹500" or "500 INR").
   4. Use realistic, current prices: entry tickets, local transport (cab/auto/metro/bus), and meals at well-reviewed local restaurants.
-  {{#if budget}}5. The SUM of all activity costs must stay within the total budget of INR {{budget}}.{{/if}}
+{{#if budget}}
+{{#if strictBudget}}
+  5. STRICT BUDGET RULE: The SUM of all activity costs MUST NEVER EXCEED the total budget of INR {{budget}}. This is a hard limit.
+{{else}}
+  5. BUDGET RULE: The SUM of all activity costs should roughly align with the total budget of INR {{budget}}, but you may exceed it if necessary for a better experience.
+{{/if}}
+{{/if}}
+{{#if travelMethods}}
+  6. Ensure the itinerary utilizes the following preferred modes of inter-city transport when scheduling travel: {{travelMethods}}.
+{{/if}}
 
 ══════════════════════════════════════════════════════
   IMAGE SEARCH TERMS (for Unsplash)

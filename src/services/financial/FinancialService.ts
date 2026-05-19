@@ -69,37 +69,59 @@ export function calcBaseCost(
   let cost = 0;
 
   // Timeline step costs
-  for (const day of state.itinerary) {
-    for (const step of day.timeline) {
-      const c = Number(step.cost);
-      if (!isNaN(c) && c > 0) cost += c;
+  if (Array.isArray(state.itinerary)) {
+    for (const day of state.itinerary) {
+      if (day && Array.isArray(day.timeline)) {
+        for (const step of day.timeline) {
+          if (step && typeof step === 'object') {
+            const c = Number(step.cost);
+            if (!isNaN(c) && c > 0) cost += c;
+          }
+        }
+      }
     }
   }
 
   // Hotels (per person * pax count)
-  for (const h of state.hotels) {
-    if (h.costAdult) cost += (Number(h.costAdult) || 0) * pax.adult;
-    if (h.costChild) cost += (Number(h.costChild) || 0) * pax.child;
-    if (h.costInfant) cost += (Number(h.costInfant) || 0) * pax.infant;
+  if (Array.isArray(state.hotels)) {
+    for (const h of state.hotels) {
+      if (h && typeof h === 'object') {
+        if (h.costAdult) cost += (Number(h.costAdult) || 0) * pax.adult;
+        if (h.costChild) cost += (Number(h.costChild) || 0) * pax.child;
+        if (h.costInfant) cost += (Number(h.costInfant) || 0) * pax.infant;
+      }
+    }
   }
 
   // Flights (per person * pax count)
-  for (const f of state.flights) {
-    if (f.costAdult) cost += (Number(f.costAdult) || 0) * pax.adult;
-    if (f.costChild) cost += (Number(f.costChild) || 0) * pax.child;
-    if (f.costInfant) cost += (Number(f.costInfant) || 0) * pax.infant;
+  if (Array.isArray(state.flights)) {
+    for (const f of state.flights) {
+      if (f && typeof f === 'object') {
+        if (f.costAdult) cost += (Number(f.costAdult) || 0) * pax.adult;
+        if (f.costChild) cost += (Number(f.costChild) || 0) * pax.child;
+        if (f.costInfant) cost += (Number(f.costInfant) || 0) * pax.infant;
+      }
+    }
   }
 
   // Cabs (flat total)
-  for (const c of state.cabs || []) {
-    if (c.totalCost) cost += Number(c.totalCost) || 0;
+  if (Array.isArray(state.cabs)) {
+    for (const c of state.cabs) {
+      if (c && typeof c === 'object') {
+        if (c.totalCost) cost += Number(c.totalCost) || 0;
+      }
+    }
   }
 
   // Buses (per person * pax count)
-  for (const b of state.buses || []) {
-    if (b.costAdult) cost += (Number(b.costAdult) || 0) * pax.adult;
-    if (b.costChild) cost += (Number(b.costChild) || 0) * pax.child;
-    if (b.costInfant) cost += (Number(b.costInfant) || 0) * pax.infant;
+  if (Array.isArray(state.buses)) {
+    for (const b of state.buses) {
+      if (b && typeof b === 'object') {
+        if (b.costAdult) cost += (Number(b.costAdult) || 0) * pax.adult;
+        if (b.costChild) cost += (Number(b.costChild) || 0) * pax.child;
+        if (b.costInfant) cost += (Number(b.costInfant) || 0) * pax.infant;
+      }
+    }
   }
 
   return cost;

@@ -14,6 +14,8 @@ export const formSchema = z.object({
     (val) => (val === "" || val === undefined || val === null ? undefined : val),
     z.coerce.number().int().positive("Budget must be a positive number.").optional()
   ),
+  strictBudget: z.boolean().default(false),
+  travelMethods: z.array(z.string()).default([]),
   mustInclude: z.string().optional(),
   avoid: z.string().optional(),
   leisureTime: z.boolean().default(false),

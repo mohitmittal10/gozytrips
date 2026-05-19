@@ -43,7 +43,7 @@ const StepDestinations = React.memo(({ form }: { form: UseFormReturn<TheLabFormV
       <FormItem className="space-y-1">
         <FormLabel className={LabelClass}>Starting Location</FormLabel>
         <FormControl>
-          <Input placeholder="e.g., New Delhi, India" autoFocus {...field} className="h-10 sm:h-11 text-sm border-white/10 focus:border-primary/50 bg-white/5 backdrop-blur rounded-xl" />
+          <Input placeholder="e.g., New Delhi, India" autoFocus {...field} value={field.value || ''} className="h-10 sm:h-11 text-sm border-white/10 focus:border-primary/50 bg-white/5 backdrop-blur rounded-xl" />
         </FormControl>
         <FormMessage className="text-[10px]" />
       </FormItem>
@@ -52,7 +52,7 @@ const StepDestinations = React.memo(({ form }: { form: UseFormReturn<TheLabFormV
       <FormItem className="space-y-1">
         <FormLabel className={LabelClass}>Destinations to Visit</FormLabel>
         <FormControl>
-          <Input placeholder="e.g., Paris, Rome, Florence" {...field} className="h-10 sm:h-11 text-sm border-white/10 focus:border-primary/50 bg-white/5 backdrop-blur rounded-xl" />
+          <Input placeholder="e.g., Paris, Rome, Florence" {...field} value={field.value || ''} className="h-10 sm:h-11 text-sm border-white/10 focus:border-primary/50 bg-white/5 backdrop-blur rounded-xl" />
         </FormControl>
         <FormMessage className="text-[10px]" />
       </FormItem>
@@ -122,8 +122,16 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
       <div className="grid grid-cols-2 gap-4">
         <FormField control={form.control} name="budget" render={({ field }) => (
-          <FormItem className="space-y-1">
-            <FormLabel className={LabelClass}>Budget ({currencySymbol})</FormLabel>
+          <FormItem className="space-y-1 flex flex-col">
+            <div className="flex items-center justify-between">
+              <FormLabel className={cn(LabelClass, "mb-0")}>Budget ({currencySymbol})</FormLabel>
+              <FormField control={form.control} name="strictBudget" render={({ field: strictField }) => (
+                <div className="flex items-center gap-1.5" title="Enforce strict budget in generation">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Strict</span>
+                  <Switch className="scale-75 origin-right" checked={!!strictField.value} onCheckedChange={strictField.onChange} />
+                </div>
+              )} />
+            </div>
             <FormControl>
               <Input type="number" placeholder="Total budget" {...field} value={field.value || ''} className="h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl" />
             </FormControl>
@@ -150,6 +158,41 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
             <FormMessage className="text-[10px]" />
           </FormItem>
         )} />
+      </div>
+
+      <div className="space-y-1">
+        <FormLabel className={LabelClass}>Travel Options</FormLabel>
+        <FormField control={form.control} name="travelMethods" render={({ field }) => {
+          const methods = ["Flight", "Train", "Bus", "Cab", "Ferry"];
+          return (
+            <div className="flex flex-wrap gap-2">
+              {methods.map((method) => {
+                const isSelected = field.value?.includes(method);
+                return (
+                  <button
+                    key={method}
+                    type="button"
+                    onClick={() => {
+                      const current = field.value || [];
+                      const next = isSelected
+                        ? current.filter((m) => m !== method)
+                        : [...current, method];
+                      field.onChange(next);
+                    }}
+                    className={cn(
+                      "px-3 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200",
+                      isSelected 
+                        ? "bg-primary/20 border-primary/50 text-primary" 
+                        : "bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10"
+                    )}
+                  >
+                    {method}
+                  </button>
+                );
+              })}
+            </div>
+          );
+        }} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
