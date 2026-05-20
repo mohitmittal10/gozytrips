@@ -26,10 +26,12 @@ export interface PdfTemplateProps {
     flights?: FlightInfo[];
     pricing?: PricingConfig;
     baseCost?: number;
+    showTimestamps?: boolean;
+    showPrices?: boolean;
 }
 
 /* ═════════ MAIN EXPORTED COMPONENT ═════════ */
-export const PdfTemplate = ({ itinerary, title, userProfile, agencySettings, theme = 'classic', hotels = [], flights = [], pricing, baseCost = 0 }: PdfTemplateProps) => {
+export const PdfTemplate = ({ itinerary, title, userProfile, agencySettings, theme = 'classic', hotels = [], flights = [], pricing, baseCost = 0, showTimestamps = true, showPrices = true }: PdfTemplateProps) => {
     if (!itinerary || !itinerary.itinerary) return null;
 
     const agent = getAgentInfo(userProfile, agencySettings);
@@ -42,28 +44,28 @@ export const PdfTemplate = ({ itinerary, title, userProfile, agencySettings, the
     let ThemeComponent;
     switch (theme) {
         case 'editorial':
-            ThemeComponent = <EditorialTheme itinerary={itinerary} title={displayTitle} agent={agent} finalTotal={finalTotal} />;
+            ThemeComponent = <EditorialTheme itinerary={itinerary} title={displayTitle} agent={agent} finalTotal={finalTotal} showTimestamps={showTimestamps} showPrices={showPrices} />;
             break;
         case 'minimalist':
-            ThemeComponent = <MinimalistTheme itinerary={itinerary} title={displayTitle} agent={agent} finalTotal={finalTotal} />;
+            ThemeComponent = <MinimalistTheme itinerary={itinerary} title={displayTitle} agent={agent} finalTotal={finalTotal} showTimestamps={showTimestamps} showPrices={showPrices} />;
             break;
         case 'dark':
-            ThemeComponent = <DarkTheme itinerary={itinerary} title={displayTitle} agent={agent} finalTotal={finalTotal} />;
+            ThemeComponent = <DarkTheme itinerary={itinerary} title={displayTitle} agent={agent} finalTotal={finalTotal} showTimestamps={showTimestamps} showPrices={showPrices} />;
             break;
         case 'corporate':
-            ThemeComponent = <CorporateTheme itinerary={itinerary} title={displayTitle} agent={agent} finalTotal={finalTotal} />;
+            ThemeComponent = <CorporateTheme itinerary={itinerary} title={displayTitle} agent={agent} finalTotal={finalTotal} showTimestamps={showTimestamps} showPrices={showPrices} />;
             break;
         case 'classic':
         default:
-            ThemeComponent = <ClassicTheme itinerary={itinerary} title={displayTitle} agent={agent} finalTotal={finalTotal} />;
+            ThemeComponent = <ClassicTheme itinerary={itinerary} title={displayTitle} agent={agent} finalTotal={finalTotal} showTimestamps={showTimestamps} showPrices={showPrices} />;
             break;
     }
 
     return (
         <div style={{ position: "relative" }}>
             {ThemeComponent}
-            <PdfFlightAndHotelSummary flights={flights} hotels={hotels} accentColor={agent.primaryColor} />
-            {pricing && <PdfPricingPage pricing={pricing} baseCost={baseCost} agent={agent} />}
+            <PdfFlightAndHotelSummary flights={flights} hotels={hotels} accentColor={agent.primaryColor} theme={theme} />
+            {showPrices !== false && pricing && <PdfPricingPage pricing={pricing} baseCost={baseCost} agent={agent} theme={theme} />}
         </div>
     );
 };

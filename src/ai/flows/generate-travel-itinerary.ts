@@ -210,6 +210,35 @@ You are an expert travel planner. Generate a detailed, day-by-day travel itinera
   `,
 });
 
+async function callPromptWithFallback<I, O>(
+  promptFn: any,
+  input: I,
+  fallbackModelName: string = 'gemini-2.5-flash'
+): Promise<{ output: O; usage: any }> {
+  try {
+    return await promptFn(input);
+  } catch (error: any) {
+    const errorStr = String(error?.message || error || '').toUpperCase();
+    const isServiceUnavailable =
+      errorStr.includes('503') ||
+      errorStr.includes('UNAVAILABLE') ||
+      errorStr.includes('HIGH DEMAND') ||
+      errorStr.includes('LIMIT') ||
+      errorStr.includes('QUOTA');
+      
+    if (isServiceUnavailable) {
+      console.warn(`Primary model failed with temporary API error. Falling back to ${fallbackModelName}...`);
+      try {
+        return await promptFn(input, { model: googleAI.model(fallbackModelName) });
+      } catch (fallbackError) {
+        console.error(`Fallback model ${fallbackModelName} also failed:`, fallbackError);
+        throw error;
+      }
+    }
+    throw error;
+  }
+}
+
 const generateTravelItineraryFlow = ai.defineFlow(
   {
     name: 'generateTravelItineraryFlowV3',
@@ -219,7 +248,7 @@ const generateTravelItineraryFlow = ai.defineFlow(
   async input => {
     try {
       console.log('Starting itinerary generation for:', input.destinations);
-      const { output, usage } = await prompt(input);
+      const { output, usage } = await callPromptWithFallback<TravelItineraryInput, TravelItineraryOutput>(prompt, input);
 
       // Log token usage if available
       if (usage) {
@@ -246,3 +275,135 @@ const generateTravelItineraryFlow = ai.defineFlow(
     }
   }
 );
+
+// ── Day Regeneration Flow ──
+
+const RegenerateDayInputSchema = z.object({
+  day: z.number().describe('The day number.'),
+  destinations: z.string().describe('The trip destinations.'),
+  currentDayData: z.object({
+    day: z.number(),
+    date: z.string(),
+    areaFocus: z.string(),
+    timeline: z.array(
+      z.object({
+        time: z.string(),
+        details: z.string(),
+        cost: z.number().optional(),
+      })
+    ),
+  }),
+  prompt: z.string().describe('The regeneration prompt from the user.'),
+  otherDaysSummary: z.string().optional().describe('Summary of other days to avoid duplicates.'),
+});
+
+export type RegenerateDayInput = z.infer<typeof RegenerateDayInputSchema>;
+
+const RegenerateDayOutputSchema = z.object({
+  day: z.number(),
+  date: z.string(),
+  areaFocus: z.string(),
+  imageSearchTerm: z.string(),
+  timeline: z.array(
+    z.object({
+      time: z.string(),
+      details: z.string(),
+      cost: z.number().optional(),
+      imageSearchTerm: z.string().optional(),
+    })
+  ),
+});
+
+export type RegenerateDayOutput = z.infer<typeof RegenerateDayOutputSchema>;
+
+const regenerateDayPrompt = ai.definePrompt({
+  name: 'regenerateDayPromptV1',
+  model: googleAI.model('gemini-2.5-flash-lite'),
+  input: { schema: RegenerateDayInputSchema },
+  output: { schema: RegenerateDayOutputSchema },
+  prompt: `
+You are an expert travel planner. You need to regenerate Day {{currentDayData.day}} of a travel itinerary to {{destinations}} based on the user prompt: "{{prompt}}".
+
+Use this prompt to reshape this day's activities. For example, if the prompt says "make it more relaxed", add more leisure time. If it says "include a visit to X", schedule X at a logical time.
+
+═══════════════════════════════════════════════════════
+  CURRENT DAY DATA (USE AS BASE / CONTEXT)
+═══════════════════════════════════════════════════════
+  Current Area Focus: {{currentDayData.areaFocus}}
+  Current Activities:
+  {{#each currentDayData.timeline}}
+  - {{time}}: {{details}} {{#if cost}}(Cost: {{cost}}){{/if}}
+  {{/each}}
+
+═══════════════════════════════════════════════════════
+  OTHER DAYS CONTEXT (DO NOT DUPLICATE THESE)
+═══════════════════════════════════════════════════════
+  {{#if otherDaysSummary}}
+  To prevent duplicate activities, here is what is planned on other days:
+  {{otherDaysSummary}}
+  {{/if}}
+
+═══════════════════════════════════════════════════════
+  RULES & GUIDELINES
+  - Keep each activity description brief and engaging (2–3 sentences max).
+  - Use realistic prices in INR and output them as plain integers.
+  - Generate 3-5 logical timeline steps for the day.
+  - The "areaFocus" should remain relevant to {{destinations}}.
+  - Output Unsplash search terms for the day ("imageSearchTerm") and optionally for activities.
+═══════════════════════════════════════════════════════
+  `,
+});
+
+export async function regenerateItineraryDay(input: RegenerateDayInput): Promise<RegenerateDayOutput> {
+  console.log('--- SERVER ACTION: regenerateItineraryDay ---');
+  
+  const { createServerComponentClient } = await import('@/lib/supabase/server');
+  const { checkSubscriptionAccess } = await import('@/lib/subscription-check');
+  
+  const supabase = await createServerComponentClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (!user) {
+    throw new Error('Unauthorized: You must be logged in to regenerate itineraries.');
+  }
+
+  const { canGenerateItinerary, planType } = await checkSubscriptionAccess(user.id);
+  const isAllowed = await canGenerateItinerary();
+
+  if (!isAllowed) {
+    throw new Error(`Plan limit reached: Your ${planType} plan has reached its monthly AI itinerary limit.`);
+  }
+
+  return regenerateItineraryDayFlow(input);
+}
+
+const regenerateItineraryDayFlow = ai.defineFlow(
+  {
+    name: 'regenerateItineraryDayFlowV1',
+    inputSchema: RegenerateDayInputSchema,
+    outputSchema: RegenerateDayOutputSchema,
+  },
+  async input => {
+    try {
+      console.log('Starting day regeneration for day:', input.currentDayData.day);
+      const { output, usage } = await callPromptWithFallback<RegenerateDayInput, RegenerateDayOutput>(regenerateDayPrompt, input);
+
+      if (usage) {
+        await logTokenUsage(
+          'regenerateItineraryDayFlow',
+          'gemini-2.5-flash-lite',
+          usage.inputTokens || 0,
+          usage.outputTokens || 0
+        );
+      }
+
+      console.log('Day regeneration successful');
+      return output!;
+    } catch (error) {
+      console.error('------- AI DAY REGENERATION FAILED -------');
+      console.error('Error message:', error instanceof Error ? error.message : String(error));
+      throw error;
+    }
+  }
+);
+

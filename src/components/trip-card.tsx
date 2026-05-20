@@ -21,6 +21,8 @@ export interface SavedItinerary {
     is_favourite: boolean | null;
     itinerary_data: TravelItineraryOutput;
     currency: string | null;
+    show_timestamps?: boolean;
+    show_prices?: boolean;
     created_at: string;
     updated_at: string;
 }

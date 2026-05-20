@@ -16,9 +16,9 @@ import { jsPDF } from 'jspdf';
 // ─── Constants ──────────────────────────────────────────────
 export const A4_WIDTH_MM = 210;
 export const A4_HEIGHT_MM = 297;
-export const MARGIN_MM = 10;
-export const USABLE_WIDTH_MM = A4_WIDTH_MM - 2 * MARGIN_MM;   // 190mm
-export const USABLE_HEIGHT_MM = A4_HEIGHT_MM - 2 * MARGIN_MM; // 277mm
+export const MARGIN_MM = 0;
+export const USABLE_WIDTH_MM = A4_WIDTH_MM - 2 * MARGIN_MM;   // 210mm
+export const USABLE_HEIGHT_MM = A4_HEIGHT_MM - 2 * MARGIN_MM; // 297mm
 export const RENDER_WIDTH_PX = 794; // A4 at 96 DPI
 const HEADER_GUARD_PX = 300;        // Protect first 300px of each day section
 
@@ -183,15 +183,23 @@ function calculateBreaks(
 
 function sliceCanvas(
     fullCanvas: HTMLCanvasElement,
-    breaks: PageBreak[]
+    breaks: PageBreak[],
+    fullPageHeight: number,
+    bgColor: string
 ): HTMLCanvasElement[] {
     const canvasW = fullCanvas.width;
     return breaks.map(({ start, end }) => {
         const sliceH = end - start;
         const page = document.createElement('canvas');
         page.width = canvasW;
-        page.height = sliceH;
+        page.height = fullPageHeight;
         const ctx = page.getContext('2d')!;
+        
+        // Pad the entire canvas area with the calculated theme background color
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvasW, fullPageHeight);
+        
+        // Draw the sliced content on top
         ctx.drawImage(fullCanvas, 0, start, canvasW, sliceH, 0, 0, canvasW, sliceH);
         return page;
     });
@@ -250,10 +258,36 @@ export async function renderPdfPages(
 
         const pxPerMm = fullCanvas.width / USABLE_WIDTH_MM;
         const pageH = USABLE_HEIGHT_MM * pxPerMm;
+
+        // Dynamically compute the theme's background color to use for padding blank page space
+        let bgColor = '#ffffff';
+        try {
+            const coverEl = container.querySelector('[data-pdf-section="cover"]');
+            if (coverEl) {
+                const themeEl = coverEl.parentElement;
+                if (themeEl) {
+                    const bg = window.getComputedStyle(themeEl).backgroundColor;
+                    if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+                        bgColor = bg;
+                    }
+                }
+            } else {
+                const firstChild = container.firstElementChild as HTMLElement;
+                if (firstChild) {
+                    const bg = window.getComputedStyle(firstChild).backgroundColor;
+                    if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
+                        bgColor = bg;
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("Failed to get background color:", e);
+        }
+
         const breaks = calculateBreaks(
             fullCanvas.height, pageH, sections, guardZones, overrides?.forcedBreaksBefore
         );
-        const pageCanvases = sliceCanvas(fullCanvas, breaks);
+        const pageCanvases = sliceCanvas(fullCanvas, breaks, pageH, bgColor);
 
         // Build section metadata with page mapping
         const sectionMetas: SectionMeta[] = [];

@@ -5,11 +5,15 @@ import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from "@/components/hotel
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, Sparkles } from "lucide-react";
 import { useState, useCallback, useContext } from "react";
 import { ItineraryContext } from "@/contexts/itinerary-context";
 import { getCurrencySymbol } from "@/lib/utils/currency";
 import { useAuth } from "@/contexts/auth-context";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import UniqueLoading from "@/components/ui/morph-loading";
+import { regenerateItineraryDay } from "@/ai/flows/generate-travel-itinerary";
 import {
   DndContext,
   closestCenter,
@@ -59,6 +63,7 @@ type ItineraryTimelineProps = {
   showTimestamps?: boolean;
   showPrices?: boolean;
   currency?: string;
+  destinations?: string;
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -275,8 +280,20 @@ const ItineraryTimeline = ({
   showTimestamps = true,
   showPrices = true,
   currency,
+  destinations,
 }: ItineraryTimelineProps) => {
   const { toast } = useToast();
+
+  const [regeneratingDayIndex, setRegeneratingDayIndex] = useState<number | null>(null);
+  const [promptText, setPromptText] = useState("");
+  const [isRegeneratingDay, setIsRegeneratingDay] = useState(false);
+
+  const MAX_WORDS = 25;
+  const getWordCount = (text: string) => {
+    return text.trim().split(/\s+/).filter(Boolean).length;
+  };
+  const wordCount = getWordCount(promptText);
+  const isOverLimit = wordCount > MAX_WORDS;
 
   const { agencySettings } = useAuth();
   const itineraryCtx = useContext(ItineraryContext);
@@ -300,6 +317,64 @@ const ItineraryTimeline = ({
   );
 
   // ── Mutation helpers (all call onItineraryChange) ──
+
+  const handleRegenerateDay = async () => {
+    if (regeneratingDayIndex === null) return;
+    setIsRegeneratingDay(true);
+    try {
+      const dayIndex = regeneratingDayIndex;
+      const targetDay = itinerary[dayIndex];
+      const otherDays = itinerary
+        .filter((_, idx) => idx !== dayIndex)
+        .map((day) => `Day ${day.day}: ${day.areaFocus} - ${day.timeline.map(t => t.details).join(', ')}`)
+        .join('\n');
+
+      const tripDestinations = destinations || itinerary[0]?.areaFocus || "Destination";
+
+      const result = await regenerateItineraryDay({
+        day: targetDay.day,
+        destinations: tripDestinations,
+        currentDayData: {
+          day: targetDay.day,
+          date: targetDay.date,
+          areaFocus: targetDay.areaFocus,
+          timeline: targetDay.timeline.map(step => ({
+            time: step.time,
+            details: step.details,
+            cost: step.cost
+          }))
+        },
+        prompt: promptText.trim(),
+        otherDaysSummary: otherDays
+      });
+
+      updateItinerary((days) => {
+        days[dayIndex] = {
+          ...days[dayIndex],
+          areaFocus: result.areaFocus,
+          timeline: result.timeline,
+          imageUrl: undefined,
+        };
+        return days;
+      });
+
+      toast({
+        title: "Day Regenerated",
+        description: `Day ${targetDay.day} regenerated successfully.`,
+      });
+
+      setRegeneratingDayIndex(null);
+    } catch (err: any) {
+      console.error("Day regeneration error:", err);
+      toast({
+        variant: "destructive",
+        title: "Regeneration Failed",
+        description: err?.message || "Something went wrong while regenerating the day.",
+      });
+    } finally {
+      setIsRegeneratingDay(false);
+    }
+  };
 
   const updateItinerary = useCallback(
     (updater: (days: DayData[]) => DayData[]) => {
@@ -526,16 +601,32 @@ const ItineraryTimeline = ({
                           </div>
                         </div>
 
-                        {/* Delete day button */}
-                        {editable && itinerary.length > 1 && (
-                          <button
-                            onClick={() => deleteDay(dayIndex)}
-                            className="ml-2 p-1.5 rounded-lg text-red-400/50 hover:text-red-400 hover:bg-red-400/10 transition-colors"
-                            title="Delete this day"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </button>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {/* Sparkles button */}
+                          {editable && (
+                            <button
+                              onClick={() => {
+                                setRegeneratingDayIndex(dayIndex);
+                                setPromptText("");
+                              }}
+                              className="p-1.5 rounded-lg text-purple-400 hover:text-purple-300 hover:bg-purple-500/10 transition-colors"
+                              title="Regenerate this day with AI"
+                            >
+                              <Sparkles className="w-5 h-5 animate-pulse" />
+                            </button>
+                          )}
+
+                          {/* Delete day button */}
+                          {editable && itinerary.length > 1 && (
+                            <button
+                              onClick={() => deleteDay(dayIndex)}
+                              className="p-1.5 rounded-lg text-red-400/50 hover:text-red-400 hover:bg-red-400/10 transition-colors"
+                              title="Delete this day"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </CardHeader>
 
@@ -652,6 +743,70 @@ const ItineraryTimeline = ({
           </button>
         </div>
       )}
+      {/* AI Day Regeneration Dialog */}
+      <Dialog open={regeneratingDayIndex !== null} onOpenChange={(open) => { if (!open) setRegeneratingDayIndex(null); }}>
+        <DialogContent className="max-w-md w-full bg-[#0a0a0b]/95 border border-white/10 text-white p-6 rounded-2xl shadow-2xl backdrop-blur-xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2 text-purple-400">
+              <Sparkles className="w-5 h-5 animate-pulse" />
+              Regenerate Day {regeneratingDayIndex !== null ? regeneratingDayIndex + 1 : ""}
+            </DialogTitle>
+            <DialogDescription className="text-zinc-400 text-xs mt-1">
+              Provide instructions to reshape this day's timeline. E.g. "include a scenic hike", "more outdoor adventure", "relaxed morning".
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 my-4">
+            <Textarea
+              placeholder="Type your prompt..."
+              value={promptText}
+              onChange={(e) => setPromptText(e.target.value)}
+              className="bg-black/40 border border-white/10 text-white placeholder-zinc-500 rounded-xl focus:border-purple-500 min-h-[80px] w-full p-3 text-sm resize-none"
+              maxLength={200}
+              disabled={isRegeneratingDay}
+            />
+            <div className="flex justify-between items-center text-xs">
+              <span className={cn(
+                "font-semibold",
+                isOverLimit ? "text-red-400" : "text-zinc-500"
+              )}>
+                {wordCount} / {MAX_WORDS} words
+              </span>
+              {isOverLimit && (
+                <span className="text-red-400 font-medium">Prompt is too long (limit: {MAX_WORDS} words)</span>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0 mt-6 flex justify-end">
+            <Button
+              variant="ghost"
+              onClick={() => setRegeneratingDayIndex(null)}
+              disabled={isRegeneratingDay}
+              className="text-zinc-400 hover:text-white hover:bg-white/5 border border-white/10"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRegenerateDay}
+              disabled={isRegeneratingDay || !promptText.trim() || isOverLimit}
+              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-0 text-white font-medium flex items-center gap-2"
+            >
+              {isRegeneratingDay ? (
+                <>
+                  <UniqueLoading variant="morph" size="sm" />
+                  Regenerating...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  Regenerate Day
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

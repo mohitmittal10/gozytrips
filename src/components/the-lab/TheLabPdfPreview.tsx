@@ -12,6 +12,8 @@ interface TheLabPdfPreviewProps {
   pricing: any;
   baseCost: number;
   tripTitle: string;
+  showTimestamps?: boolean;
+  showPrices?: boolean;
 }
 
 export function TheLabPdfPreview({
@@ -23,6 +25,8 @@ export function TheLabPdfPreview({
   pricing,
   baseCost,
   tripTitle,
+  showTimestamps,
+  showPrices,
 }: TheLabPdfPreviewProps) {
   const { userProfile } = useAuth();
 
@@ -38,6 +42,8 @@ export function TheLabPdfPreview({
         flights,
         pricing,
         baseCost,
+        showTimestamps,
+        showPrices,
       }}
       initialTheme="classic"
       filename="WanderLabs_Itinerary.pdf"

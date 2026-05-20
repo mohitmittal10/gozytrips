@@ -153,7 +153,9 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
     buses,
     pricing,
     baseCost,
-    finalTotal
+    finalTotal,
+    showTimestamps: trip.show_timestamps ?? true,
+    showPrices: trip.show_prices ?? true
   };
 
   const pdfFilename = `${(title || trip.title || "Itinerary").replace(/\s+/g, "_")}.pdf`;
@@ -332,6 +334,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
                 showDecorations={false}
                 editable={true}
                 onItineraryChange={setItinerary}
+                destinations={(trip as any)?.destinations}
               />
             </div>
           </TabsContent>

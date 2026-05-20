@@ -5,105 +5,116 @@ import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { getThematicBackground, glassStyles } from '../styles';
 
-export const CorporateTheme = ({ itinerary, title, agent, finalTotal = 0 }: ThemeProps) => {
-    const navy = "#003366";
+export const CorporateTheme = ({ itinerary, title, agent, finalTotal = 0, showTimestamps = true, showPrices = true }: ThemeProps) => {
+    const brandColor = agent.primaryColor || "#0f172a";
+    
     return (
-        <div style={{ fontFamily: "'Helvetica', 'Arial', sans-serif", backgroundColor: "#f4f6f8", backgroundImage: `url("${getThematicBackground(itinerary, 'corporate', navy)}")`, backgroundRepeat: "repeat", color: "#333", width: "100%" }}>
+        <div style={{ fontFamily: "'Montserrat', 'Helvetica Neue', sans-serif", backgroundColor: "#f8fafc", backgroundImage: `url("${getThematicBackground(itinerary, 'corporate', brandColor)}")`, backgroundRepeat: "repeat", color: "#1e293b", width: "100%" }}>
             {/* Letterhead — cover section */}
-            <div data-pdf-section="cover">
-                <div style={{ background: navy, padding: "30px 50px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div data-pdf-section="cover" style={{ paddingBottom: "10px" }}>
+                <div style={{ background: brandColor, padding: "35px 50px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                        <h1 style={{ fontSize: "24px", fontWeight: "bold", margin: "0 0 4px 0", letterSpacing: "1px" }}>{agent.companyName}</h1>
-                        <p style={{ fontSize: "12px", opacity: 0.7, margin: 0 }}>Travel Management Services</p>
+                        <h1 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px 0", letterSpacing: "1.5px", textTransform: "uppercase" }}>{agent.companyName}</h1>
+                        <p style={{ fontSize: "11px", opacity: 0.8, margin: 0, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" }}>Travel Management Services</p>
                     </div>
-                    <div style={{ textAlign: "right", fontSize: "12px", lineHeight: "1.8", opacity: 0.85 }}>
-                        <p style={{ margin: "2px 0", fontWeight: "bold" }}>{agent.agentName}</p>
-                        {agent.agentPhone && <p style={{ margin: "2px 0" }}>{agent.agentPhone}</p>}
-                        {agent.agentEmail && <p style={{ margin: "2px 0" }}>{agent.agentEmail}</p>}
+                    <div style={{ textAlign: "right", fontSize: "12px", lineHeight: "1.8", opacity: 0.9, fontWeight: 500 }}>
+                        <p style={{ margin: "2px 0", fontWeight: 700, color: "#ffffff" }}>{agent.agentName}</p>
+                        {agent.agentPhone && <p style={{ margin: "2px 0", color: "#e2e8f0" }}>{agent.agentPhone}</p>}
+                        {agent.agentEmail && <p style={{ margin: "2px 0", color: "#e2e8f0" }}>{agent.agentEmail}</p>}
                     </div>
                 </div>
 
-                <div style={{ padding: "40px 50px" }}>
+                <div style={{ padding: "40px 50px", background: "rgba(248,250,252,0.38)" }}>
                     {/* Title */}
-                    <div style={{ marginBottom: "30px", paddingBottom: "20px", borderBottom: `3px solid ${navy}`, pageBreakInside: "avoid" }}>
-                        <h2 style={{ fontSize: "22px", fontWeight: "bold", margin: "0 0 8px 0", color: navy }}>{title}</h2>
-                        <p style={{ fontSize: "13px", color: "#666", margin: 0 }}>Document generated on {new Date().toLocaleDateString()} • {itinerary.itinerary?.length || 0}-day itinerary</p>
+                    <div style={{ marginBottom: "35px", paddingBottom: "24px", borderBottom: `2px solid ${brandColor}`, pageBreakInside: "avoid" }}>
+                        <h2 style={{ fontSize: "26px", fontWeight: 800, margin: "0 0 10px 0", color: brandColor, letterSpacing: "-0.5px" }}>{title}</h2>
+                        <p style={{ fontSize: "13px", color: "#64748b", margin: 0, fontWeight: 600 }}>Document generated: {new Date().toLocaleDateString()} • {itinerary.itinerary?.length || 0}-day comprehensive itinerary</p>
                     </div>
 
                     {agent.agentBio && (
-                        <div style={{ background: "#f7f9fc", border: "1px solid #e0e6ed", borderRadius: "4px", padding: "15px 20px", marginBottom: "30px", fontSize: "13px", color: "#555", lineHeight: "1.7", pageBreakInside: "avoid" }}>
+                        <div style={{ background: "rgba(255,255,255,0.72)", border: "1px solid rgba(148,163,184,0.2)", borderLeft: `4px solid ${brandColor}`, borderRadius: "8px", padding: "20px 24px", marginBottom: "35px", fontSize: "13.5px", color: "#475569", lineHeight: "1.75", pageBreakInside: "avoid", boxShadow: "0 8px 24px rgba(15,23,42,0.05)" }}>
                             {agent.agentBio}
                         </div>
                     )}
 
                     {/* Summary table */}
-                    <div style={{ width: "100%", marginBottom: "35px", fontSize: "13px", display: "flex", flexDirection: "column", borderRadius: "12px", ...glassStyles }}>
-                        <div style={{ display: "flex", borderBottom: `2px solid ${navy}`, background: "rgba(0,51,102,0.05)", borderRadius: "12px 12px 0 0" }}>
-                            <div style={{ padding: "10px 15px", flex: "0 0 40%", color: navy, textTransform: "uppercase", fontSize: "11px", letterSpacing: "1px", fontWeight: "bold" }}>Metric</div>
-                            <div style={{ padding: "10px 15px", flex: "0 0 60%", color: navy, textTransform: "uppercase", fontSize: "11px", letterSpacing: "1px", fontWeight: "bold" }}>Details</div>
+                    <div style={{ width: "100%", marginBottom: "40px", fontSize: "13px", display: "flex", flexDirection: "column", borderRadius: "12px", border: "1px solid #e2e8f0", overflow: "hidden", ...glassStyles }}>
+                        <div style={{ display: "flex", borderBottom: `2px solid ${brandColor}`, background: "rgba(15, 23, 42, 0.04)" }}>
+                            <div style={{ padding: "12px 20px", flex: "0 0 40%", color: brandColor, textTransform: "uppercase", fontSize: "11px", letterSpacing: "1.5px", fontWeight: 800 }}>Metric</div>
+                            <div style={{ padding: "12px 20px", flex: "0 0 60%", color: brandColor, textTransform: "uppercase", fontSize: "11px", letterSpacing: "1.5px", fontWeight: 800 }}>Details</div>
                         </div>
-                        <div style={{ display: "flex", borderBottom: "1px solid #eee" }}>
-                            <div style={{ padding: "10px 15px", flex: "0 0 40%" }}>Total Duration</div>
-                            <div style={{ padding: "10px 15px", flex: "0 0 60%", fontWeight: "bold" }}>{itinerary.itinerary?.length || 0} Days</div>
+                        <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.56)" }}>
+                            <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Total Duration</div>
+                            <div style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{itinerary.itinerary?.length || 0} Days</div>
                         </div>
-                        <div style={{ display: "flex", borderBottom: "1px solid #eee" }}>
-                            <div style={{ padding: "10px 15px", flex: "0 0 40%" }}>Estimated Budget</div>
-                            <div style={{ padding: "10px 15px", flex: "0 0 60%", fontWeight: "bold" }}>{formatCurrency(finalTotal || getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY)}</div>
+                        <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.5)" }}>
+                            <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Estimated Budget</div>
+                            <div style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{formatCurrency(finalTotal || getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY)}</div>
                         </div>
-                        <div style={{ display: "flex", borderBottom: "1px solid #eee" }}>
-                            <div style={{ padding: "10px 15px", flex: "0 0 40%" }}>Total Activities</div>
-                            <div style={{ padding: "10px 15px", flex: "0 0 60%", fontWeight: "bold" }}>{itinerary.itinerary?.reduce((s, d) => s + (d.timeline?.length || 0), 0) || 0}</div>
+                        <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.56)" }}>
+                            <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Total Activities</div>
+                            <div style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{itinerary.itinerary?.reduce((s, d) => s + (d.timeline?.length || 0), 0) || 0} Scheduled</div>
                         </div>
                         {agent.agentWebsite && (
-                            <div style={{ display: "flex", borderBottom: "1px solid #eee" }}>
-                                <div style={{ padding: "10px 15px", flex: "0 0 40%" }}>Website</div>
-                                <div style={{ padding: "10px 15px", flex: "0 0 60%", color: navy }}>{agent.agentWebsite}</div>
+                            <div style={{ display: "flex", background: "rgba(255,255,255,0.52)" }}>
+                                <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Corporate Website</div>
+                                <div style={{ padding: "12px 20px", flex: "0 0 60%", color: brandColor, fontWeight: 700, textDecoration: "underline" }}>{agent.agentWebsite}</div>
                             </div>
                         )}
                     </div>
                 </div>{/* end cover section */}
             </div>
+
             {/* Daily */}
-            {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => (
-                <div key={index} data-pdf-section={`day-${index}`} style={{ marginBottom: "10px", display: "block" }}>
-                    {/* Day header with photo — keep together */}
-                    <div style={{ background: navy, color: "white", padding: "0", display: "flex", alignItems: "stretch", pageBreakInside: "avoid", pageBreakAfter: "avoid", breakInside: "avoid" }}>
-                        <img src={getDayImage(day)} alt={formatTitleCase(day.areaFocus)} style={{ width: "100px", height: "60px", objectFit: "cover", display: "block", flexShrink: 0 }} crossOrigin="anonymous" />
-                        <div style={{ padding: "10px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", flex: 1 }}>
-                            <h3 style={{ fontSize: "15px", margin: 0, fontWeight: "bold" }}>Day {index + 1}: {formatTitleCase(day.areaFocus)}</h3>
-                            <span style={{ fontSize: "12px", opacity: 0.8 }}>{formatDate(day.date)}</span>
-                        </div>
-                    </div>
-
-                    {/* Activity table — each row avoids break */}
-                    <div style={{ width: "100%", fontSize: "13px", display: "flex", flexDirection: "column" }}>
-                        <div style={{ display: "flex", background: "#f7f9fc", borderBottom: "1px solid #ddd" }}>
-                            <div style={{ padding: "8px 15px", flex: "0 0 100px", color: "#555", fontSize: "11px", textTransform: "uppercase", fontWeight: "bold" }}>Time</div>
-                            <div style={{ padding: "8px 15px", flex: 1, color: "#555", fontSize: "11px", textTransform: "uppercase", fontWeight: "bold" }}>Activity</div>
-                        </div>
-                        {Array.isArray(day.timeline) && day.timeline.map((step, si) => (
-                            <div key={si} className="pdf-no-cut" style={{ display: "flex", background: si % 2 === 0 ? "#ffffff" : "#fafbfc", pageBreakInside: "avoid", borderBottom: "1px solid #eee" }}>
-                                <div style={{ padding: "10px 15px", flex: "0 0 100px", fontWeight: "bold", color: navy }}>{step.time}</div>
-                                <div style={{ padding: "10px 15px", flex: 1, lineHeight: "1.5", color: "#444" }}>{step.details}</div>
+            <div style={{ padding: "0 50px 50px 50px" }}>
+                {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => (
+                    <div key={index} data-pdf-section={`day-${index}`} style={{ marginBottom: "30px", display: "block" }}>
+                        
+                        {/* Day header with photo */}
+                        <div style={{ background: brandColor, color: "white", padding: "0", display: "flex", alignItems: "stretch", borderRadius: "8px 8px 0 0", overflow: "hidden", pageBreakInside: "avoid", pageBreakAfter: "avoid", breakInside: "avoid" }}>
+                            <img src={getDayImage(day)} alt={formatTitleCase(day.areaFocus)} style={{ width: "120px", height: "70px", objectFit: "cover", display: "block", flexShrink: 0 }} crossOrigin="anonymous" />
+                            <div style={{ padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", flex: 1 }}>
+                                <h3 style={{ fontSize: "16px", margin: 0, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Day {index + 1}: {formatTitleCase(day.areaFocus)}</h3>
+                                <span style={{ fontSize: "12px", opacity: 0.8, fontWeight: 600 }}>{formatDate(day.date)}</span>
                             </div>
-                        ))}
-                    </div>
+                        </div>
 
-                    <div style={{ display: "flex", gap: "30px", padding: "8px 15px", background: "#f7f9fc", borderBottom: "1px solid #ddd", fontSize: "12px", color: "#666", pageBreakInside: "avoid" }}>
-                        {(day.dailyStats as any)?.walkingDistance && <span>Walking: {formatDistance((day.dailyStats as any).walkingDistance)} km</span>}
-                        {day.dailyStats?.totalCost && (!itinerary.pricing || itinerary.pricing.costingType !== 'manual') && (
-                            <span>Est. Cost: {formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>
+                        {/* Activity table */}
+                        <div style={{ width: "100%", fontSize: "13.5px", display: "flex", flexDirection: "column", border: "1px solid rgba(148,163,184,0.18)", borderTop: "none", borderRadius: "0 0 8px 8px", overflow: "hidden", boxShadow: "0 8px 24px rgba(15,23,42,0.05)", background: "rgba(255,255,255,0.34)" }}>
+                            <div style={{ display: "flex", background: "rgba(15, 23, 42, 0.06)", borderBottom: "1px solid rgba(148,163,184,0.18)" }}>
+                                {showTimestamps !== false && <div style={{ padding: "10px 20px", flex: "0 0 120px", color: brandColor, fontSize: "11px", textTransform: "uppercase", fontWeight: 800, letterSpacing: "1px" }}>Time</div>}
+                                <div style={{ padding: "10px 20px", flex: 1, color: brandColor, fontSize: "11px", textTransform: "uppercase", fontWeight: 800, letterSpacing: "1px" }}>Activity Description</div>
+                            </div>
+                            {Array.isArray(day.timeline) && day.timeline.map((step, si) => (
+                                <div key={si} className="pdf-no-cut" style={{ display: "flex", alignItems: "flex-start", background: si % 2 === 0 ? "rgba(255,255,255,0.54)" : "rgba(248,250,252,0.42)", pageBreakInside: "avoid", borderBottom: si === day.timeline.length - 1 ? "none" : "1px solid rgba(148,163,184,0.16)" }}>
+                                    {showTimestamps !== false ? (
+                                        <div style={{ padding: "14px 20px", flex: "0 0 120px", fontWeight: 700, color: brandColor }}>{step.time}</div>
+                                    ) : (
+                                        <div style={{ padding: "18px 20px", flex: "0 0 56px", display: "flex", justifyContent: "center" }}>
+                                            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: brandColor, flexShrink: 0 }} />
+                                        </div>
+                                    )}
+                                    <div style={{ padding: "14px 20px", flex: 1, lineHeight: "1.6", color: "#334155", fontWeight: 500 }}>{step.details}</div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {showPrices !== false && day.dailyStats?.totalCost && (!itinerary.pricing || itinerary.pricing.costingType !== 'manual') && (
+                            <div style={{ display: "flex", gap: "30px", padding: "10px 20px", background: "rgba(255,255,255,0.44)", border: "1px solid rgba(148,163,184,0.18)", borderTop: "none", borderRadius: "0 0 8px 8px", fontSize: "12px", color: "#64748b", fontWeight: 700, pageBreakInside: "avoid" }}>
+                                <span>Day Estimated Budget: {formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>
+                            </div>
                         )}
                     </div>
-                </div>
-            ))}
+                ))}
+            </div>
 
             {/* Footer */}
-            <div data-pdf-section="footer" style={{ padding: "20px 50px", borderTop: `2px solid ${navy}`, display: "flex", justifyContent: "space-between", fontSize: "11px", color: "#999" }}>
-                <span>Confidential — Prepared by {agent.companyName}</span>
+            <div data-pdf-section="footer" style={{ padding: "30px 50px", borderTop: `2px solid ${brandColor}`, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "11px", color: "#475569", fontWeight: 600, background: "rgba(255,255,255,0.46)" }}>
+                <span>Confidential · Prepared for client by {agent.companyName}</span>
                 <span>Page generated: {new Date().toLocaleDateString()}</span>
             </div>
         </div>
     );
 };
+
 

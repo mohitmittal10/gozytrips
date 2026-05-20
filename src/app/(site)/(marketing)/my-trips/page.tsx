@@ -43,6 +43,8 @@ interface SavedItinerary {
   is_favourite: boolean | null;
   itinerary_data: TravelItineraryOutput;
   currency: string | null;
+  show_timestamps?: boolean;
+  show_prices?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -541,11 +543,11 @@ export default function MyTripsPage() {
                 hotels={(selectedTrip.itinerary_data as any)?.hotels || []}
                 flights={(selectedTrip.itinerary_data as any)?.flights || []}
                 currency={(selectedTrip.itinerary_data as any)?.pricing?.currency}
+                destinations={(selectedTrip as any)?.destinations}
               />
             </div>
           )}
 
-          {/* PDF Preview & Export */}
           <PdfPreviewEditor
             isOpen={isPreviewOpen}
             onOpenChange={setIsPreviewOpen}
@@ -556,6 +558,8 @@ export default function MyTripsPage() {
               agencySettings: agencySettings,
               hotels: (selectedTrip?.itinerary_data as any)?.hotels || [],
               flights: (selectedTrip?.itinerary_data as any)?.flights || [],
+              showTimestamps: selectedTrip?.show_timestamps ?? true,
+              showPrices: selectedTrip?.show_prices ?? true,
             }}
             initialTheme={selectedTheme}
             itineraryId={selectedTrip?.id}

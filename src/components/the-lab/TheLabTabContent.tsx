@@ -104,6 +104,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
               showTimestamps={showTimestamps}
               showPrices={showPrices}
               currency={pricing?.currency}
+              destinations={form?.getValues?.()?.destinations || itinerary?.destinations}
             />
           </div>
         </ItineraryErrorBoundary>

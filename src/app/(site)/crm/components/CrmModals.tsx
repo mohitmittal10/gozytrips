@@ -201,6 +201,7 @@ export function CrmModals() {
                                 showPrices={true}
                                 hotels={(selectedTripForModal.itinerary_data as any)?.hotels || []}
                                 flights={(selectedTripForModal.itinerary_data as any)?.flights || []}
+                                destinations={(selectedTripForModal as any)?.destinations}
                             />
                         </div>
                     )}
@@ -214,6 +215,8 @@ export function CrmModals() {
                             agencySettings: agencySettings,
                             hotels: (selectedTripForModal?.itinerary_data as any)?.hotels || [],
                             flights: (selectedTripForModal?.itinerary_data as any)?.flights || [],
+                            showTimestamps: (selectedTripForModal as any)?.show_timestamps ?? true,
+                            showPrices: (selectedTripForModal as any)?.show_prices ?? true,
                         }}
                         initialTheme={selectedTheme}
                         itineraryId={selectedTripForModal?.id}

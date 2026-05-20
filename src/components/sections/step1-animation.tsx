@@ -5,6 +5,7 @@ import { motion, AnimatePresence, useInView } from "framer-motion";
 import { Calendar as CalendarIcon, Check, ArrowRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AnimatedLogo from "../ui/animated-logo";
+import Image from "next/image";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -200,6 +201,18 @@ export default function Step1Animation() {
             >
                 {/* Progress Indicators */}
                 <div className="mb-6 flex flex-col items-center">
+                        {/* Logo badge */}
+                        <div className="flex items-center justify-center mb-4">
+                            <motion.div
+                                className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3 py-1.5 backdrop-blur-sm"
+                                initial={{ opacity: 0, y: -6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ duration: 0.5 }}
+                            >
+                                <AnimatedLogo size="xs" />
+                                <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">Wander Labs</span>
+                            </motion.div>
+                        </div>
                         <div className="flex items-center justify-center gap-2">
                             {theLabSteps.map((s, index) => (
                                 <div key={index} className="flex items-center gap-2">

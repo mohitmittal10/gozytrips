@@ -19,6 +19,8 @@ export interface ClientItinerary {
   client_id: string | null;
   status: string;
   selected_theme: string | null;
+  show_timestamps?: boolean;
+  show_prices?: boolean;
   itinerary_data: TravelItineraryOutput;
   created_at: string;
   updated_at: string;
