@@ -39,7 +39,7 @@ export const CorporateTheme = ({ itinerary, title, agent, finalTotal = 0, showTi
                     )}
 
                     {/* Summary table */}
-                    <div style={{ width: "100%", marginBottom: "40px", fontSize: "13px", display: "flex", flexDirection: "column", borderRadius: "12px", border: "1px solid #e2e8f0", overflow: "hidden", ...glassStyles }}>
+                    <div style={{ ...glassStyles, width: "100%", marginBottom: "40px", fontSize: "13px", display: "flex", flexDirection: "column", borderRadius: "12px", border: "1px solid #e2e8f0", overflow: "hidden" }}>
                         <div style={{ display: "flex", borderBottom: `2px solid ${brandColor}`, background: "rgba(15, 23, 42, 0.04)" }}>
                             <div style={{ padding: "12px 20px", flex: "0 0 40%", color: brandColor, textTransform: "uppercase", fontSize: "11px", letterSpacing: "1.5px", fontWeight: 800 }}>Metric</div>
                             <div style={{ padding: "12px 20px", flex: "0 0 60%", color: brandColor, textTransform: "uppercase", fontSize: "11px", letterSpacing: "1.5px", fontWeight: 800 }}>Details</div>
