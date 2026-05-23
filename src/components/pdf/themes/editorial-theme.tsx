@@ -4,8 +4,9 @@ import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { getThematicBackground, glassStyles } from '../styles';
+import { PdfDaywiseIndex } from '../pages';
 
-export const EditorialTheme = ({ itinerary, title, agent, finalTotal = 0, showTimestamps = true, showPrices = true }: ThemeProps) => {
+export const EditorialTheme = ({ itinerary, title, agent, finalTotal = 0, showTimestamps = true, showPrices = true, daySummaries }: ThemeProps) => {
     const gold = agent.primaryColor || "#b8860b";
     
     return (
@@ -49,7 +50,7 @@ export const EditorialTheme = ({ itinerary, title, agent, finalTotal = 0, showTi
                         </div>
                         <div style={{ width: "1px", background: "#e2e8f0" }} />
                         <div style={{ flex: 2 }}>
-                            <p style={{ fontSize: "36px", fontWeight: "normal", color: gold, margin: "0 0 4px 0", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>{formatCurrency(finalTotal || getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY)}</p>
+                            <p style={{ fontSize: "36px", fontWeight: "normal", color: gold, margin: "0 0 4px 0", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>{formatCurrency(finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}</p>
                             <p style={{ fontSize: "10.5px", textTransform: "uppercase", letterSpacing: "3px", color: "#94a3b8", fontFamily: "'Plus Jakarta Sans', sans-serif", margin: 0, fontWeight: 700 }}>Bespoke Valuation</p>
                         </div>
                         <div style={{ width: "1px", background: "#e2e8f0" }} />
@@ -60,6 +61,8 @@ export const EditorialTheme = ({ itinerary, title, agent, finalTotal = 0, showTi
                     </div>
                 </div>{/* end cover */}
             </div>
+
+            <PdfDaywiseIndex itinerary={itinerary} accentColor={gold} theme="editorial" daySummaries={daySummaries} />
 
             {/* Daily */}
             {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => (
@@ -89,9 +92,9 @@ export const EditorialTheme = ({ itinerary, title, agent, finalTotal = 0, showTi
                         ))}
                     </div>
 
-                    {showPrices !== false && day.dailyStats?.totalCost && (!itinerary.pricing || itinerary.pricing.costingType !== 'manual') && (
+                    {showPrices !== false && (day as any).dailyStats?.totalCost && (!(itinerary as any).pricing || (itinerary as any).pricing.costingType !== 'manual') && (
                         <div style={{ display: "flex", gap: "30px", marginTop: "24px", paddingTop: "15px", borderTop: "1px solid #e2e8f0", fontSize: "12px", color: gold, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 700, pageBreakInside: "avoid" }}>
-                            <span>EST. COST FOR THE DAY: {formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>
+                            <span>EST. COST FOR THE DAY: {formatCurrency((day as any).dailyStats?.totalCost, (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}</span>
                         </div>
                     )}
                 </div>

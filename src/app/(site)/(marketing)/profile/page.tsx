@@ -14,9 +14,10 @@ import Link from 'next/link';
 import { logAuditEvent } from '@/lib/audit-logger';
 import BackupSettings from '@/components/settings/backup-settings';
 import { useFormDraft } from '@/hooks/use-form-draft';
+import UniqueLoading from '@/components/ui/morph-loading';
 
 export default function ProfilePage() {
-  const { user, userProfile, refreshProfile } = useAuth();
+  const { user, userProfile, refreshProfile, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const supabase = createClient();
   const [loading, setLoading] = useState(false);
@@ -30,7 +31,7 @@ export default function ProfilePage() {
   const [brandColor, setBrandColor] = useState('#0066cc');
 
   const { saveDraft, clearDraft } = useFormDraft(
-    "profile",
+    !authLoading && user ? "profile" : null,
     {
       fullName: userProfile?.full_name || '',
       bio: userProfile?.bio || '',
@@ -75,6 +76,19 @@ export default function ProfilePage() {
       setBrandColor(userProfile.brand_color || '#0066cc');
     }
   }, [userProfile]);
+
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#050505]">
+        <div className="relative group">
+          <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl opacity-50 animate-pulse" />
+          <UniqueLoading variant="morph" size="lg" className="relative z-10" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();

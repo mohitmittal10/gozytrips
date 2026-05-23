@@ -78,8 +78,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUserProfile(null);
         setAgencySettings(null);
         setUserPreferences(null);
+        setLoading(false);
       }
-      setLoading(false);
 
       // Log login events (fire-and-forget, outside of the auth lock)
       if (_event === 'SIGNED_IN' && session?.user) {
@@ -122,6 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [user?.id]);
 
   const bootstrapUserData = async (userId: string) => {
+    setLoading(true);
     try {
       const { data, error } = await supabase.rpc('get_user_bootstrap_data', {
         target_user_id: userId,
@@ -146,6 +147,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     } catch (error) {
       console.error('Error in bootstrapUserData:', error);
+    } finally {
+      setLoading(false);
     }
   };
 

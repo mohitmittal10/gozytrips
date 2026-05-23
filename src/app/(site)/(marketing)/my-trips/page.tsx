@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import ItineraryTimeline from '@/components/itinerary-timeline';
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
 import { type PdfTheme } from '@/components/pdf-template';
+import { getMergedPdfThemeOptions } from '@/components/pdf/theme-config';
 import { PdfPreviewEditor } from '@/components/pdf-preview-editor';
 import { useRouter } from 'next/navigation';
 import { useClients } from '@/lib/hooks/use-clients';
@@ -67,6 +68,7 @@ export default function MyTripsPage() {
   const { clients } = useClients();
   const { userPreferences } = useAuth();
   const { options: themeOptions } = useReferenceOptions("pdf_theme");
+  const pdfThemeOptions = getMergedPdfThemeOptions(themeOptions);
 
   useEffect(() => {
     // Don't do anything while auth is still loading
@@ -510,19 +512,9 @@ export default function MyTripsPage() {
                   <SelectValue placeholder="Select PDF Format" />
                 </SelectTrigger>
                 <SelectContent>
-                  {themeOptions.length > 0 ? (
-                    themeOptions.map(opt => (
-                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                    ))
-                  ) : (
-                    <>
-                      <SelectItem value="classic">Classic (Default)</SelectItem>
-                      <SelectItem value="editorial">Editorial (Magazine)</SelectItem>
-                      <SelectItem value="minimalist">Minimalist</SelectItem>
-                      <SelectItem value="dark">Dark Mode</SelectItem>
-                      <SelectItem value="corporate">Corporate</SelectItem>
-                    </>
-                  )}
+                  {pdfThemeOptions.map(opt => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               <Button

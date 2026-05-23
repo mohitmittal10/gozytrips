@@ -15,6 +15,7 @@ import { History, UserPlus, Plane, Activity, Clock, Eye } from "lucide-react";
 
 import type { SavedItinerary } from "@/components/trip-card";
 import type { PdfTheme } from "@/components/pdf-template";
+import { getMergedPdfThemeOptions } from "@/components/pdf/theme-config";
 import type { FlatTrip } from "./TripDetailSheet";
 
 import { ClientProfileSheet } from "./ClientProfileSheet";
@@ -55,6 +56,7 @@ export function CrmModals() {
 
     const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
     const { options: themeOptions } = useReferenceOptions("pdf_theme");
+    const pdfThemeOptions = getMergedPdfThemeOptions(themeOptions);
     const { updateClient, createClient: _createClient, fetchClients } = useClients();
     const { user, userProfile, agencySettings, updatePreferences } = useAuth();
     const { toast } = useToast();
@@ -174,17 +176,7 @@ export function CrmModals() {
                                     <SelectValue placeholder="Select PDF Format" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {themeOptions.length > 0 ? (
-                                        themeOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)
-                                    ) : (
-                                        <>
-                                            <SelectItem value="classic">Classic (Default)</SelectItem>
-                                            <SelectItem value="editorial">Editorial (Magazine)</SelectItem>
-                                            <SelectItem value="minimalist">Minimalist</SelectItem>
-                                            <SelectItem value="dark">Dark Mode</SelectItem>
-                                            <SelectItem value="corporate">Corporate</SelectItem>
-                                        </>
-                                    )}
+                                    {pdfThemeOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
                             <Button onClick={handleDownloadPdf} disabled={!selectedTripForModal} className="w-fit bg-white text-black hover:bg-gray-200">

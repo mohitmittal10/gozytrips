@@ -1,17 +1,23 @@
 import React from 'react';
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
+import type { HotelInfo, FlightInfo } from '@/components/hotel-flight-editor';
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getAgentInfo, getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { getThematicBackground, glassStyles } from '../styles';
+import { PdfDaywiseIndex } from '../pages';
 
 export type ThemeProps = { 
     itinerary: TravelItineraryOutput; 
     title: string; 
     agent: ReturnType<typeof getAgentInfo>;
+    hotels?: HotelInfo[];
+    flights?: FlightInfo[];
     finalTotal?: number;
     showTimestamps?: boolean;
     showPrices?: boolean;
+    /** AI-generated one-sentence summaries per day, indexed by day order. */
+    daySummaries?: string[];
 };
 
 function hexToRgb(hex: string): string {
@@ -25,7 +31,7 @@ function hexToRgb(hex: string): string {
     return "168, 85, 247";
 }
 
-export const ClassicTheme = ({ itinerary, title, agent, finalTotal = 0, showTimestamps = true, showPrices = true }: ThemeProps) => {
+export const ClassicTheme = ({ itinerary, title, agent, finalTotal = 0, showTimestamps = true, showPrices = true, daySummaries }: ThemeProps) => {
     const rgbAccent = hexToRgb(agent.primaryColor || "#a855f7");
     
     return (
@@ -46,7 +52,7 @@ export const ClassicTheme = ({ itinerary, title, agent, finalTotal = 0, showTime
 
                 <div style={{ padding: "0 45px", background: "rgba(248,250,252,0.18)" }}>
                     {/* Agent details */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #e2e8f0", paddingBottom: "30px", marginBottom: "35px", pageBreakInside: "avoid" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #e2e8f0", paddingBottom: "30px", marginBottom: "35px" }}>
                         <div style={{ maxWidth: "60%" }}>
                             {agent.agentBio && (
                                 <div style={{ padding: "16px 22px", borderRadius: "12px", borderLeft: `4px solid ${agent.primaryColor}`, fontStyle: "italic", color: "#475569", fontSize: "13.5px", lineHeight: "1.65", ...glassStyles }}>
@@ -64,7 +70,7 @@ export const ClassicTheme = ({ itinerary, title, agent, finalTotal = 0, showTime
                     </div>
 
                     {/* Stat cards */}
-                    <div style={{ display: "flex", gap: "20px", marginBottom: "40px", pageBreakInside: "avoid" }}>
+                    <div style={{ display: "flex", gap: "20px", marginBottom: "40px" }}>
                         <div style={{ ...glassStyles, flex: 1, borderRadius: "16px", padding: "20px 24px", borderLeft: `4px solid ${agent.primaryColor}`, boxShadow: "0 4px 20px -2px rgba(0,0,0,0.05)" }}>
                             <h3 style={{ margin: "0 0 6px 0", fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800 }}>Duration</h3>
                             <p style={{ margin: 0, fontSize: "26px", fontWeight: 900, color: "#0f172a", fontFamily: "'Outfit', sans-serif" }}>{itinerary.itinerary?.length || 0} Days</p>
@@ -77,13 +83,15 @@ export const ClassicTheme = ({ itinerary, title, agent, finalTotal = 0, showTime
                 </div>{/* end cover section */}
             </div>
 
+            <PdfDaywiseIndex itinerary={itinerary} accentColor={agent.primaryColor} theme="classic" daySummaries={daySummaries} />
+
             {/* Daily itineraries */}
             <div style={{ padding: "0 45px 45px 45px" }}>
                 {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => (
                     <div key={index} data-pdf-section={`day-${index}`} style={{ marginBottom: "35px", display: "block" }}>
 
                         {/* Photo + header block */}
-                        <div style={{ display: "block", border: "1px solid #e2e8f0", borderBottom: "none", borderRadius: "20px 20px 0 0", pageBreakInside: "avoid", pageBreakAfter: "avoid", breakInside: "avoid" }}>
+                        <div style={{ display: "block", border: "1px solid #e2e8f0", borderBottom: "none", borderRadius: "20px 20px 0 0" }}>
                             <div style={{ height: "200px", display: "block", position: "relative" }}>
                                 <img src={getDayImage(day)} alt={formatTitleCase(day.areaFocus)} style={{ width: "100%", height: "200px", objectFit: "cover", display: "block", borderRadius: "20px 20px 0 0" }} crossOrigin="anonymous" />
                                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.5), transparent)" }} />
@@ -102,7 +110,7 @@ export const ClassicTheme = ({ itinerary, title, agent, finalTotal = 0, showTime
                             )}
                             
                             {Array.isArray(day.timeline) && day.timeline.map((step, si) => (
-                                <div key={si} className="pdf-no-cut" style={{ display: "flex", alignItems: "flex-start", gap: "24px", marginBottom: si === day.timeline.length - 1 ? "0" : "24px", position: "relative", pageBreakInside: "avoid", breakInside: "avoid" }}>
+                                <div key={si} style={{ display: "flex", alignItems: "flex-start", gap: "24px", marginBottom: si === day.timeline.length - 1 ? "0" : "24px", position: "relative" }}>
                                     {showTimestamps !== false ? (
                                         <span style={{ 
                                             fontWeight: 800, 
@@ -141,7 +149,7 @@ export const ClassicTheme = ({ itinerary, title, agent, finalTotal = 0, showTime
                                 </div>
                             ))}
                             {showPrices !== false && (day as any).dailyStats?.totalCost && (!(itinerary as any).pricing || (itinerary as any).pricing.costingType !== 'manual') && (
-                                <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #e2e8f0", display: "flex", gap: "20px", fontSize: "13px", color: "#64748b", fontWeight: 700, pageBreakInside: "avoid", breakInside: "avoid" }}>
+                                <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #e2e8f0", display: "flex", gap: "20px", fontSize: "13px", color: "#64748b", fontWeight: 700 }}>
                                     <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "6px 16px", borderRadius: "8px", display: "inline-flex", alignItems: "center" }}>
                                         💰 Day Cost: {formatCurrency((day as any).dailyStats?.totalCost, (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}
                                     </div>

@@ -1,6 +1,6 @@
 // Collapsible desktop side navigation
 import React from 'react';
-import { Calendar as CalendarIcon, Plane, DollarSign, Settings, ChevronLeft, ChevronRight, History, Plus } from 'lucide-react';
+import { Calendar as CalendarIcon, Plane, DollarSign, Settings, ChevronLeft, ChevronRight, History, Plus, List } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import type { ActiveLabTab } from '@/types/the-lab';
 import Logo from '../layout/logo';
@@ -80,6 +80,7 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
           {[
             { id: 'itinerary' as const, icon: CalendarIcon, label: 'Timeline' },
             { id: 'flights-hotels' as const, icon: Plane, label: 'Logistics' },
+            { id: 'inclusions' as const, icon: List, label: 'Inclusions' },
             { id: 'pricing' as const, icon: DollarSign, label: 'Financials' },
             { id: 'history' as const, icon: History, label: 'History' },
           ].map((item) => (

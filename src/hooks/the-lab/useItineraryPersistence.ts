@@ -20,6 +20,7 @@ export function useItineraryPersistence({
   const supabase = createClient();
   const mounted = useRef(false);
   const initialized = useRef(false);
+  const lastFetchedIdRef = useRef<string | null>(null);
 
   // Always-up-to-date ref so callbacks never capture stale closures.
   // This is the key fix: saveAll/saveNow read from this ref at call-time,
@@ -40,8 +41,23 @@ export function useItineraryPersistence({
     let active = true;
 
     const loadDraft = async () => {
+      // Prevent redundant fetches if we already fetched this exact ID
+      if (currentTripId && lastFetchedIdRef.current === currentTripId) {
+        return;
+      }
+
+      // If ID is null AND we've already initialized, we are making a "New Itinerary" (no DB fetch).
+      if (!currentTripId && initialized.current) {
+        if (active) {
+          setLoadedData(getEmptyData());
+          lastPayloadRef.current = ""; 
+          lastFetchedIdRef.current = null;
+        }
+        return;
+      }
+
       try {
-        if (currentTripId) setIsLoading(true);
+        setIsLoading(true);
         const { data: { session } } = await supabase.auth.getSession();
 
         // If not authenticated, we can't load from Supabase - default to empty state
@@ -56,16 +72,6 @@ export function useItineraryPersistence({
           // Specific ID provided (from URL or navigation)
           query = query.eq("id", currentTripId);
         } else {
-          // ID is null
-          // If we've already initialized once (mounted and finished first check),
-          // it means the user explicitly wanted a "New Itinerary".
-          if (initialized.current) {
-            if (active) {
-              setLoadedData(getEmptyData());
-              lastPayloadRef.current = ""; // Reset payload ref to allow a fresh save
-            }
-            return;
-          }
           // Initial mount with no ID -> Load the latest draft
           query = query.eq("status", "draft").order("last_activity_at", { ascending: false }).limit(1);
         }
@@ -73,6 +79,8 @@ export function useItineraryPersistence({
         const { data, error } = await query.single();
 
         if (active && data) {
+          lastFetchedIdRef.current = data.id;
+
           // Sync the ID if we just auto-loaded a draft
           if (!currentTripId) {
             currentTripIdRef.current = data.id;
@@ -102,7 +110,9 @@ export function useItineraryPersistence({
             showPrices: data.show_prices ?? true,
             selectedTheme: data.selected_theme || 'classic',
             pdfOverrides: data.pdf_overrides || {},
-            draftSourceItineraryId: data.draft_source_itinerary_id
+            draftSourceItineraryId: data.draft_source_itinerary_id,
+            inclusions: itineraryData.inclusions || "",
+            exclusions: itineraryData.exclusions || ""
           };
 
           // Seed the payload ref so we don't immediately re-save what we just loaded
@@ -125,7 +135,10 @@ export function useItineraryPersistence({
         }
       } catch (err) {
         console.warn("Failed to load itinerary from Supabase", err);
-        if (active) setLoadedData(getEmptyData());
+        if (active) {
+          setLoadedData(getEmptyData());
+          lastFetchedIdRef.current = null;
+        }
       } finally {
         initialized.current = true;
         if (active) setIsLoading(false);
@@ -150,7 +163,9 @@ export function useItineraryPersistence({
         flights: data.flights || [],
         cabs: data.cabs || [],
         buses: data.buses || [],
-        pricing: data.pricing
+        pricing: data.pricing,
+        inclusions: data.inclusions !== undefined ? data.inclusions : "",
+        exclusions: data.exclusions !== undefined ? data.exclusions : "",
       };
 
       const formValues = data.tripMetadata || {};
@@ -312,6 +327,7 @@ export function useItineraryPersistence({
     if (saveTimer.current) clearTimeout(saveTimer.current);
     currentTripIdRef.current = null;
     lastPayloadRef.current = ""; // Reset dirty-check so next real save always writes
+    lastFetchedIdRef.current = null; // Allow a fresh fetch if needed
   }, []);
 
   return { loadedData, isLoading, saveAll, saveNow, resetForNewTrip };
@@ -333,7 +349,9 @@ function getEmptyData(): LoadedPersistenceData {
     showPrices: true,
     selectedTheme: 'classic',
     pdfOverrides: {},
-    draftSourceItineraryId: null
+    draftSourceItineraryId: null,
+    inclusions: "",
+    exclusions: ""
   };
 }
 

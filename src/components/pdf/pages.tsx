@@ -1,11 +1,12 @@
 import React from 'react';
 import type { PricingConfig } from '@/types/pricing';
 import type { HotelInfo, FlightInfo } from '@/components/hotel-flight-editor';
-import type { PdfTheme } from '@/components/pdf-template';
+import type { PdfTheme } from './theme-config';
 import { formatMoneyWithDecimals } from '@/lib/utils/currency';
-import { formatPlural, getAgentInfo } from './utils';
+import { formatPlural, getAgentInfo, formatDate, formatTitleCase } from './utils';
 import { PdfFlightBlock, PdfHotelBlock, type PdfLogisticsBlockStyle } from './shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
+import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
 
 const getPricingThemeStyles = (theme: PdfTheme, accentColor: string) => {
     const shared = {
@@ -18,6 +19,27 @@ const getPricingThemeStyles = (theme: PdfTheme, accentColor: string) => {
     };
 
     switch (theme) {
+        case 'desert':
+            return {
+                ...shared,
+                pageBackground: "#433429",
+                pageTextColor: "#ffffff",
+                headingColor: "#ffffff",
+                sectionHeadingColor: "#ffffff",
+                mutedTextColor: "rgba(254,215,170,0.68)",
+                bodyTextColor: "rgba(255,255,255,0.82)",
+                totalTextColor: "#ffffff",
+                headerBorder: "1px solid rgba(255,255,255,0.18)",
+                quoteCardBackground: "transparent",
+                quoteCardBorder: "none",
+                quoteCardRadius: "0px",
+                totalBorder: "1px solid rgba(255,255,255,0.18)",
+                tableBackground: "transparent",
+                tableBorder: "1px solid rgba(255,255,255,0.2)",
+                tableHeaderBackground: "rgba(0,0,0,0.1)",
+                tableHeaderBorder: "1px solid rgba(255,255,255,0.1)",
+                tableRowBorder: "1px solid rgba(255,255,255,0.1)",
+            };
         case 'dark':
             return {
                 ...shared,
@@ -41,28 +63,28 @@ const getPricingThemeStyles = (theme: PdfTheme, accentColor: string) => {
         case 'minimalist':
             return {
                 ...shared,
-                pageBackground: "rgba(255,255,255,0.42)",
+                pageBackground: "#f8fafc",
                 headerBorder: `1px solid rgba(148,163,184,0.2)`,
-                quoteCardBackground: "rgba(255,255,255,0.58)",
+                quoteCardBackground: "#ffffff",
                 quoteCardBorder: "1px solid rgba(148,163,184,0.18)",
                 quoteCardRadius: "8px",
                 totalBorder: "2px solid #cbd5e1",
-                tableBackground: "rgba(255,255,255,0.5)",
+                tableBackground: "#ffffff",
                 tableBorder: "1px solid rgba(148,163,184,0.18)",
-                tableHeaderBackground: "rgba(241,245,249,0.9)",
+                tableHeaderBackground: "#f1f5f9",
                 tableHeaderBorder: "2px solid #cbd5e1",
                 tableRowBorder: "1px solid rgba(226,232,240,0.9)",
             };
         case 'corporate':
             return {
                 ...shared,
-                pageBackground: "rgba(255,255,255,0.46)",
+                pageBackground: "#f8fafc",
                 headerBorder: `2px solid ${accentColor}`,
-                quoteCardBackground: "rgba(255,255,255,0.72)",
+                quoteCardBackground: "#ffffff",
                 quoteCardBorder: "1px solid rgba(148,163,184,0.2)",
                 quoteCardRadius: "8px",
                 totalBorder: "2px solid #cbd5e1",
-                tableBackground: "rgba(255,255,255,0.62)",
+                tableBackground: "#ffffff",
                 tableBorder: "1px solid rgba(148,163,184,0.18)",
                 tableHeaderBackground: "rgba(15,23,42,0.04)",
                 tableHeaderBorder: `2px solid ${accentColor}`,
@@ -71,7 +93,7 @@ const getPricingThemeStyles = (theme: PdfTheme, accentColor: string) => {
         case 'editorial':
             return {
                 ...shared,
-                pageBackground: "rgba(253,252,250,0.18)",
+                pageBackground: "#fdfcfa",
                 pageTextColor: "#2c2c2c",
                 sectionHeadingColor: "#2c2c2c",
                 mutedTextColor: "#6b7280",
@@ -92,7 +114,7 @@ const getPricingThemeStyles = (theme: PdfTheme, accentColor: string) => {
         default:
             return {
                 ...shared,
-                pageBackground: "rgba(248,250,252,0.18)",
+                pageBackground: "#f8fafc",
                 headerBorder: `2px solid ${accentColor}`,
                 quoteCardBackground: "rgba(255,255,255,0.58)",
                 quoteCardBorder: "1px solid rgba(148,163,184,0.18)",
@@ -113,6 +135,84 @@ export const PdfPricingPage = ({ pricing, baseCost = 0, agent, theme }: { pricin
     const isManual = pricing.costingType === "manual";
     const styles = getPricingThemeStyles(theme, agent.primaryColor);
 
+    if (theme === 'desert') {
+        return (
+            <div data-pdf-section="pricing" style={{ padding: "80px 50px", fontFamily: "'Inter', sans-serif", color: styles.pageTextColor, background: styles.pageBackground }}>
+                <div style={{ textAlign: "center", marginBottom: "56px" }}>
+                    <p style={{ margin: "0 0 16px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "4px", color: styles.mutedTextColor, fontWeight: 700 }}>
+                        Culinary Journey
+                    </p>
+                    <h2 style={{ margin: 0, fontSize: "32px", textTransform: "uppercase", letterSpacing: "4px", color: styles.headingColor, fontWeight: 500 }}>
+                        Costing and Payment Schedule
+                    </h2>
+                </div>
+
+                <div style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "12px", padding: "40px", marginBottom: "80px", backdropFilter: "blur(4px)" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "24px" }}>
+                            <p style={{ margin: 0, fontSize: "20px", lineHeight: "1.6", color: "rgba(255,255,255,0.9)" }}>
+                                {isManual ? "Consolidated Package Cost" : "Package Cost (Incl. Accommodations, Flights, Activities)"}
+                            </p>
+                            <p style={{ margin: 0, fontSize: "20px", color: "rgba(255,255,255,0.9)" }}>
+                                {formatMoneyWithDecimals(costWithMarkup, currency)}
+                            </p>
+                        </div>
+
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "24px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "24px" }}>
+                            <p style={{ margin: 0, fontSize: "20px", lineHeight: "1.6", color: "rgba(255,255,255,0.9)" }}>
+                                Taxes & Fees
+                            </p>
+                            <p style={{ margin: 0, fontSize: "20px", color: "rgba(255,255,255,0.9)" }}>
+                                {formatMoneyWithDecimals(taxAmount, currency)}
+                            </p>
+                        </div>
+
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "24px", paddingTop: "8px" }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+                                <p style={{ margin: 0, fontSize: "24px", color: "#ffffff" }}>
+                                    Total Quote
+                                </p>
+                                <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.4)", fontStyle: "italic" }}>
+                                    Pricing is valid for the specified dates and {formatPlural(pricing.adultPax, 'Adult', 'Adults')}{pricing.childPax > 0 ? `, ${formatPlural(pricing.childPax, 'Child', 'Children')}` : ''}{pricing.infantPax > 0 ? `, ${formatPlural(pricing.infantPax, 'Infant', 'Infants')}` : ''} only.
+                                </p>
+                            </div>
+                            <p style={{ margin: 0, fontSize: "24px", color: "#ffffff" }}>
+                                {formatMoneyWithDecimals(finalTotal, currency)}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div style={{ width: "100%" }}>
+                    <div style={{ display: "flex", paddingBottom: "16px", borderBottom: "1px solid rgba(254,215,170,0.3)", textAlign: "center" }}>
+                        <p style={{ flex: 1, margin: 0, fontSize: "20px", color: "rgba(255,255,255,0.9)" }}>Milestone</p>
+                        <p style={{ flex: 1, margin: 0, fontSize: "20px", color: "rgba(255,255,255,0.9)" }}>Timeline / Due Date</p>
+                        <p style={{ flex: 1, margin: 0, fontSize: "20px", color: "rgba(255,255,255,0.9)" }}>Amount</p>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                        {(pricing.milestones && pricing.milestones.length > 0 ? pricing.milestones : [{ id: 'fallback', name: isManual ? 'Package Cost' : 'Advance', percentage: 100, dueDate: 'At booking' }]).map((m, i, arr) => {
+                            const amount = m.id === 'fallback' ? finalTotal : (finalTotal * m.percentage) / 100;
+                            return (
+                                <div key={m.id || i} style={{ display: "flex", padding: "32px 0", textAlign: "center", alignItems: "center", borderBottom: i === arr.length - 1 ? "none" : "1px solid rgba(255,255,255,0.05)" }}>
+                                    <p style={{ flex: 1, margin: 0, fontSize: "20px", color: "rgba(255,255,255,0.8)" }}>
+                                        {m.name}{m.id === 'fallback' ? '' : `(${m.percentage}%)`}
+                                    </p>
+                                    <p style={{ flex: 1, margin: 0, fontSize: "20px", color: "rgba(255,255,255,0.8)", fontStyle: "italic" }}>
+                                        {m.dueDate}
+                                    </p>
+                                    <p style={{ flex: 1, margin: 0, fontSize: "20px", color: "rgba(255,255,255,0.8)" }}>
+                                        {formatMoneyWithDecimals(amount, currency)}
+                                    </p>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div data-pdf-section="pricing" style={{ padding: "60px 50px", fontFamily: "'Inter', sans-serif", color: styles.pageTextColor, background: styles.pageBackground }}>
             <h2 style={{ fontSize: "28px", color: styles.headingColor, marginBottom: "30px", borderBottom: styles.headerBorder, paddingBottom: "15px" }}>
@@ -120,7 +220,7 @@ export const PdfPricingPage = ({ pricing, baseCost = 0, agent, theme }: { pricin
             </h2>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "30px", marginBottom: "40px" }}>
-                <div style={{ flex: 1, background: styles.quoteCardBackground, padding: "25px", borderRadius: styles.quoteCardRadius, border: styles.quoteCardBorder, pageBreakInside: "avoid" }}>
+                <div style={{ flex: 1, background: styles.quoteCardBackground, padding: "25px", borderRadius: styles.quoteCardRadius, border: styles.quoteCardBorder }}>
                     <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: styles.mutedTextColor, textTransform: "uppercase", letterSpacing: "1px" }}>Client Quote</h3>
 
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "15px", color: styles.bodyTextColor }}>
@@ -144,7 +244,7 @@ export const PdfPricingPage = ({ pricing, baseCost = 0, agent, theme }: { pricin
             </div>
 
             {pricing.milestones && pricing.milestones.length > 0 && (
-                <div style={{ pageBreakInside: "avoid" }}>
+                <div>
                     <h3 style={{ fontSize: "20px", color: styles.sectionHeadingColor, marginBottom: "20px", fontWeight: "bold" }}>Payment Schedule</h3>
                     <div style={{ width: "100%", fontSize: "14px", display: "flex", flexDirection: "column", background: styles.tableBackground, border: styles.tableBorder, borderRadius: styles.quoteCardRadius, overflow: "hidden" }}>
                         {/* Header Row */}
@@ -167,6 +267,24 @@ export const PdfPricingPage = ({ pricing, baseCost = 0, agent, theme }: { pricin
                     </div>
                 </div>
             )}
+
+            {agent?.bankDetails && (
+                <div style={{ marginTop: "40px" }}>
+                    <h3 style={{ fontSize: "20px", color: styles.sectionHeadingColor, marginBottom: "15px", fontWeight: "bold" }}>Payment Details</h3>
+                    <div style={{ 
+                        background: styles.quoteCardBackground, 
+                        border: styles.quoteCardBorder, 
+                        borderRadius: styles.quoteCardRadius, 
+                        padding: "20px",
+                        fontSize: "14px",
+                        color: styles.bodyTextColor,
+                        whiteSpace: "pre-wrap",
+                        lineHeight: "1.6"
+                    }}>
+                        {agent.bankDetails}
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
@@ -179,6 +297,24 @@ const getLogisticsThemeStyles = (theme: PdfTheme, accentColor: string) => {
     };
 
     switch (theme) {
+        case 'desert':
+            return {
+                ...shared,
+                headingColor: "#b7793e",
+                sectionHeadingColor: "#6f4b2c",
+                textColor: "#7a5b43",
+                pageBackground: "#f5ebdc",
+                pageTextColor: "#5f452c",
+                headerBorder: "2px solid rgba(183,121,62,0.28)",
+                blockStyle: {
+                    cardBackground: "rgba(255,249,240,0.92)",
+                    border: "1px solid rgba(183,121,62,0.18)",
+                    borderRadius: "20px",
+                    accentBadgeBackground: "rgba(183,121,62,0.12)",
+                    accentBadgeColor: "#9a6330",
+                    titleColor: "#8c5a2d",
+                } satisfies PdfLogisticsBlockStyle,
+            };
         case 'dark':
             return {
                 ...shared,
@@ -199,11 +335,11 @@ const getLogisticsThemeStyles = (theme: PdfTheme, accentColor: string) => {
         case 'minimalist':
             return {
                 ...shared,
-                pageBackground: "rgba(255,255,255,0.42)",
+                pageBackground: "#f8fafc",
                 pageTextColor: "#0f172a",
                 headerBorder: `1px solid rgba(148,163,184,0.2)`,
                 blockStyle: {
-                    cardBackground: "rgba(255,255,255,0.58)",
+                    cardBackground: "#ffffff",
                     border: `1px solid rgba(148,163,184,0.18)`,
                     borderRadius: "8px",
                     accentBadgeBackground: `${accentColor}18`,
@@ -213,11 +349,11 @@ const getLogisticsThemeStyles = (theme: PdfTheme, accentColor: string) => {
         case 'corporate':
             return {
                 ...shared,
-                pageBackground: "rgba(255,255,255,0.46)",
+                pageBackground: "#f8fafc",
                 pageTextColor: "#1e293b",
                 headerBorder: `2px solid ${accentColor}`,
                 blockStyle: {
-                    cardBackground: "rgba(255,255,255,0.72)",
+                    cardBackground: "#ffffff",
                     border: `1px solid rgba(148,163,184,0.2)`,
                     borderRadius: "8px",
                     accentBadgeBackground: `${accentColor}14`,
@@ -227,7 +363,7 @@ const getLogisticsThemeStyles = (theme: PdfTheme, accentColor: string) => {
         case 'editorial':
             return {
                 ...shared,
-                pageBackground: "rgba(253,252,250,0.18)",
+                pageBackground: "#fdfcfa",
                 pageTextColor: "#2c2c2c",
                 sectionHeadingColor: "#2c2c2c",
                 textColor: "#4b5563",
@@ -245,7 +381,7 @@ const getLogisticsThemeStyles = (theme: PdfTheme, accentColor: string) => {
         default:
             return {
                 ...shared,
-                pageBackground: "rgba(248,250,252,0.18)",
+                pageBackground: "#f8fafc",
                 pageTextColor: "#1e293b",
                 headerBorder: `2px solid ${accentColor}`,
                 blockStyle: {
@@ -289,3 +425,117 @@ export const PdfFlightAndHotelSummary = ({ flights, hotels, accentColor, theme }
     );
 };
 
+export const PdfInclusionsPage = ({ inclusions, exclusions, accentColor, theme }: { inclusions?: string, exclusions?: string, accentColor: string, theme: PdfTheme }) => {
+    if (!inclusions && !exclusions) return null;
+    const styles = getPricingThemeStyles(theme, accentColor);
+
+    return (
+        <div data-pdf-section="inclusions-exclusions" style={{ padding: "60px 50px", fontFamily: "'Inter', sans-serif", color: styles.pageTextColor, background: styles.pageBackground }}>
+            <h2 style={{ fontSize: "28px", color: styles.headingColor, marginBottom: "30px", borderBottom: styles.headerBorder, paddingBottom: "15px" }}>
+                Inclusions & Exclusions
+            </h2>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
+                {inclusions && (
+                    <div style={{ background: styles.quoteCardBackground, padding: "25px", borderRadius: styles.quoteCardRadius, border: styles.quoteCardBorder }}>
+                        <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#10b981", textTransform: "uppercase", letterSpacing: "1px" }}>Included</h3>
+                        <div style={{ fontSize: "15px", color: styles.bodyTextColor, whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
+                            {inclusions}
+                        </div>
+                    </div>
+                )}
+                {exclusions && (
+                    <div style={{ background: styles.quoteCardBackground, padding: "25px", borderRadius: styles.quoteCardRadius, border: styles.quoteCardBorder }}>
+                        <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#f43f5e", textTransform: "uppercase", letterSpacing: "1px" }}>Not Included</h3>
+                        <div style={{ fontSize: "15px", color: styles.bodyTextColor, whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
+                            {exclusions}
+                        </div>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export const PdfDaywiseIndex = ({ 
+    itinerary, 
+    accentColor, 
+    theme,
+    daySummaries,
+}: { 
+    itinerary: TravelItineraryOutput; 
+    accentColor: string; 
+    theme: PdfTheme;
+    /** AI-generated one-sentence summaries per day, indexed by day order. */
+    daySummaries?: string[];
+}) => {
+    if (!itinerary || !Array.isArray(itinerary.itinerary) || itinerary.itinerary.length === 0) {
+        return null;
+    }
+    const styles = getPricingThemeStyles(theme, accentColor);
+
+    return (
+        <div data-pdf-section="daywise-index" style={{ padding: "60px 50px", fontFamily: "'Inter', sans-serif", color: styles.pageTextColor, background: styles.pageBackground }}>
+            <h2 style={{ fontSize: "28px", color: styles.headingColor, marginBottom: "30px", borderBottom: styles.headerBorder, paddingBottom: "15px" }}>
+                Itinerary at a Glance
+            </h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                {itinerary.itinerary.map((day, index) => {
+                    // Priority: AI-generated summary → first timeline detail (truncated) → fallback label
+                    const summary = (daySummaries && daySummaries[index] && daySummaries[index].trim())
+                        ? daySummaries[index]
+                        : day.timeline?.[0]?.details
+                            ? day.timeline[0].details.length > 80
+                                ? `${day.timeline[0].details.substring(0, 77)}…`
+                                : day.timeline[0].details
+                            : 'Leisure & free exploration';
+
+                    return (
+                        <div key={index} style={{ 
+                            background: styles.quoteCardBackground, 
+                            border: styles.quoteCardBorder, 
+                            borderRadius: styles.quoteCardRadius, 
+                            padding: "18px 22px",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "20px",
+                            pageBreakInside: "avoid"
+                        }}>
+                            {/* Day Badge */}
+                            <div style={{ 
+                                background: `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
+                                color: "#ffffff",
+                                padding: "10px 16px",
+                                borderRadius: "10px",
+                                minWidth: "72px",
+                                textAlign: "center",
+                                fontWeight: "bold",
+                                flexShrink: 0,
+                            }}>
+                                <div style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", opacity: 0.85 }}>Day</div>
+                                <div style={{ fontSize: "22px", lineHeight: "1", fontFamily: "'Outfit', sans-serif" }}>{index + 1}</div>
+                            </div>
+
+                            {/* Content */}
+                            <div style={{ flex: 1 }}>
+                                <div style={{ display: "flex", alignItems: "baseline", gap: "10px", marginBottom: "5px", flexWrap: "wrap" }}>
+                                    <span style={{ fontSize: "15px", fontWeight: "700", color: styles.sectionHeadingColor }}>
+                                        {formatTitleCase(day.areaFocus)}
+                                    </span>
+                                    {day.date && (
+                                        <span style={{ fontSize: "11px", color: styles.mutedTextColor, fontWeight: 500 }}>
+                                            • {formatDate(day.date)}
+                                        </span>
+                                    )}
+                                </div>
+                                <p style={{ margin: 0, fontSize: "13px", color: styles.bodyTextColor, lineHeight: "1.6", fontStyle: "italic" }}>
+                                    {summary}
+                                </p>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+        </div>
+    );
+};

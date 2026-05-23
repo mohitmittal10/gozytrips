@@ -37,7 +37,7 @@ export const formSchema = z.object({
 
 export type TheLabFormValues = z.infer<typeof formSchema>;
 
-export type ActiveLabTab = 'itinerary' | 'flights-hotels' | 'pricing' | 'history' | 'settings' | 'new';
+export type ActiveLabTab = 'itinerary' | 'flights-hotels' | 'inclusions' | 'pricing' | 'history' | 'settings' | 'new';
 
 export interface TripMetadata extends Partial<TheLabFormValues> {
   // Can carry any parsed metadata
@@ -59,6 +59,8 @@ export interface LoadedPersistenceData {
   selectedTheme: string;
   pdfOverrides: Record<string, any>;
   draftSourceItineraryId?: string | null;
+  inclusions?: string;
+  exclusions?: string;
 }
 
 export interface SaveItineraryOptions {

@@ -1,7 +1,7 @@
 // Thin orchestrator shell for The Lab wiring hooks and components together (<150 lines)
 "use client";
 
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -51,11 +51,16 @@ export default function TheLab() {
 
   // Modular Hooks
   const { clients } = useClients();
-  const { user } = useAuth();
+  const { user, agencySettings } = useAuth();
   const supabase = createClient();
   const [currentTripId, setCurrentTripId] = useState<string | null>(itineraryIdFromUrl);
   const { loadedData, isLoading, saveAll, saveNow, resetForNewTrip } = useItineraryPersistence({ currentTripId, setCurrentTripId });
   const { isGenerating, itinerary, setItinerary, generate } = useItineraryGeneration();
+
+  // Tracks which trip ID was last synced into the form so we only call
+  // form.reset() when the user switches to a genuinely different trip.
+  // undefined = form has never been reset for any trip yet.
+  const formSyncedForIdRef = useRef<string | null | undefined>(undefined);
 
   // Local state mapped from loadedData
   const [hotels, setHotels] = useState<any[]>(EMPTY_ARRAY);
@@ -68,6 +73,8 @@ export default function TheLab() {
   const [selectedStatus, setSelectedStatus] = useState("draft");
   const [tripMetadata, setTripMetadata] = useState<any>(null);
   const [pdfOverrides, setPdfOverrides] = useState<any>(EMPTY_OBJECT);
+  const [inclusions, setInclusions] = useState<string>("");
+  const [exclusions, setExclusions] = useState<string>("");
 
   const { saveItinerary, isSaving } = useItinerarySave({ currentTripId, setCurrentTripId });
   const { baseCost, finalTotal, currencySymbol } = useBaseCostCalculator({ itinerary, flights, hotels, cabs, buses, pricing });
@@ -97,7 +104,7 @@ export default function TheLab() {
   // Hydrate from persistence
   useEffect(() => {
     if (loadedData) {
-      if (loadedData.itinerary) setItinerary(loadedData.itinerary);
+      setItinerary(loadedData.itinerary);
       setHotels(loadedData.hotels || []);
       setFlights(loadedData.flights || []);
       setCabs(loadedData.cabs || []);
@@ -111,12 +118,14 @@ export default function TheLab() {
       setShowPrices(loadedData.showPrices ?? true);
       if (loadedData.selectedTheme) setSelectedTheme(loadedData.selectedTheme as PdfTheme);
       if (loadedData.pdfOverrides) setPdfOverrides(loadedData.pdfOverrides);
-      if (loadedData.tripMetadata) {
-        // Only reset if form is currently empty (initial load)
-        const currentVals = form.getValues();
-        if (!currentVals.startingLocation && !currentVals.destinations) {
-          form.reset(loadedData.tripMetadata as any);
-        }
+      setInclusions(loadedData.inclusions || "");
+      setExclusions(loadedData.exclusions || "");
+      if (loadedData.tripMetadata && currentTripId && currentTripId !== formSyncedForIdRef.current) {
+        // Only reset the form when the user has navigated to a DIFFERENT specific
+        // trip from history. This prevents the new-trip form from being prefilled
+        // on initial auto-load and avoids wiping user edits on re-renders.
+        form.reset(loadedData.tripMetadata as any);
+        formSyncedForIdRef.current = currentTripId;
       }
     } else if (queryFromUrl) {
       // Pre-fill from 'q' parameter if no persistence data
@@ -138,8 +147,8 @@ export default function TheLab() {
   }, []);
 
   useEffect(() => {
-    saveAll({ itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, showPrices, selectedTheme, pdfOverrides });
-  }, [itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, showPrices, selectedTheme, pdfOverrides, saveAll]);
+    saveAll({ itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, showPrices, selectedTheme, pdfOverrides, inclusions, exclusions });
+  }, [itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, showPrices, selectedTheme, pdfOverrides, inclusions, exclusions, saveAll]);
 
   // Auto-sync form changes to persistence
   useEffect(() => {
@@ -158,13 +167,15 @@ export default function TheLab() {
 
   const handleCreateNew = useCallback(() => {
     form.reset();
+    formSyncedForIdRef.current = null; // allow next history trip to reset the form
     setItinerary(null); setTripMetadata(null); setHotels([]); setFlights([]); setCabs([]); setBuses([]); setPricing(undefined);
+    setInclusions(""); setExclusions("");
     setCurrentTripId(null); setSelectedClientId("none"); setSelectedStatus("draft"); setIsEditing(false); setCurrentStep(0); setOptimizationCount(0);
     // Reset persistence WITHOUT writing to DB. This cancels pending auto-save
     // timers and nulls the ref so no phantom records get created.
     resetForNewTrip();
     setActiveLabTab('new');
-  }, [form, setItinerary, resetForNewTrip]);
+  }, [form, setItinerary, resetForNewTrip, setInclusions, setExclusions]);
 
   const handleStatusChangeAction = useCallback(async (newStatus: string) => {
     setSelectedStatus(newStatus);
@@ -190,6 +201,13 @@ export default function TheLab() {
       // resetForNewTrip cancels pending auto-save timers and nulls the ref,
       // but does NOT write to the DB. No phantom records are created.
       setCurrentTripId(null);
+      setHotels([]);
+      setFlights([]);
+      setCabs([]);
+      setBuses([]);
+      setPricing(undefined);
+      setInclusions("");
+      setExclusions("");
       resetForNewTrip();
     }
     
@@ -207,24 +225,25 @@ export default function TheLab() {
           flights: [],
           cabs: [],
           buses: [],
-          pricing: pricing,
+          pricing: undefined,
           tripMetadata: values,
           selectedStatus: 'draft',
           optimizationCount: 0,
+          inclusions: "",
+          exclusions: "",
         }, null); // explicitId=null → INSERT a new record
       }
       setActiveLabTab('itinerary');
     }
-  }, [generate, tripMetadata, setCurrentTripId, saveNow, resetForNewTrip, pricing]);
-
+  }, [generate, tripMetadata, setCurrentTripId, saveNow, resetForNewTrip, setHotels, setFlights, setCabs, setBuses, setPricing, setInclusions, setExclusions]);
 
 
   const isDesigningNew = activeLabTab === 'new';
-  const isViewingItinerary = ['itinerary', 'flights-hotels', 'pricing'].includes(activeLabTab);
+  const isViewingItinerary = ['itinerary', 'flights-hotels', 'pricing', 'inclusions'].includes(activeLabTab);
 
   return (
     <section id="the-lab" className="w-full mx-auto pt-0 pb-10">
-      {isViewingItinerary && itinerary?.itinerary?.length > 0 && (
+      {isViewingItinerary && (itinerary?.itinerary?.length ?? 0) > 0 && (
         <div className="w-full sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5">
           <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
             <TheLabHeader 
@@ -241,7 +260,7 @@ export default function TheLab() {
               isEditing={isEditing} 
               setIsEditing={setIsEditing} 
               handleDownloadPdf={() => setIsPreviewOpen(true)} 
-              handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount })} 
+              handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions })} 
               isSaving={isSaving} 
               activeLabTab={activeLabTab}
             />
@@ -264,10 +283,6 @@ export default function TheLab() {
             activeLabTab={activeLabTab} 
             setActiveLabTab={setActiveLabTab} 
             handleCreateNew={handleCreateNew}
-            form={form}
-            currentStep={currentStep}
-            onNext={handleNext}
-            onSubmit={onSubmit}
             isGenerating={isGenerating}
             isLoading={isLoading}
           />
@@ -287,7 +302,7 @@ export default function TheLab() {
                 </div>
               ) : (
                 <>
-                  {isViewingItinerary && itinerary?.itinerary?.length > 0 && <TheLabHero itinerary={itinerary} />}
+                  {isViewingItinerary && (itinerary?.itinerary?.length ?? 0) > 0 && <TheLabHero itinerary={itinerary} />}
                   <TheLabTabContent 
                     activeLabTab={activeLabTab} 
                     isGenerating={isGenerating} 
@@ -308,7 +323,7 @@ export default function TheLab() {
                     pricing={pricing} 
                     setPricing={setPricing} 
                     agencySettings={null} 
-                    handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount })} 
+                    handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions })} 
                     isSaving={isSaving} 
                     setCurrentTripId={setCurrentTripId} 
                     setActiveLabTab={setActiveLabTab} 
@@ -318,6 +333,10 @@ export default function TheLab() {
                     onNext={handleNext}
                     onSubmit={onSubmit}
                     handleCreateNew={handleCreateNew}
+                    inclusions={inclusions}
+                    setInclusions={setInclusions}
+                    exclusions={exclusions}
+                    setExclusions={setExclusions}
                   />
                 </>
               )}
@@ -340,7 +359,7 @@ export default function TheLab() {
         </div>
       </div>
 
-      <TheLabPdfPreview isPreviewOpen={isPreviewOpen} setIsPreviewOpen={setIsPreviewOpen} itinerary={itinerary} hotels={hotels} flights={flights} pricing={pricing} baseCost={baseCost} tripTitle={tripTitle} showTimestamps={showTimestamps} showPrices={showPrices} />
+      <TheLabPdfPreview isPreviewOpen={isPreviewOpen} setIsPreviewOpen={setIsPreviewOpen} itinerary={itinerary} hotels={hotels} flights={flights} pricing={pricing} baseCost={baseCost} tripTitle={tripTitle} showTimestamps={showTimestamps} showPrices={showPrices} inclusions={inclusions} exclusions={exclusions} agencySettings={agencySettings} />
 
     </section>
   );

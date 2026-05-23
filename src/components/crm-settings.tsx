@@ -14,6 +14,7 @@ import { createClient } from "@/lib/supabase/client";
 import { logAuditEvent } from "@/lib/audit-logger";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFormDraft } from "@/hooks/use-form-draft";
+import UniqueLoading from "@/components/ui/morph-loading";
 
 // Fallback defaults if DB is not populated
 const DEFAULT_CURRENCIES = [
@@ -28,7 +29,7 @@ const DEFAULT_CURRENCIES = [
 ];
 
 export function CrmSettings() {
-  const { user, userProfile, agencySettings, refreshProfile, refreshSettings } = useAuth();
+  const { user, userProfile, agencySettings, refreshProfile, refreshSettings, loading } = useAuth();
   const { toast } = useToast();
   const supabase = createClient();
 
@@ -62,7 +63,7 @@ export function CrmSettings() {
   });
 
   const { saveDraft, clearDraft } = useFormDraft(
-    "crm_settings",
+    !loading && user ? "crm_settings" : null,
     {
       profile: {
         company_name: userProfile?.company_name || "",
@@ -154,6 +155,16 @@ export function CrmSettings() {
       });
     }
   }, [userProfile, agencySettings]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <UniqueLoading variant="morph" size="md" />
+      </div>
+    );
+  }
+
+  if (!user) return null;
 
   const handleSave = async () => {
     if (!user) return;

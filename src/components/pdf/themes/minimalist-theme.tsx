@@ -4,8 +4,9 @@ import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { getThematicBackground } from '../styles';
+import { PdfDaywiseIndex } from '../pages';
 
-export const MinimalistTheme = ({ itinerary, title, agent, finalTotal = 0, showTimestamps = true, showPrices = true }: ThemeProps) => {
+export const MinimalistTheme = ({ itinerary, title, agent, finalTotal = 0, showTimestamps = true, showPrices = true, daySummaries }: ThemeProps) => {
     const accent = agent.primaryColor || "#000000";
     const totalActivities = itinerary.itinerary.reduce((s, d) => s + d.timeline.length, 0);
     
@@ -41,7 +42,7 @@ export const MinimalistTheme = ({ itinerary, title, agent, finalTotal = 0, showT
                     <div style={{ display: "flex", gap: "20px", marginBottom: "40px", pageBreakInside: "avoid" }}>
                         {[
                             { label: "Duration", value: `${itinerary.itinerary.length} Days` },
-                            { label: "Est. Budget", value: formatCurrency(finalTotal || getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY) },
+                            { label: "Est. Budget", value: formatCurrency(finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY) },
                             { label: "Activities", value: `${totalActivities}+ Items` },
                         ].map((stat, i) => (
                             <div key={i} style={{ flex: 1, padding: "20px", border: "1px solid rgba(148,163,184,0.24)", borderTop: `3px solid ${accent}`, background: "rgba(255,255,255,0.62)", borderRadius: "8px", boxShadow: "0 8px 24px rgba(15,23,42,0.04)" }}>
@@ -72,6 +73,8 @@ export const MinimalistTheme = ({ itinerary, title, agent, finalTotal = 0, showT
                 </div>
             </div>
 
+            <PdfDaywiseIndex itinerary={itinerary} accentColor={accent} theme="minimalist" daySummaries={daySummaries} />
+
             {/* Daily itinerary */}
             <div style={{ padding: "0 45px 45px" }}>
                 {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => (
@@ -92,8 +95,8 @@ export const MinimalistTheme = ({ itinerary, title, agent, finalTotal = 0, showT
                                 </div>
                                 <div style={{ display: "flex", gap: "16px", marginTop: "4px", fontSize: "11px", color: "#64748b", fontWeight: 600 }}>
                                     {day.date && <span>{formatDate(day.date)}</span>}
-                                    {showPrices !== false && day.dailyStats?.totalCost && (!itinerary.pricing || itinerary.pricing.costingType !== 'manual') && (
-                                        <span style={{ color: accent }}>{formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>
+                                    {showPrices !== false && (day as any).dailyStats?.totalCost && (!(itinerary as any).pricing || (itinerary as any).pricing.costingType !== 'manual') && (
+                                        <span style={{ color: accent }}>{formatCurrency((day as any).dailyStats?.totalCost, (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}</span>
                                     )}
                                 </div>
                             </div>

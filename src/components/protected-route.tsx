@@ -9,7 +9,7 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-const protectedRoutes = ['/the-lab', '/my-trips', '/profile', '/clients'];
+const protectedRoutes = ['/the-lab', '/my-trips', '/profile', '/clients', '/crm'];
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { user, loading } = useAuth();

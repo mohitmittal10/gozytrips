@@ -8,6 +8,7 @@ export const getAgentInfo = (userProfile: any, agencySettings?: any) => ({
     agentEmail: userProfile?.business_email || "",
     agentWebsite: userProfile?.website || "",
     agentBio: userProfile?.bio || "",
+    bankDetails: agencySettings?.bank_details || "",
 });
 
 export const getTotalBudget = (itinerary: TravelItineraryOutput) => {

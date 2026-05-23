@@ -1,11 +1,12 @@
 /**
  * pdf-generator.ts
  *
- * Thin wrapper around pdf-page-renderer.ts. Renders pages and downloads
- * directly — used by callers that don't need the preview.
+ * Thin wrapper around pdf-page-renderer.ts. Renders the container as a single
+ * adaptive-height page and downloads it — used by callers that don't need the
+ * preview dialog.
  */
 
-import { renderPdfPages, downloadPdfFromPages } from './pdf-page-renderer';
+import { renderSinglePage, downloadPdfSinglePage } from './pdf-page-renderer';
 
 interface GeneratePdfOptions {
     filename: string;
@@ -14,7 +15,7 @@ interface GeneratePdfOptions {
 }
 
 /**
- * Renders the container and saves it as a multi-page PDF.
+ * Renders the container into a single full-height PDF and saves it.
  */
 export async function generatePdfFromSections(
     container: HTMLElement,
@@ -22,7 +23,6 @@ export async function generatePdfFromSections(
 ): Promise<void> {
     const { filename, scale = 2, imageQuality = 0.95 } = options;
 
-    const { pages } = await renderPdfPages(container, { scale });
-    downloadPdfFromPages(pages, filename, imageQuality);
+    const { canvas } = await renderSinglePage(container, { scale });
+    downloadPdfSinglePage(canvas, filename, imageQuality);
 }
-

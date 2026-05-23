@@ -3,6 +3,7 @@ import type { ThemeProps } from './classic-theme';
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
+import { PdfDaywiseIndex } from '../pages';
 function hexToRgb(hex: string): string {
     const s = hex.replace('#', '');
     if (s.length === 3) {
@@ -14,7 +15,7 @@ function hexToRgb(hex: string): string {
     return "168, 85, 247";
 }
 
-export const DarkTheme = ({ itinerary, title, agent, finalTotal = 0, showTimestamps = true, showPrices = true }: ThemeProps) => {
+export const DarkTheme = ({ itinerary, title, agent, finalTotal = 0, showTimestamps = true, showPrices = true, daySummaries }: ThemeProps) => {
     const accent = agent.primaryColor || "#a855f7";
     const rgbAccent = hexToRgb(accent);
     const totalActivities = itinerary.itinerary?.reduce((sum, d) => sum + (d.timeline?.length || 0), 0) || 0;
@@ -46,10 +47,10 @@ export const DarkTheme = ({ itinerary, title, agent, finalTotal = 0, showTimesta
                 <div style={{ padding: "45px" }}>
 
                     {/* Stat cards */}
-                    <div style={{ display: "flex", gap: "16px", marginBottom: "35px", pageBreakInside: "avoid" }}>
+                    <div style={{ display: "flex", gap: "16px", marginBottom: "35px" }}>
                         {[
                             { label: "Duration", value: `${itinerary.itinerary?.length || 0} Days` },
-                            { label: "Est. Budget", value: formatCurrency(finalTotal || getTotalBudget(itinerary), itinerary.pricing?.currency || DEFAULT_CURRENCY) },
+                            { label: "Est. Budget", value: formatCurrency(finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY) },
                             { label: "Activities", value: `${totalActivities}+ Items` },
                         ].map((stat, i) => (
                             <div key={i} style={{ flex: 1, padding: "20px", border: "1px solid rgba(255,255,255,0.06)", borderTop: `3px solid ${accent}`, background: "rgba(255,255,255,0.02)", borderRadius: "8px", boxShadow: `0 4px 20px rgba(0,0,0,0.15)` }}>
@@ -60,7 +61,7 @@ export const DarkTheme = ({ itinerary, title, agent, finalTotal = 0, showTimesta
                     </div>
 
                     {/* Agent details */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "25px", borderTop: "1px solid rgba(255,255,255,0.08)", pageBreakInside: "avoid" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "25px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
                         <div style={{ flex: 2, paddingRight: "40px" }}>
                             {agent.agentBio && (
                                 <div style={{ borderLeft: `3px solid ${accent}`, paddingLeft: "18px" }}>
@@ -78,13 +79,15 @@ export const DarkTheme = ({ itinerary, title, agent, finalTotal = 0, showTimesta
                 </div>
             </div>
 
+            <PdfDaywiseIndex itinerary={itinerary} accentColor={agent.primaryColor} theme="dark" daySummaries={daySummaries} />
+
             {/* Daily itinerary */}
             <div style={{ padding: "0 45px 45px" }}>
                 {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => (
                     <div key={index} data-pdf-section={`day-${index}`} style={{ marginBottom: "35px", display: "block" }}>
 
                         {/* Day header: thumbnail + info panel */}
-                        <div style={{ display: "flex", alignItems: "stretch", marginBottom: "14px", borderRadius: "10px", overflow: "hidden", pageBreakInside: "avoid", pageBreakAfter: "avoid", breakInside: "avoid", border: "1px solid rgba(255,255,255,0.06)", boxShadow: `0 4px 15px rgba(0,0,0,0.1)` }}>
+                        <div style={{ display: "flex", alignItems: "stretch", marginBottom: "14px", borderRadius: "10px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)", boxShadow: `0 4px 15px rgba(0,0,0,0.1)` }}>
                             <img
                                 src={getDayImage(day)}
                                 alt={formatTitleCase(day.areaFocus)}
@@ -98,8 +101,8 @@ export const DarkTheme = ({ itinerary, title, agent, finalTotal = 0, showTimesta
                                 </div>
                                 <div style={{ display: "flex", gap: "16px", marginTop: "4px", fontSize: "11px", color: "#64748b", fontWeight: 700 }}>
                                     {day.date && <span>{formatDate(day.date)}</span>}
-                                    {showPrices !== false && day.dailyStats?.totalCost && (!itinerary.pricing || itinerary.pricing.costingType !== 'manual') && (
-                                        <span style={{ color: accent }}>{formatCurrency(day.dailyStats?.totalCost, itinerary.pricing?.currency || DEFAULT_CURRENCY)}</span>
+                                    {showPrices !== false && (day as any).dailyStats?.totalCost && (!(itinerary as any).pricing || (itinerary as any).pricing.costingType !== 'manual') && (
+                                        <span style={{ color: accent }}>{formatCurrency((day as any).dailyStats?.totalCost, (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}</span>
                                     )}
                                 </div>
                             </div>
@@ -108,7 +111,7 @@ export const DarkTheme = ({ itinerary, title, agent, finalTotal = 0, showTimesta
                         {/* Activities */}
                         <div style={{ padding: "20px 24px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.04)", background: "rgba(255,255,255,0.015)", display: "flex", flexDirection: "column", gap: "12px" }}>
                             {Array.isArray(day.timeline) && day.timeline.map((step, si) => (
-                                <div key={si} className="pdf-no-cut" style={{ display: "flex", alignItems: "flex-start", gap: "20px", padding: "12px 16px", borderLeft: `2.5px solid rgba(${rgbAccent}, 0.35)`, borderRadius: "0 8px 8px 0", background: "rgba(255,255,255,0.025)", pageBreakInside: "avoid" }}>
+                                <div key={si} style={{ display: "flex", alignItems: "flex-start", gap: "20px", padding: "12px 16px", borderLeft: `2.5px solid rgba(${rgbAccent}, 0.35)`, borderRadius: "0 8px 8px 0", background: "rgba(255,255,255,0.025)" }}>
                                     {showTimestamps !== false ? (
                                         <span style={{ fontSize: "12px", fontWeight: 800, color: accent, width: "70px", flexShrink: 0, fontFamily: "'Outfit', sans-serif" }}>{step.time}</span>
                                     ) : (

@@ -14,6 +14,7 @@ import ItineraryTimeline from "@/components/itinerary-timeline";
 import HotelFlightEditor from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
 import { type PdfTheme } from "@/components/pdf-template";
+import { getMergedPdfThemeOptions } from "@/components/pdf/theme-config";
 import { Input } from "@/components/ui/input";
 import { addDays, format } from "date-fns";
 import { calcPricingBreakdown } from "@/services/financial/FinancialService";
@@ -41,6 +42,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
   const { toast } = useToast();
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
   const { options: themeOptions } = useReferenceOptions('pdf_theme');
+  const pdfThemeOptions = getMergedPdfThemeOptions(themeOptions);
   const supabase = createClient();
 
   // Get everything from the central store
@@ -267,24 +269,15 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
                   <SelectValue placeholder="PDF Format" />
                 </SelectTrigger>
                 <SelectContent>
-                  {themeOptions.length > 0 ? (
-                    themeOptions.map(opt => (
-                      <SelectItem 
-                        key={opt.value} 
-                        value={opt.value}
-                        disabled={!hasPremiumPdf && opt.value !== 'classic'}
-                      >
-                        {opt.label} {!hasPremiumPdf && opt.value !== 'classic' && '🔒'}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <>
-                      <SelectItem value="classic">Classic</SelectItem>
-                      <SelectItem value="editorial" disabled={!hasPremiumPdf}>Editorial {!hasPremiumPdf && '🔒'}</SelectItem>
-                      <SelectItem value="minimalist" disabled={!hasPremiumPdf}>Minimalist {!hasPremiumPdf && '🔒'}</SelectItem>
-                      <SelectItem value="corporate" disabled={!hasPremiumPdf}>Corporate {!hasPremiumPdf && '🔒'}</SelectItem>
-                    </>
-                  )}
+                  {pdfThemeOptions.map(opt => (
+                    <SelectItem 
+                      key={opt.value} 
+                      value={opt.value}
+                      disabled={!hasPremiumPdf && opt.value !== 'classic'}
+                    >
+                      {opt.label} {!hasPremiumPdf && opt.value !== 'classic' && '🔒'}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             );

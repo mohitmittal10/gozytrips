@@ -9,6 +9,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { useReferenceOptions } from "@/hooks/use-reference-options";
+import { getMergedPdfThemeOptions } from "@/components/pdf/theme-config";
 import { createClient } from "@/lib/supabase/client";
 import ItineraryTimeline from "@/components/itinerary-timeline";
 
@@ -30,6 +31,7 @@ export const TimelineView = ({
     enrichedClients
 }: TimelineViewProps) => {
     const { options: themeOptions } = useReferenceOptions("pdf_theme");
+    const pdfThemeOptions = getMergedPdfThemeOptions(themeOptions);
     const supabase = createClient();
     if (!hasTrips) {
         return (
@@ -103,19 +105,9 @@ export const TimelineView = ({
                                     <SelectValue placeholder="Format" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {themeOptions.length > 0 ? (
-                                        themeOptions.map(opt => (
-                                            <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                        ))
-                                    ) : (
-                                        <>
-                                            <SelectItem value="classic">Classic</SelectItem>
-                                            <SelectItem value="editorial">Editorial</SelectItem>
-                                            <SelectItem value="minimalist">Minimalist</SelectItem>
-                                            <SelectItem value="dark">Dark Mode</SelectItem>
-                                            <SelectItem value="corporate">Corporate</SelectItem>
-                                        </>
-                                    )}
+                                    {pdfThemeOptions.map(opt => (
+                                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                             <Button onClick={handleDownloadPdf} className="px-4 py-2 aurora-gradient text-white rounded-lg text-xs font-semibold h-9 flex items-center gap-2 border-none">

@@ -12,6 +12,7 @@ import { CrmSettings } from "@/components/crm-settings";
 import { ItineraryProvider, ItineraryContext } from "@/contexts/itinerary-context";
 import { TheLabHistory } from "./TheLabHistory";
 import TheLabForm from "./TheLabForm";
+import { TheLabInclusions } from "./TheLabInclusions";
 
 // Memoized versions
 const MemoizedItineraryTimeline = React.memo(ItineraryTimeline);
@@ -70,6 +71,11 @@ interface TheLabTabContentProps {
   setCurrentStep: (val: number) => void;
   onNext: () => void;
   onSubmit: (values: any) => void;
+  handleCreateNew: () => void;
+  inclusions: string;
+  setInclusions: (val: string) => void;
+  exclusions: string;
+  setExclusions: (val: string) => void;
 }
 
 const TheLabTabContent = React.memo(function TheLabTabContent({
@@ -78,7 +84,12 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
   showTimestamps, showPrices, pricing, setPricing, 
   agencySettings, handleSaveItinerary, isSaving,
   setCurrentTripId, setActiveLabTab,
-  form, currentStep, setCurrentStep, onNext, onSubmit
+  form, currentStep, setCurrentStep, onNext, onSubmit,
+  handleCreateNew,
+  inclusions,
+  setInclusions,
+  exclusions,
+  setExclusions,
 }: TheLabTabContentProps) {
 
   return (
@@ -107,6 +118,18 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
               destinations={form?.getValues?.()?.destinations || itinerary?.destinations}
             />
           </div>
+        </ItineraryErrorBoundary>
+      )}
+
+      {/* Tab Content - Inclusions */}
+      {activeLabTab === 'inclusions' && (
+        <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Inclusions editor failed to load.">
+          <TheLabInclusions
+            inclusions={inclusions}
+            setInclusions={setInclusions}
+            exclusions={exclusions}
+            setExclusions={setExclusions}
+          />
         </ItineraryErrorBoundary>
       )}
 
@@ -169,7 +192,11 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
       {/* Tab Content - History */}
       {activeLabTab === 'history' && (
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="History failed to load.">
-          <TheLabHistory setCurrentTripId={setCurrentTripId} setActiveLabTab={setActiveLabTab} />
+          <TheLabHistory 
+            setCurrentTripId={setCurrentTripId} 
+            setActiveLabTab={setActiveLabTab} 
+            handleCreateNew={handleCreateNew}
+          />
         </ItineraryErrorBoundary>
       )}
 
