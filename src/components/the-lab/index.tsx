@@ -359,7 +359,26 @@ export default function TheLab() {
         </div>
       </div>
 
-      <TheLabPdfPreview isPreviewOpen={isPreviewOpen} setIsPreviewOpen={setIsPreviewOpen} itinerary={itinerary} hotels={hotels} flights={flights} pricing={pricing} baseCost={baseCost} tripTitle={tripTitle} showTimestamps={showTimestamps} showPrices={showPrices} inclusions={inclusions} exclusions={exclusions} agencySettings={agencySettings} />
+      <TheLabPdfPreview
+        isPreviewOpen={isPreviewOpen}
+        setIsPreviewOpen={setIsPreviewOpen}
+        itinerary={itinerary}
+        hotels={hotels}
+        flights={flights}
+        pricing={pricing}
+        baseCost={baseCost}
+        tripTitle={tripTitle}
+        showTimestamps={showTimestamps}
+        showPrices={showPrices}
+        inclusions={inclusions}
+        exclusions={exclusions}
+        agencySettings={agencySettings}
+        itineraryId={currentTripId}
+        pdfOverrides={pdfOverrides}
+        onPdfOverridesChange={setPdfOverrides}
+        theme={selectedTheme}
+        onThemeChange={setSelectedTheme}
+      />
 
     </section>
   );

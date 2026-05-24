@@ -113,9 +113,9 @@ export const DarkTheme = ({ itinerary, title, agent, finalTotal = 0, showTimesta
                             {Array.isArray(day.timeline) && day.timeline.map((step, si) => (
                                 <div key={si} style={{ display: "flex", alignItems: "flex-start", gap: "20px", padding: "12px 16px", borderLeft: `2.5px solid rgba(${rgbAccent}, 0.35)`, borderRadius: "0 8px 8px 0", background: "rgba(255,255,255,0.025)" }}>
                                     {showTimestamps !== false ? (
-                                        <span style={{ fontSize: "12px", fontWeight: 800, color: accent, width: "70px", flexShrink: 0, fontFamily: "'Outfit', sans-serif" }}>{step.time}</span>
+                                        <span style={{ fontSize: "12px", fontWeight: 800, color: accent, width: "70px", flexShrink: 0, fontFamily: "'Outfit', sans-serif", lineHeight: "1.75" }}>{step.time}</span>
                                     ) : (
-                                        <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: accent, marginTop: "6px", flexShrink: 0 }} />
+                                        <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: accent, marginTop: "7px", flexShrink: 0 }} />
                                     )}
                                     <p style={{ margin: 0, fontSize: "13.5px", lineHeight: "1.75", color: "#cbd5e1", flex: 1, fontWeight: 500 }}>{step.details}</p>
                                 </div>

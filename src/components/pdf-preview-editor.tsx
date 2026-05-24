@@ -22,6 +22,7 @@ import {
     Settings,
     ZoomIn,
     X,
+    RotateCw,
 } from "lucide-react";
 import UniqueLoading from "./ui/morph-loading";
 import { PdfTemplate, type PdfTheme, type PdfTemplateProps } from "@/components/pdf-template";
@@ -49,6 +50,10 @@ interface PdfPreviewEditorProps {
     initialTheme?: PdfTheme;
     filename?: string;
     itineraryId?: string;
+    pdfOverrides?: any;
+    onPdfOverridesChange?: (overrides: any) => void;
+    theme?: PdfTheme;
+    onThemeChange?: (theme: PdfTheme) => void;
 }
 
 export function PdfPreviewEditor({
@@ -58,6 +63,10 @@ export function PdfPreviewEditor({
     initialTheme = "classic",
     filename = "Itinerary.pdf",
     itineraryId,
+    pdfOverrides,
+    onPdfOverridesChange,
+    theme: propTheme,
+    onThemeChange,
 }: PdfPreviewEditorProps) {
     const { toast } = useToast();
     const { userPreferences, agencySettings } = useAuth();
@@ -65,7 +74,12 @@ export function PdfPreviewEditor({
     const supabase = createClient();
 
     // ─── State ───
-    const [theme, setTheme] = useState<PdfTheme>(initialTheme);
+    const [localTheme, setLocalTheme] = useState<PdfTheme>(initialTheme);
+    const theme = propTheme !== undefined ? propTheme : localTheme;
+    const setTheme = useCallback((t: PdfTheme) => {
+        setLocalTheme(t);
+        if (onThemeChange) onThemeChange(t);
+    }, [onThemeChange]);
     const [pages, setPages] = useState<HTMLCanvasElement[]>([]);
     const [sections, setSections] = useState<SectionMeta[]>([]);
     const [currentPage, setCurrentPage] = useState(0);
@@ -90,6 +104,29 @@ export function PdfPreviewEditor({
     // ─── Initialize from persisted data ───
     useEffect(() => {
         if (isOpen) {
+            if (pdfOverrides !== undefined) {
+                if (propTheme !== undefined) setTheme(propTheme);
+                else if (userPreferences?.default_pdf_theme) setTheme(userPreferences.default_pdf_theme as PdfTheme);
+
+                const overrides = pdfOverrides as any;
+                if (overrides.forcedBreaksBefore) setForcedBreaks(new Set(overrides.forcedBreaksBefore));
+                else setForcedBreaks(new Set());
+                if (overrides.spacingOverrides) setSpacingOverrides(overrides.spacingOverrides);
+                else setSpacingOverrides({});
+                if (overrides.daySummaries) {
+                    setSavedDaySummaries(overrides.daySummaries);
+                    setDaySummaries(overrides.daySummaries);
+                } else {
+                    setSavedDaySummaries([]);
+                    setDaySummaries([]);
+                }
+                if (overrides.daySummariesHash) setSavedDaySummariesHash(overrides.daySummariesHash);
+                else setSavedDaySummariesHash(null);
+
+                setIsDataLoaded(true);
+                return;
+            }
+
             if (itineraryId) {
                 const fetchItineraryData = async () => {
                     const { data, error } = await supabase
@@ -97,7 +134,7 @@ export function PdfPreviewEditor({
                         .select('selected_theme, pdf_overrides')
                         .eq('id', itineraryId)
                         .single();
-                    
+
                     if (!error && data) {
                         if (data.selected_theme) setTheme(data.selected_theme as PdfTheme);
                         if (data.pdf_overrides) {
@@ -126,7 +163,7 @@ export function PdfPreviewEditor({
             // This ensures the in-memory cache persists across open/close cycles, 
             // which is critical for "The Lab" since it doesn't have an itineraryId to save to the DB.
         }
-    }, [isOpen, itineraryId, userPreferences]);
+    }, [isOpen, itineraryId, userPreferences, pdfOverrides, propTheme]);
 
     // Refs
     const hiddenContainerRef = useRef<HTMLDivElement>(null);
@@ -186,7 +223,7 @@ export function PdfPreviewEditor({
         const hasForcedBreaks = forcedBreaks.size > 0;
         const hasSpacing = Object.values(spacingOverrides).some((v) => v > 0);
         const hasSummaries = daySummaries.length > 0;
-        
+
         if (!hasForcedBreaks && !hasSpacing && !hasSummaries) return undefined;
 
         return {
@@ -206,12 +243,8 @@ export function PdfPreviewEditor({
         setLoadingStage('Rendering PDF layout…');
 
         try {
-            container.style.display = "block";
-            container.style.position = "absolute";
-            container.style.left = "-9999px";
-            container.style.top = "0";
-            container.style.zIndex = "-1";
-
+            // Container remains layout-active off-screen via JSX styling.
+            // We wait 500ms to ensure the browser has fully calculated style & layout before capture.
             await new Promise((r) => setTimeout(r, 500));
             setLoadingProgress(70);
 
@@ -237,8 +270,6 @@ export function PdfPreviewEditor({
                 description: "Could not generate the PDF preview.",
             });
         } finally {
-            const container = hiddenContainerRef.current;
-            if (container) container.style.display = "none";
             setIsRendering(false);
             setLoadingProgress(-1);
             setLoadingStage('');
@@ -292,10 +323,20 @@ export function PdfPreviewEditor({
             setSavedDaySummariesHash(currentHash);
 
             // Persist the generated summaries immediately so we don't regenerate next time
+            const nextOverrides = {
+                ...(pdfOverrides || {}),
+                daySummaries: summaries,
+                daySummariesHash: currentHash
+            };
+
+            if (onPdfOverridesChange) {
+                onPdfOverridesChange(nextOverrides);
+            }
+
             if (itineraryId) {
                 const { data } = await supabase.from('itineraries').select('pdf_overrides').eq('id', itineraryId).single();
                 const currentOverrides = (data?.pdf_overrides || {}) as any;
-                
+
                 await supabase.from('itineraries').update({
                     pdf_overrides: {
                         ...currentOverrides,
@@ -311,7 +352,7 @@ export function PdfPreviewEditor({
 
         setLoadingProgress(45);
         await renderPages(summaries);
-    }, [templateProps.itinerary, renderPages, savedDaySummaries, savedDaySummariesHash, itineraryId, supabase]);
+    }, [templateProps.itinerary, renderPages, savedDaySummaries, savedDaySummariesHash, itineraryId, supabase, pdfOverrides, onPdfOverridesChange]);
 
     // Re-render pipeline when dialog opens and data is loaded
     useEffect(() => {
@@ -335,6 +376,33 @@ export function PdfPreviewEditor({
             isFirstRender.current = false;
         }
     }, [theme]);
+
+    // DEV ONLY — re-run renderPages after every HMR hot update so canvas
+    // stays in sync with component changes without manual close/reopen.    
+
+    useEffect(() => {
+        if (process.env.NODE_ENV !== 'development') return;
+
+        // @ts-ignore
+        if (typeof module === 'undefined' || !(module as any).hot) return;
+
+        const handler = (status: string) => {
+            if (status === 'idle') {
+                // HMR has finished applying the update — re-snapshot the DOM
+                setTimeout(() => renderPages(daySummaries), 100);
+            }
+        };
+
+        // @ts-ignore
+        (module as any).hot.addStatusHandler(handler);
+        return () => {
+            // @ts-ignore
+            if (typeof module !== 'undefined' && (module as any).hot && (module as any).hot.removeStatusHandler) {
+                // @ts-ignore
+                (module as any).hot.removeStatusHandler(handler);
+            }
+        };
+    }, [renderPages, daySummaries]);
 
     // ─── Edit handlers ───
     const toggleForcedBreak = (sectionId: string) => {
@@ -360,17 +428,21 @@ export function PdfPreviewEditor({
 
     const applyAndRerender = async () => {
         renderPages();
-        
+
+        const overrides = buildOverrides() || {};
+        if (onPdfOverridesChange) {
+            onPdfOverridesChange(overrides);
+        }
+
         // Auto-save when applying changes if we have an itineraryId
         if (itineraryId) {
             setIsSaving(true);
             try {
-                const overrides = buildOverrides();
                 await supabase
                     .from('itineraries')
                     .update({
                         selected_theme: theme,
-                        pdf_overrides: overrides || {}
+                        pdf_overrides: overrides
                     })
                     .eq('id', itineraryId);
             } catch (err) {
@@ -397,6 +469,10 @@ export function PdfPreviewEditor({
             setHasUnappliedChanges(true);
         }
     };
+
+    const handleRefresh = useCallback(async () => {
+        await checkAndGenerateSummaries();
+    }, [checkAndGenerateSummaries]);
 
     // ─── Download ───
     const handleDownload = useCallback(async () => {
@@ -437,8 +513,15 @@ export function PdfPreviewEditor({
 
     return (
         <>
-            {/* Hidden PDF template */}
-            <div ref={hiddenContainerRef} style={{ display: "none" }}>
+            {/* Hidden PDF template (layout-active off-screen) */}
+            <div ref={hiddenContainerRef} style={{
+                position: "fixed",
+                top: 0,
+                left: "-9999px",
+                width: "794px",
+                pointerEvents: "none",
+                zIndex: -1,
+            }}>
                 <PdfTemplate {...templateProps} theme={theme} agencySettings={agencySettings} daySummaries={daySummaries} />
             </div>
 
@@ -456,7 +539,7 @@ export function PdfPreviewEditor({
                                     PDF Preview
                                 </span>
                             </div>
-                            
+
                             <Select value={theme} onValueChange={(v) => handleThemeChange(v as PdfTheme)}>
                                 <SelectTrigger className="w-[125px] h-8 bg-zinc-900/65 border-zinc-800 hover:border-zinc-700 text-zinc-100 text-xs transition-all rounded-lg focus:ring-1 focus:ring-indigo-500/50 shadow-inner">
                                     <SelectValue placeholder="Theme" />
@@ -491,7 +574,7 @@ export function PdfPreviewEditor({
                                 >
                                     <Minus className="w-3.5 h-3.5" />
                                 </button>
-                                
+
                                 <div className="hidden lg:flex items-center">
                                     <Slider
                                         value={[zoom]}
@@ -502,7 +585,7 @@ export function PdfPreviewEditor({
                                         className="w-[70px] mx-1 cursor-pointer"
                                     />
                                 </div>
-                                
+
                                 <button
                                     onClick={() => setZoom(z => Math.min(150, z + 10))}
                                     className="hover:text-white transition-colors p-1 hover:bg-zinc-800/50 rounded-md cursor-pointer"
@@ -510,11 +593,11 @@ export function PdfPreviewEditor({
                                 >
                                     <Plus className="w-3.5 h-3.5" />
                                 </button>
-                                
+
                                 <span className="text-[11px] font-mono font-medium w-[34px] text-center tabular-nums">{zoom}%</span>
-                                
+
                                 <div className="h-3.5 w-px bg-zinc-800 mx-0.5" />
-                                
+
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -541,6 +624,16 @@ export function PdfPreviewEditor({
                                     <Settings className="w-3.5 h-3.5 mr-1.5" />
                                     <span className="hidden sm:inline">Layout Editor</span>
                                     <span className="inline sm:hidden">Edit</span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    disabled={isRendering || isDownloading}
+                                    className="h-8 bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white text-xs rounded-lg transition-all font-medium gap-1.5 flex items-center justify-center"
+                                    onClick={handleRefresh}
+                                >
+                                    <RotateCw className={`w-3.5 h-3.5 ${isRendering ? "animate-spin" : ""}`} />
+                                    <span>Refresh</span>
                                 </Button>
                                 <Button
                                     onClick={handleDownload}
@@ -610,21 +703,19 @@ export function PdfPreviewEditor({
                                                 { label: 'Done', threshold: 98 },
                                             ].map(({ label, threshold }) => (
                                                 <div key={label} className="flex flex-col items-center gap-1">
-                                                    <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                                                        loadingProgress >= threshold
+                                                    <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${loadingProgress >= threshold
                                                             ? 'bg-indigo-400 shadow-[0_0_6px_rgba(99,102,241,0.8)]'
                                                             : 'bg-zinc-700'
-                                                    }`} />
-                                                    <span className={`text-[8.5px] font-medium transition-colors duration-300 ${
-                                                        loadingProgress >= threshold ? 'text-indigo-400' : 'text-zinc-600'
-                                                    }`}>{label}</span>
+                                                        }`} />
+                                                    <span className={`text-[8.5px] font-medium transition-colors duration-300 ${loadingProgress >= threshold ? 'text-indigo-400' : 'text-zinc-600'
+                                                        }`}>{label}</span>
                                                 </div>
                                             ))}
                                         </div>
                                     </div>
                                 </div>
                             ) : currentCanvas ? (
-                                <div 
+                                <div
                                     className="shadow-[0_24px_60px_-15px_rgba(0,0,0,0.9),_0_0_1px_rgba(255,255,255,0.15)] border border-zinc-800/40 rounded-lg overflow-hidden bg-white hover:border-zinc-700/50 transition-all duration-300"
                                     style={{
                                         width: (currentCanvas.width / 2) * (zoom / 100),
@@ -659,7 +750,7 @@ export function PdfPreviewEditor({
 
                         {/* Sidebar Backdrop Overlay for Mobile/Tablet */}
                         {showEditPanel && (
-                            <div 
+                            <div
                                 className="absolute inset-0 bg-black/60 backdrop-blur-xs z-30 md:hidden animate-in fade-in duration-200"
                                 onClick={() => setShowEditPanel(false)}
                             />
@@ -677,9 +768,9 @@ export function PdfPreviewEditor({
                                                 onClick={resetEdits}>
                                                 Reset All
                                             </Button>
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
                                                 className="h-6 w-6 text-zinc-500 hover:text-zinc-200 hover:bg-zinc-900/60 rounded-md md:hidden"
                                                 onClick={() => setShowEditPanel(false)}
                                             >

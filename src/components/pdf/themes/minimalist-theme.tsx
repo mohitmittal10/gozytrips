@@ -107,9 +107,9 @@ export const MinimalistTheme = ({ itinerary, title, agent, finalTotal = 0, showT
                             {Array.isArray(day.timeline) && day.timeline.map((step, si) => (
                                 <div key={si} className="pdf-no-cut" style={{ display: "flex", alignItems: "flex-start", gap: "24px", padding: "14px 20px", background: "rgba(255,255,255,0.58)", borderRadius: "8px", border: "1px solid rgba(148,163,184,0.18)", pageBreakInside: "avoid", boxShadow: "0 6px 20px rgba(15,23,42,0.03)" }}>
                                     {showTimestamps !== false ? (
-                                        <div style={{ width: "70px", flexShrink: 0, fontSize: "12px", fontWeight: 800, color: accent, fontFamily: "'Outfit', sans-serif" }}>{step.time}</div>
+                                        <div style={{ width: "70px", flexShrink: 0, fontSize: "12px", fontWeight: 800, color: accent, fontFamily: "'Outfit', sans-serif", lineHeight: "1.7" }}>{step.time}</div>
                                     ) : (
-                                        <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: accent, marginTop: "6px", flexShrink: 0 }} />
+                                        <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: accent, marginTop: "7px", flexShrink: 0 }} />
                                     )}
                                     <p style={{ flex: 1, margin: 0, fontSize: "13.5px", lineHeight: "1.7", color: "#334155", fontWeight: 500 }}>{step.details}</p>
                                 </div>

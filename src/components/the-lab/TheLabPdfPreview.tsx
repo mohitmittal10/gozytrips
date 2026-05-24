@@ -2,6 +2,7 @@
 import React from 'react';
 import { PdfPreviewEditor } from "@/components/pdf-preview-editor";
 import { useAuth } from "@/contexts/auth-context";
+import { type PdfTheme } from "@/components/pdf-template";
 
 interface TheLabPdfPreviewProps {
   isPreviewOpen: boolean;
@@ -17,6 +18,11 @@ interface TheLabPdfPreviewProps {
   inclusions?: string;
   exclusions?: string;
   agencySettings?: any;
+  itineraryId?: string | null;
+  pdfOverrides?: any;
+  onPdfOverridesChange?: (overrides: any) => void;
+  theme?: PdfTheme;
+  onThemeChange?: (theme: PdfTheme) => void;
 }
 
 export function TheLabPdfPreview({
@@ -33,6 +39,11 @@ export function TheLabPdfPreview({
   inclusions,
   exclusions,
   agencySettings,
+  itineraryId,
+  pdfOverrides,
+  onPdfOverridesChange,
+  theme,
+  onThemeChange,
 }: TheLabPdfPreviewProps) {
   const { userProfile } = useAuth();
 
@@ -54,7 +65,12 @@ export function TheLabPdfPreview({
         exclusions,
         agencySettings,
       }}
-      initialTheme="classic"
+      initialTheme={theme}
+      theme={theme}
+      onThemeChange={onThemeChange}
+      itineraryId={itineraryId || undefined}
+      pdfOverrides={pdfOverrides}
+      onPdfOverridesChange={onPdfOverridesChange}
       filename="WanderLabs_Itinerary.pdf"
     />
   );

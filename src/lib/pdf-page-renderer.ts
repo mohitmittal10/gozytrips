@@ -84,6 +84,14 @@ export async function renderSinglePage(
 
     container.offsetHeight; // reflow
 
+    const style = document.createElement('style');
+    document.head.appendChild(style);
+    try {
+        style.sheet?.insertRule('body > div:last-child img { display: inline-block; }', 0);
+    } catch (e) {
+        console.warn('Failed to insert rule for html2canvas', e);
+    }
+
     try {
         const canvas = await html2canvas(container, {
             scale,
@@ -96,6 +104,7 @@ export async function renderSinglePage(
 
         return { canvas };
     } finally {
+        style.remove();
         container.style.width = origWidth;
         container.style.maxWidth = origMaxWidth;
         container.style.margin = origMargin;
