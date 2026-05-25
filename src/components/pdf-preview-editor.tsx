@@ -88,6 +88,8 @@ export function PdfPreviewEditor({
     const [isDownloading, setIsDownloading] = useState(false);
     const [daySummaries, setDaySummaries] = useState<string[]>([]);
     const [savedDaySummaries, setSavedDaySummaries] = useState<string[]>([]);
+    const [aboutPlace, setAboutPlace] = useState<any>(null);
+    const [savedAboutPlace, setSavedAboutPlace] = useState<any>(null);
     const [savedDaySummariesHash, setSavedDaySummariesHash] = useState<string | null>(null);
     const [isDataLoaded, setIsDataLoaded] = useState(false);
     /** 0–100 loading progress; -1 means not loading */
@@ -120,6 +122,13 @@ export function PdfPreviewEditor({
                     setSavedDaySummaries([]);
                     setDaySummaries([]);
                 }
+                if (overrides.aboutPlace) {
+                    setSavedAboutPlace(overrides.aboutPlace);
+                    setAboutPlace(overrides.aboutPlace);
+                } else {
+                    setSavedAboutPlace(null);
+                    setAboutPlace(null);
+                }
                 if (overrides.daySummariesHash) setSavedDaySummariesHash(overrides.daySummariesHash);
                 else setSavedDaySummariesHash(null);
 
@@ -142,6 +151,7 @@ export function PdfPreviewEditor({
                             if (overrides.forcedBreaksBefore) setForcedBreaks(new Set(overrides.forcedBreaksBefore));
                             if (overrides.spacingOverrides) setSpacingOverrides(overrides.spacingOverrides);
                             if (overrides.daySummaries) setSavedDaySummaries(overrides.daySummaries);
+                            if (overrides.aboutPlace) setSavedAboutPlace(overrides.aboutPlace);
                             if (overrides.daySummariesHash) setSavedDaySummariesHash(overrides.daySummariesHash);
                         }
                     } else if (userPreferences?.default_pdf_theme) {
@@ -224,17 +234,18 @@ export function PdfPreviewEditor({
         const hasSpacing = Object.values(spacingOverrides).some((v) => v > 0);
         const hasSummaries = daySummaries.length > 0;
 
-        if (!hasForcedBreaks && !hasSpacing && !hasSummaries) return undefined;
+        if (!hasForcedBreaks && !hasSpacing && !hasSummaries && !aboutPlace) return undefined;
 
         return {
             ...(hasForcedBreaks && { forcedBreaksBefore: Array.from(forcedBreaks) }),
             ...(hasSpacing && { spacingOverrides }),
             ...(hasSummaries && { daySummaries, daySummariesHash: savedDaySummariesHash }),
+            ...(aboutPlace && { aboutPlace }),
         };
-    }, [forcedBreaks, spacingOverrides, daySummaries, savedDaySummariesHash]);
+    }, [forcedBreaks, spacingOverrides, daySummaries, savedDaySummariesHash, aboutPlace]);
 
     // ─── Render pages ───
-    const renderPages = useCallback(async (summaries?: string[]) => {
+    const renderPages = useCallback(async (summaries?: string[], place?: any) => {
         const container = hiddenContainerRef.current;
         if (!container) return;
 
@@ -280,7 +291,7 @@ export function PdfPreviewEditor({
     const checkAndGenerateSummaries = useCallback(async () => {
         const days = templateProps.itinerary?.itinerary;
         if (!days || days.length === 0) {
-            await renderPages([]);
+            await renderPages([], null);
             return;
         }
 
@@ -296,7 +307,8 @@ export function PdfPreviewEditor({
         if (currentHash === savedDaySummariesHash && savedDaySummaries && savedDaySummaries.length === days.length) {
             console.log("[PdfPreviewEditor] AI Summary cache hit. Skipping generation.");
             setDaySummaries(savedDaySummaries);
-            await renderPages(savedDaySummaries);
+            if (savedAboutPlace) setAboutPlace(savedAboutPlace);
+            await renderPages(savedDaySummaries, savedAboutPlace);
             return;
         }
 
@@ -308,8 +320,12 @@ export function PdfPreviewEditor({
         setLoadingStage('Generating AI summaries…');
 
         let summaries: string[] = [];
+        let fetchedAboutPlace: any = null;
         try {
+            const destination = days[0]?.areaFocus?.split(',')[0] || '';
+            
             const result = await generateDaySummaries({
+                destination,
                 days: days.map(d => ({
                     day: d.day,
                     date: d.date,
@@ -318,14 +334,19 @@ export function PdfPreviewEditor({
                 })),
             });
             summaries = result.summaries;
+            fetchedAboutPlace = result.aboutPlace || null;
+            
             setDaySummaries(summaries);
             setSavedDaySummaries(summaries);
+            setAboutPlace(fetchedAboutPlace);
+            setSavedAboutPlace(fetchedAboutPlace);
             setSavedDaySummariesHash(currentHash);
 
             // Persist the generated summaries immediately so we don't regenerate next time
             const nextOverrides = {
                 ...(pdfOverrides || {}),
                 daySummaries: summaries,
+                aboutPlace: fetchedAboutPlace,
                 daySummariesHash: currentHash
             };
 
@@ -341,6 +362,7 @@ export function PdfPreviewEditor({
                     pdf_overrides: {
                         ...currentOverrides,
                         daySummaries: summaries,
+                        aboutPlace: fetchedAboutPlace,
                         daySummariesHash: currentHash
                     }
                 }).eq('id', itineraryId);
@@ -351,8 +373,8 @@ export function PdfPreviewEditor({
         }
 
         setLoadingProgress(45);
-        await renderPages(summaries);
-    }, [templateProps.itinerary, renderPages, savedDaySummaries, savedDaySummariesHash, itineraryId, supabase, pdfOverrides, onPdfOverridesChange]);
+        await renderPages(summaries, fetchedAboutPlace);
+    }, [templateProps.itinerary, templateProps.hotels, renderPages, savedDaySummaries, savedAboutPlace, savedDaySummariesHash, itineraryId, supabase, pdfOverrides, onPdfOverridesChange]);
 
     // Re-render pipeline when dialog opens and data is loaded
     useEffect(() => {
@@ -369,7 +391,7 @@ export function PdfPreviewEditor({
             return;
         }
         if (isDataLoaded && !isFirstRender.current) {
-            const timer = setTimeout(() => renderPages(daySummaries), 100);
+            const timer = setTimeout(() => renderPages(daySummaries, aboutPlace), 100);
             return () => clearTimeout(timer);
         }
         if (isDataLoaded) {
@@ -389,7 +411,7 @@ export function PdfPreviewEditor({
         const handler = (status: string) => {
             if (status === 'idle') {
                 // HMR has finished applying the update — re-snapshot the DOM
-                setTimeout(() => renderPages(daySummaries), 100);
+                setTimeout(() => renderPages(daySummaries, aboutPlace), 100);
             }
         };
 
@@ -522,7 +544,7 @@ export function PdfPreviewEditor({
                 pointerEvents: "none",
                 zIndex: -1,
             }}>
-                <PdfTemplate {...templateProps} theme={theme} agencySettings={agencySettings} daySummaries={daySummaries} />
+                <PdfTemplate {...templateProps} theme={theme} agencySettings={agencySettings} daySummaries={daySummaries} aboutPlace={aboutPlace} />
             </div>
 
             <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -556,6 +578,8 @@ export function PdfPreviewEditor({
                                             <SelectItem value="minimalist" className="text-xs">Minimalist</SelectItem>
                                             <SelectItem value="dark" className="text-xs">Dark</SelectItem>
                                             <SelectItem value="corporate" className="text-xs">Corporate</SelectItem>
+                                            <SelectItem value="desert" className="text-xs">Desert</SelectItem>
+                                            <SelectItem value="tropical" className="text-xs">Tropical</SelectItem>
                                         </>
                                     )}
                                 </SelectContent>

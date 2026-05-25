@@ -425,8 +425,8 @@ export const PdfFlightAndHotelSummary = ({ flights, hotels, accentColor, theme }
     );
 };
 
-export const PdfInclusionsPage = ({ inclusions, exclusions, accentColor, theme }: { inclusions?: string, exclusions?: string, accentColor: string, theme: PdfTheme }) => {
-    if (!inclusions && !exclusions) return null;
+export const PdfInclusionsPage = ({ inclusions, exclusions, termsAndConditions, cancellationPolicy, accentColor, theme }: { inclusions?: string, exclusions?: string, termsAndConditions?: string, cancellationPolicy?: string, accentColor: string, theme: PdfTheme }) => {
+    if (!inclusions && !exclusions && !termsAndConditions && !cancellationPolicy) return null;
     const styles = getPricingThemeStyles(theme, accentColor);
 
     return (
@@ -449,6 +449,22 @@ export const PdfInclusionsPage = ({ inclusions, exclusions, accentColor, theme }
                         <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#f43f5e", textTransform: "uppercase", letterSpacing: "1px" }}>Not Included</h3>
                         <div style={{ fontSize: "15px", color: styles.bodyTextColor, whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
                             {exclusions}
+                        </div>
+                    </div>
+                )}
+                {termsAndConditions && (
+                    <div style={{ background: styles.quoteCardBackground, padding: "25px", borderRadius: styles.quoteCardRadius, border: styles.quoteCardBorder }}>
+                        <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#3b82f6", textTransform: "uppercase", letterSpacing: "1px" }}>Terms & Conditions</h3>
+                        <div style={{ fontSize: "15px", color: styles.bodyTextColor, whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
+                            {termsAndConditions}
+                        </div>
+                    </div>
+                )}
+                {cancellationPolicy && (
+                    <div style={{ background: styles.quoteCardBackground, padding: "25px", borderRadius: styles.quoteCardRadius, border: styles.quoteCardBorder }}>
+                        <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#f97316", textTransform: "uppercase", letterSpacing: "1px" }}>Cancellation Policy</h3>
+                        <div style={{ fontSize: "15px", color: styles.bodyTextColor, whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
+                            {cancellationPolicy}
                         </div>
                     </div>
                 )}

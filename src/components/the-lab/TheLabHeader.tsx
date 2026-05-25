@@ -37,7 +37,7 @@ const TheLabHeader = React.memo(function TheLabHeader({
 }: TheLabHeaderProps) {
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
   
-  if (!itinerary || ['history','settings'].includes(activeLabTab)) return null;
+  if (!itinerary || ['history'].includes(activeLabTab)) return null;
 
   return (
     <div className="bg-transparent py-3 sm:py-4 z-30 mb-0 w-full">

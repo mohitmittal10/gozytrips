@@ -75,6 +75,9 @@ export default function TheLab() {
   const [pdfOverrides, setPdfOverrides] = useState<any>(EMPTY_OBJECT);
   const [inclusions, setInclusions] = useState<string>("");
   const [exclusions, setExclusions] = useState<string>("");
+  const [termsAndConditions, setTermsAndConditions] = useState<string>("");
+  const [cancellationPolicy, setCancellationPolicy] = useState<string>("");
+  const [paymentMethods, setPaymentMethods] = useState<string>("");
 
   const { saveItinerary, isSaving } = useItinerarySave({ currentTripId, setCurrentTripId });
   const { baseCost, finalTotal, currencySymbol } = useBaseCostCalculator({ itinerary, flights, hotels, cabs, buses, pricing });
@@ -95,6 +98,10 @@ export default function TheLab() {
     }
     return title;
   }, [tripMetadata, itinerary]);
+
+  const clientName = useMemo(() => {
+    return clients.find(c => c.id === selectedClientId)?.name || "";
+  }, [clients, selectedClientId]);
 
   const form = useForm<TheLabFormValues>({
     resolver: zodResolver(formSchema),
@@ -120,6 +127,9 @@ export default function TheLab() {
       if (loadedData.pdfOverrides) setPdfOverrides(loadedData.pdfOverrides);
       setInclusions(loadedData.inclusions || "");
       setExclusions(loadedData.exclusions || "");
+      setTermsAndConditions(loadedData.termsAndConditions || "");
+      setCancellationPolicy(loadedData.cancellationPolicy || "");
+      setPaymentMethods(loadedData.paymentMethods || "");
       if (loadedData.tripMetadata && currentTripId && currentTripId !== formSyncedForIdRef.current) {
         // Only reset the form when the user has navigated to a DIFFERENT specific
         // trip from history. This prevents the new-trip form from being prefilled
@@ -147,8 +157,8 @@ export default function TheLab() {
   }, []);
 
   useEffect(() => {
-    saveAll({ itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, showPrices, selectedTheme, pdfOverrides, inclusions, exclusions });
-  }, [itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, showPrices, selectedTheme, pdfOverrides, inclusions, exclusions, saveAll]);
+    saveAll({ itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, showPrices, selectedTheme, pdfOverrides, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods });
+  }, [itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, showPrices, selectedTheme, pdfOverrides, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, saveAll]);
 
   // Auto-sync form changes to persistence
   useEffect(() => {
@@ -169,7 +179,7 @@ export default function TheLab() {
     form.reset();
     formSyncedForIdRef.current = null; // allow next history trip to reset the form
     setItinerary(null); setTripMetadata(null); setHotels([]); setFlights([]); setCabs([]); setBuses([]); setPricing(undefined);
-    setInclusions(""); setExclusions("");
+    setInclusions(""); setExclusions(""); setTermsAndConditions(""); setCancellationPolicy(""); setPaymentMethods("");
     setCurrentTripId(null); setSelectedClientId("none"); setSelectedStatus("draft"); setIsEditing(false); setCurrentStep(0); setOptimizationCount(0);
     // Reset persistence WITHOUT writing to DB. This cancels pending auto-save
     // timers and nulls the ref so no phantom records get created.
@@ -208,6 +218,9 @@ export default function TheLab() {
       setPricing(undefined);
       setInclusions("");
       setExclusions("");
+      setTermsAndConditions("");
+      setCancellationPolicy("");
+      setPaymentMethods("");
       resetForNewTrip();
     }
     
@@ -231,6 +244,9 @@ export default function TheLab() {
           optimizationCount: 0,
           inclusions: "",
           exclusions: "",
+          termsAndConditions: "",
+          cancellationPolicy: "",
+          paymentMethods: "",
         }, null); // explicitId=null → INSERT a new record
       }
       setActiveLabTab('itinerary');
@@ -260,7 +276,7 @@ export default function TheLab() {
               isEditing={isEditing} 
               setIsEditing={setIsEditing} 
               handleDownloadPdf={() => setIsPreviewOpen(true)} 
-              handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions })} 
+              handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
               isSaving={isSaving} 
               activeLabTab={activeLabTab}
             />
@@ -289,10 +305,10 @@ export default function TheLab() {
           
           <div className={cn(
             "flex-1 min-w-0 flex flex-col",
-            isDesigningNew || !itinerary || ['history', 'settings'].includes(activeLabTab) ? "items-center justify-center" : "lg:grid lg:grid-cols-12 gap-4"
+            isDesigningNew || !itinerary || ['history'].includes(activeLabTab) ? "items-center justify-center" : "lg:grid lg:grid-cols-12 gap-4"
           )}>
             <div className={cn(
-              ['history','settings'].includes(activeLabTab) ? "w-full" : 
+              ['history'].includes(activeLabTab) ? "w-full" : 
               (isDesigningNew || !itinerary ? "w-full max-w-5xl" : "lg:col-span-8 order-2 lg:order-1")
             )}>
               {(isGenerating && !itinerary) || (isLoading) ? (
@@ -323,7 +339,7 @@ export default function TheLab() {
                     pricing={pricing} 
                     setPricing={setPricing} 
                     agencySettings={null} 
-                    handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions })} 
+                    handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
                     isSaving={isSaving} 
                     setCurrentTripId={setCurrentTripId} 
                     setActiveLabTab={setActiveLabTab} 
@@ -337,6 +353,12 @@ export default function TheLab() {
                     setInclusions={setInclusions}
                     exclusions={exclusions}
                     setExclusions={setExclusions}
+                    termsAndConditions={termsAndConditions}
+                    setTermsAndConditions={setTermsAndConditions}
+                    cancellationPolicy={cancellationPolicy}
+                    setCancellationPolicy={setCancellationPolicy}
+                    paymentMethods={paymentMethods}
+                    setPaymentMethods={setPaymentMethods}
                   />
                 </>
               )}
@@ -368,10 +390,14 @@ export default function TheLab() {
         pricing={pricing}
         baseCost={baseCost}
         tripTitle={tripTitle}
+        clientName={clientName}
         showTimestamps={showTimestamps}
         showPrices={showPrices}
         inclusions={inclusions}
         exclusions={exclusions}
+        termsAndConditions={termsAndConditions}
+        cancellationPolicy={cancellationPolicy}
+        paymentMethods={paymentMethods}
         agencySettings={agencySettings}
         itineraryId={currentTripId}
         pdfOverrides={pdfOverrides}

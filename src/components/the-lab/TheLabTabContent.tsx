@@ -8,7 +8,7 @@ import { ItineraryErrorBoundary } from './ItineraryErrorBoundary';
 import ItineraryTimeline from "@/components/itinerary-timeline";
 import HotelFlightEditor from "@/components/hotel-flight-editor";
 import PricingModule from "@/components/pricing-module";
-import { CrmSettings } from "@/components/crm-settings";
+
 import { ItineraryProvider, ItineraryContext } from "@/contexts/itinerary-context";
 import { TheLabHistory } from "./TheLabHistory";
 import TheLabForm from "./TheLabForm";
@@ -76,6 +76,12 @@ interface TheLabTabContentProps {
   setInclusions: (val: string) => void;
   exclusions: string;
   setExclusions: (val: string) => void;
+  termsAndConditions: string;
+  setTermsAndConditions: (val: string) => void;
+  cancellationPolicy: string;
+  setCancellationPolicy: (val: string) => void;
+  paymentMethods: string;
+  setPaymentMethods: (val: string) => void;
 }
 
 const TheLabTabContent = React.memo(function TheLabTabContent({
@@ -90,6 +96,12 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
   setInclusions,
   exclusions,
   setExclusions,
+  termsAndConditions,
+  setTermsAndConditions,
+  cancellationPolicy,
+  setCancellationPolicy,
+  paymentMethods,
+  setPaymentMethods,
 }: TheLabTabContentProps) {
 
   return (
@@ -129,6 +141,12 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
             setInclusions={setInclusions}
             exclusions={exclusions}
             setExclusions={setExclusions}
+            termsAndConditions={termsAndConditions}
+            setTermsAndConditions={setTermsAndConditions}
+            cancellationPolicy={cancellationPolicy}
+            setCancellationPolicy={setCancellationPolicy}
+            paymentMethods={paymentMethods}
+            setPaymentMethods={setPaymentMethods}
           />
         </ItineraryErrorBoundary>
       )}
@@ -180,15 +198,6 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
         </ItineraryErrorBoundary>
       )}
 
-      {/* Tab Content - Settings */}
-      {activeLabTab === 'settings' && (
-        <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Settings failed to load.">
-          <div className="mt-4">
-            <CrmSettings />
-          </div>
-        </ItineraryErrorBoundary>
-      )}
-      
       {/* Tab Content - History */}
       {activeLabTab === 'history' && (
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="History failed to load.">

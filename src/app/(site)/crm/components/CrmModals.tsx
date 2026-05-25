@@ -113,6 +113,11 @@ export function CrmModals() {
         await data.actions.handleStatusChange(ownerClient.id, tripId, newStatus);
     }, [data.data.enrichedClients, data.actions]);
 
+    const selectedClientForTrip = React.useMemo(() => {
+        if (!selectedTripForModal || !selectedTripForModal.client_id) return null;
+        return data.data.clients.find(c => c.id === selectedTripForModal.client_id) || null;
+    }, [selectedTripForModal, data.data.clients]);
+
     const selectedClientForBooking = React.useMemo(() => {
         if (!selectedBooking || !selectedBooking.client_id) return null;
         return data.data.clients.find(c => c.id === selectedBooking.client_id) || null;
@@ -201,6 +206,7 @@ export function CrmModals() {
                         isOpen={isPreviewOpen}
                         onOpenChange={setIsPreviewOpen}
                         templateProps={{
+                            clientName: selectedClientForTrip?.name || "",
                             itinerary: selectedTripForModal?.itinerary_data,
                             title: selectedTripForModal?.title,
                             userProfile: userProfile,

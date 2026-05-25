@@ -5,10 +5,27 @@ import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { getThematicBackground } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
+import { calcPricingFromBaseCost } from '@/services/financial';
 
-export const MinimalistTheme = ({ itinerary, title, agent, finalTotal = 0, showTimestamps = true, showPrices = true, daySummaries }: ThemeProps) => {
+const parseList = (text?: string) => {
+    if (!text) return [];
+    return text.split('\n').map(s => s.trim()).filter(s => s.length > 0 && s !== '-');
+};
+
+export const MinimalistTheme = ({
+    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, showPrices = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace
+}: ThemeProps) => {
     const accent = agent.primaryColor || "#000000";
-    const totalActivities = itinerary.itinerary.reduce((s, d) => s + d.timeline.length, 0);
+    const totalActivities = Array.isArray(itinerary.itinerary) ? itinerary.itinerary.reduce((s, d) => s + (d.timeline?.length || 0), 0) : 0;
+    const currency = pricing?.currency || DEFAULT_CURRENCY;
+    const isManual = pricing?.costingType === 'manual';
+    const adultPax = Number(pricing?.adultPax || 2);
+    const childPax = Number(pricing?.childPax || 0);
+    const resolvedBase = baseCost || 0;
+    const { costWithMarkup, taxAmount } = calcPricingFromBaseCost(resolvedBase, pricing);
+    
+    const inclusionsList = parseList(inclusions);
+    const exclusionsList = parseList(exclusions);
     
     return (
         <div style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", backgroundColor: "#f8fafc", backgroundImage: `url("${getThematicBackground(itinerary, 'minimalist', accent)}")`, backgroundRepeat: "repeat", color: "#0f172a", width: "100%" }}>
@@ -73,6 +90,33 @@ export const MinimalistTheme = ({ itinerary, title, agent, finalTotal = 0, showT
                 </div>
             </div>
 
+            {/* About The Destination */}
+            {aboutPlace && (
+                <div data-pdf-section="about" style={{ padding: "0 45px 45px 45px", pageBreakInside: "avoid" }}>
+                    <div style={{ display: "flex", gap: "40px", alignItems: "flex-start" }}>
+                        <div style={{ flex: "0 0 240px" }}>
+                            <img src={Array.isArray(itinerary.itinerary) && itinerary.itinerary.length > 0 ? getDayImage(itinerary.itinerary[0]) : "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop"} alt="Destination" style={{ width: "100%", height: "300px", objectFit: "cover", display: "block" }} crossOrigin="anonymous" />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <h3 style={{ margin: "0 0 10px 0", fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "3px", fontWeight: 700 }}>About Destination</h3>
+                            <h2 style={{ margin: "0 0 20px 0", fontSize: "32px", color: "#0f172a", fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-1px" }}>{aboutPlace.title}</h2>
+                            <p style={{ margin: "0 0 30px 0", color: "#334155", fontSize: "14px", lineHeight: "1.8", fontWeight: 500 }}>{aboutPlace.description}</p>
+                            
+                            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                {(aboutPlace.highlights || []).map((hl: string, i: number) => (
+                                    <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "12px", borderBottom: "1px solid rgba(148,163,184,0.2)", paddingBottom: "12px" }}>
+                                        <div style={{ flexShrink: 0, width: "16px", height: "16px", borderRadius: "50%", border: `1.5px solid ${accent}`, display: "flex", alignItems: "center", justifyContent: "center", marginTop: "2px" }}>
+                                            <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: accent }} />
+                                        </div>
+                                        <span style={{ fontSize: "13px", color: "#0f172a", fontWeight: 600 }}>{hl}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <PdfDaywiseIndex itinerary={itinerary} accentColor={accent} theme="minimalist" daySummaries={daySummaries} />
 
             {/* Daily itinerary */}
@@ -119,10 +163,199 @@ export const MinimalistTheme = ({ itinerary, title, agent, finalTotal = 0, showT
                 ))}
             </div>
 
-            {/* Footer */}
-            <div data-pdf-section="footer" style={{ padding: "20px 45px", borderTop: "1px solid rgba(148,163,184,0.2)", display: "flex", justifyContent: "space-between", fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2.5px", fontWeight: 700, background: "rgba(255,255,255,0.42)" }}>
-                <span>{agent.companyName}</span>
-                <span>{new Date().toLocaleDateString()}</span>
+            {/* Travel & Logistics */}
+            {(hotels.length > 0 || flights.length > 0 || cabs.length > 0 || buses.length > 0) && (
+                <div data-pdf-section="accommodations" style={{ padding: "0 45px 45px 45px" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "30px" }}>
+                        <h2 style={{ margin: 0, fontSize: "14px", color: "#0f172a", textTransform: "uppercase", letterSpacing: "3px", fontWeight: 800 }}>Travel & Logistics</h2>
+                        <div style={{ flex: 1, height: "1px", background: "rgba(148,163,184,0.3)" }} />
+                    </div>
+                    
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
+                        {hotels.map((h, i) => (
+                            <div key={`hotel-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "white" }}>
+                                <img src={h.imageUrls?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop'} alt={h.name} style={{ width: "80px", height: "80px", objectFit: "cover" }} crossOrigin="anonymous" />
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "4px" }}>Hotel • Day {h.dayIndex + 1}</div>
+                                    <h4 style={{ margin: "0 0 10px 0", fontSize: "16px", color: "#0f172a", fontWeight: 700 }}>{h.name}</h4>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "4px", fontSize: "11px", color: "#475569" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span>IN</span><span style={{ fontWeight: 600 }}>{h.checkIn}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span>OUT</span><span style={{ fontWeight: 600 }}>{h.checkOut}</span></div>
+                                        {h.bookingRef && <div style={{ display: "flex", justifyContent: "space-between" }}><span>REF</span><span style={{ fontWeight: 600 }}>{h.bookingRef}</span></div>}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        {flights.map((f, i) => (
+                            <div key={`flight-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "white" }}>
+                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>✈️</div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "4px" }}>Flight • Day {f.dayIndex + 1}</div>
+                                    <h4 style={{ margin: "0 0 10px 0", fontSize: "16px", color: "#0f172a", fontWeight: 700 }}>{f.airline}</h4>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "4px", fontSize: "11px", color: "#475569" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span>RTE</span><span style={{ fontWeight: 600 }}>{f.departureAirport} → {f.arrivalAirport}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span>DEP</span><span style={{ fontWeight: 600 }}>{f.departure}</span></div>
+                                        {f.pnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span>PNR</span><span style={{ fontWeight: 600 }}>{f.pnr}</span></div>}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        {cabs.map((c, i) => (
+                            <div key={`cab-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "white" }}>
+                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>🚕</div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "4px" }}>Transfer • Day {c.dayIndex + 1}</div>
+                                    <h4 style={{ margin: "0 0 10px 0", fontSize: "16px", color: "#0f172a", fontWeight: 700 }}>{c.vehicleType || "Private Transfer"}</h4>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "4px", fontSize: "11px", color: "#475569" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span>RTE</span><span style={{ fontWeight: 600 }}>{c.route || "Local"}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span>PICK</span><span style={{ fontWeight: 600 }}>{c.pickupTime}</span></div>
+                                        {c.driverName && <div style={{ display: "flex", justifyContent: "space-between" }}><span>DRV</span><span style={{ fontWeight: 600 }}>{c.driverName}</span></div>}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                        {buses.map((b, i) => (
+                            <div key={`bus-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "white" }}>
+                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>🚌</div>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "4px" }}>Bus • Day {b.dayIndex + 1}</div>
+                                    <h4 style={{ margin: "0 0 10px 0", fontSize: "16px", color: "#0f172a", fontWeight: 700 }}>{b.busType || "Tourist Bus"}</h4>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "4px", fontSize: "11px", color: "#475569" }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span>RTE</span><span style={{ fontWeight: 600 }}>{b.route}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span>DEP</span><span style={{ fontWeight: 600 }}>{b.departureTime}</span></div>
+                                        {b.pnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span>PNR</span><span style={{ fontWeight: 600 }}>{b.pnr}</span></div>}
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Inclusions & Exclusions */}
+            <div data-pdf-section="inclusions" style={{ padding: "0 45px 45px 45px" }}>
+                <div style={{ display: "flex", gap: "40px" }}>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+                            <div style={{ width: "16px", height: "2px", background: accent }} />
+                            <h3 style={{ margin: 0, fontSize: "12px", color: "#0f172a", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800 }}>Inclusions</h3>
+                        </div>
+                        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "10px" }}>
+                            {inclusionsList.length > 0 ? inclusionsList.map((inc, i) => (
+                                <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#334155", fontWeight: 500 }}><span style={{ color: accent }}>+</span> <span>{inc}</span></li>
+                            )) : <li style={{ fontSize: "13px", color: "#64748b" }}>Standard inclusions apply.</li>}
+                        </ul>
+                    </div>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+                            <div style={{ width: "16px", height: "2px", background: "#94a3b8" }} />
+                            <h3 style={{ margin: 0, fontSize: "12px", color: "#0f172a", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800 }}>Exclusions</h3>
+                        </div>
+                        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "10px" }}>
+                            {exclusionsList.length > 0 ? exclusionsList.map((exc, i) => (
+                                <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#475569", fontWeight: 500 }}><span style={{ color: "#94a3b8" }}>-</span> <span>{exc}</span></li>
+                            )) : <li style={{ fontSize: "13px", color: "#64748b" }}>Personal expenses not included.</li>}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            {/* Pricing & Invoice */}
+            <div data-pdf-section="pricing" style={{ padding: "0 45px 60px 45px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "20px", marginBottom: "30px" }}>
+                    <h2 style={{ margin: 0, fontSize: "14px", color: "#0f172a", textTransform: "uppercase", letterSpacing: "3px", fontWeight: 800 }}>Invoice & Schedule</h2>
+                    <div style={{ flex: 1, height: "1px", background: "rgba(148,163,184,0.3)" }} />
+                </div>
+
+                <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left", marginBottom: "40px", background: "white" }}>
+                    <thead>
+                        <tr>
+                            <th style={{ padding: "16px", fontSize: "9px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, borderBottom: "2px solid #0f172a" }}>Description</th>
+                            <th style={{ padding: "16px", fontSize: "9px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, borderBottom: "2px solid #0f172a", textAlign: "center" }}>Qty</th>
+                            <th style={{ padding: "16px", fontSize: "9px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, borderBottom: "2px solid #0f172a", textAlign: "right" }}>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style={{ padding: "20px 16px", fontSize: "14px", color: "#0f172a", fontWeight: 600, borderBottom: "1px solid rgba(148,163,184,0.2)" }}>{isManual ? "Package Cost" : "Itinerary Valuation"} (for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''})</td>
+                            <td style={{ padding: "20px 16px", fontSize: "14px", color: "#475569", textAlign: "center", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>1</td>
+                            <td style={{ padding: "20px 16px", fontSize: "14px", color: "#0f172a", fontWeight: 600, fontFamily: "var(--font-mono)", textAlign: "right", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>{formatCurrency(costWithMarkup, currency)}</td>
+                        </tr>
+                        <tr>
+                            <td style={{ padding: "16px", fontSize: "12px", color: "#475569", borderBottom: "1px solid rgba(148,163,184,0.2)", borderRight: "1px solid rgba(148,163,184,0.2)" }} colSpan={2}>
+                                <div style={{ display: "flex", justifyContent: "space-between" }}><span>Subtotal</span><span>{formatCurrency(costWithMarkup, currency)}</span></div>
+                                <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}><span>Taxes & Fees</span><span>{formatCurrency(taxAmount, currency)}</span></div>
+                            </td>
+                            <td style={{ padding: "20px 16px", fontSize: "18px", color: accent, fontWeight: 800, fontFamily: "var(--font-mono)", textAlign: "right", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>{formatCurrency(finalTotal, currency)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div style={{ display: "flex", gap: "40px" }}>
+                    <div style={{ flex: 1 }}>
+                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "16px" }}>Payment Schedule</div>
+                        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                            <thead>
+                                <tr>
+                                    <th style={{ padding: "8px 0", fontSize: "9px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, borderBottom: "1px solid rgba(148,163,184,0.2)" }}>Installment</th>
+                                    <th style={{ padding: "8px 0", fontSize: "9px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, borderBottom: "1px solid rgba(148,163,184,0.2)" }}>Due Date</th>
+                                    <th style={{ padding: "8px 0", fontSize: "9px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, borderBottom: "1px solid rgba(148,163,184,0.2)", textAlign: "right" }}>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {(pricing?.milestones?.length > 0 ? pricing.milestones : [{ id: 'fallback', name: 'Full Payment', percentage: 100, dueDate: 'At Booking' }]).map((m: any, i: number) => {
+                                    const amount = m.id === 'fallback' ? finalTotal : (finalTotal * m.percentage) / 100;
+                                    return (
+                                        <tr key={i}>
+                                            <td style={{ padding: "12px 0", fontSize: "12px", color: "#0f172a", fontWeight: 600, borderBottom: "1px solid rgba(148,163,184,0.1)" }}>{m.name} {m.id !== 'fallback' && `(${m.percentage}%)`}</td>
+                                            <td style={{ padding: "12px 0", fontSize: "12px", color: "#475569", borderBottom: "1px solid rgba(148,163,184,0.1)" }}>{m.dueDate}</td>
+                                            <td style={{ padding: "12px 0", fontSize: "12px", color: "#0f172a", fontWeight: 600, fontFamily: "var(--font-mono)", textAlign: "right", borderBottom: "1px solid rgba(148,163,184,0.1)" }}>{formatCurrency(amount, currency)}</td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "24px" }}>
+                        <div>
+                            <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Policies</div>
+                            <div style={{ fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
+                                {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>- {p}</div>) : "- Standard cancellation fees apply."}
+                            </div>
+                        </div>
+                        <div>
+                            <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Methods</div>
+                            <div style={{ fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
+                                {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>- {p}</div>) : "- Bank Transfer, Credit Card."}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Detailed Footer */}
+            <div data-pdf-section="footer" style={{ padding: "40px 45px", borderTop: "2px solid #0f172a", background: "#0f172a", color: "white" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "40px" }}>
+                    <div>
+                        <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "12px" }}>Bank Account</div>
+                        <div style={{ fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{agencySettings?.bankName || 'HDFC Bank'}</div>
+                        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)" }}>ACC: {agencySettings?.bankAccountNumber || '1234567890'}</div>
+                        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)" }}>IFSC: {agencySettings?.bankIfscCode || 'HDFC0001234'}</div>
+                    </div>
+                    <div>
+                        <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "12px" }}>Tax Information</div>
+                        <div style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>GST: {agencySettings?.gstNumber || '29GGGGG1314R9Z6'}</div>
+                    </div>
+                    <div>
+                        <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "12px" }}>UPI Payment</div>
+                        <div style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>{agencySettings?.upiId || 'YOUR-AGENCY@UP9Z6'}</div>
+                    </div>
+                </div>
+                
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "20px", fontSize: "10px", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 700 }}>
+                    <span style={{ color: "white" }}>{agent.companyName}</span>
+                    <span>{new Date().toLocaleDateString()}</span>
+                </div>
             </div>
         </div>
     );

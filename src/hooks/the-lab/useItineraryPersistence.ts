@@ -112,7 +112,10 @@ export function useItineraryPersistence({
             pdfOverrides: data.pdf_overrides || {},
             draftSourceItineraryId: data.draft_source_itinerary_id,
             inclusions: itineraryData.inclusions || "",
-            exclusions: itineraryData.exclusions || ""
+            exclusions: itineraryData.exclusions || "",
+            termsAndConditions: itineraryData.termsAndConditions || "",
+            cancellationPolicy: itineraryData.cancellationPolicy || "",
+            paymentMethods: itineraryData.paymentMethods || ""
           };
 
           // Seed the payload ref so we don't immediately re-save what we just loaded
@@ -166,6 +169,9 @@ export function useItineraryPersistence({
         pricing: data.pricing,
         inclusions: data.inclusions !== undefined ? data.inclusions : "",
         exclusions: data.exclusions !== undefined ? data.exclusions : "",
+        termsAndConditions: data.termsAndConditions !== undefined ? data.termsAndConditions : "",
+        cancellationPolicy: data.cancellationPolicy !== undefined ? data.cancellationPolicy : "",
+        paymentMethods: data.paymentMethods !== undefined ? data.paymentMethods : "",
       };
 
       const formValues = data.tripMetadata || {};
@@ -351,7 +357,10 @@ function getEmptyData(): LoadedPersistenceData {
     pdfOverrides: {},
     draftSourceItineraryId: null,
     inclusions: "",
-    exclusions: ""
+    exclusions: "",
+    termsAndConditions: "",
+    cancellationPolicy: "",
+    paymentMethods: ""
   };
 }
 

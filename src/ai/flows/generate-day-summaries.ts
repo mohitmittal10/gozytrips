@@ -24,12 +24,18 @@ const DayInputSchema = z.object({
 
 const GenerateDaySummariesInputSchema = z.object({
   days: z.array(DayInputSchema),
+  destination: z.string().optional(),
 });
 
 export type GenerateDaySummariesInput = z.infer<typeof GenerateDaySummariesInputSchema>;
 
 const GenerateDaySummariesOutputSchema = z.object({
   summaries: z.array(z.string()),
+  aboutPlace: z.object({
+    title: z.string(),
+    description: z.string(),
+    highlights: z.array(z.string()),
+  }).optional(),
 });
 
 export type GenerateDaySummariesOutput = z.infer<typeof GenerateDaySummariesOutputSchema>;
@@ -42,12 +48,16 @@ const daySummariesPrompt = ai.definePrompt({
   prompt: `
 You are a travel copywriter writing a brief index for a trip itinerary PDF.
 
-For EACH day listed below, write exactly ONE punchy sentence (maximum 20 words) that
+1. For EACH day listed below, write exactly ONE punchy sentence (maximum 20 words) that
 captures the spirit and highlights of that day. The sentence should feel exciting and
 descriptive — not generic.
 
-Return your answer as a JSON object with a "summaries" array of strings, one string per day,
-in the same order as the input. No explanations, no markdown.
+2. If destination information is provided, write an "aboutPlace" section describing the main destination. Include a catchy title, a 2-3 sentence evocative description, and 3-5 short bullet-point highlights (key experiences or landmarks).
+
+Return your answer as a JSON object with a "summaries" array of strings, and an optional "aboutPlace" object with "title", "description", and "highlights" array of strings. No explanations, no markdown.
+
+Context:
+Destination: {{destination}}
 
 Days:
 {{#each days}}
@@ -72,7 +82,7 @@ const generateDaySummariesFlow = ai.defineFlow(
       }
       // Ensure the count matches — pad or trim if the model returned wrong count
       const summaries = input.days.map((_, i) => output.summaries[i] ?? '');
-      return { summaries };
+      return { summaries, aboutPlace: output.aboutPlace };
     } catch (err) {
       console.error('[generateDaySummaries] failed:', err);
       // Graceful degradation — return empty strings

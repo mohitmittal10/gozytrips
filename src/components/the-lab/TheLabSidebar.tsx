@@ -1,6 +1,6 @@
 // Collapsible desktop side navigation
 import React from 'react';
-import { Calendar as CalendarIcon, Plane, DollarSign, Settings, ChevronLeft, ChevronRight, History, Plus, List } from 'lucide-react';
+import { Calendar as CalendarIcon, Plane, DollarSign, ChevronLeft, ChevronRight, History, Plus, List } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import type { ActiveLabTab } from '@/types/the-lab';
 import Logo from '../layout/logo';
@@ -110,29 +110,8 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
 
         <div className="flex-grow" />
 
-        {/* Bottom Toggle & Settings */}
+        {/* Bottom Toggle */}
         <div className="flex flex-col items-center gap-1 w-full mt-auto pt-4 border-t border-white/5">
-          <button
-            onClick={() => setActiveLabTab('settings')}
-            className={cn(
-              "relative group flex items-center rounded-xl transition-all duration-200",
-              isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10",
-              activeLabTab === 'settings'
-                ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
-                : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
-            )}
-            title={isSidebarExpanded ? undefined : "Settings"}
-          >
-            <Settings className={cn(isSidebarExpanded ? "w-4 h-4" : "w-[18px] h-[18px]")} />
-            {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap">Settings</span>}
-            {!isSidebarExpanded && (
-              <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
-                Settings
-                <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
-              </div>
-            )}
-          </button>
-
           <button
             onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
             className={cn(

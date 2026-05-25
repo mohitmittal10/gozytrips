@@ -1,6 +1,6 @@
 // Mobile bottom/top navigation links and client/status selections.
 import React from 'react';
-import { Calendar as CalendarIcon, Plane, DollarSign, Settings, History, Plus } from 'lucide-react';
+import { Calendar as CalendarIcon, Plane, DollarSign, History, Plus } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { ActiveLabTab } from '@/types/the-lab';
@@ -35,7 +35,6 @@ const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
           { id: 'flights-hotels' as const, icon: Plane, label: 'Logistics' },
           { id: 'pricing' as const, icon: DollarSign, label: 'Financials' },
           { id: 'history' as const, icon: History, label: 'History' },
-          { id: 'settings' as const, icon: Settings, label: 'Settings' },
         ].map((item) => (
           <button
             key={item.id}
@@ -56,7 +55,7 @@ const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
         ))}
       </div>
 
-      {!['history','settings'].includes(activeLabTab) && (
+      {!['history'].includes(activeLabTab) && (
         <div className="sm:hidden flex flex-col gap-2 mb-4">
           <div className="flex items-center gap-2">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 w-12 flex-shrink-0">Client</label>

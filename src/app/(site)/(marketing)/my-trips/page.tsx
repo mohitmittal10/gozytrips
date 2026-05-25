@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { MapPin, Calendar, DollarSign, Trash2, Eye, Plus, ArrowLeft, Heart, Clock, Copy, ArrowRight, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -66,6 +66,10 @@ export default function MyTripsPage() {
   const [showFavouritesOnly, setShowFavouritesOnly] = useState(false);
   const router = useRouter();
   const { clients } = useClients();
+  const selectedClientForTrip = useMemo(() => {
+    if (!selectedTrip || !selectedTrip.client_id) return null;
+    return clients.find(c => c.id === selectedTrip.client_id) || null;
+  }, [selectedTrip, clients]);
   const { userPreferences } = useAuth();
   const { options: themeOptions } = useReferenceOptions("pdf_theme");
   const pdfThemeOptions = getMergedPdfThemeOptions(themeOptions);
@@ -544,6 +548,7 @@ export default function MyTripsPage() {
             isOpen={isPreviewOpen}
             onOpenChange={setIsPreviewOpen}
             templateProps={{
+              clientName: selectedClientForTrip?.name || "",
               itinerary: selectedTrip?.itinerary_data,
               title: selectedTrip?.title,
               userProfile: userProfile,

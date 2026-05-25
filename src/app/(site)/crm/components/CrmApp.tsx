@@ -4,7 +4,7 @@ import React from "react";
 import { 
     Users, Calendar, CheckCircle2, Clock, Search, Plus, 
     ListFilter, Compass, FileText, Settings, LayoutDashboard, TrendingUp, 
-    Archive, Sliders, LayoutGrid, List, DollarSign, Mail, RefreshCw, Info, Filter, Bookmark, Save, X, ChevronRight
+    Archive, Sliders, LayoutGrid, List, DollarSign, Mail, RefreshCw, Info, Filter, Ticket, Save, X, ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,6 @@ import { useCrmContext } from "../context/CrmContext";
 import { CrmTabRouter } from "./CrmTabRouter";
 import { CrmModals } from "./CrmModals";
 import dynamic from "next/dynamic";
-const CrmSettings = dynamic(() => import("@/components/crm-settings").then(mod => mod.CrmSettings), { ssr: false });
 
 export function CrmApp() {
     const context = useCrmContext();
@@ -64,7 +63,7 @@ export function CrmApp() {
                                     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
                                     { id: 'clients', icon: Users, label: 'Clients' },
                                     { id: 'trips', icon: TrendingUp, label: 'Trips' },
-                                    { id: 'bookings', icon: Bookmark, label: 'Bookings' },
+                                    { id: 'bookings', icon: Ticket, label: 'Bookings' },
                                     { id: 'timeline', icon: Calendar, label: 'Timeline' },
                                     { id: 'finance', icon: DollarSign, label: 'Finances' },
                                     { id: 'enquiry', icon: Mail, label: 'Enquiry' },
@@ -91,15 +90,6 @@ export function CrmApp() {
                                         Collapse
                                     </span>
                                 </Button>
-                                <Button onClick={() => setActiveTab('settings')} variant={activeTab === 'settings' ? 'secondary' : 'ghost'} className={cn("w-full justify-start h-10 px-3 hover:bg-white/10 transition-all group", activeTab === 'settings' ? "bg-white/10 text-white" : "text-gray-400 hover:text-white", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
-                                    <Settings className={cn("w-4 h-4 shrink-0", activeTab === 'settings' ? "text-purple-400" : "text-gray-500 group-hover:text-purple-400")} />
-                                    <span className={cn(
-                                        "text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden",
-                                        isSidebarExpanded ? "ml-3 w-32 opacity-100" : "w-0 opacity-0 ml-0"
-                                    )}>
-                                        Settings
-                                    </span>
-                                </Button>
                             </div>
                         </div>
                     </div>
@@ -112,12 +102,11 @@ export function CrmApp() {
                                     { id: 'dashboard', icon: LayoutDashboard, label: 'Dash' },
                                     { id: 'clients', icon: Users, label: 'Clients' },
                                     { id: 'trips', icon: TrendingUp, label: 'Trips' },
-                                    { id: 'bookings', icon: Bookmark, label: 'Book' },
+                                    { id: 'bookings', icon: Ticket, label: 'Book' },
                                     { id: 'timeline', icon: Calendar, label: 'Timeline' },
                                     { id: 'finance', icon: DollarSign, label: 'Fin' },
                                     { id: 'enquiry', icon: Mail, label: 'Enquiry' },
-                                    { id: 'archive', icon: Archive, label: 'Archive' },
-                                    { id: 'settings', icon: Settings, label: 'Set' },
+                                    { id: 'archive', icon: Archive, label: 'Archive' }
                                 ].map((tab) => (
                                     <button
                                         key={tab.id}
@@ -146,13 +135,12 @@ export function CrmApp() {
                                     {activeTab === 'dashboard' && <LayoutDashboard className="w-8 h-8 text-purple-400" />}
                                     {activeTab === 'clients' && <Users className="w-8 h-8 text-purple-400" />}
                                     {activeTab === 'trips' && <Compass className="w-8 h-8 text-purple-400" />}
-                                    {activeTab === 'bookings' && <Bookmark className="w-8 h-8 text-purple-400" />}
+                                    {activeTab === 'bookings' && <Ticket className="w-8 h-8 text-purple-400" />}
                                     {activeTab === 'archive' && <Archive className="w-8 h-8 text-purple-400" />}
                                     {activeTab === 'finance' && <DollarSign className="w-8 h-8 text-purple-400" />}
                                     {activeTab === 'enquiry' && <Info className="w-8 h-8 text-purple-400" />}
                                     {activeTab === 'timeline' && <Calendar className="w-8 h-8 text-purple-400" />}
-                                    {activeTab === 'edit-itinerary' && <FileText className="w-8 h-8 text-purple-400" />}
-                                    {activeTab === 'settings' && <Settings className="w-8 h-8 text-purple-400" />}
+                                    { activeTab === 'edit-itinerary' && <FileText className="w-8 h-8 text-purple-400" />}
                                     {activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace('-', ' ')}
                                 </h1>
                                 <p className="text-gray-500 text-sm mt-1">
@@ -184,7 +172,6 @@ export function CrmApp() {
 
                         {/* TAB VIEWS */}
                         <div className="min-h-[60vh]">
-                            {activeTab === 'settings' ? <CrmSettings /> : (
                                 <div className="space-y-6">
                                     {/* Responsive Modern Filter Block (only for clients/trips/archive) */}
                                     {(activeTab === 'clients' || activeTab === 'trips' || activeTab === 'archive') && (
@@ -369,7 +356,6 @@ export function CrmApp() {
 
                                     <CrmTabRouter />
                                 </div>
-                            )}
                         </div>
                     </div>
                 </div>

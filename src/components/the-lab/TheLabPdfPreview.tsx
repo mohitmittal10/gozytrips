@@ -13,10 +13,14 @@ interface TheLabPdfPreviewProps {
   pricing: any;
   baseCost: number;
   tripTitle: string;
+  clientName?: string;
   showTimestamps?: boolean;
   showPrices?: boolean;
   inclusions?: string;
   exclusions?: string;
+  termsAndConditions?: string;
+  cancellationPolicy?: string;
+  paymentMethods?: string;
   agencySettings?: any;
   itineraryId?: string | null;
   pdfOverrides?: any;
@@ -34,10 +38,14 @@ export function TheLabPdfPreview({
   pricing,
   baseCost,
   tripTitle,
+  clientName,
   showTimestamps,
   showPrices,
   inclusions,
   exclusions,
+  termsAndConditions,
+  cancellationPolicy,
+  paymentMethods,
   agencySettings,
   itineraryId,
   pdfOverrides,
@@ -54,6 +62,7 @@ export function TheLabPdfPreview({
       templateProps={{
         itinerary,
         title: tripTitle,
+        clientName,
         userProfile,
         hotels,
         flights,
@@ -63,6 +72,9 @@ export function TheLabPdfPreview({
         showPrices,
         inclusions,
         exclusions,
+        termsAndConditions,
+        cancellationPolicy,
+        paymentMethods,
         agencySettings,
       }}
       initialTheme={theme}

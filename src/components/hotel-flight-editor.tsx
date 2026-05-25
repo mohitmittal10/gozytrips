@@ -378,6 +378,7 @@ export type HotelFlightEditorProps = {
     cabs: CabInfo[];
     buses: BusInfo[];
     totalDays: number;
+    currency?: string;
     onHotelsChange: (hotels: HotelInfo[]) => void;
     onFlightsChange: (flights: FlightInfo[]) => void;
     onCabsChange: (cabs: CabInfo[]) => void;
@@ -385,7 +386,7 @@ export type HotelFlightEditorProps = {
 };
 
 export default function HotelFlightEditor({
-    hotels, flights, cabs, buses, totalDays, onHotelsChange, onFlightsChange, onCabsChange, onBusesChange
+    hotels, flights, cabs, buses, totalDays, currency, onHotelsChange, onFlightsChange, onCabsChange, onBusesChange
 }: HotelFlightEditorProps) {
     const addHotel = () => onHotelsChange([...hotels, emptyHotel(0)]);
     const addFlight = () => onFlightsChange([...flights, emptyFlight(0)]);
