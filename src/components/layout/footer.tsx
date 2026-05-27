@@ -41,7 +41,7 @@ const Footer = () => {
   return (
     <footer className="relative bg-black pt-24 pb-12 overflow-hidden border-t border-white/[0.05]">
       {/* Ambient Background Elements */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-purple-600/[0.05] rounded-full blur-[120px]" />
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-600/[0.05] rounded-full blur-[120px]" />
       </div>
@@ -148,13 +148,13 @@ const Footer = () => {
             ))}
           </div>
         </div>
+      </div>
 
-        {/* Big Background Text */}
-        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 pointer-events-none select-none opacity-[0.05] z-0 whitespace-nowrap">
-          <h2 className="text-[20vw] font-black tracking-tighter text-white">
-            WANDER LABS
-          </h2>
-        </div>
+      {/* Big Background Text */}
+      <div className="absolute bottom-0 left-0 right-0 h-[10vw] overflow-hidden pointer-events-none select-none opacity-[0.05] z-0">
+        <h2 className="text-[20vw] font-black tracking-tighter text-white text-center leading-[0.8] whitespace-nowrap m-0 p-0">
+          WANDER LABS
+        </h2>
       </div>
     </footer>
   );

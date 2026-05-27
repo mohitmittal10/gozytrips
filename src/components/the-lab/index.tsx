@@ -286,11 +286,9 @@ export default function TheLab() {
 
       <div className={cn(
         "w-full max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-10",
-        isDesigningNew ? "pt-4" : "mt-8"
+        isDesigningNew ? "mt-4 lg:mt-0 lg:pt-4" : "mt-4 lg:mt-8"
       )}>
-        {!isDesigningNew && (
-          <TheLabMobileTabs activeLabTab={activeLabTab} setActiveLabTab={setActiveLabTab} clients={clients} selectedClientId={selectedClientId} setSelectedClientId={setSelectedClientId} selectedStatus={selectedStatus} setSelectedStatus={handleStatusChangeAction} handleCreateNew={handleCreateNew} />
-        )}
+        <TheLabMobileTabs activeLabTab={activeLabTab} setActiveLabTab={setActiveLabTab} clients={clients} selectedClientId={selectedClientId} setSelectedClientId={setSelectedClientId} selectedStatus={selectedStatus} setSelectedStatus={handleStatusChangeAction} handleCreateNew={handleCreateNew} />
         
         <div className="flex flex-row items-start gap-4 lg:gap-6">
           <TheLabSidebar 

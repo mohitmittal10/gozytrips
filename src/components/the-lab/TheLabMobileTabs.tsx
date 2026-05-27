@@ -1,6 +1,6 @@
 // Mobile bottom/top navigation links and client/status selections.
 import React from 'react';
-import { Calendar as CalendarIcon, Plane, DollarSign, History, Plus } from 'lucide-react';
+import { Calendar as CalendarIcon, Plane, DollarSign, History, Plus, List } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { ActiveLabTab } from '@/types/the-lab';
@@ -28,11 +28,12 @@ const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
 
   return (
     <>
-      <div className="lg:hidden flex items-center gap-1 p-1.5 mb-4 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl overflow-x-auto hide-scrollbar">
+      <div className="lg:hidden flex items-center gap-0.5 p-1.5 mb-4 rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl overflow-x-auto hide-scrollbar">
         {[
           { id: 'new' as const, icon: Plus, label: 'New' },
           { id: 'itinerary' as const, icon: CalendarIcon, label: 'Timeline' },
           { id: 'flights-hotels' as const, icon: Plane, label: 'Logistics' },
+          { id: 'inclusions' as const, icon: List, label: 'Inclusions' },
           { id: 'pricing' as const, icon: DollarSign, label: 'Financials' },
           { id: 'history' as const, icon: History, label: 'History' },
         ].map((item) => (
@@ -43,14 +44,14 @@ const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
               else setActiveLabTab(item.id);
             }}
             className={cn(
-              "flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-lg transition-all duration-200 whitespace-nowrap flex-1 min-w-[70px] min-h-[44px]",
+              "flex items-center justify-center gap-1 px-2.5 py-2 rounded-lg transition-all duration-200 whitespace-nowrap flex-grow shrink-0 min-h-[40px]",
               activeLabTab === item.id
                 ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
                 : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
             )}
           >
-            <item.icon className="w-4 h-4 flex-shrink-0" />
-            <span className="text-[10px] sm:text-xs font-medium">{item.label}</span>
+            <item.icon className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="text-[10px] font-medium">{item.label}</span>
           </button>
         ))}
       </div>

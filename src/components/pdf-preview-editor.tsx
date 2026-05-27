@@ -400,31 +400,48 @@ export function PdfPreviewEditor({
     }, [theme]);
 
     // DEV ONLY — re-run renderPages after every HMR hot update so canvas
-    // stays in sync with component changes without manual close/reopen.    
+    // stays in sync with component changes without manual close/reopen.
+    // Uses a MutationObserver to detect Fast Refresh updates to the hidden template container.
+    const renderParamsRef = useRef({ renderPages, daySummaries, aboutPlace, isRendering });
+    useEffect(() => {
+        renderParamsRef.current = { renderPages, daySummaries, aboutPlace, isRendering };
+    }, [renderPages, daySummaries, aboutPlace, isRendering]);
 
     useEffect(() => {
         if (process.env.NODE_ENV !== 'development') return;
+        if (!isOpen) return;
 
-        // @ts-ignore
-        if (typeof module === 'undefined' || !(module as any).hot) return;
+        const container = hiddenContainerRef.current;
+        if (!container) return;
 
-        const handler = (status: string) => {
-            if (status === 'idle') {
-                // HMR has finished applying the update — re-snapshot the DOM
-                setTimeout(() => renderPages(daySummaries, aboutPlace), 100);
-            }
-        };
+        let debounceTimer: NodeJS.Timeout;
 
-        // @ts-ignore
-        (module as any).hot.addStatusHandler(handler);
+        const observer = new MutationObserver(() => {
+            const { isRendering: currentIsRendering } = renderParamsRef.current;
+            if (currentIsRendering) return;
+
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                const { isRendering: latestIsRendering, renderPages: latestRenderPages, daySummaries: latestDaySummaries, aboutPlace: latestAboutPlace } = renderParamsRef.current;
+                if (!latestIsRendering) {
+                    console.log("[PdfPreviewEditor] DOM mutation detected (Fast Refresh). Re-rendering preview...");
+                    latestRenderPages(latestDaySummaries, latestAboutPlace);
+                }
+            }, 300);
+        });
+
+        observer.observe(container, {
+            childList: true,
+            subtree: true,
+            characterData: true,
+            attributes: true,
+        });
+
         return () => {
-            // @ts-ignore
-            if (typeof module !== 'undefined' && (module as any).hot && (module as any).hot.removeStatusHandler) {
-                // @ts-ignore
-                (module as any).hot.removeStatusHandler(handler);
-            }
+            observer.disconnect();
+            clearTimeout(debounceTimer);
         };
-    }, [renderPages, daySummaries]);
+    }, [isOpen]);
 
     // ─── Edit handlers ───
     const toggleForcedBreak = (sectionId: string) => {
@@ -536,16 +553,18 @@ export function PdfPreviewEditor({
     return (
         <>
             {/* Hidden PDF template (layout-active off-screen) */}
-            <div ref={hiddenContainerRef} style={{
-                position: "fixed",
-                top: 0,
-                left: "-9999px",
-                width: "794px",
-                pointerEvents: "none",
-                zIndex: -1,
-            }}>
-                <PdfTemplate {...templateProps} theme={theme} agencySettings={agencySettings} daySummaries={daySummaries} aboutPlace={aboutPlace} />
-            </div>
+            {isOpen && (
+                <div ref={hiddenContainerRef} style={{
+                    position: "fixed",
+                    top: 0,
+                    left: "-9999px",
+                    width: "794px",
+                    pointerEvents: "none",
+                    zIndex: -1,
+                }}>
+                    <PdfTemplate {...templateProps} theme={theme} agencySettings={agencySettings} daySummaries={daySummaries} aboutPlace={aboutPlace} />
+                </div>
+            )}
 
             <Dialog open={isOpen} onOpenChange={onOpenChange}>
                 <DialogContent className="max-w-[96vw] w-full max-h-[96vh] md:max-w-[92vw] md:max-h-[92vh] h-full p-0 flex flex-col bg-zinc-950 border border-zinc-800/80 rounded-xl md:rounded-2xl overflow-hidden shadow-2xl shadow-black/90">

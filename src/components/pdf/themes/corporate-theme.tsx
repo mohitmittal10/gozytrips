@@ -23,12 +23,65 @@ export const CorporateTheme = ({
     const childPax = Number(pricing?.childPax || 0);
     const resolvedBase = baseCost || 0;
     const { costWithMarkup, taxAmount } = calcPricingFromBaseCost(resolvedBase, pricing);
-    
+
     const inclusionsList = parseList(inclusions);
     const exclusionsList = parseList(exclusions);
-    
+
     return (
-        <div style={{ fontFamily: "'Montserrat', 'Helvetica Neue', sans-serif", backgroundColor: "#f8fafc", backgroundImage: `url("${getThematicBackground(itinerary, 'corporate', brandColor)}")`, backgroundRepeat: "repeat", color: "#1e293b", width: "100%" }}>
+        <div className="corporate-wrap" style={{ fontFamily: "'Montserrat', 'Helvetica Neue', sans-serif", backgroundColor: "#f8fafc", backgroundImage: `url("${getThematicBackground(itinerary, 'corporate', brandColor)}")`, backgroundRepeat: "repeat", color: "#1e293b", width: "100%" }}>
+            <style>
+                {`
+                .corporate-wrap *, .corporate-wrap *::before, .corporate-wrap *::after { box-sizing: border-box; }
+
+                .corporate-wrap .table-wrap {
+                    overflow-x: auto;
+                    border-radius: 8px;
+                    border: 1px solid rgba(148,163,184,0.3);
+                    background: rgba(255,255,255,0.8);
+                    margin-bottom: 40px;
+                }
+                .corporate-wrap table { width: 100%; border-collapse: collapse; table-layout: fixed; display: table !important; }
+                .corporate-wrap thead { display: table-header-group !important; }
+                .corporate-wrap tbody { display: table-row-group !important; }
+                .corporate-wrap tr { display: table-row !important; }
+                .corporate-wrap th {
+                    padding: 16px 20px;
+                    font-size: 11px;
+                    color: ${brandColor};
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    font-weight: 800;
+                    border-bottom: 1px solid rgba(148,163,184,0.3);
+                    text-align: left;
+                    display: table-cell !important;
+                }
+                .corporate-wrap th:last-child { text-align: right; }
+                .corporate-wrap th:nth-child(2), .corporate-wrap th:nth-child(3) { text-align: center; }
+                .corporate-wrap td {
+                    padding: 16px 20px;
+                    font-size: 13px;
+                    color: #334155;
+                    font-weight: 500;
+                    border-bottom: 1px solid rgba(148,163,184,0.15);
+                    vertical-align: middle;
+                    display: table-cell !important;
+                }
+                .corporate-wrap tbody tr:last-child td { border-bottom: none; }
+                .corporate-wrap td:first-child { font-weight: 700; color: #0f172a; text-align: left; }
+                .corporate-wrap td:nth-child(2), .corporate-wrap td:nth-child(3) { text-align: center; color: #475569; }
+                .corporate-wrap td:last-child { text-align: right; font-family: var(--font-mono); font-weight: 700; color: #0f172a; }
+
+                .corporate-wrap .invoice-table th:nth-child(1) { width: 55%; }
+                .corporate-wrap .invoice-table th:nth-child(2) { width: 10%; }
+                .corporate-wrap .invoice-table th:nth-child(3) { width: 15%; }
+                .corporate-wrap .invoice-table th:nth-child(4) { width: 20%; }
+
+                .corporate-wrap .payment-table th:nth-child(1) { width: 40%; }
+                .corporate-wrap .payment-table th:nth-child(2) { width: 20%; }
+                .corporate-wrap .payment-table th:nth-child(3) { width: 20%; }
+                .corporate-wrap .payment-table th:nth-child(4) { width: 20%; }
+                `}
+            </style>
             {/* Letterhead — cover section */}
             <div data-pdf-section="cover" style={{ paddingBottom: "10px" }}>
                 <div style={{ background: brandColor, padding: "35px 50px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -98,7 +151,7 @@ export const CorporateTheme = ({
                             </div>
                             <h2 style={{ margin: "0 0 16px 0", fontSize: "24px", color: "#0f172a", fontWeight: 800, letterSpacing: "-0.5px" }}>{aboutPlace.title}</h2>
                             <p style={{ margin: "0 0 20px 0", color: "#475569", fontSize: "13.5px", lineHeight: "1.7", fontWeight: 500 }}>{aboutPlace.description}</p>
-                            
+
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                                 {(aboutPlace.highlights || []).map((hl: string, i: number) => (
                                     <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
@@ -118,7 +171,7 @@ export const CorporateTheme = ({
             <div style={{ padding: "0 50px 50px 50px" }}>
                 {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => (
                     <div key={index} data-pdf-section={`day-${index}`} style={{ marginBottom: "30px", display: "block" }}>
-                        
+
                         {/* Day header with photo */}
                         <div style={{ background: brandColor, color: "white", padding: "0", display: "flex", alignItems: "stretch", borderRadius: "8px 8px 0 0", overflow: "hidden" }}>
                             <img src={getDayImage(day)} alt={formatTitleCase(day.areaFocus)} style={{ width: "120px", height: "70px", objectFit: "cover", display: "block", flexShrink: 0 }} crossOrigin="anonymous" />
@@ -167,7 +220,7 @@ export const CorporateTheme = ({
                     <div style={{ marginBottom: "24px", paddingBottom: "16px", borderBottom: `2px solid ${brandColor}` }}>
                         <h2 style={{ margin: 0, fontSize: "20px", color: brandColor, fontWeight: 800, letterSpacing: "-0.5px" }}>Travel & Logistics</h2>
                     </div>
-                    
+
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
                         {hotels.map((h, i) => (
                             <div key={`hotel-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "rgba(255,255,255,0.7)", borderRadius: "8px" }}>
@@ -260,44 +313,59 @@ export const CorporateTheme = ({
                 <div style={{ marginBottom: "24px", paddingBottom: "16px", borderBottom: `2px solid ${brandColor}` }}>
                     <h2 style={{ margin: 0, fontSize: "20px", color: brandColor, fontWeight: 800, letterSpacing: "-0.5px" }}>Commercials & Schedule</h2>
                 </div>
-
-                <div style={{ background: "rgba(255,255,255,0.8)", border: "1px solid rgba(148,163,184,0.3)", borderRadius: "8px", overflow: "hidden", marginBottom: "40px" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                <div className="table-wrap">
+                    <table className="invoice-table">
+                        <colgroup>
+                            <col style={{ width: '55%' }} />
+                            <col style={{ width: '10%' }} />
+                            <col style={{ width: '15%' }} />
+                            <col style={{ width: '20%' }} />
+                        </colgroup>
                         <thead>
-                            <tr style={{ background: "rgba(15, 23, 42, 0.04)" }}>
-                                <th style={{ padding: "16px 20px", fontSize: "11px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800, borderBottom: "1px solid rgba(148,163,184,0.3)" }}>Description</th>
-                                <th style={{ padding: "16px 20px", fontSize: "11px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800, borderBottom: "1px solid rgba(148,163,184,0.3)", textAlign: "center" }}>Qty</th>
-                                <th style={{ padding: "16px 20px", fontSize: "11px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800, borderBottom: "1px solid rgba(148,163,184,0.3)", textAlign: "right" }}>Amount</th>
+                            <tr>
+                                <th>Description</th>
+                                <th>Qty</th>
+                                <th>Rate</th>
+                                <th>Amount</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td style={{ padding: "16px 20px", fontSize: "13px", color: "#0f172a", fontWeight: 600, borderBottom: "1px solid rgba(148,163,184,0.2)" }}>{isManual ? "Package Cost" : "Itinerary Valuation"} (for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''})</td>
-                                <td style={{ padding: "16px 20px", fontSize: "13px", color: "#475569", textAlign: "center", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>1</td>
-                                <td style={{ padding: "16px 20px", fontSize: "13px", color: "#0f172a", fontWeight: 600, fontFamily: "var(--font-mono)", textAlign: "right", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>{formatCurrency(costWithMarkup, currency)}</td>
-                            </tr>
-                            <tr>
-                                <td style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", borderBottom: "1px solid rgba(148,163,184,0.2)", borderRight: "1px solid rgba(148,163,184,0.2)" }} colSpan={2}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}><span>Subtotal</span><span style={{ fontWeight: 600 }}>{formatCurrency(costWithMarkup, currency)}</span></div>
-                                    <div style={{ display: "flex", justifyContent: "space-between" }}><span>Taxes & Fees</span><span style={{ fontWeight: 600 }}>{formatCurrency(taxAmount, currency)}</span></div>
-                                </td>
-                                <td style={{ padding: "20px", fontSize: "18px", color: brandColor, fontWeight: 800, fontFamily: "var(--font-mono)", textAlign: "right", borderBottom: "1px solid rgba(148,163,184,0.2)", background: "rgba(15, 23, 42, 0.02)" }}>{formatCurrency(finalTotal, currency)}</td>
+                                <td>{isManual ? "Package Cost" : "Itinerary Valuation"} (for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''})</td>
+                                <td>1</td>
+                                <td>{formatCurrency(costWithMarkup, currency)}</td>
+                                <td>{formatCurrency(costWithMarkup, currency)}</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
 
-                <div style={{ display: "flex", gap: "30px" }}>
-                    <div style={{ flex: 1, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden" }}>
-                        <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "14px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
-                            <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Payment Schedule</h3>
-                        </div>
-                        <table style={{ width: "100%", borderCollapse: "collapse", textAlign: "left" }}>
+                <div style={{ background: "rgba(15, 23, 42, 0.02)", border: "1px solid rgba(148,163,184,0.2)", borderTop: "none", padding: "20px 24px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-end", borderRadius: "0 0 8px 8px", marginTop: "-40px", marginBottom: "40px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "13px", color: "#475569" }}><span>Subtotal:</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{formatCurrency(costWithMarkup, currency)}</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "13px", color: "#475569" }}><span>Taxes & Fees:</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{formatCurrency(taxAmount, currency)}</span></div>
+                    <div style={{ width: "260px", height: "1px", background: "rgba(148,163,184,0.3)", margin: "4px 0" }}></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "16px", color: brandColor, fontWeight: 800 }}><span>Grand Total:</span><span style={{ fontFamily: "var(--font-mono)" }}>{formatCurrency(finalTotal, currency)}</span></div>
+                </div>
+
+                {/* Payment Schedule — full width */}
+                <div style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden", marginBottom: "24px" }}>
+                    <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "14px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
+                        <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Payment Schedule</h3>
+                    </div>
+                    <div className="table-wrap" style={{ border: "none", borderRadius: 0, boxShadow: "none", margin: 0 }}>
+                        <table className="payment-table">
+                            <colgroup>
+                                <col style={{ width: '40%' }} />
+                                <col style={{ width: '20%' }} />
+                                <col style={{ width: '20%' }} />
+                                <col style={{ width: '20%' }} />
+                            </colgroup>
                             <thead>
                                 <tr>
-                                    <th style={{ padding: "12px 20px", fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, borderBottom: "1px solid rgba(148,163,184,0.1)" }}>Installment</th>
-                                    <th style={{ padding: "12px 20px", fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, borderBottom: "1px solid rgba(148,163,184,0.1)" }}>Due Date</th>
-                                    <th style={{ padding: "12px 20px", fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, borderBottom: "1px solid rgba(148,163,184,0.1)", textAlign: "right" }}>Amount</th>
+                                    <th>Installment</th>
+                                    <th>Due Date</th>
+                                    <th>Percentage</th>
+                                    <th>Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -305,31 +373,34 @@ export const CorporateTheme = ({
                                     const amount = m.id === 'fallback' ? finalTotal : (finalTotal * m.percentage) / 100;
                                     return (
                                         <tr key={i}>
-                                            <td style={{ padding: "12px 20px", fontSize: "12px", color: "#0f172a", fontWeight: 600, borderBottom: "1px solid rgba(148,163,184,0.1)" }}>{m.name} {m.id !== 'fallback' && `(${m.percentage}%)`}</td>
-                                            <td style={{ padding: "12px 20px", fontSize: "12px", color: "#475569", borderBottom: "1px solid rgba(148,163,184,0.1)" }}>{m.dueDate}</td>
-                                            <td style={{ padding: "12px 20px", fontSize: "12px", color: "#0f172a", fontWeight: 600, fontFamily: "var(--font-mono)", textAlign: "right", borderBottom: "1px solid rgba(148,163,184,0.1)" }}>{formatCurrency(amount, currency)}</td>
+                                            <td>{m.name}</td>
+                                            <td>{m.dueDate}</td>
+                                            <td>{m.id === 'fallback' ? '-' : `${m.percentage}%`}</td>
+                                            <td>{formatCurrency(amount, currency)}</td>
                                         </tr>
                                     );
                                 })}
                             </tbody>
                         </table>
                     </div>
-                    <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "20px" }}>
-                        <div style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden" }}>
-                            <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "12px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
-                                <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Terms & Policies</h3>
-                            </div>
-                            <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
-                                {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>• {p}</div>) : "• Standard cancellation fees apply."}
-                            </div>
+                </div>
+
+                {/* Policies & Methods — below, side by side */}
+                <div style={{ display: "flex", gap: "30px" }}>
+                    <div style={{ flex: 1, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden" }}>
+                        <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "12px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
+                            <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Terms & Policies</h3>
                         </div>
-                        <div style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden" }}>
-                            <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "12px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
-                                <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Accepted Methods</h3>
-                            </div>
-                            <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
-                                {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>• {p}</div>) : "• Bank Transfer, Credit Card."}
-                            </div>
+                        <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
+                            {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>• {p}</div>) : "• Standard cancellation fees apply."}
+                        </div>
+                    </div>
+                    <div style={{ flex: 1, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden" }}>
+                        <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "12px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
+                            <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Accepted Methods</h3>
+                        </div>
+                        <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
+                            {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>• {p}</div>) : "• Bank Transfer, Credit Card."}
                         </div>
                     </div>
                 </div>
@@ -338,7 +409,7 @@ export const CorporateTheme = ({
             {/* Detailed Footer */}
             <div data-pdf-section="footer" style={{ padding: "40px 50px 20px 50px", borderTop: `2px solid ${brandColor}`, background: "white" }}>
                 <h2 style={{ fontSize: "16px", color: brandColor, fontWeight: 800, margin: "0 0 24px 0", letterSpacing: "-0.5px" }}>Agency Remittance Details</h2>
-                
+
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "30px" }}>
                     <div style={{ padding: "16px", background: "rgba(248,250,252,0.8)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "6px" }}>
                         <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, marginBottom: "8px" }}>Bank Account</div>
@@ -348,11 +419,11 @@ export const CorporateTheme = ({
                     </div>
                     <div style={{ padding: "16px", background: "rgba(248,250,252,0.8)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "6px" }}>
                         <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, marginBottom: "8px" }}>Tax Information</div>
-                        <div style={{ fontSize: "11px", color: "#475569" }}>GST Number:<br/><span style={{ color: "#0f172a", fontSize: "13px", fontWeight: 700, display: "inline-block", marginTop: "4px" }}>{agencySettings?.gstNumber || '29GGGGG1314R9Z6'}</span></div>
+                        <div style={{ fontSize: "11px", color: "#475569" }}>GST Number:<br /><span style={{ color: "#0f172a", fontSize: "13px", fontWeight: 700, display: "inline-block", marginTop: "4px" }}>{agencySettings?.gstNumber || '29GGGGG1314R9Z6'}</span></div>
                     </div>
                     <div style={{ padding: "16px", background: "rgba(248,250,252,0.8)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "6px" }}>
                         <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, marginBottom: "8px" }}>UPI Payment</div>
-                        <div style={{ fontSize: "11px", color: "#475569" }}>Scan or Pay to:<br/><span style={{ color: "#0f172a", fontSize: "13px", fontWeight: 700, display: "inline-block", marginTop: "4px" }}>{agencySettings?.upiId || 'YOUR-AGENCY@UP9Z6'}</span></div>
+                        <div style={{ fontSize: "11px", color: "#475569" }}>Scan or Pay to:<br /><span style={{ color: "#0f172a", fontSize: "13px", fontWeight: 700, display: "inline-block", marginTop: "4px" }}>{agencySettings?.upiId || 'YOUR-AGENCY@UP9Z6'}</span></div>
                     </div>
                 </div>
 
