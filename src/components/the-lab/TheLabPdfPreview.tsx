@@ -15,7 +15,6 @@ interface TheLabPdfPreviewProps {
   tripTitle: string;
   clientName?: string;
   showTimestamps?: boolean;
-  showPrices?: boolean;
   inclusions?: string;
   exclusions?: string;
   termsAndConditions?: string;
@@ -40,7 +39,6 @@ export function TheLabPdfPreview({
   tripTitle,
   clientName,
   showTimestamps,
-  showPrices,
   inclusions,
   exclusions,
   termsAndConditions,
@@ -69,7 +67,6 @@ export function TheLabPdfPreview({
         pricing,
         baseCost,
         showTimestamps,
-        showPrices,
         inclusions,
         exclusions,
         termsAndConditions,

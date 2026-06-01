@@ -67,6 +67,7 @@ export function CrmApp() {
                                     { id: 'timeline', icon: Calendar, label: 'Timeline' },
                                     { id: 'finance', icon: DollarSign, label: 'Finances' },
                                     { id: 'enquiry', icon: Mail, label: 'Enquiry' },
+                                    { id: 'client-forms', icon: FileText, label: 'Client Forms' },
                                     { id: 'archive', icon: Archive, label: 'Archive' }
                                 ].map((tab) => (
                                     <Button key={tab.id} onClick={() => setActiveTab(tab.id)} variant={activeTab === tab.id ? 'secondary' : 'ghost'} className={cn("w-full justify-start h-10 px-3 hover:bg-white/10 transition-all group", activeTab === tab.id ? "bg-white/10 text-white" : "text-gray-400 hover:text-white", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
@@ -106,6 +107,7 @@ export function CrmApp() {
                                     { id: 'timeline', icon: Calendar, label: 'Timeline' },
                                     { id: 'finance', icon: DollarSign, label: 'Fin' },
                                     { id: 'enquiry', icon: Mail, label: 'Enquiry' },
+                                    { id: 'client-forms', icon: FileText, label: 'Forms' },
                                     { id: 'archive', icon: Archive, label: 'Archive' }
                                 ].map((tab) => (
                                     <button
@@ -139,6 +141,7 @@ export function CrmApp() {
                                     {activeTab === 'archive' && <Archive className="w-8 h-8 text-purple-400" />}
                                     {activeTab === 'finance' && <DollarSign className="w-8 h-8 text-purple-400" />}
                                     {activeTab === 'enquiry' && <Info className="w-8 h-8 text-purple-400" />}
+                                    {activeTab === 'client-forms' && <FileText className="w-8 h-8 text-purple-400" />}
                                     {activeTab === 'timeline' && <Calendar className="w-8 h-8 text-purple-400" />}
                                     { activeTab === 'edit-itinerary' && <FileText className="w-8 h-8 text-purple-400" />}
                                     {activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace('-', ' ')}
@@ -147,6 +150,7 @@ export function CrmApp() {
                                     {activeTab === 'dashboard' ? 'Overview of your workspace performance' :
                                      activeTab === 'clients' ? 'Manage your client base and contact details' :
                                      activeTab === 'trips' ? 'Monitor your active trip pipeline' :
+                                     activeTab === 'client-forms' ? 'Create client enquiry forms and track responses' :
                                      'Manage your travel operations efficiency'}
                                 </p>
                             </div>

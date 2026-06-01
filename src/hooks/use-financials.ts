@@ -268,7 +268,7 @@ export function useFinancials(
                     childPax: it.child_pax ?? 0,
                     infantPax: it.infant_pax ?? 0,
                     costingType:
-                        (it.costing_type as TripFinancial["costingType"]) ?? "automatic",
+                        (it.costing_type as TripFinancial["costingType"]) ?? "manual",
                     createdAt: it.created_at ?? new Date().toISOString(),
                     updatedAt: it.updated_at ?? new Date().toISOString(),
                 };

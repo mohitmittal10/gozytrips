@@ -26,6 +26,8 @@ import { vendorEnquiryService } from "@/services/itinerary";
 import { useVendorEnquiryAi } from "@/hooks/use-vendor-enquiry-ai";
 import { FormField } from "@/components/ui/form-field";
 import { EnquiryHistory } from "@/components/vendor/EnquiryHistory";
+import { validateEmail } from "@/lib/security/input-sanitizer";
+
 
 const ICON_MAP: Record<string, any> = {
   Building2, Car, Compass, FileCheck, Shield, Sparkles
@@ -290,14 +292,66 @@ export default function VendorEnquiry() {
 
   // ── Generate ──────────────────────────────────────────────────────────────
 
-  const onGenerate = async () => {
-    if (!destination.trim() || !travelDates.trim()) {
-      toast({ variant: "destructive", title: "Missing Info", description: "Please fill in destination and travel dates." });
-      return;
+  // ── Client-side validation ────────────────────────────────────────────────
+
+  const validateForm = (): boolean => {
+    const errors: string[] = [];
+
+    if (!destination.trim()) {
+      errors.push('Destination is required.');
+    } else if (destination.trim().length > 200) {
+      errors.push('Destination is too long (max 200 characters).');
     }
 
+    if (!travelDates.trim()) {
+      errors.push('Travel dates are required.');
+    } else if (travelDates.trim().length > 100) {
+      errors.push('Travel dates are too long (max 100 characters).');
+    }
+
+    const adultsNum = parseInt(adults);
+    if (isNaN(adultsNum) || adultsNum < 1 || adultsNum > 200) {
+      errors.push('Number of adults must be between 1 and 200.');
+    }
+
+    if (vendorEmail.trim() && !validateEmail(vendorEmail.trim())) {
+      errors.push('Vendor email must be a valid email address.');
+    }
+
+    if (specialRequests.trim().length > 500) {
+      errors.push('Special requests are too long (max 500 characters).');
+    }
+
+    // Type-specific validations
+    if (enquiryType === 'hotel') {
+      if (hotelName.trim().length > 200) errors.push('Hotel name is too long (max 200 characters).');
+      const rooms = parseInt(numberOfRooms);
+      if (isNaN(rooms) || rooms < 1 || rooms > 100) errors.push('Number of rooms must be between 1 and 100.');
+    }
+    if (enquiryType === 'transport') {
+      if (route.trim().length > 200) errors.push('Route description is too long (max 200 characters).');
+      if (pickupLocation.trim().length > 200) errors.push('Pickup location is too long (max 200 characters).');
+    }
+    if (enquiryType === 'activities') {
+      if (activityName.trim().length > 200) errors.push('Activity name is too long (max 200 characters).');
+    }
+
+    if (errors.length > 0) {
+      toast({
+        variant: 'destructive',
+        title: 'Please fix the following',
+        description: errors[0], // Show first error; server will catch any remaining
+      });
+      return false;
+    }
+    return true;
+  };
+
+  const onGenerate = async () => {
+    if (!validateForm()) return;
+
     const input: VendorEnquiryInput = {
-      enquiryType,
+      enquiryType: enquiryType as any,
       agentName: userProfile?.full_name || "Travel Agent",
       agentCompany: userProfile?.company_name || undefined,
       destination: destination.trim(),
@@ -327,6 +381,7 @@ export default function VendorEnquiry() {
       // toast handled in hook
     }
   };
+
 
   // ── Send via Gmail ────────────────────────────────────────────────────────
 

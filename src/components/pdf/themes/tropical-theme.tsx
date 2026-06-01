@@ -20,7 +20,6 @@ export type TropicalThemeProps = {
     baseCost?: number;
     finalTotal?: number;
     showTimestamps?: boolean;
-    showPrices?: boolean;
     inclusions?: string;
     exclusions?: string;
     termsAndConditions?: string;
@@ -44,7 +43,6 @@ export const TropicalTheme = ({
     baseCost = 0,
     finalTotal = 0,
     showTimestamps = true,
-    showPrices = true,
     inclusions,
     exclusions,
     termsAndConditions,
@@ -766,7 +764,7 @@ export const TropicalTheme = ({
                             <p>An exquisite escape perfectly designed for you.</p>
                             <div className="pills">
                                 <span className="pill">{totalDays} Days • {totalNights} Nights</span>
-                                {showPrices !== false && (
+                                {(
                                     <span className="pill">Total {formatCurrency(finalTotal, pricing?.currency || DEFAULT_CURRENCY)}</span>
                                 )}
                             </div>

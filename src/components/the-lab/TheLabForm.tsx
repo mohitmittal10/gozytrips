@@ -121,20 +121,25 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
       <div className="grid grid-cols-2 gap-4">
-        <FormField control={form.control} name="budget" render={({ field }) => (
-          <FormItem className="space-y-1 flex flex-col">
-            <div className="flex items-center justify-between">
-              <FormLabel className={cn(LabelClass, "mb-0")}>Budget ({currencySymbol})</FormLabel>
-              <FormField control={form.control} name="strictBudget" render={({ field: strictField }) => (
-                <div className="flex items-center gap-1.5" title="Enforce strict budget in generation">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Strict</span>
-                  <Switch className="scale-75 origin-right" checked={!!strictField.value} onCheckedChange={strictField.onChange} />
-                </div>
-              )} />
-            </div>
-            <FormControl>
-              <Input type="number" placeholder="Total budget" {...field} value={field.value || ''} className="h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl" />
-            </FormControl>
+        <FormField control={form.control} name="tripType" render={({ field }) => (
+          <FormItem className="space-y-1">
+            <FormLabel className={LabelClass}>Trip Type</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger className="h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl">
+                  <SelectValue placeholder="Select type" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent className="bg-zinc-900 border-white/10">
+                <SelectItem value="adventurous">Adventurous</SelectItem>
+                <SelectItem value="scenic">Scenic</SelectItem>
+                <SelectItem value="relaxed">Relaxed</SelectItem>
+                <SelectItem value="cultural">Cultural</SelectItem>
+                <SelectItem value="romantic">Romantic</SelectItem>
+                <SelectItem value="family">Family</SelectItem>
+                <SelectItem value="foodie">Foodie</SelectItem>
+              </SelectContent>
+            </Select>
             <FormMessage className="text-[10px]" />
           </FormItem>
         )} />

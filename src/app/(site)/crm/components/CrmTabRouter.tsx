@@ -13,6 +13,7 @@ import { BookingsView } from "./BookingsView";
 import { TimelineView } from "./TimelineView";
 import { FinanceView } from "./FinanceView";
 import { EnquiryView } from "./EnquiryView";
+import { ClientFormsView } from "./ClientFormsView";
 import { EditItineraryView } from "./EditItineraryView";
 import { TripsView } from "./TripsView";
 import { getAvatarColor } from "@/lib/utils";
@@ -187,6 +188,7 @@ export function CrmTabRouter() {
     }
 
     if (activeTab === 'enquiry') return <EnquiryView />;
+    if (activeTab === 'client-forms') return <ClientFormsView />;
     
     if (activeTab === 'bookings') return <BookingsView
         bookings={data.bookings}

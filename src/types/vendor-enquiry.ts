@@ -1,4 +1,4 @@
-import { LucideIcon } from "lucide-react";
+import { type ComponentType } from "react";
 
 export type EnquiryType = string;
 
@@ -41,7 +41,7 @@ export interface VendorEnquiry {
 export interface EnquiryTypeOption {
   value: string;
   label: string;
-  icon: LucideIcon;
+  icon: ComponentType<any>;
   color: string;
   bg: string;
   border: string;

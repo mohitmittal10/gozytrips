@@ -14,7 +14,7 @@ export const getAgentInfo = (userProfile: any, agencySettings?: any) => ({
 export const getTotalBudget = (itinerary: TravelItineraryOutput) => {
     if (!itinerary?.itinerary || !Array.isArray(itinerary.itinerary)) return 0;
     return itinerary.itinerary.reduce((sum, day) => {
-        const raw = String(day.dailyStats?.totalCost || '0');
+        const raw = String((day as any).dailyStats?.totalCost || '0');
         const digits = raw.replace(/[₹$€£,]/g, '').match(/\d+(\.\d+)?/);
         return sum + (digits ? parseFloat(digits[0]) : 0);
     }, 0);

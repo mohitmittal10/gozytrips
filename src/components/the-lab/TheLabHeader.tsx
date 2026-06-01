@@ -18,8 +18,6 @@ interface TheLabHeaderProps {
   setSelectedStatus: (status: string) => void;
   showTimestamps: boolean;
   setShowTimestamps: (show: boolean) => void;
-  showPrices: boolean;
-  setShowPrices: (show: boolean) => void;
   isEditing: boolean;
   setIsEditing: (editing: boolean) => void;
   handleDownloadPdf: () => void;
@@ -30,8 +28,9 @@ interface TheLabHeaderProps {
 
 const TheLabHeader = React.memo(function TheLabHeader({
   itinerary, clients, selectedClientId, setSelectedClientId,
-  selectedStatus, setSelectedStatus, showTimestamps, setShowTimestamps,
-  showPrices, setShowPrices, isEditing, setIsEditing,
+  selectedStatus, setSelectedStatus,
+  showTimestamps, setShowTimestamps,
+  isEditing, setIsEditing,
   handleDownloadPdf, handleSaveItinerary, isSaving,
   activeLabTab
 }: TheLabHeaderProps) {
@@ -92,18 +91,6 @@ const TheLabHeader = React.memo(function TheLabHeader({
               />
               <label htmlFor="show-timestamps-header" className="text-[10px] font-bold uppercase text-zinc-500 select-none cursor-pointer">
                 Time
-              </label>
-            </div>
-            
-            <div className="flex items-center space-x-2 px-2 py-1">
-              <Switch
-                id="show-prices-header"
-                checked={showPrices}
-                onCheckedChange={setShowPrices}
-                className="scale-75"
-              />
-              <label htmlFor="show-prices-header" className="text-[10px] font-bold uppercase text-zinc-500 select-none cursor-pointer">
-                Price
               </label>
             </div>
           </div>

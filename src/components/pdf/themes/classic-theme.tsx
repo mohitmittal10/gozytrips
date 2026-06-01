@@ -22,7 +22,6 @@ export type ThemeProps = {
     baseCost?: number;
     finalTotal?: number;
     showTimestamps?: boolean;
-    showPrices?: boolean;
     inclusions?: string;
     exclusions?: string;
     termsAndConditions?: string;
@@ -53,7 +52,7 @@ const TIMELINE_COL_WIDTH = 82;
 const TIMELINE_GAP = 24;
 
 export const ClassicTheme = ({
-    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, showPrices = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace
+    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace
 }: ThemeProps) => {
     const rgbAccent = hexToRgb(agent.primaryColor || "#a855f7");
     const currency = pricing?.currency || DEFAULT_CURRENCY;
@@ -273,7 +272,7 @@ export const ClassicTheme = ({
 
                                 </div>
                             ))}
-                            {showPrices !== false && (day as any).dailyStats?.totalCost && (!(itinerary as any).pricing || (itinerary as any).pricing.costingType !== 'manual') && (
+                            {(day as any).dailyStats?.totalCost && (!(itinerary as any).pricing || (itinerary as any).pricing.costingType !== 'manual') && (
                                 <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #e2e8f0", display: "flex", gap: "20px", fontSize: "13px", color: "#64748b", fontWeight: 700 }}>
                                     <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "6px 16px", borderRadius: "8px", display: "inline-flex", alignItems: "center" }}>
                                         💰 Day Cost: {formatCurrency((day as any).dailyStats?.totalCost, (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}

@@ -33,7 +33,6 @@ export interface PdfTemplateProps {
     pricing?: PricingConfig;
     baseCost?: number;
     showTimestamps?: boolean;
-    showPrices?: boolean;
     inclusions?: string;
     exclusions?: string;
     termsAndConditions?: string;
@@ -45,7 +44,7 @@ export interface PdfTemplateProps {
 }
 
 /* ═════════ MAIN EXPORTED COMPONENT ═════════ */
-export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencySettings, theme = 'classic', hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, showTimestamps = true, showPrices = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace }: PdfTemplateProps) => {
+export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencySettings, theme = 'classic', hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace }: PdfTemplateProps) => {
     if (!itinerary || !itinerary.itinerary) return null;
 
     const agent = getAgentInfo(userProfile, agencySettings);
@@ -70,7 +69,7 @@ export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencyS
     const resolvedPaymentMethods = paymentMethods ?? (itinerary as any).paymentMethods;
 
     const themeProps = {
-        itinerary, title: displayTitle, clientName, agencySettings, agent, hotels, flights, cabs, buses, finalTotal, showTimestamps, showPrices, inclusions: resolvedInclusions, exclusions: resolvedExclusions, termsAndConditions: resolvedTerms, cancellationPolicy: resolvedCancellation, paymentMethods: resolvedPaymentMethods, pricing: pricingCfg, baseCost: resolvedBaseCost, daySummaries, aboutPlace
+        itinerary, title: displayTitle, clientName, agencySettings, agent, hotels, flights, cabs, buses, finalTotal, showTimestamps, inclusions: resolvedInclusions, exclusions: resolvedExclusions, termsAndConditions: resolvedTerms, cancellationPolicy: resolvedCancellation, paymentMethods: resolvedPaymentMethods, pricing: pricingCfg, baseCost: resolvedBaseCost, daySummaries, aboutPlace
     };
 
     let ThemeComponent;

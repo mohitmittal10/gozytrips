@@ -22,11 +22,13 @@ export function useItineraryPricing(): PricingBreakdown {
         itinerary: state.itinerary,
         hotels: state.hotels,
         flights: state.flights,
+        cabs: state.cabs,
+        buses: state.buses,
         pricing: state.pricing,
       }),
     // Recalculate whenever any cost-bearing field changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [state.itinerary, state.hotels, state.flights, state.pricing]
+    [state.itinerary, state.hotels, state.flights, state.cabs, state.buses, state.pricing]
   );
 }
 

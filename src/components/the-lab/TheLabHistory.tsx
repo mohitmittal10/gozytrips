@@ -79,7 +79,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
         .order("last_activity_at", { ascending: false });
 
       if (error) throw error;
-      setItineraries(data || []);
+      setItineraries((data as any) || []);
       setError(null);
     } catch (err: any) {
       console.error("Failed to fetch itinerary history:", err);

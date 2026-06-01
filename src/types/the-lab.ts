@@ -1,27 +1,55 @@
 // Type definitions and Zod Schema for TheLab module
 import { z } from "zod";
+import { sanitizeText } from "@/lib/security/input-sanitizer";
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
 import { type HotelInfo, type FlightInfo, type CabInfo, type BusInfo } from "@/components/hotel-flight-editor";
 import { type PricingConfig } from "@/types/pricing";
 
+// Regex: location names — letters, spaces, commas, hyphens, apostrophes, dots
+const LOCATION_REGEX = /^[a-zA-Z\s,\.\-'\u00C0-\u024F]+$/;
+
 export const formSchema = z.object({
-  startingLocation: z.string().min(2, "Starting location is required."),
-  endingLocation: z.string().optional(),
+  startingLocation: z
+    .string()
+    .min(2, "Starting location is required.")
+    .max(100, "Starting location is too long (max 100 characters).")
+    .refine((v) => LOCATION_REGEX.test(v.trim()), "Location names should only contain letters, spaces, and punctuation."),
+  endingLocation: z
+    .string()
+    .max(100, "Ending location is too long (max 100 characters).")
+    .optional()
+    .refine((v) => !v || LOCATION_REGEX.test(v.trim()), "Location names should only contain letters, spaces, and punctuation."),
   startDate: z.date({ required_error: "Start date is required." }),
   endDate: z.date({ required_error: "End date is required." }),
-  destinations: z.string().min(2, "At least one destination is required."),
-  budget: z.preprocess(
-    (val) => (val === "" || val === undefined || val === null ? undefined : val),
-    z.coerce.number().int().positive("Budget must be a positive number.").optional()
-  ),
-  strictBudget: z.boolean().default(false),
+  destinations: z
+    .string()
+    .min(2, "At least one destination is required.")
+    .max(300, "Destinations list is too long (max 300 characters).")
+    .transform((v) => sanitizeText(v, 300)),
+  tripType: z.enum([
+    "adventurous",
+    "scenic",
+    "relaxed",
+    "cultural",
+    "romantic",
+    "family",
+    "foodie"
+  ]).default("relaxed"),
   travelMethods: z.array(z.string()).default([]),
-  mustInclude: z.string().optional(),
-  avoid: z.string().optional(),
+  mustInclude: z
+    .string()
+    .max(500, "Must-include list is too long (max 500 characters).")
+    .optional()
+    .transform((v) => sanitizeText(v, 500)),
+  avoid: z
+    .string()
+    .max(500, "Avoid list is too long (max 500 characters).")
+    .optional()
+    .transform((v) => sanitizeText(v, 500)),
   leisureTime: z.boolean().default(false),
   leisureDay: z.preprocess(
     (val) => (val === "" || val === undefined || val === null ? undefined : val),
-    z.coerce.number().int().positive().optional()
+    z.coerce.number().int().positive().max(30, "Day number is too large.").optional()
   ),
   travelTimePreference: z.enum([
     "no_preference",
@@ -41,6 +69,8 @@ export type ActiveLabTab = 'itinerary' | 'flights-hotels' | 'inclusions' | 'pric
 
 export interface TripMetadata extends Partial<TheLabFormValues> {
   // Can carry any parsed metadata
+  budget?: number | null;
+  strictBudget?: boolean;
 }
 
 export interface LoadedPersistenceData {
@@ -55,7 +85,6 @@ export interface LoadedPersistenceData {
   selectedStatus: string;
   tripMetadata: TripMetadata | null;
   showTimestamps: boolean;
-  showPrices: boolean;
   selectedTheme: string;
   pdfOverrides: Record<string, any>;
   draftSourceItineraryId?: string | null;

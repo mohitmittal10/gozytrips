@@ -61,7 +61,6 @@ type ItineraryTimelineProps = {
   cabs?: CabInfo[];
   buses?: BusInfo[];
   showTimestamps?: boolean;
-  showPrices?: boolean;
   currency?: string;
   destinations?: string;
 };
@@ -90,7 +89,6 @@ function SortableActivity({
   onDeleteStep,
   onEditingChange,
   showTimestamps,
-  showPrices,
   currencySymbol,
   fallbackPhotos,
 }: {
@@ -102,7 +100,6 @@ function SortableActivity({
   onDeleteStep: () => void;
   onEditingChange?: (editing: boolean) => void;
   showTimestamps?: boolean;
-  showPrices?: boolean;
   currencySymbol?: string;
   fallbackPhotos: string[];
 }) {
@@ -171,19 +168,6 @@ function SortableActivity({
                     />
                   ) : <div className="text-[10px] font-black text-primary tracking-widest uppercase opacity-0 mt-0.5">-</div>}
                   
-                  {showPrices !== false && (
-                    <div className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 rounded-full text-[9px] font-black shadow-lg flex items-center gap-1">
-                      <span>{currencySymbol}</span>
-                      <InlineEdit
-                        value={step.cost !== undefined ? String(step.cost) : ""}
-                        onSave={(v) => onUpdateStep("cost", v ? Number(v) : undefined)}
-                        onEditStart={() => onEditingChange?.(true)}
-                        className="min-w-[1.5rem]"
-                        inputClassName="text-[9px]"
-                        placeholder="0"
-                      />
-                    </div>
-                  )}
                 </div>
                 
                 <InlineEdit
@@ -278,7 +262,6 @@ const ItineraryTimeline = ({
   cabs = [],
   buses = [],
   showTimestamps = true,
-  showPrices = true,
   currency,
   destinations,
 }: ItineraryTimelineProps) => {
@@ -648,7 +631,6 @@ const ItineraryTimeline = ({
                               onDeleteStep={() => deleteStep(dayIndex, stepIndex)}
                               onEditingChange={onEditingChange}
                               showTimestamps={showTimestamps}
-                              showPrices={showPrices}
                               currencySymbol={currencySymbol}
                               fallbackPhotos={fallbackPhotos}
                             />

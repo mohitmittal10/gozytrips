@@ -96,7 +96,7 @@ export const DesertFooter = ({ agent, agencySettings }: { agent: ThemeProps["age
 );
 
 export const DesertTheme = ({
-    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, showPrices = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace
+    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace
 }: ThemeProps) => {
     const days = itinerary.itinerary?.length || 0;
     const nights = getNightsLabel(days);

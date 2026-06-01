@@ -6,10 +6,11 @@ import { useForm } from "react-hook-form";
 import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import { Sparkles, X, Zap } from "lucide-react";
 import UniqueLoading from "@/components/ui/morph-loading";
 import { ShiningText } from "@/components/ui/shining-text";
 import { cn } from "@/lib/utils";
+import type { ClientEnquiryResponse } from "@/types/enquiry";
 
 import { useAuth } from "@/contexts/auth-context";
 import { createClient } from "@/lib/supabase/client";
@@ -39,13 +40,14 @@ export default function TheLab() {
   const searchParams = useSearchParams();
   const itineraryIdFromUrl = searchParams.get('itineraryId');
   const queryFromUrl = searchParams.get('q');
-  
+  const enquiryIdFromUrl = searchParams.get('enquiry');
+
   const [activeLabTab, setActiveLabTab] = useState<ActiveLabTab>(itineraryIdFromUrl ? 'itinerary' : 'new');
+  const [enquiryBanner, setEnquiryBanner] = useState<{ clientName: string; responseId: string } | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showTimestamps, setShowTimestamps] = useState(true);
-  const [showPrices, setShowPrices] = useState(true);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
 
@@ -122,7 +124,6 @@ export default function TheLab() {
       setSelectedStatus(loadedData.selectedStatus);
       setTripMetadata(loadedData.tripMetadata);
       setShowTimestamps(loadedData.showTimestamps ?? true);
-      setShowPrices(loadedData.showPrices ?? true);
       if (loadedData.selectedTheme) setSelectedTheme(loadedData.selectedTheme as PdfTheme);
       if (loadedData.pdfOverrides) setPdfOverrides(loadedData.pdfOverrides);
       setInclusions(loadedData.inclusions || "");
@@ -146,6 +147,49 @@ export default function TheLab() {
     }
   }, [loadedData, setItinerary, form, queryFromUrl]);
 
+  // Pre-fill form from ?enquiry=<responseId> (client enquiry → itinerary one-click flow)
+  useEffect(() => {
+    if (!enquiryIdFromUrl) return;
+
+    const prefillFromEnquiry = async () => {
+      try {
+        // Fetch the response — the agent must be authenticated (existing session)
+        // We use the client_enquiry_responses table indirectly via the public API.
+        // Since only the agent reads this, we need their own API.
+        const res = await fetch(`/api/enquiry-responses/${enquiryIdFromUrl}/prefill`);
+        if (!res.ok) return;
+        const { response }: { response: ClientEnquiryResponse } = await res.json();
+
+        // Map response fields → TheLabFormValues
+        const prefillValues: Partial<any> = {
+          startingLocation: response.starting_location || "",
+          destinations: response.destinations || "",
+          endingLocation: response.ending_location || "",
+          startDate: response.start_date ? new Date(response.start_date) : undefined,
+          endDate: response.end_date ? new Date(response.end_date) : undefined,
+          tripType: response.trip_type || "relaxed",
+          travelMethods: response.travel_methods || [],
+          mustInclude: response.must_include || "",
+          avoid: response.avoid || "",
+          leisureTime: response.leisure_time ?? false,
+          leisureDay: response.leisure_day ?? undefined,
+          travelTimePreference: response.travel_time_preference || "no_preference",
+        };
+
+        form.reset(prefillValues as any);
+        setEnquiryBanner({
+          clientName: response.client_name || response.client_email,
+          responseId: enquiryIdFromUrl,
+        });
+      } catch (err) {
+        console.error("[TheLab] Failed to pre-fill from enquiry:", err);
+      }
+    };
+
+    prefillFromEnquiry();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enquiryIdFromUrl]);
+
   // Cleanup legacy localStorage keys one-time
   useEffect(() => {
     const legacyKeys = [
@@ -157,8 +201,8 @@ export default function TheLab() {
   }, []);
 
   useEffect(() => {
-    saveAll({ itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, showPrices, selectedTheme, pdfOverrides, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods });
-  }, [itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, showPrices, selectedTheme, pdfOverrides, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, saveAll]);
+    saveAll({ itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, selectedTheme, pdfOverrides, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods });
+  }, [itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, selectedTheme, pdfOverrides, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, saveAll]);
 
   // Auto-sync form changes to persistence
   useEffect(() => {
@@ -259,6 +303,27 @@ export default function TheLab() {
 
   return (
     <section id="the-lab" className="w-full mx-auto pt-0 pb-10">
+      {/* Enquiry pre-fill banner */}
+      {enquiryBanner && (
+        <div className="w-full bg-gradient-to-r from-purple-600/20 to-indigo-600/20 border-b border-purple-500/30 px-4 py-2.5">
+          <div className="max-w-[1500px] mx-auto flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-sm">
+              <Zap className="w-4 h-4 text-purple-400 shrink-0" />
+              <span className="text-gray-200">
+                Form pre-filled from{" "}
+                <span className="text-purple-300 font-semibold">{enquiryBanner.clientName}</span>'s enquiry —{" "}
+                <span className="text-gray-400">review and click Generate!</span>
+              </span>
+            </div>
+            <button
+              onClick={() => setEnquiryBanner(null)}
+              className="text-gray-500 hover:text-white transition-colors shrink-0"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
       {isViewingItinerary && (itinerary?.itinerary?.length ?? 0) > 0 && (
         <div className="w-full sticky top-0 z-50 bg-[#050505]/80 backdrop-blur-xl border-b border-white/5">
           <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -271,12 +336,10 @@ export default function TheLab() {
               setSelectedStatus={handleStatusChangeAction} 
               showTimestamps={showTimestamps} 
               setShowTimestamps={setShowTimestamps} 
-              showPrices={showPrices} 
-              setShowPrices={setShowPrices} 
               isEditing={isEditing} 
               setIsEditing={setIsEditing} 
               handleDownloadPdf={() => setIsPreviewOpen(true)} 
-              handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
+              handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
               isSaving={isSaving} 
               activeLabTab={activeLabTab}
             />
@@ -333,11 +396,10 @@ export default function TheLab() {
                     buses={buses} 
                     setBuses={setBuses} 
                     showTimestamps={showTimestamps} 
-                    showPrices={showPrices} 
                     pricing={pricing} 
                     setPricing={setPricing} 
                     agencySettings={null} 
-                    handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, showPrices, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
+                    handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
                     isSaving={isSaving} 
                     setCurrentTripId={setCurrentTripId} 
                     setActiveLabTab={setActiveLabTab} 
@@ -390,7 +452,6 @@ export default function TheLab() {
         tripTitle={tripTitle}
         clientName={clientName}
         showTimestamps={showTimestamps}
-        showPrices={showPrices}
         inclusions={inclusions}
         exclusions={exclusions}
         termsAndConditions={termsAndConditions}

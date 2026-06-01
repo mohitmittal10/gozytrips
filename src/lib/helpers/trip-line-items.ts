@@ -1,6 +1,5 @@
 // Pure helper function for seeding trip line items into database or memory
 // Reusable across TheLab and CRM
-import { type TripLineItem } from "@/types/financial"; // TODO: verify import path if TripLineItem exists
 
 export function buildLineItems({
   activeTripId,

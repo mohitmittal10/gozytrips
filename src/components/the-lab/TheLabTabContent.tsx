@@ -57,7 +57,6 @@ interface TheLabTabContentProps {
   buses: any[];
   setBuses: (val: any[]) => void;
   showTimestamps: boolean;
-  showPrices: boolean;
   pricing: any;
   setPricing: (val: any) => void;
   agencySettings: any;
@@ -87,7 +86,7 @@ interface TheLabTabContentProps {
 const TheLabTabContent = React.memo(function TheLabTabContent({
   activeLabTab, isGenerating, itinerary, setItinerary,
   isEditing, setIsEditing, hotels, setHotels, flights, setFlights, cabs, setCabs, buses, setBuses,
-  showTimestamps, showPrices, pricing, setPricing, 
+  showTimestamps, pricing, setPricing, 
   agencySettings, handleSaveItinerary, isSaving,
   setCurrentTripId, setActiveLabTab,
   form, currentStep, setCurrentStep, onNext, onSubmit,
@@ -125,7 +124,6 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
               cabs={cabs}
               buses={buses}
               showTimestamps={showTimestamps}
-              showPrices={showPrices}
               currency={pricing?.currency}
               destinations={form?.getValues?.()?.destinations || itinerary?.destinations}
             />
@@ -134,7 +132,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
       )}
 
       {/* Tab Content - Inclusions */}
-      {activeLabTab === 'inclusions' && (
+      {activeLabTab === 'inclusions' && itinerary?.itinerary?.length > 0 && (
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Inclusions editor failed to load.">
           <TheLabInclusions
             inclusions={inclusions}
@@ -152,7 +150,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
       )}
 
       {/* Tab Content - Logistics (Hotels & Flights) */}
-      {activeLabTab === 'flights-hotels' && !isGenerating && (
+      {activeLabTab === 'flights-hotels' && !isGenerating && itinerary?.itinerary?.length > 0 && (
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Logistics editor failed to load.">
           <MemoizedHotelFlightEditor
             hotels={hotels}
@@ -170,7 +168,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
       )}
 
       {/* Tab Content - Financials (Pricing) */}
-      {activeLabTab === 'pricing' && !isGenerating && (
+      {activeLabTab === 'pricing' && !isGenerating && itinerary?.itinerary?.length > 0 && (
         <ItineraryErrorBoundary onReset={() => setPricing(undefined)} fallbackMessage="Pricing module failed to load.">
           <ItineraryProvider
             key={JSON.stringify(itinerary?.itinerary?.length)}

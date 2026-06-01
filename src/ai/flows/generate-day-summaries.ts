@@ -9,23 +9,26 @@
 import { ai } from '@/ai/genkit';
 import { googleAI } from '@genkit-ai/google-genai';
 import { z } from 'zod';
+import { checkRateLimit } from '@/lib/security/rate-limiter';
+
 
 const DayInputSchema = z.object({
-  day: z.number(),
-  date: z.string(),
-  areaFocus: z.string(),
+  day: z.number().min(1).max(60),
+  date: z.string().max(20),
+  areaFocus: z.string().max(200),
   timeline: z.array(
     z.object({
-      time: z.string(),
-      details: z.string(),
+      time: z.string().max(20),
+      details: z.string().max(500),
     })
-  ),
+  ).max(20),
 });
 
 const GenerateDaySummariesInputSchema = z.object({
-  days: z.array(DayInputSchema),
-  destination: z.string().optional(),
+  days: z.array(DayInputSchema).max(60),
+  destination: z.string().max(300).optional(),
 });
+
 
 export type GenerateDaySummariesInput = z.infer<typeof GenerateDaySummariesInputSchema>;
 
@@ -92,8 +95,7 @@ const generateDaySummariesFlow = ai.defineFlow(
 );
 
 /**
- * Public server action. No auth guard — this is a lightweight formatting call
- * triggered from the client PDF preview dialog.
+ * Public server action. Auth-guarded to prevent quota abuse.
  */
 export async function generateDaySummaries(
   input: GenerateDaySummariesInput
@@ -101,5 +103,15 @@ export async function generateDaySummaries(
   if (!input.days || input.days.length === 0) {
     return { summaries: [] };
   }
+
+  // ── Security: Auth guard (previously missing!) ────────────────────────────
+  const { createServerComponentClient } = await import('@/lib/supabase/server');
+  const supabase = await createServerComponentClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Unauthorized: You must be logged in.');
+
+  // ── Security: Rate limiting ────────────────────────────────────────────────
+  await checkRateLimit(user.id, 'day_summaries');
+
   return generateDaySummariesFlow(input);
 }

@@ -17,6 +17,8 @@ import { useFormDraft } from "@/hooks/use-form-draft";
 import UniqueLoading from "@/components/ui/morph-loading";
 import Link from "next/link";
 import BackupSettings from "./backup-settings";
+import { validateEmail, validatePhone, validateUrl, validateGST, validateHexColor, sanitizeText } from "@/lib/security/input-sanitizer";
+
 
 const DEFAULT_CURRENCIES = [
   { value: "INR", label: "Indian Rupee (INR)" },
@@ -174,14 +176,101 @@ export function UnifiedSettings() {
 
   if (!user) return null;
 
+  const validateSettings = (): { valid: boolean; errors: string[] } => {
+    const errors: string[] = [];
+
+    // Profile field validations
+    if (!profileData.full_name.trim()) {
+      errors.push('Agent name is required.');
+    } else if (profileData.full_name.length > 100) {
+      errors.push('Agent name is too long (max 100 characters).');
+    }
+    if (profileData.company_name.length > 100) {
+      errors.push('Company name is too long (max 100 characters).');
+    }
+    if (!validateEmail(profileData.business_email)) {
+      errors.push('Business email must be a valid email address.');
+    }
+    if (!validatePhone(profileData.business_phone)) {
+      errors.push('Business phone must be a valid phone number.');
+    }
+    if (!validateUrl(profileData.website)) {
+      errors.push('Website must be a valid URL starting with https://');
+    }
+    if (!validateHexColor(profileData.brand_color)) {
+      errors.push('Brand color must be a valid hex color (e.g. #0066cc).');
+    }
+    if (profileData.bio.length > 500) {
+      errors.push('Bio is too long (max 500 characters).');
+    }
+
+    // Agency field validations
+    if (!validateGST(agencyData.gst_number)) {
+      errors.push('GST number is invalid. Expected format: 29GGGGG1314R9Z6');
+    }
+    if (agencyData.bank_details.length > 500) {
+      errors.push('Bank details are too long (max 500 characters).');
+    }
+    if (agencyData.terms_conditions.length > 2000) {
+      errors.push('Terms & conditions are too long (max 2000 characters).');
+    }
+    if (agencyData.agent_signature.length > 500) {
+      errors.push('Email signature is too long (max 500 characters).');
+    }
+    if (agencyData.default_markup_value < 0) {
+      errors.push('Markup value cannot be negative.');
+    }
+    if (agencyData.default_tax_percentage < 0 || agencyData.default_tax_percentage > 100) {
+      errors.push('Tax percentage must be between 0 and 100.');
+    }
+    if (agencyData.default_commission_rate < 0 || agencyData.default_commission_rate > 100) {
+      errors.push('Commission rate must be between 0 and 100.');
+    }
+
+    return { valid: errors.length === 0, errors };
+  };
+
   const handleSave = async () => {
     if (!user) return;
+
+    // ── Validate before saving ───────────────────────────────────────────────
+    const { valid, errors } = validateSettings();
+    if (!valid) {
+      toast({
+        variant: 'destructive',
+        title: 'Please fix the following errors',
+        description: (
+          <ul className="mt-1 space-y-0.5 text-xs list-disc list-inside">
+            {errors.map((err, i) => (
+              <li key={i}>{err}</li>
+            ))}
+          </ul>
+        ) as any,
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
+      // Sanitize all text fields before writing to DB
+      const sanitizedProfile = {
+        ...profileData,
+        full_name: sanitizeText(profileData.full_name, 100),
+        company_name: sanitizeText(profileData.company_name, 100),
+        bio: sanitizeText(profileData.bio, 500),
+      };
+      const sanitizedAgency = {
+        ...agencyData,
+        gst_number: sanitizeText(agencyData.gst_number, 20).toUpperCase(),
+        bank_details: sanitizeText(agencyData.bank_details, 500),
+        terms_conditions: sanitizeText(agencyData.terms_conditions, 2000),
+        agent_signature: sanitizeText(agencyData.agent_signature, 500),
+      };
+
       const { error: profileError } = await supabase
         .from('user_profiles')
         .update({
-          ...profileData,
+          ...sanitizedProfile,
           updated_at: new Date().toISOString(),
         })
         .eq('id', user.id);
@@ -192,7 +281,7 @@ export function UnifiedSettings() {
         .from('agency_settings')
         .upsert({
           user_id: user.id,
-          ...agencyData,
+          ...sanitizedAgency,
         }, { onConflict: 'user_id' });
 
       if (agencyError) throw agencyError;
@@ -213,6 +302,7 @@ export function UnifiedSettings() {
       setIsLoading(false);
     }
   };
+
 
   const updateProfile = (field: string, value: any) => setProfileData(prev => ({ ...prev, [field]: value }));
   const updateAgency = (field: string, value: any) => setAgencyData(prev => ({ ...prev, [field]: value }));
@@ -296,12 +386,12 @@ export function UnifiedSettings() {
                   <div>
                     <p className="text-sm font-medium text-slate-300">Current Subscription Plan</p>
                     <p className="text-xl font-bold capitalize text-amber-300">
-                      {userProfile?.plan_type || 'Starter'}
+                      {(userProfile as any)?.plan_type || 'Starter'}
                     </p>
                   </div>
                   <Link href="/pricing">
                     <Button variant="outline" className="glass-button border-white/10">
-                      {userProfile?.plan_type === 'starter' ? 'Upgrade Plan' : 'Manage Subscription'}
+                      {(userProfile as any)?.plan_type === 'starter' ? 'Upgrade Plan' : 'Manage Subscription'}
                     </Button>
                   </Link>
                 </div>
