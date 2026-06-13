@@ -19,7 +19,7 @@ const TIERS = [
       '2 AI-generated vendor enquiries / month',
       'Email support'
     ],
-    buttonText: 'Current Plan',
+    buttonText: 'Free Plan',
     planType: 'starter',
     highlighted: false,
   },
@@ -158,18 +158,23 @@ export default function PricingPage() {
     }
   };
 
-  const pricingPlans: PricingCardProps[] = TIERS.map(tier => ({
-    planName: tier.name,
-    description: tier.description,
-    price: tier.price,
-    features: tier.features,
-    buttonText: tier.buttonText,
-    isPopular: tier.highlighted,
-    buttonVariant: tier.highlighted ? 'primary' : 'secondary',
-    onClick: () => handleSubscribe(tier.planType),
-    isLoading: loadingPlan === tier.planType,
-    isCurrent: currentPlan === tier.planType
-  }));
+  const pricingPlans: PricingCardProps[] = TIERS.map(tier => {
+    const isStarter = tier.planType === 'starter';
+    const isCurrent = currentPlan === tier.planType;
+    
+    return {
+      planName: tier.name,
+      description: tier.description,
+      price: tier.price,
+      features: tier.features,
+      buttonText: tier.buttonText,
+      isPopular: tier.highlighted,
+      buttonVariant: tier.highlighted ? 'primary' : 'secondary',
+      onClick: (isStarter && currentPlan !== 'starter') ? undefined : () => handleSubscribe(tier.planType),
+      isLoading: loadingPlan === tier.planType,
+      isCurrent: isCurrent
+    };
+  });
 
   return (
     <>

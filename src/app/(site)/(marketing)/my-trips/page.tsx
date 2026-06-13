@@ -45,7 +45,6 @@ interface SavedItinerary {
   itinerary_data: TravelItineraryOutput;
   currency: string | null;
   show_timestamps?: boolean;
-  show_prices?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -226,8 +225,7 @@ export default function MyTripsPage() {
           // Copy metadata/preferences if they exist
           generation_preferences: (trip as any).generation_preferences || {},
           selected_theme: (trip as any).selected_theme || 'classic',
-          show_timestamps: (trip as any).show_timestamps ?? true,
-          show_prices: (trip as any).show_prices ?? true
+          show_timestamps: (trip as any).show_timestamps ?? true
         }])
         .select()
         .single();
@@ -556,7 +554,6 @@ export default function MyTripsPage() {
               hotels: (selectedTrip?.itinerary_data as any)?.hotels || [],
               flights: (selectedTrip?.itinerary_data as any)?.flights || [],
               showTimestamps: selectedTrip?.show_timestamps ?? true,
-              showPrices: selectedTrip?.show_prices ?? true,
             }}
             initialTheme={selectedTheme}
             itineraryId={selectedTrip?.id}

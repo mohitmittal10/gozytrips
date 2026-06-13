@@ -117,6 +117,24 @@ export async function updateItineraryStatus(
 
     if (updateError) throw updateError;
 
+    // Synchronize status with client enquiry responses if applicable
+    let workflowStatus: string | null = null;
+    if (statusToSave === 'draft') workflowStatus = 'submitted';
+    else if (statusToSave === 'proposed') workflowStatus = 'under_review';
+    else if (statusToSave === 'sent') workflowStatus = 'itinerary_ready';
+    else if (statusToSave === 'booked') workflowStatus = 'booked';
+
+    if (workflowStatus) {
+      const { error: syncError } = await supabase
+        .from('client_enquiry_responses')
+        .update({ workflow_status: workflowStatus })
+        .eq('converted_itinerary_id', tripId);
+      
+      if (syncError) {
+        console.error('[ItineraryService] Failed to sync client enquiry response status:', syncError);
+      }
+    }
+
     const { error: historyError } = await supabase.from('itinerary_status_events').insert([
       {
         user_id: userId,

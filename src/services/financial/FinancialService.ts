@@ -56,10 +56,12 @@ export function calcBaseCost(
     infant: pricing?.infantPax || 0
   };
 
-  if (pricing?.costingType === 'manual') {
+  // Treat 'manual' as the default mode — undefined/null costingType also uses manual.
+  const effectiveCostingType = pricing?.costingType ?? 'manual';
+  if (effectiveCostingType === 'manual') {
     let manualCost = 0;
     const totalPax = pax.adult + pax.child + pax.infant;
-    for (const item of pricing.manualOptions || []) {
+    for (const item of (pricing?.manualOptions ?? []) as any[]) {
       const amount = Number(item.amount) || 0;
       manualCost += item.type === 'per-person' ? amount * totalPax : amount;
     }

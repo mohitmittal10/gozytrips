@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
 
       // Upsert the subscription
       const { error } = await adminClient
-        .from('subscriptions')
+        .from('subscriptions' as any)
         .upsert(
           {
             user_id: userId,

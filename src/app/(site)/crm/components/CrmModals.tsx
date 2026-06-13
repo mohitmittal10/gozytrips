@@ -82,8 +82,7 @@ export function CrmModals() {
                     draft_source_itinerary_id: trip.id,
                     generation_preferences: (trip as any).generation_preferences || {},
                     selected_theme: (trip as any).selected_theme || 'classic',
-                    show_timestamps: (trip as any).show_timestamps ?? true,
-                    show_prices: (trip as any).show_prices ?? true
+                    show_timestamps: (trip as any).show_timestamps ?? true
                 }])
                 .select()
                 .single();
@@ -142,6 +141,12 @@ export function CrmModals() {
                 setSelectedTripForModal={setSelectedTripForModal}
 
                 getTripCost={getTripCost}
+                onClientNotesUpdate={(clientId, newNotes) => {
+                    data.actions.setEnrichedClients(prev => prev.map(c => c.id === clientId ? { ...c, notes: newNotes } : c));
+                    if (selectedClient && selectedClient.id === clientId) {
+                        setSelectedClient(prev => prev ? { ...prev, notes: newNotes } : null);
+                    }
+                }}
             />
 
             <TripDetailSheet
@@ -195,7 +200,6 @@ export function CrmModals() {
                                 itinerary={selectedTripForModal.itinerary_data?.itinerary || []}
                                 editable={false}
                                 showDecorations={true}
-                                showPrices={true}
                                 hotels={(selectedTripForModal.itinerary_data as any)?.hotels || []}
                                 flights={(selectedTripForModal.itinerary_data as any)?.flights || []}
                                 destinations={(selectedTripForModal as any)?.destinations}
@@ -214,7 +218,6 @@ export function CrmModals() {
                             hotels: (selectedTripForModal?.itinerary_data as any)?.hotels || [],
                             flights: (selectedTripForModal?.itinerary_data as any)?.flights || [],
                             showTimestamps: (selectedTripForModal as any)?.show_timestamps ?? true,
-                            showPrices: (selectedTripForModal as any)?.show_prices ?? true,
                         }}
                         initialTheme={selectedTheme}
                         itineraryId={selectedTripForModal?.id}

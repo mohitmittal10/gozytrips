@@ -88,6 +88,8 @@ export interface LoadedPersistenceData {
   selectedTheme: string;
   pdfOverrides: Record<string, any>;
   draftSourceItineraryId?: string | null;
+  share_token?: string | null;
+  share_enabled?: boolean;
   inclusions?: string;
   exclusions?: string;
   termsAndConditions?: string;

@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   MapPin, Calendar, Users, Compass, ExternalLink, Send, Loader2,
   CheckCircle2, Clock, MessageSquare, Plane, Train, Bus, Car, Ship,
-  Mountain, Camera, Palmtree, Heart, Utensils,
-  ChevronRight, AlertCircle, RefreshCw, Star, LogOut
+  Mountain, Camera, Palmtree, Heart, Utensils, Hotel,
+  ChevronRight, AlertCircle, RefreshCw, Star, LogOut, FileText, Sparkles,
+  X, CreditCard, ScrollText, ShieldAlert, CheckCheck, XCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -38,6 +39,9 @@ interface EnquiryResponseData {
   agent_note_updated_at: string | null;
   itinerary_share_url: string | null;
   workflow_status: WorkflowStatus;
+  converted_itinerary_id: string | null;
+  itinerary_visible_to_client: boolean;
+  itinerary_last_pushed_at: string | null;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -292,22 +296,446 @@ function ChatWidget({ responseId, agentName }: { responseId: string; agentName: 
   );
 }
 
-// ─── Main Dashboard ───────────────────────────────────────────────────────────
+// ─── Itinerary Sub-tabs Component ────────────────────────────────────────────
+type ItinSubTab = "days" | "logistics" | "financials" | "inclusions";
+
+function ItinerarySubTabs({
+  days, flights, hotels, cabs, buses, itin, pricing,
+  clientPrice, baseCost, markupAmount, taxAmount, taxPct, markupType, markupValue,
+  totalPax, adultPax, childPax, infantPax, perPerson, milestones,
+  currencySymbol, fmt, showTimestamps, dayPhotos, loadingPhotos, shareUrl,
+}: any) {
+  const [tab, setTab] = useState<ItinSubTab>("days");
+
+  const tabDefs: { key: ItinSubTab; label: string }[] = [
+    { key: "days",       label: `Days (${days.length})` },
+    { key: "logistics",  label: "Logistics" },
+    { key: "financials", label: "Financials" },
+    { key: "inclusions", label: "Inclusions" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Sub-tab bar */}
+      <div className="flex gap-1 bg-white/[0.03] border border-white/[0.07] rounded-2xl p-1 overflow-x-auto no-scrollbar">
+        {tabDefs.map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setTab(t.key)}
+            className={cn(
+              "flex-1 min-w-fit px-3 py-2 rounded-xl text-xs font-semibold transition-all whitespace-nowrap",
+              tab === t.key
+                ? "bg-gradient-to-r from-[#FF5C33]/20 to-[#7C3AED]/20 border border-white/10 text-white shadow-sm"
+                : "text-gray-500 hover:text-gray-300"
+            )}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── DAYS ── */}
+      {tab === "days" && (
+        <div className="space-y-4">
+          {days.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-14 gap-3 text-center bg-white/[0.02] border border-white/[0.07] rounded-2xl">
+              <div className="w-12 h-12 rounded-2xl bg-[#FF5C33]/10 border border-[#FF5C33]/20 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-[#FF5C33]/60" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">Day-by-day plan coming soon</p>
+                <p className="text-xs text-gray-500 mt-1">Your agent is finalising the itinerary details.</p>
+              </div>
+            </div>
+          ) : (
+            days.map((day: any, idx: number) => {
+              const timelineItems: any[] = day.timeline || day.activities || [];
+              const photo = dayPhotos[idx];
+              return (
+                <div key={idx} className="rounded-2xl border border-white/[0.07] overflow-hidden bg-[#0a0b12]">
+                  <div className="relative h-44 bg-gradient-to-br from-[#FF5C33]/20 to-[#7C3AED]/20">
+                    {photo ? (
+                      <img src={photo} alt={day.areaFocus || `Day ${idx + 1}`} className="w-full h-full object-cover" />
+                    ) : loadingPhotos ? (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Loader2 className="w-5 h-5 text-white/20 animate-spin" />
+                      </div>
+                    ) : null}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0b12] via-[#0a0b12]/30 to-transparent" />
+                    <div className="absolute top-3 left-3">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FF5C33] to-[#EC4899] flex items-center justify-center text-white text-sm font-black shadow-lg shadow-[#FF5C33]/30">
+                        {idx + 1}
+                      </div>
+                    </div>
+                    <div className="absolute bottom-3 left-4 right-4">
+                      <p className="text-base font-bold text-white drop-shadow-lg">
+                        Day {idx + 1}{day.date ? ` · ${day.date}` : ""}
+                      </p>
+                      {day.areaFocus && (
+                        <p className="text-[11px] text-[#FF5C33] font-semibold drop-shadow-lg">{day.areaFocus}</p>
+                      )}
+                    </div>
+                  </div>
+                  <div className="px-4 py-4 space-y-0">
+                    {timelineItems.map((item: any, aIdx: number) => {
+                      const title = item.details || item.activityName || item.name || "";
+                      const time = item.time || item.startTime || "";
+                      const desc = item.description || "";
+                      const isLast = aIdx === timelineItems.length - 1;
+                      return (
+                        <div key={aIdx} className="flex gap-3">
+                          <div className="flex flex-col items-center" style={{ minWidth: 36 }}>
+                            <div className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-[#FF5C33] to-[#EC4899] shrink-0 mt-1.5 ring-2 ring-[#FF5C33]/20" />
+                            {!isLast && <div className="w-px flex-1 bg-gradient-to-b from-[#FF5C33]/30 to-transparent mt-1" style={{ minHeight: 24 }} />}
+                          </div>
+                          <div className="flex-1 min-w-0 pb-4">
+                            {showTimestamps && time && <p className="text-[10px] text-[#FF5C33] font-bold mb-0.5">{time}</p>}
+                            <p className="text-sm font-semibold text-white leading-snug">{title}</p>
+                            {desc && <p className="text-xs text-gray-500 mt-1 leading-relaxed">{desc}</p>}
+                          </div>
+                        </div>
+                      );
+                    })}
+                    {timelineItems.length === 0 && (
+                      <p className="text-xs text-gray-600 py-3 text-center">Details for this day coming soon.</p>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
+      {/* ── LOGISTICS ── */}
+      {tab === "logistics" && (
+        <div className="space-y-4">
+          {[
+            { icon: <Plane className="w-4 h-4 text-sky-400" />, label: "Flights", accent: "text-sky-400", items: flights, emptyMsg: "No flight details added yet", renderItem: (f: any, i: number) => (
+              <div key={i} className="px-5 py-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-white">{f.origin || f.from} → {f.destination || f.to}</p>
+                    {f.date && <p className="text-[11px] text-gray-500 mt-0.5">{f.date}</p>}
+                    {f.airline && <p className="text-[11px] text-sky-400 mt-0.5">{f.airline}{f.flightNumber ? ` · ${f.flightNumber}` : ""}</p>}
+                  </div>
+                  {(f.departureTime || f.arrivalTime) && (
+                    <div className="text-right shrink-0">
+                      {f.departureTime && <p className="text-xs font-bold text-white">{f.departureTime}</p>}
+                      {f.arrivalTime && <p className="text-[10px] text-gray-500">{f.arrivalTime}</p>}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )},
+            { icon: <Hotel className="w-4 h-4 text-amber-400" />, label: "Accommodation", accent: "text-amber-400", items: hotels, emptyMsg: "No hotel details added yet", renderItem: (h: any, i: number) => (
+              <div key={i} className="px-5 py-4">
+                <p className="text-sm font-bold text-white">{h.name || h.hotelName || "Hotel"}</p>
+                {h.location && <p className="text-[11px] text-gray-500 mt-0.5"><MapPin className="inline w-3 h-3 mr-0.5" />{h.location}</p>}
+                <div className="flex flex-wrap gap-3 mt-1.5">
+                  {h.checkIn && <p className="text-[10px] text-amber-400">Check-in: {h.checkIn}</p>}
+                  {h.checkOut && <p className="text-[10px] text-amber-400">Check-out: {h.checkOut}</p>}
+                  {h.nights && <p className="text-[10px] text-gray-500">{h.nights} night{h.nights !== 1 ? "s" : ""}</p>}
+                  {h.roomType && <p className="text-[10px] text-gray-500">{h.roomType}</p>}
+                </div>
+              </div>
+            )},
+            { icon: <Car className="w-4 h-4 text-emerald-400" />, label: "Cab / Transfer", accent: "text-emerald-400", items: cabs, emptyMsg: "No cab / transfer details added yet", renderItem: (c: any, i: number) => (
+              <div key={i} className="px-5 py-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-white">{c.from} → {c.to}</p>
+                    {c.date && <p className="text-[11px] text-gray-500 mt-0.5">{c.date}</p>}
+                    {c.serviceType && <p className="text-[11px] text-emerald-400 mt-0.5">{c.serviceType}</p>}
+                  </div>
+                  {c.duration && <p className="text-xs font-bold text-white shrink-0">{c.duration}</p>}
+                </div>
+              </div>
+            )},
+            { icon: <Bus className="w-4 h-4 text-purple-400" />, label: "Bus / Coach", accent: "text-purple-400", items: buses, emptyMsg: "No bus / coach details added yet", renderItem: (b: any, i: number) => (
+              <div key={i} className="px-5 py-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-white">{b.from} → {b.to}</p>
+                    {b.date && <p className="text-[11px] text-gray-500 mt-0.5">{b.date}</p>}
+                    {b.operator && <p className="text-[11px] text-purple-400 mt-0.5">{b.operator}{b.busType ? ` · ${b.busType}` : ""}</p>}
+                  </div>
+                  {(b.departureTime || b.arrivalTime) && (
+                    <div className="text-right shrink-0">
+                      {b.departureTime && <p className="text-xs font-bold text-white">{b.departureTime}</p>}
+                      {b.arrivalTime && <p className="text-[10px] text-gray-500">{b.arrivalTime}</p>}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )},
+          ].map((section) => (
+            <div key={section.label} className="rounded-2xl border border-white/[0.07] overflow-hidden">
+              <div className="flex items-center gap-2.5 px-5 py-3.5 border-b border-white/[0.06] bg-white/[0.02]">
+                {section.icon}
+                <p className={cn("text-xs font-bold uppercase tracking-widest", section.accent)}>{section.label}</p>
+                {section.items.length > 0 && (
+                  <span className={cn("ml-auto text-[10px] font-semibold", section.accent)}>{section.items.length}</span>
+                )}
+              </div>
+              {section.items.length === 0 ? (
+                <div className="px-5 py-8 flex flex-col items-center gap-2 text-center">
+                  <p className="text-xs text-gray-600">{section.emptyMsg}</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-white/[0.05]">
+                  {section.items.map(section.renderItem)}
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── FINANCIALS ── */}
+      {tab === "financials" && (
+        <div className="space-y-4">
+          {clientPrice > 0 ? (
+            <div className="rounded-2xl border border-[#7C3AED]/25 bg-gradient-to-br from-[#7C3AED]/8 via-transparent to-[#EC4899]/5 overflow-hidden">
+              <div className="px-5 pt-5 pb-4 border-b border-white/[0.06]">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-purple-400 mb-1">Total Trip Cost</p>
+                <div className="flex items-end justify-between gap-3">
+                  <p className="text-3xl font-black text-white">{currencySymbol}{fmt(clientPrice)}</p>
+                  {totalPax > 0 && (
+                    <p className="text-xs text-gray-400 mb-1">{currencySymbol}{fmt(perPerson)} <span className="text-gray-600">/ person</span></p>
+                  )}
+                </div>
+                <p className="text-[10px] text-gray-600 mt-1">
+                  {adultPax > 0 && `${adultPax} adult${adultPax !== 1 ? "s" : ""}`}
+                  {childPax > 0 && `, ${childPax} child${childPax !== 1 ? "ren" : ""}`}
+                  {infantPax > 0 && `, ${infantPax} infant${infantPax !== 1 ? "s" : ""}`}
+                </p>
+              </div>
+              {baseCost > 0 && (
+                <div className="px-5 py-4 space-y-2.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-400">Base Cost</span>
+                    <span className="text-gray-200 font-medium">{currencySymbol}{fmt(baseCost)}</span>
+                  </div>
+                  {markupAmount > 0 && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-400">Service Charge{markupType === "percentage" && markupValue > 0 ? ` (${markupValue}%)` : ""}</span>
+                      <span className="text-gray-200 font-medium">+ {currencySymbol}{fmt(markupAmount)}</span>
+                    </div>
+                  )}
+                  {taxAmount > 0 && (
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-gray-400">GST / Tax ({taxPct}%)</span>
+                      <span className="text-gray-200 font-medium">+ {currencySymbol}{fmt(taxAmount)}</span>
+                    </div>
+                  )}
+                  <div className="border-t border-white/[0.06] pt-2.5 flex items-center justify-between">
+                    <span className="text-sm font-bold text-white">Total</span>
+                    <span className="text-sm font-black text-[#FF5C33]">{currencySymbol}{fmt(clientPrice)}</span>
+                  </div>
+                </div>
+              )}
+              {Array.isArray(pricing.manualOptions) && pricing.manualOptions.length > 0 && (
+                <div className="px-5 pb-4">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2.5">Cost Breakdown</p>
+                  <div className="space-y-2">
+                    {pricing.manualOptions.map((item: any, ii: number) => {
+                      const amt = Number(item.amount) || 0;
+                      const itemTotal = item.type === "per-person" ? amt * totalPax : amt;
+                      return (
+                        <div key={ii} className="flex items-center justify-between gap-2 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-2.5">
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-semibold text-white">{item.name || item.category || "Item"}</p>
+                            {item.type === "per-person" && <p className="text-[10px] text-purple-400 mt-0.5">{currencySymbol}{fmt(amt)} × {totalPax} pax</p>}
+                          </div>
+                          <p className="text-sm font-black text-[#FF5C33] shrink-0">{currencySymbol}{fmt(itemTotal)}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {milestones.length > 0 && (
+                <div className="px-5 pb-5">
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2.5">Payment Schedule</p>
+                  <div className="space-y-2">
+                    {milestones.map((m: any, mi: number) => (
+                      <div key={mi} className="flex items-center justify-between gap-2 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-2.5">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-semibold text-white">{m.name || m.label || `Payment ${mi + 1}`}</p>
+                          {m.dueDate && <p className="text-[10px] text-gray-500 mt-0.5">Due: {m.dueDate}</p>}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-black text-[#FF5C33]">{currencySymbol}{fmt((clientPrice * (m.percentage || 0)) / 100)}</p>
+                          <p className="text-[10px] text-gray-600">{m.percentage}%</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center py-14 gap-3 text-center bg-gradient-to-br from-[#7C3AED]/5 to-transparent border border-[#7C3AED]/15 rounded-2xl">
+              <div className="w-12 h-12 rounded-2xl bg-[#7C3AED]/10 border border-[#7C3AED]/20 flex items-center justify-center">
+                <CreditCard className="w-5 h-5 text-[#7C3AED]/60" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white">Pricing not yet finalised</p>
+                <p className="text-xs text-gray-500 mt-1 max-w-xs">Your agent is preparing the cost breakdown. It will appear here once ready.</p>
+              </div>
+            </div>
+          )}
+          {shareUrl && (
+            <a href={shareUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-gradient-to-r from-[#7C3AED]/10 to-[#EC4899]/10 border border-[#7C3AED]/20 rounded-2xl hover:border-[#7C3AED]/40 transition-all group">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-[#7C3AED]/10 border border-[#7C3AED]/20 flex items-center justify-center">
+                  <ExternalLink className="w-4 h-4 text-[#7C3AED]" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-white">View Full Invoice & Pricing</p>
+                  <p className="text-xs text-gray-500">Detailed cost breakdown</p>
+                </div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
+            </a>
+          )}
+        </div>
+      )}
+
+      {/* ── INCLUSIONS & POLICIES ── */}
+      {tab === "inclusions" && (
+        <div className="space-y-4">
+          {[
+            { icon: <CheckCheck className="w-4 h-4 text-emerald-400" />, title: "What's Included", borderCls: "border-emerald-500/20", bgCls: "bg-emerald-500/5", headerBorderCls: "border-emerald-500/10", content: itin.inclusions, accentCls: "text-emerald-400", emptyMsg: "Inclusions not yet added by your agent", renderLine: (line: string, i: number) => (
+                <div key={i} className="flex items-start gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-gray-300 leading-relaxed">{line.replace(/^[-•*]\s*/, "")}</p>
+                </div>
+              )},
+            { icon: <XCircle className="w-4 h-4 text-red-400" />, title: "Not Included", borderCls: "border-red-500/20", bgCls: "bg-red-500/5", headerBorderCls: "border-red-500/10", content: itin.exclusions, accentCls: "text-red-400", emptyMsg: "Exclusions not yet added by your agent", renderLine: (line: string, i: number) => (
+                <div key={i} className="flex items-start gap-2">
+                  <X className="w-3.5 h-3.5 text-red-400 shrink-0 mt-0.5" />
+                  <p className="text-xs text-gray-300 leading-relaxed">{line.replace(/^[-•*]\s*/, "")}</p>
+                </div>
+              )},
+            { icon: <ScrollText className="w-4 h-4 text-blue-400" />, title: "Terms & Conditions", borderCls: "border-white/[0.07]", bgCls: "bg-white/[0.02]", headerBorderCls: "border-white/[0.06]", content: itin.termsAndConditions, accentCls: "text-gray-400", emptyMsg: "Terms & conditions not yet added", renderLine: null },
+            { icon: <ShieldAlert className="w-4 h-4 text-amber-400" />, title: "Cancellation Policy", borderCls: "border-amber-500/20", bgCls: "bg-amber-500/5", headerBorderCls: "border-amber-500/10", content: itin.cancellationPolicy, accentCls: "text-amber-400", emptyMsg: "Cancellation policy not yet added", renderLine: null },
+            { icon: <CreditCard className="w-4 h-4 text-purple-400" />, title: "Payment Methods", borderCls: "border-white/[0.07]", bgCls: "bg-white/[0.02]", headerBorderCls: "border-white/[0.06]", content: itin.paymentMethods, accentCls: "text-gray-400", emptyMsg: "Payment methods not yet specified", renderLine: null },
+          ].map((section) => (
+            <div key={section.title} className={cn("rounded-2xl overflow-hidden border", section.borderCls, section.bgCls)}>
+              <div className={cn("flex items-center gap-2.5 px-5 py-3.5 border-b", section.headerBorderCls)}>
+                {section.icon}
+                <p className={cn("text-xs font-bold uppercase tracking-widest", section.accentCls)}>{section.title}</p>
+              </div>
+              {section.content ? (
+                <div className="px-5 py-4 space-y-2">
+                  {section.renderLine
+                    ? section.content.split("\n").filter(Boolean).map((line: string, i: number) => section.renderLine!(line, i))
+                    : <p className="text-xs text-gray-300 whitespace-pre-wrap leading-relaxed">{section.content}</p>
+                  }
+                </div>
+              ) : (
+                <div className="px-5 py-8 flex flex-col items-center gap-2 text-center">
+                  <p className="text-xs text-gray-600">{section.emptyMsg}</p>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 interface ClientDashboardProps {
   formMeta: PublicEnquiryFormMeta;
   shareToken: string;
   responseId: string;
 }
 
-type DashboardTab = "overview" | "messages";
+type DashboardTab = "overview" | "messages" | "itinerary";
 
 export function ClientDashboard({ formMeta, shareToken, responseId }: ClientDashboardProps) {
   const supabase = createClient();
   const [response, setResponse] = useState<EnquiryResponseData | null>(null);
   const [loadingResponse, setLoadingResponse] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<DashboardTab>("overview");
+  const [activeTab, setActiveTabState] = useState<DashboardTab>("overview");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlTab = params.get("tab") as DashboardTab | null;
+    const storedTab = localStorage.getItem(`client_portal_active_tab_${responseId}`) as DashboardTab | null;
+    const validTabs: DashboardTab[] = ["overview", "messages", "itinerary"];
+    
+    if (urlTab && validTabs.includes(urlTab)) {
+      setActiveTabState(urlTab);
+    } else if (storedTab && validTabs.includes(storedTab)) {
+      setActiveTabState(storedTab);
+    }
+  }, [responseId]);
+
+  const setActiveTab = (tab: DashboardTab) => {
+    setActiveTabState(tab);
+    localStorage.setItem(`client_portal_active_tab_${responseId}`, tab);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", tab);
+    window.history.replaceState({}, "", url.toString());
+  };
   const { unreadCount } = useClientMessages(responseId, "client");
+
+  const [itineraryData, setItineraryData] = useState<any>(null);
+  const [loadingItinerary, setLoadingItinerary] = useState(false);
+  const [itineraryError, setItineraryError] = useState<string | null>(null);
+  const [dayPhotos, setDayPhotos] = useState<string[]>([]);
+  const [loadingPhotos, setLoadingPhotos] = useState(false);
+
+  const fetchDayPhotos = useCallback(async (fId: string, rId: string, days: any[]) => {
+    if (!days || days.length === 0) return;
+    setLoadingPhotos(true);
+    try {
+      const searchTerms = days.map((d: any) => d.imageSearchTerm || d.areaFocus || "");
+      const areaNames = days.map((d: any) => d.areaFocus || "");
+      const res = await fetch(
+        `/api/enquiry-forms/${fId}/responses/${rId}/itinerary/photos`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ searchTerms, areaNames }),
+        }
+      );
+      if (res.ok) {
+        const { photos } = await res.json();
+        setDayPhotos(photos || []);
+      }
+    } catch (err) {
+      console.warn("Failed to fetch day photos", err);
+    } finally {
+      setLoadingPhotos(false);
+    }
+  }, []);
+
+  const fetchItinerary = async (fId: string, rId: string) => {
+    setLoadingItinerary(true);
+    setItineraryError(null);
+    try {
+      const res = await fetch(`/api/enquiry-forms/${fId}/responses/${rId}/itinerary`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to load itinerary");
+      setItineraryData(data);
+      // Fetch photos for each day
+      const days = data?.itinerary?.itinerary_data?.itinerary || [];
+      if (data.available && days.length > 0) {
+        fetchDayPhotos(fId, rId, days);
+      }
+    } catch (err: any) {
+      setItineraryError(err.message);
+    } finally {
+      setLoadingItinerary(false);
+    }
+  };
 
   useEffect(() => {
     async function load() {
@@ -325,7 +753,7 @@ export function ClientDashboard({ formMeta, shareToken, responseId }: ClientDash
     }
     load();
 
-    // Subscribe to real-time response updates (workflow_status, agent_note, itinerary_share_url)
+    // Subscribe to real-time response updates (workflow_status, agent_note, itinerary push)
     const channel = supabase
       .channel(`response:${responseId}`)
       .on(
@@ -337,6 +765,12 @@ export function ClientDashboard({ formMeta, shareToken, responseId }: ClientDash
 
     return () => { supabase.removeChannel(channel); };
   }, [responseId, formMeta.id]);
+
+  useEffect(() => {
+    if (activeTab === "itinerary" && !itineraryData && !loadingItinerary && response) {
+      fetchItinerary(formMeta.id, responseId);
+    }
+  }, [activeTab, itineraryData, loadingItinerary, response, formMeta.id, responseId]);
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -400,29 +834,60 @@ export function ClientDashboard({ formMeta, shareToken, responseId }: ClientDash
 
         {/* Tab bar */}
         <div className="max-w-3xl mx-auto px-4 pb-0 flex gap-1">
-          {(["overview", "messages"] as const).map((tab) => (
-            <button
-              key={tab}
-              id={`dashboard-tab-${tab}`}
-              onClick={() => setActiveTab(tab)}
-              className={cn(
-                "relative px-4 py-2.5 text-xs font-semibold capitalize transition-all border-b-2",
-                activeTab === tab
-                  ? "text-white border-[#FF5C33]"
-                  : "text-gray-500 border-transparent hover:text-gray-300"
-              )}
-            >
-              {tab === "messages" && (
-                <MessageSquare className="inline w-3.5 h-3.5 mr-1.5 -mt-0.5" />
-              )}
-              {tab}
-              {tab === "messages" && unreadCount > 0 && (
-                <span className="ml-1.5 min-w-[18px] h-[18px] bg-[#FF5C33] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 inline-flex">
-                  {unreadCount}
-                </span>
-              )}
-            </button>
-          ))}
+          {/* Overview tab */}
+          <button
+            id="dashboard-tab-overview"
+            onClick={() => setActiveTab("overview")}
+            className={cn(
+              "relative px-4 py-2.5 text-xs font-semibold capitalize transition-all border-b-2",
+              activeTab === "overview"
+                ? "text-white border-[#FF5C33]"
+                : "text-gray-500 border-transparent hover:text-gray-300"
+            )}
+          >
+            Overview
+          </button>
+
+          {/* Itinerary tab — always shown but gated inside */}
+          <button
+            id="dashboard-tab-itinerary"
+            onClick={() => {
+              setActiveTab("itinerary");
+              if (response) fetchItinerary(formMeta.id, responseId);
+            }}
+            className={cn(
+              "relative px-4 py-2.5 text-xs font-semibold capitalize transition-all border-b-2 flex items-center gap-1.5",
+              activeTab === "itinerary"
+                ? "text-white border-[#FF5C33]"
+                : "text-gray-500 border-transparent hover:text-gray-300"
+            )}
+          >
+            <FileText className="w-3.5 h-3.5" />
+            Itinerary
+            {response?.itinerary_visible_to_client && (
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" />
+            )}
+          </button>
+
+          {/* Messages tab */}
+          <button
+            id="dashboard-tab-messages"
+            onClick={() => setActiveTab("messages")}
+            className={cn(
+              "relative px-4 py-2.5 text-xs font-semibold capitalize transition-all border-b-2 flex items-center gap-1",
+              activeTab === "messages"
+                ? "text-white border-[#FF5C33]"
+                : "text-gray-500 border-transparent hover:text-gray-300"
+            )}
+          >
+            <MessageSquare className="inline w-3.5 h-3.5 -mt-0.5" />
+            Messages
+            {unreadCount > 0 && (
+              <span className="ml-1 min-w-[18px] h-[18px] bg-[#FF5C33] text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 inline-flex">
+                {unreadCount}
+              </span>
+            )}
+          </button>
         </div>
       </header>
 
@@ -538,6 +1003,208 @@ export function ClientDashboard({ formMeta, shareToken, responseId }: ClientDash
                 <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
               </div>
             </button>
+          </div>
+        )}
+
+        {/* ══ ITINERARY TAB ══ */}
+        {activeTab === "itinerary" && (
+          <div className="space-y-5 pb-8">
+            {/* Header */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-[#FF5C33]" /> Your Itinerary
+                </h2>
+                {itineraryData?.itinerary_last_pushed_at && (
+                  <p className="text-[10px] text-gray-500 mt-0.5">
+                    Last updated by {agentName} · {new Date(itineraryData.itinerary_last_pushed_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => fetchItinerary(formMeta.id, responseId)}
+                className="text-gray-500 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/5"
+                title="Refresh itinerary"
+              >
+                <RefreshCw className={cn("w-4 h-4", loadingItinerary && "animate-spin")} />
+              </button>
+            </div>
+
+            {/* Loading */}
+            {loadingItinerary && (
+              <div className="flex flex-col items-center justify-center py-20 gap-3">
+                <Loader2 className="w-8 h-8 text-[#FF5C33] animate-spin" />
+                <p className="text-xs text-gray-500">Loading your itinerary…</p>
+              </div>
+            )}
+
+            {/* Error */}
+            {!loadingItinerary && itineraryError && (
+              <div className="flex items-center gap-3 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl">
+                <AlertCircle className="w-5 h-5 text-red-400 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-red-300">Couldn't load itinerary</p>
+                  <p className="text-xs text-red-400/70 mt-0.5">{itineraryError}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Not yet pushed */}
+            {!loadingItinerary && !itineraryError && itineraryData && !itineraryData.available && (
+              <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#FF5C33]/10 to-[#7C3AED]/10 border border-white/[0.08] flex items-center justify-center">
+                  <Sparkles className="w-7 h-7 text-[#FF5C33]/60" />
+                </div>
+                <div>
+                  <p className="text-base font-bold text-white">Itinerary Coming Soon</p>
+                  <p className="text-sm text-gray-500 mt-1 max-w-xs">
+                    Your personalised travel plan is being crafted. {agentName} will share it with you shortly!
+                  </p>
+                </div>
+                <button
+                  onClick={() => setActiveTab("messages")}
+                  className="mt-2 px-4 py-2 rounded-xl bg-[#FF5C33]/10 border border-[#FF5C33]/20 text-[#FF5C33] text-xs font-semibold hover:bg-[#FF5C33]/20 transition-all"
+                >
+                  Message {agentName}
+                </button>
+              </div>
+            )}
+
+            {/* ── Full Itinerary Content ── */}
+            {!loadingItinerary && !itineraryError && itineraryData?.available && itineraryData?.itinerary && (() => {
+              const itin = itineraryData.itinerary;
+              const days: any[] = itin.itinerary_data?.itinerary || [];
+              const showTimestamps = itin.show_timestamps !== false;
+              const hotels: any[] = itin.hotels || [];
+              const flights: any[] = itin.flights || [];
+              const cabs: any[] = itin.cabs || [];
+              const buses: any[] = itin.buses || [];
+              const currency = itin.currency || "INR";
+              const currencySymbol = currency === "INR" ? "₹" : currency === "USD" ? "$" : currency === "EUR" ? "€" : currency === "GBP" ? "£" : currency;
+              const fmt = (n: number) => n.toLocaleString("en-IN", { maximumFractionDigits: 0 });
+
+              // Compute pricing breakdown client-side from stored data
+              const pricing = itin.pricing || {};
+              const adultPax = itin.adult_pax || pricing.adultPax || 1;
+              const childPax = itin.child_pax || pricing.childPax || 0;
+              const infantPax = itin.infant_pax || pricing.infantPax || 0;
+              const totalPax = adultPax + childPax + infantPax;
+              const markupType = itin.markup_type || pricing.markupType || "percentage";
+              const markupValue = itin.markup_value ?? pricing.markupValue ?? 0;
+              const taxPct = itin.tax_percentage ?? pricing.taxPercentage ?? 0;
+              const costingType = pricing.costingType ?? "manual";
+
+              // Compute base cost from manual options if costingType is manual
+              let computedBaseCost = 0;
+              if (costingType === "manual" && Array.isArray(pricing.manualOptions) && pricing.manualOptions.length > 0) {
+                for (const item of pricing.manualOptions) {
+                  const amount = Number(item.amount) || 0;
+                  computedBaseCost += item.type === "per-person" ? amount * totalPax : amount;
+                }
+              }
+
+              // Use stored client_price as the authoritative final total (set during save),
+              // but fall back to computing from stored pricing data if client_price is 0
+              const storedClientPrice = itin.client_price || 0;
+              let clientPrice = storedClientPrice;
+
+              if (clientPrice === 0 && computedBaseCost > 0) {
+                // Compute from stored pricing data
+                const markupAmt = markupType === "percentage"
+                  ? (computedBaseCost * markupValue) / 100
+                  : markupValue;
+                const withMarkup = computedBaseCost + markupAmt;
+                clientPrice = withMarkup * (1 + taxPct / 100);
+              }
+
+              // Back-calculate base cost from final price if markup/tax known
+              const taxFactor = 1 + taxPct / 100;
+              const costWithMarkup = clientPrice / taxFactor;
+              const taxAmount = clientPrice - costWithMarkup;
+              const baseCost = computedBaseCost > 0
+                ? computedBaseCost
+                : (markupType === "percentage"
+                  ? costWithMarkup / (1 + markupValue / 100)
+                  : costWithMarkup - markupValue);
+              const markupAmount = costWithMarkup - baseCost;
+              const perPerson = totalPax > 0 ? clientPrice / totalPax : clientPrice;
+              const milestones: any[] = pricing.milestones || [];
+
+              return (
+                <div className="space-y-5">
+
+                  {/* ── Trip Hero Banner ── */}
+                  <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] bg-gradient-to-br from-[#FF5C33]/10 via-[#7C3AED]/8 to-[#EC4899]/10">
+                    {dayPhotos[0] && (
+                      <div className="absolute inset-0">
+                        <img src={dayPhotos[0]} alt="" className="w-full h-full object-cover opacity-20" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#05070A] via-[#05070A]/60 to-transparent" />
+                      </div>
+                    )}
+                    <div className="relative z-10 p-5">
+                      <p className="text-[10px] text-[#FF5C33] font-bold uppercase tracking-widest mb-1">Your Personalised Plan</p>
+                      <h3 className="text-xl font-black text-white leading-tight mb-1">{itin.title || "Your Trip"}</h3>
+                      <p className="text-xs text-gray-400 mb-4">{itin.destinations}</p>
+                      <div className="flex flex-wrap gap-3">
+                        {itin.start_date && (
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.06] border border-white/10 rounded-xl text-xs text-gray-300">
+                            <Calendar className="w-3.5 h-3.5 text-[#FF5C33]" />
+                            {itin.start_date} → {itin.end_date}
+                          </div>
+                        )}
+                        {((itin.adult_pax || 0) + (itin.child_pax || 0)) > 0 && (
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.06] border border-white/10 rounded-xl text-xs text-gray-300">
+                            <Users className="w-3.5 h-3.5 text-[#FF5C33]" />
+                            {(itin.adult_pax || 0) + (itin.child_pax || 0)} traveller{(itin.adult_pax || 0) + (itin.child_pax || 0) !== 1 ? "s" : ""}
+                          </div>
+                        )}
+                        {days.length > 0 && (
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.06] border border-white/10 rounded-xl text-xs text-gray-300">
+                            <MapPin className="w-3.5 h-3.5 text-[#FF5C33]" />
+                            {days.length} day{days.length !== 1 ? "s" : ""}
+                          </div>
+                        )}
+                        {clientPrice > 0 && (
+                          <div className="flex items-center gap-1.5 px-3 py-1.5 bg-[#7C3AED]/15 border border-[#7C3AED]/25 rounded-xl text-xs text-purple-200 font-semibold">
+                            <CreditCard className="w-3.5 h-3.5 text-purple-400" />
+                            {currencySymbol}{fmt(clientPrice)}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  <ItinerarySubTabs
+                    days={days}
+                    flights={flights}
+                    hotels={hotels}
+                    cabs={cabs}
+                    buses={buses}
+                    itin={itin}
+                    pricing={pricing}
+                    clientPrice={clientPrice}
+                    baseCost={baseCost}
+                    markupAmount={markupAmount}
+                    taxAmount={taxAmount}
+                    taxPct={taxPct}
+                    markupType={markupType}
+                    markupValue={markupValue}
+                    totalPax={totalPax}
+                    adultPax={adultPax}
+                    childPax={childPax}
+                    infantPax={infantPax}
+                    perPerson={perPerson}
+                    milestones={milestones}
+                    currencySymbol={currencySymbol}
+                    fmt={fmt}
+                    showTimestamps={showTimestamps}
+                    dayPhotos={dayPhotos}
+                    loadingPhotos={loadingPhotos}
+                    shareUrl={response.itinerary_share_url}
+                  />
+                </div>
+              );
+            })()}
           </div>
         )}
 

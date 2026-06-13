@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerComponentClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { updateItineraryStatus } from "@/services/itinerary/ItineraryService";
 
 // GET /api/enquiry-forms/[formId]/responses/[responseId]
 // Used by the client dashboard to fetch their own submission data
@@ -89,6 +90,17 @@ export async function PATCH(
       }
       updates.workflow_status = body.workflow_status;
     }
+    // Agent can manually link a Lab itinerary (or update the link)
+    if (body.converted_itinerary_id !== undefined) {
+      updates.converted_itinerary_id = body.converted_itinerary_id || null;
+    }
+    // Agent explicitly pushes itinerary to client dashboard
+    if (body.itinerary_visible_to_client !== undefined) {
+      updates.itinerary_visible_to_client = Boolean(body.itinerary_visible_to_client);
+      if (body.itinerary_visible_to_client) {
+        updates.itinerary_last_pushed_at = new Date().toISOString();
+      }
+    }
 
     if (Object.keys(updates).length === 0) {
       return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
@@ -105,6 +117,20 @@ export async function PATCH(
 
     if (updateError || !updated) {
       return NextResponse.json({ error: "Update failed" }, { status: 500 });
+    }
+
+    // Synchronize status back to itineraries table if converted_itinerary_id exists
+    if (updated.converted_itinerary_id && updates.workflow_status) {
+      let itineraryStatus = "draft";
+      if (updates.workflow_status === "under_review") itineraryStatus = "proposed";
+      else if (updates.workflow_status === "itinerary_ready") itineraryStatus = "sent";
+      else if (updates.workflow_status === "booked") itineraryStatus = "booked";
+
+      try {
+        await updateItineraryStatus(updated.converted_itinerary_id, itineraryStatus, admin as any, user.id);
+      } catch (err) {
+        console.error("[response PATCH] Failed to update itinerary status:", err);
+      }
     }
 
     return NextResponse.json({ response: updated });

@@ -41,6 +41,7 @@ export interface ClientEnquiryResponse {
   id: string;
   form_id: string;
   client_user_id: string | null;
+  client_id: string | null;
   client_email: string;
   client_name: string | null;
   status: EnquiryResponseStatus;

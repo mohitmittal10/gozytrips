@@ -171,7 +171,12 @@ export function ItineraryProvider({ children, initialTrip }: ItineraryProviderPr
       pricing: {
         ...defaultPricing,
         ...initialTrip?.pricing,
+        // Always ensure milestones is an array
         milestones: initialTrip?.pricing?.milestones ?? (initialTrip ? defaultPricing.milestones : defaultPricing.milestones),
+        // Always ensure manualOptions is an array (guards against undefined spread from old DB records)
+        manualOptions: initialTrip?.pricing?.manualOptions ?? defaultPricing.manualOptions,
+        // Default costingType to 'manual' if not explicitly set
+        costingType: initialTrip?.pricing?.costingType ?? 'manual',
       },
       isDirty: false,
     });

@@ -129,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.warn('Error bootstrapping user data via RPC, falling back to parallel fetches:', error);
+        console.warn('Error bootstrapping user data via RPC, falling back to parallel fetches:', error.message || error);
         // Fallback to individual fetches if RPC fails (e.g. migration not yet applied)
         await Promise.all([
           fetchUserProfile(userId),
@@ -161,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching user profile:', error);
+        console.error('Error fetching user profile:', error.message || error);
       } else if (data) {
         setUserProfile(data as UserProfile);
       }
@@ -179,7 +179,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching agency settings:', error);
+        console.error('Error fetching agency settings:', error.message || error);
       } else if (data) {
         setAgencySettings(data as AgencySettings);
       }
@@ -197,7 +197,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching user preferences:', error);
+        console.error('Error fetching user preferences:', error.message || error);
       } else if (data) {
         setUserPreferences(data as UserPreferences);
       } else {
@@ -250,7 +250,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .maybeSingle();
 
       if (error) {
-        console.error('Error updating user preferences:', error);
+        console.error('Error updating user preferences:', error.message || error);
         throw error;
       } else if (data) {
         setUserPreferences(data as UserPreferences);

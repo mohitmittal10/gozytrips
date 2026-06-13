@@ -156,8 +156,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
     pricing,
     baseCost,
     finalTotal,
-    showTimestamps: trip.show_timestamps ?? true,
-    showPrices: trip.show_prices ?? true
+    showTimestamps: trip.show_timestamps ?? true
   };
 
   const pdfFilename = `${(title || trip.title || "Itinerary").replace(/\s+/g, "_")}.pdf`;

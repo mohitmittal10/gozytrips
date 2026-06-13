@@ -141,9 +141,41 @@ export async function POST(
       return NextResponse.json({ error: "End date must be after start date." }, { status: 400 });
     }
 
+    // Check if client already exists by email for this agent
+    let resolvedClientId = null;
+    const { data: existingClient } = await admin
+      .from("clients")
+      .select("id")
+      .eq("email", body.client_email.trim().toLowerCase())
+      .eq("user_id", form.user_id)
+      .maybeSingle();
+
+    if (existingClient) {
+      resolvedClientId = existingClient.id;
+    } else {
+      // Auto-create client in the agents client database
+      const clientName = body.client_name ? sanitizeText(body.client_name, 100) : (body.client_email.trim().split("@")[0] || "Unnamed Client");
+      const { data: newClient, error: clientCreateError } = await admin
+        .from("clients")
+        .insert([{
+          name: clientName,
+          email: body.client_email.trim().toLowerCase(),
+          user_id: form.user_id
+        }])
+        .select("id")
+        .single();
+
+      if (clientCreateError) {
+        console.error("Failed to auto-create client on form submission:", clientCreateError);
+      } else if (newClient) {
+        resolvedClientId = newClient.id;
+      }
+    }
+
     // Sanitize & validate all text
     const sanitized = {
       client_user_id: user.id,
+      client_id: resolvedClientId,
       client_email: body.client_email.trim().toLowerCase(),
       client_name: body.client_name ? sanitizeText(body.client_name, 100) : null,
       form_id: formId,

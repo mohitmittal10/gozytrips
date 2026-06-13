@@ -87,6 +87,7 @@ export function flattenTrips(clients: EnrichedClient[]): FlatTrip[] {
                 tripCost,
                 share_token: trip.share_token,
                 share_enabled: trip.share_enabled,
+                itinerary_data: trip.itinerary_data,
             });
         });
     });

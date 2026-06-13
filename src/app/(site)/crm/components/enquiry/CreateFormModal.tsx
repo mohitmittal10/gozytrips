@@ -1,21 +1,19 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Link, Loader, AlertCircle, Check, Calendar } from "lucide-react";
+import { X, Link, Loader, AlertCircle, Check, Calendar, MapPin, Compass, Users, Plane, DollarSign, MessageSquare, Heart } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { CreateEnquiryFormPayload } from "@/types/enquiry";
 
 interface CreateFormModalProps {
-  clients: { id: string; name: string }[];
   onClose: () => void;
   onCreated: (form: any) => void;
   createForm: (payload: CreateEnquiryFormPayload) => Promise<any>;
 }
 
-export function CreateFormModal({ clients, onClose, onCreated, createForm }: CreateFormModalProps) {
+export function CreateFormModal({ onClose, onCreated, createForm }: CreateFormModalProps) {
   const [title, setTitle] = useState("Travel Enquiry Form");
   const [description, setDescription] = useState("");
-  const [clientId, setClientId] = useState("");
   const [expiresAt, setExpiresAt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,7 +33,6 @@ export function CreateFormModal({ clients, onClose, onCreated, createForm }: Cre
       const form = await createForm({
         title: title.trim(),
         description: description.trim() || undefined,
-        client_id: clientId || undefined,
         expires_at: expiresAt || undefined,
       });
       setCreatedForm(form);
@@ -78,7 +75,7 @@ export function CreateFormModal({ clients, onClose, onCreated, createForm }: Cre
           </button>
         </div>
 
-        <div className="p-6 space-y-4">
+        <div className="p-6 space-y-4 max-h-[75vh] overflow-y-auto">
           {!createdForm ? (
             <>
               <div>
@@ -109,24 +106,6 @@ export function CreateFormModal({ clients, onClose, onCreated, createForm }: Cre
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">
-                  Associate with Client <span className="text-gray-700 font-normal normal-case tracking-normal">(optional)</span>
-                </label>
-                <select
-                  value={clientId}
-                  onChange={(e) => setClientId(e.target.value)}
-                  className="w-full h-10 px-3 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-purple-500/50 text-sm"
-                >
-                  <option value="">No specific client</option>
-                  {clients.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">
                   <Calendar className="inline w-3 h-3 mr-1" />
                   Expiry Date <span className="text-gray-700 font-normal normal-case tracking-normal">(optional)</span>
                 </label>
@@ -137,6 +116,22 @@ export function CreateFormModal({ clients, onClose, onCreated, createForm }: Cre
                   onChange={(e) => setExpiresAt(e.target.value)}
                   className="w-full h-10 px-3 rounded-xl bg-black/40 border border-white/10 text-white focus:outline-none focus:border-purple-500/50 text-sm [color-scheme:dark]"
                 />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2">
+                  Form Fields Included
+                </label>
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 p-3.5 bg-black/35 border border-white/[0.06] rounded-xl text-xs text-gray-400">
+                  <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-purple-400 shrink-0" /> <span>Start/End Locations</span></div>
+                  <div className="flex items-center gap-1.5"><Compass className="w-3.5 h-3.5 text-purple-400 shrink-0" /> <span>Destinations</span></div>
+                  <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-purple-400 shrink-0" /> <span>Travel Dates</span></div>
+                  <div className="flex items-center gap-1.5"><Users className="w-3.5 h-3.5 text-purple-400 shrink-0" /> <span>Passenger Counts</span></div>
+                  <div className="flex items-center gap-1.5"><Heart className="w-3.5 h-3.5 text-purple-400 shrink-0" /> <span>Trip Style Preference</span></div>
+                  <div className="flex items-center gap-1.5"><Plane className="w-3.5 h-3.5 text-purple-400 shrink-0" /> <span>Travel Methods</span></div>
+                  <div className="flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5 text-purple-400 shrink-0" /> <span>Approx. Budget</span></div>
+                  <div className="flex items-center gap-1.5"><MessageSquare className="w-3.5 h-3.5 text-purple-400 shrink-0" /> <span>Special Requests</span></div>
+                </div>
               </div>
 
               {error && (

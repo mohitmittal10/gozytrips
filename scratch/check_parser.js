@@ -1,28 +1,58 @@
-const ts = require('typescript');
-const fs = require('fs');
-const path = require('path');
+const SQLI_PATTERN =
+  /(?:--|\/\*|\*\/|;\s*(?:select|insert|update|delete|drop|alter|truncate|union|exec(?:ute)?|create)\b|union\s+select|information_schema|xp_cmdshell|'\s*(?:or|and)\s*['"(]?\w+['")\s]*=\s*['"(]?\w+|"\s*(?:or|and)\s*["'(]?\w+["')\s]*=\s*["'(]?\w+)/i;
+const NOSQLI_PATTERN =
+  /(?:^|[\s{[(,])\$(?:where|gt|gte|lt|lte|ne|eq|in|nin|regex|expr|function|accumulator)\b|["']\$(?:where|gt|gte|lt|lte|ne|regex|expr)["']\s*:/i;
 
-const filePath = path.resolve(__dirname, '../src/components/pdf/themes/dark-theme.tsx');
-console.log('Checking file:', filePath);
+function sanitizeForCrmNotes(text) {
+  let sanitized = text
+    .replace(/"/g, "'")       // double quotes -> single quote
+    .replace(/;/g, ",")       // semicolon -> comma
+    .replace(/=/g, "-")       // equals -> hyphen
+    .replace(/\*/g, "-")      // asterisk -> hyphen
+    .replace(/_/g, "-")       // underscore -> hyphen
+    .replace(/\[/g, "(")      // open bracket -> open parenthesis
+    .replace(/\]/g, ")")      // close bracket -> close parenthesis
+    .replace(/\{/g, "(")      // open brace -> open parenthesis
+    .replace(/\}/g, ")")      // close brace -> close parenthesis
+    .replace(/</g, "(")       // open angle bracket -> open parenthesis
+    .replace(/>/g, ")")       // close angle bracket -> close parenthesis
+    .replace(/\\/g, "/");     // backslash -> forward slash
 
-const fileContent = fs.readFileSync(filePath, 'utf8');
+  // Do standard replacement of comments and union select
+  sanitized = sanitized
+    .replace(/\/\*/g, "/")
+    .replace(/\*\//g, "/")
+    .replace(/union\s+select/gi, "union and select");
 
-const sourceFile = ts.createSourceFile(
-    filePath,
-    fileContent,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TSX
-);
+  // Collapse multiple hyphens into a single hyphen to prevent SQL comments (--)
+  sanitized = sanitized.replace(/-{2,}/g, "-");
 
-const diagnostics = sourceFile.parseDiagnostics;
-
-if (diagnostics.length === 0) {
-    console.log('No syntax errors found by TypeScript compiler parser!');
-} else {
-    console.log('Found syntactic diagnostics:');
-    diagnostics.forEach(diag => {
-        const { line, character } = sourceFile.getLineAndCharacterOfPosition(diag.start);
-        console.log(`Error at line ${line + 1}, char ${character + 1}: ${diag.messageText}`);
-    });
+  // Allow: Letters, marks, numbers, whitespace, and: . , ' ’ : / ( ) # & ! ? % + - @
+  const forbiddenCharRegex = /[^\p{L}\p{M}\p{N}\s.,'’:\/()#&!?%+\-@]/gu;
+  return sanitized.replace(forbiddenCharRegex, "");
 }
+
+// Test cases
+const testEmails = [
+  "Hi, here is your update.\n\n---\nBest regards",
+  "It's or we can update select values; let's see.",
+  "Cost: $500, which is standard.",
+  "Let's check: union select info",
+  "The hotel is /* premium */ and costs $eq to others",
+];
+
+testEmails.forEach((email, i) => {
+  const clean = sanitizeForCrmNotes(email);
+  const sqli = SQLI_PATTERN.test(clean);
+  const nosqli = NOSQLI_PATTERN.test(clean);
+  console.log(`Test ${i + 1}:`);
+  console.log(`  Raw  : ${JSON.stringify(email)}`);
+  console.log(`  Clean: ${JSON.stringify(clean)}`);
+  console.log(`  SQLI : ${sqli}`);
+  console.log(`  NOSQL: ${nosqli}`);
+  if (sqli || nosqli) {
+    console.log("  FAILED!");
+  } else {
+    console.log("  PASSED");
+  }
+});

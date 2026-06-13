@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 
 import { type Client } from "@/lib/hooks/use-clients";
 import { useFormDraft } from "@/hooks/use-form-draft";
+import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,9 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
   const { toast } = useToast();
   const [tagInput, setTagInput] = useState("");
   const [hasFailedSubmit, setHasFailedSubmit] = useState(false);
+  const [dbClient, setDbClient] = useState<Client | null>(null);
+  const [isLoadingDb, setIsLoadingDb] = useState(false);
+  const supabase = useMemo(() => createClient(), []);
 
   const form = useForm<ClientFormValues>({
     resolver: zodResolver(clientFormSchema),
@@ -64,23 +68,46 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
     },
   });
 
-  const formKey = isOpen ? (client ? `client:${client.id}` : "client:new") : null;
+  const formKey = isOpen && !client ? "client:new" : null;
 
-  const { saveDraft, clearDraft } = useFormDraft(
+  const { saveDraft, clearDraft } = useFormDraft<ClientFormValues>(
     formKey,
-    client
-      ? {
-          name: client.name || "",
-          email: client.email || "",
-          phone: client.phone || "",
-          notes: client.notes || "",
-          tags: client.tags ? [...client.tags] : [],
-        }
-      : { name: "", email: "", phone: "", notes: "", tags: [] },
+    { name: "", email: "", phone: "", notes: "", tags: [] },
     (draftData) => {
       form.reset(draftData);
     }
   );
+
+  // Fetch latest client details from DB when opening to edit
+  useEffect(() => {
+    if (!isOpen || !client?.id) {
+      setDbClient(null);
+      return;
+    }
+
+    const fetchLatestClient = async () => {
+      setIsLoadingDb(true);
+      try {
+        const { data, error } = await supabase
+          .from("clients")
+          .select("*")
+          .eq("id", client.id)
+          .single();
+        if (data && !error) {
+          setDbClient({
+            ...data,
+            tags: data.tags || []
+          });
+        }
+      } catch (err) {
+        console.error("Error fetching client from db:", err);
+      } finally {
+        setIsLoadingDb(false);
+      }
+    };
+
+    fetchLatestClient();
+  }, [client?.id, isOpen, supabase]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -89,18 +116,20 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
 
     setTagInput("");
     setHasFailedSubmit(false);
+    
+    const targetClient = dbClient || client;
     form.reset(
-      client
+      targetClient
         ? {
-            name: client.name || "",
-            email: client.email || "",
-            phone: client.phone || "",
-            notes: client.notes || "",
-            tags: client.tags ? [...client.tags] : [],
+            name: targetClient.name || "",
+            email: targetClient.email || "",
+            phone: targetClient.phone || "",
+            notes: targetClient.notes || "",
+            tags: targetClient.tags ? [...targetClient.tags] : [],
           }
         : { name: "", email: "", phone: "", notes: "", tags: [] }
     );
-  }, [client, isOpen, form]);
+  }, [client, dbClient, isOpen, form]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -200,12 +229,12 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="glass-main border-white/10 text-white sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit, () => setHasFailedSubmit(true))} noValidate>
             <DialogHeader>
-              <DialogTitle>{client ? "Edit Client" : "Add New Client"}</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-xl font-bold text-white">{client ? "Edit Client" : "Add New Client"}</DialogTitle>
+              <DialogDescription className="text-slate-400 text-sm">
                 {client
                   ? "Update the details for this client."
                   : "Enter the details for your new client or lead."}
@@ -216,8 +245,8 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
               {form.formState.submitCount > 0 && formErrors.length > 1 && (
                 <Alert className="border-amber-500/30 bg-amber-500/10" aria-live="polite">
                   <AlertCircle className="h-4 w-4 text-amber-300" />
-                  <AlertTitle>Please check the highlighted fields</AlertTitle>
-                  <AlertDescription>
+                  <AlertTitle className="text-sm font-semibold text-white">Please check the highlighted fields</AlertTitle>
+                  <AlertDescription className="text-xs text-slate-300">
                     {formErrors.map((message, index) => (
                       <p key={`${message}-${index}`}>{message}</p>
                     ))}
@@ -234,21 +263,24 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
 
                   return (
                     <FormItem className="space-y-1.5">
-                      <FormLabel>Name *</FormLabel>
+                      <FormLabel className="text-slate-300 text-sm font-medium">Name *</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
                             placeholder="Client's full name"
                             maxLength={100}
                             {...field}
-                            className={cn(showSuccess && "border-emerald-500/40 pr-10")}
+                            className={cn(
+                              "bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20",
+                              showSuccess && "border-emerald-500/40 pr-10"
+                            )}
                           />
                         </FormControl>
                         {showSuccess && (
                           <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
                         )}
                       </div>
-                      <FormMessage className="text-xs" aria-live="polite" />
+                      <FormMessage className="text-xs text-rose-400 font-medium" aria-live="polite" />
                     </FormItem>
                   );
                 }}
@@ -263,7 +295,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
 
                   return (
                     <FormItem className="space-y-1.5">
-                      <FormLabel>Email</FormLabel>
+                      <FormLabel className="text-slate-300 text-sm font-medium">Email</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
@@ -271,7 +303,10 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                             placeholder="client@example.com"
                             maxLength={254}
                             {...field}
-                            className={cn(showSuccess && "border-emerald-500/40 pr-10")}
+                            className={cn(
+                              "bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20",
+                              showSuccess && "border-emerald-500/40 pr-10"
+                            )}
                           />
                         </FormControl>
                         {showSuccess && (
@@ -279,11 +314,11 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                         )}
                       </div>
                       {!fieldState.error && emailSuggestion && emailSuggestion !== field.value && (
-                        <FormDescription className="text-xs text-amber-600">
+                        <FormDescription className="text-xs text-amber-400 font-medium">
                           Did you mean{" "}
                           <button
                             type="button"
-                            className="underline"
+                            className="underline hover:text-amber-300 transition-colors"
                             onClick={() =>
                               form.setValue("email", emailSuggestion, {
                                 shouldValidate: true,
@@ -296,7 +331,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                           ?
                         </FormDescription>
                       )}
-                      <FormMessage className="text-xs" aria-live="polite" />
+                      <FormMessage className="text-xs text-rose-400 font-medium" aria-live="polite" />
                     </FormItem>
                   );
                 }}
@@ -311,7 +346,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
 
                   return (
                     <FormItem className="space-y-1.5">
-                      <FormLabel>Phone</FormLabel>
+                      <FormLabel className="text-slate-300 text-sm font-medium">Phone</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
@@ -322,32 +357,36 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                             onChange={(event) =>
                               field.onChange(formatPhoneInput(event.target.value))
                             }
-                            className={cn(showSuccess && "border-emerald-500/40 pr-10")}
+                            className={cn(
+                              "bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20",
+                              showSuccess && "border-emerald-500/40 pr-10"
+                            )}
                           />
                         </FormControl>
                         {showSuccess && (
                           <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
                         )}
                       </div>
-                      <FormDescription className="text-xs">
+                      <FormDescription className="text-xs text-slate-400 leading-normal">
                         International numbers are welcome. We keep your formatting while cleaning unsafe characters.
                       </FormDescription>
-                      <FormMessage className="text-xs" aria-live="polite" />
+                      <FormMessage className="text-xs text-rose-400 font-medium" aria-live="polite" />
                     </FormItem>
                   );
                 }}
               />
 
               <div className="space-y-1.5">
-                <FormLabel>Tags</FormLabel>
+                <FormLabel className="text-slate-300 text-sm font-medium">Tags</FormLabel>
                 <Input
                   value={tagInput}
                   onChange={(event) => setTagInput(event.target.value.slice(0, 30))}
                   onKeyDown={handleAddTag}
                   placeholder="Type and press Enter or comma to add"
                   maxLength={30}
+                  className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20"
                 />
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-slate-400">
                   Letters, numbers, spaces, hyphens only. Max 20 tags.
                 </p>
                 {tags.length > 0 && (
@@ -356,7 +395,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                       <Badge
                         key={`${tag}-${index}`}
                         variant="secondary"
-                        className="flex items-center gap-1 border-primary/20 bg-primary/20 text-primary hover:bg-primary/30"
+                        className="flex items-center gap-1 border-primary/20 bg-primary/20 text-primary hover:bg-primary/30 text-xs py-0.5 px-2"
                       >
                         {tag}
                         <button
@@ -383,10 +422,10 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                   return (
                     <FormItem className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <FormLabel>Notes</FormLabel>
+                        <FormLabel className="text-slate-300 text-sm font-medium">Notes</FormLabel>
                         <span
                           className={cn(
-                            "text-[10px] text-muted-foreground",
+                            "text-xs text-slate-400",
                             field.value.length > 900 && "text-amber-500"
                           )}
                         >
@@ -400,30 +439,39 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                             rows={3}
                             maxLength={1000}
                             {...field}
-                            className={cn(showSuccess && "border-emerald-500/40 pr-10")}
+                            className={cn(
+                              "bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20",
+                              showSuccess && "border-emerald-500/40 pr-10"
+                            )}
                           />
                         </FormControl>
                         {showSuccess && (
                           <CheckCircle2 className="absolute right-3 top-4 h-4 w-4 text-emerald-500" />
                         )}
                       </div>
-                      <FormDescription className="text-xs">
+                      <FormDescription className="text-xs text-slate-400 leading-normal">
                         This field validates on blur and blocks script-like, database-style, and prompt-injection text.
                       </FormDescription>
-                      <FormMessage className="text-xs" aria-live="polite" />
+                      <FormMessage className="text-xs text-rose-400 font-medium" aria-live="polite" />
                     </FormItem>
                   );
                 }}
               />
             </div>
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <DialogFooter className="gap-2 sm:gap-0 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+                className="glass-button border-white/10 hover:bg-white/10 hover:text-white"
+              >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={form.formState.isSubmitting || (hasFailedSubmit && !form.formState.isValid)}
+                className="glass-button border-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90 transition-opacity"
               >
                 {form.formState.isSubmitting ? "Saving..." : "Save Client"}
               </Button>

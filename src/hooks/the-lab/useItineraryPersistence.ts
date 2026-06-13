@@ -101,7 +101,17 @@ export function useItineraryPersistence({
             flights: flights || [],
             cabs: cabs || [],
             buses: buses || [],
-            pricing: { ...pricing, currency: data.currency || pricing?.currency || DEFAULT_CURRENCY },
+            pricing: {
+              ...defaultPricingConfig,
+              ...pricing,
+              // Ensure arrays are never undefined from old DB records
+              manualOptions: pricing?.manualOptions ?? [],
+              milestones: pricing?.milestones ?? defaultPricingConfig.milestones,
+              // Default costingType to 'manual' if not explicitly stored
+              costingType: pricing?.costingType ?? 'manual',
+              // DB currency column always wins
+              currency: data.currency || pricing?.currency || DEFAULT_CURRENCY,
+            },
             optimizationCount: data.optimization_count || 0,
             selectedClientId: data.client_id || "none",
             selectedStatus: data.status || "draft",
@@ -158,13 +168,22 @@ export function useItineraryPersistence({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return null;
 
+      const pricingCfg = {
+        ...defaultPricingConfig,
+        ...(data.pricing || {}),
+        // Always ensure these are arrays and costingType is set
+        manualOptions: data.pricing?.manualOptions ?? [],
+        milestones: data.pricing?.milestones ?? defaultPricingConfig.milestones,
+        costingType: data.pricing?.costingType ?? 'manual',
+      };
+
       const itineraryData = {
         ...(data.itinerary || {}),
         hotels: data.hotels || [],
         flights: data.flights || [],
         cabs: data.cabs || [],
         buses: data.buses || [],
-        pricing: data.pricing,
+        pricing: pricingCfg,
         inclusions: data.inclusions !== undefined ? data.inclusions : "",
         exclusions: data.exclusions !== undefined ? data.exclusions : "",
         termsAndConditions: data.termsAndConditions !== undefined ? data.termsAndConditions : "",
@@ -211,7 +230,7 @@ export function useItineraryPersistence({
         if (!isNaN(d.getTime())) endDate = format(d, "yyyy-MM-dd");
       }
 
-      const pricingCfg = { ...defaultPricingConfig, ...(data.pricing || {}) };
+      // pricingCfg is already defined above with proper defaults
 
       const { finalTotal } = calcPricingBreakdown({
         itinerary: (data.itinerary as any)?.itinerary || [],
@@ -251,6 +270,8 @@ export function useItineraryPersistence({
         selected_theme: data.selectedTheme || 'classic',
         pdf_overrides: data.pdfOverrides || {},
         draft_source_itinerary_id: data.draftSourceItineraryId,
+        ...(data.share_token !== undefined ? { share_token: data.share_token } : {}),
+        ...(data.share_enabled !== undefined ? { share_enabled: data.share_enabled } : {}),
         last_activity_at: new Date().toISOString(),
         currency: pricingCfg.currency,
         updated_financial_at: new Date().toISOString()

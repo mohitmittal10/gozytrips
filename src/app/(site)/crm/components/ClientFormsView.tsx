@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { X, Link, Copy, Check, Trash2, RefreshCw, Mail,
   AlertCircle, ExternalLink, Users, Calendar, Zap, ChevronRight,
-  FileText, Clock, Plus, Inbox
+  FileText, Clock, Plus, Inbox, MapPin, Compass, DollarSign,
+  MessageSquare, Heart, Plane, ChevronDown, ChevronUp, Edit3, Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -52,6 +53,190 @@ function CopiedButton({ url }: { url: string }) {
 }
 
 // ─── Forms list ───────────────────────────────────────────────────────────────
+interface FormCardProps {
+  form: ClientEnquiryForm;
+  shareUrl: string;
+  isExpired: boolean | null;
+  onViewResponses: (form: ClientEnquiryForm) => void;
+  onDelete: (formId: string) => void;
+  onRename: (formId: string, newTitle: string) => Promise<void>;
+}
+
+function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRename }: FormCardProps) {
+  const [showFields, setShowFields] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [editTitleVal, setEditTitleVal] = useState(form.title);
+  const [renaming, setRenaming] = useState(false);
+
+  useEffect(() => {
+    setEditTitleVal(form.title);
+  }, [form.title]);
+
+  const handleRename = async () => {
+    if (!editTitleVal.trim() || editTitleVal.trim().length < 2) {
+      alert("Title must be at least 2 characters.");
+      return;
+    }
+    if (editTitleVal.trim() === form.title) {
+      setIsEditingTitle(false);
+      return;
+    }
+    setRenaming(true);
+    try {
+      await onRename(form.id, editTitleVal.trim());
+      setIsEditingTitle(false);
+    } catch (err: any) {
+      alert(err.message || "Failed to rename form");
+    } finally {
+      setRenaming(false);
+    }
+  };
+
+  return (
+    <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all group flex flex-col justify-between">
+      <div>
+        {/* Header */}
+        <div className="flex items-start justify-between gap-2 mb-3">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border", isExpired ? STATUS_COLORS.expired : STATUS_COLORS[form.status])}>
+                {isExpired ? "Expired" : form.status}
+              </span>
+              {form.response_count !== undefined && form.response_count > 0 && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                  {form.response_count} response{form.response_count !== 1 ? "s" : ""}
+                </span>
+              )}
+            </div>
+
+            {isEditingTitle ? (
+              <div className="flex items-center gap-1.5 w-full mt-1.5">
+                <input
+                  type="text"
+                  value={editTitleVal}
+                  onChange={(e) => setEditTitleVal(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleRename();
+                    if (e.key === "Escape") {
+                      setEditTitleVal(form.title);
+                      setIsEditingTitle(false);
+                    }
+                  }}
+                  disabled={renaming}
+                  autoFocus
+                  className="flex-1 h-8 px-2 rounded-lg bg-black/50 border border-purple-500/40 text-xs text-white focus:outline-none focus:border-purple-500"
+                />
+                <button
+                  onClick={handleRename}
+                  disabled={renaming || !editTitleVal.trim() || editTitleVal.trim().length < 2}
+                  className="p-1 text-green-400 hover:text-green-300 disabled:opacity-40 transition-colors shrink-0"
+                  title="Save Title"
+                >
+                  {renaming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                </button>
+                <button
+                  onClick={() => {
+                    setEditTitleVal(form.title);
+                    setIsEditingTitle(false);
+                  }}
+                  disabled={renaming}
+                  className="p-1 text-gray-500 hover:text-gray-300 transition-colors shrink-0"
+                  title="Cancel"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 group/title mt-1 w-full">
+                <h3 className="text-sm font-semibold text-white truncate max-w-[85%]">{form.title}</h3>
+                <button
+                  onClick={() => setIsEditingTitle(true)}
+                  className="opacity-0 group-hover/title:opacity-100 p-0.5 text-gray-500 hover:text-purple-400 hover:bg-white/5 rounded transition-all shrink-0"
+                  title="Rename Form"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+
+            {form.client_name && (
+              <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                <Users className="w-3 h-3" /> {form.client_name}
+              </p>
+            )}
+            {form.description && (
+              <p className="text-xs text-gray-600 mt-1 line-clamp-2">{form.description}</p>
+            )}
+          </div>
+        </div>
+
+        {/* Toggle fields view */}
+        <div className="mt-2.5 mb-1">
+          <button
+            onClick={() => setShowFields(!showFields)}
+            className="flex items-center gap-1 text-[11px] font-semibold text-purple-400 hover:text-purple-300 transition-colors"
+          >
+            {showFields ? (
+              <>
+                Hide Fields <ChevronUp className="w-3 h-3" />
+              </>
+            ) : (
+              <>
+                View Fields <ChevronDown className="w-3 h-3" />
+              </>
+            )}
+          </button>
+
+          {showFields && (
+            <div className="mt-2 p-3 bg-black/40 border border-white/5 rounded-xl space-y-1.5 text-[11px] text-gray-400 animate-in fade-in duration-200">
+              <p className="font-medium text-white/80 border-b border-white/5 pb-1 mb-1.5">This form collects:</p>
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+                <div className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-purple-400 shrink-0" /> <span>Start/End Locations</span></div>
+                <div className="flex items-center gap-1.5"><Compass className="w-3 h-3 text-purple-400 shrink-0" /> <span>Destinations</span></div>
+                <div className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-purple-400 shrink-0" /> <span>Travel Dates</span></div>
+                <div className="flex items-center gap-1.5"><Users className="w-3 h-3 text-purple-400 shrink-0" /> <span>Passenger Counts</span></div>
+                <div className="flex items-center gap-1.5"><Heart className="w-3 h-3 text-purple-400 shrink-0" /> <span>Trip Style Preference</span></div>
+                <div className="flex items-center gap-1.5"><Plane className="w-3 h-3 text-purple-400 shrink-0" /> <span>Travel Methods</span></div>
+                <div className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-purple-400 shrink-0" /> <span>Timing Preference</span></div>
+                <div className="flex items-center gap-1.5"><DollarSign className="w-3 h-3 text-purple-400 shrink-0" /> <span>Approx. Budget</span></div>
+                <div className="flex items-center gap-1.5 col-span-2"><MessageSquare className="w-3 h-3 text-purple-400 shrink-0" /> <span>Special Requests</span></div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div>
+        {/* Footer */}
+        <div className="flex items-center gap-2 mt-4">
+          <CopiedButton url={shareUrl} />
+          <button
+            onClick={() => onViewResponses(form)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-purple-500/20 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-all"
+          >
+            <Inbox className="w-3 h-3" /> Responses {form.response_count ? `(${form.response_count})` : ""}
+          </button>
+          <button
+            onClick={() => onDelete(form.id)}
+            className="ml-auto p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-colors opacity-0 group-hover:opacity-100"
+            title="Archive form"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        {form.expires_at && (
+          <p className="text-[10px] text-gray-700 mt-3 flex items-center gap-1">
+            <Clock className="w-3 h-3" />
+            {isExpired ? "Expired" : "Expires"} {new Date(form.expires_at).toLocaleDateString()}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Forms list ───────────────────────────────────────────────────────────────
 function FormsList({
   forms,
   formsLoading,
@@ -59,6 +244,7 @@ function FormsList({
   onViewResponses,
   onDelete,
   onCreateNew,
+  onRename,
 }: {
   forms: ClientEnquiryForm[];
   formsLoading: boolean;
@@ -66,6 +252,7 @@ function FormsList({
   onViewResponses: (form: ClientEnquiryForm) => void;
   onDelete: (formId: string) => void;
   onCreateNew: () => void;
+  onRename: (formId: string, newTitle: string) => Promise<void>;
 }) {
   const portalBase = typeof window !== "undefined" ? window.location.origin : "";
 
@@ -116,63 +303,18 @@ function FormsList({
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {forms.map((form) => {
         const shareUrl = `${portalBase}/client-portal/${form.share_token}`;
-        const isExpired = form.expires_at && new Date(form.expires_at) < new Date();
+        const isExpired = form.expires_at ? new Date(form.expires_at) < new Date() : null;
 
         return (
-          <div
+          <FormCard
             key={form.id}
-            className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all group"
-          >
-            {/* Header */}
-            <div className="flex items-start justify-between gap-2 mb-3">
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border", isExpired ? STATUS_COLORS.expired : STATUS_COLORS[form.status])}>
-                    {isExpired ? "Expired" : form.status}
-                  </span>
-                  {form.response_count !== undefined && form.response_count > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                      {form.response_count} response{form.response_count !== 1 ? "s" : ""}
-                    </span>
-                  )}
-                </div>
-                <h3 className="text-sm font-semibold text-white truncate">{form.title}</h3>
-                {form.client_name && (
-                  <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                    <Users className="w-3 h-3" /> {form.client_name}
-                  </p>
-                )}
-                {form.description && (
-                  <p className="text-xs text-gray-600 mt-1 line-clamp-2">{form.description}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex items-center gap-2 mt-4">
-              <CopiedButton url={shareUrl} />
-              <button
-                onClick={() => onViewResponses(form)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-purple-500/20 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-all"
-              >
-                <Inbox className="w-3 h-3" /> Responses {form.response_count ? `(${form.response_count})` : ""}
-              </button>
-              <button
-                onClick={() => onDelete(form.id)}
-                className="ml-auto p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-400/10 transition-colors opacity-0 group-hover:opacity-100"
-                title="Archive form"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
-
-            {form.expires_at && (
-              <p className="text-[10px] text-gray-700 mt-3 flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {isExpired ? "Expired" : "Expires"} {new Date(form.expires_at).toLocaleDateString()}
-              </p>
-            )}
-          </div>
+            form={form}
+            shareUrl={shareUrl}
+            isExpired={isExpired}
+            onViewResponses={onViewResponses}
+            onDelete={onDelete}
+            onRename={onRename}
+          />
         );
       })}
     </div>
@@ -293,8 +435,12 @@ export const ClientFormsView = () => {
   const [selectedResponse, setSelectedResponse] = useState<ClientEnquiryResponse | null>(null);
 
   const {
-    forms, formsLoading, formsError, fetchForms, createForm, deleteForm,
+    forms, formsLoading, formsError, fetchForms, createForm, deleteForm, updateForm,
   } = useEnquiryForms();
+
+  const handleRenameForm = async (formId: string, newTitle: string) => {
+    await updateForm(formId, { title: newTitle });
+  };
 
   const { responses, responsesLoading, responsesError, fetchResponses, convertResponse } =
     useEnquiryResponses(selectedForm?.id || "all");
@@ -377,6 +523,7 @@ export const ClientFormsView = () => {
           onViewResponses={handleViewResponses}
           onDelete={handleDelete}
           onCreateNew={() => setShowCreateModal(true)}
+          onRename={handleRenameForm}
         />
       )}
 
@@ -392,7 +539,6 @@ export const ClientFormsView = () => {
       {/* Modals */}
       {showCreateModal && (
         <CreateFormModal
-          clients={clients}
           onClose={() => setShowCreateModal(false)}
           onCreated={(form) => { fetchForms(); }}
           createForm={createForm}
@@ -407,6 +553,10 @@ export const ClientFormsView = () => {
           onConverted={() => {
             setSelectedResponse(null);
             fetchResponses(selectedForm ? selectedForm.id : "all");
+          }}
+          onUpdated={() => {
+            fetchResponses(selectedForm ? selectedForm.id : "all");
+            context.data.actions.fetchWorkspaceData();
           }}
           convertResponse={convertResponse}
         />

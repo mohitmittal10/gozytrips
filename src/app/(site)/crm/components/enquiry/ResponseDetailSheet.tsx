@@ -1,15 +1,19 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import {
   X, MapPin, Calendar, Users, Zap, Loader2, ExternalLink, Clock,
   DollarSign, MessageSquare, Plane, Train, Bus, Car, Ship,
-  Send, AlertCircle, CheckCircle2, Link2, Edit3, Save, RefreshCw
+  Send, AlertCircle, CheckCircle2, Link2, Edit3, Save, RefreshCw,
+  Compass, Upload, Eye, ChevronDown
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import type { ClientEnquiryResponse } from "@/types/enquiry";
 import { useClientMessages } from "@/hooks/use-client-messages";
+import { useCrmContext } from "../../context/CrmContext";
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/contexts/auth-context";
 
 const METHOD_ICONS: Record<string, React.ReactNode> = {
   Flight: <Plane className="w-3 h-3" />,
@@ -41,10 +45,14 @@ interface ResponseDetailSheetProps {
     agent_note?: string | null;
     itinerary_share_url?: string | null;
     workflow_status?: string;
+    converted_itinerary_id?: string | null;
+    itinerary_visible_to_client?: boolean;
+    itinerary_last_pushed_at?: string | null;
   };
   formId: string;
   onClose: () => void;
   onConverted?: () => void;
+  onUpdated?: () => void;
   convertResponse: (formId: string, responseId: string) => Promise<string>;
 }
 
@@ -174,15 +182,60 @@ function AgentMessagesPanel({ response }: { response: ResponseDetailSheetProps["
 }
 
 // ─── Agent Controls Panel (note, status, itinerary link) ──────────────────────
-function AgentControlsPanel({ response, formId }: { response: ResponseDetailSheetProps["response"]; formId: string }) {
+interface LabItinerary {
+  id: string;
+  title: string | null;
+  destinations: string | null;
+  start_date: string | null;
+  updated_at: string;
+}
+
+function AgentControlsPanel({ response, formId, onUpdated }: { response: ResponseDetailSheetProps["response"]; formId: string; onUpdated?: () => void }) {
+  const { user } = useAuth();
+  const supabase = createClient();
+
   const [note, setNote] = useState(response.agent_note || "");
-  const [shareUrl, setShareUrl] = useState(response.itinerary_share_url || "");
   const [workflowStatus, setWorkflowStatus] = useState(response.workflow_status || "submitted");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const handleSave = async () => {
+  // Itinerary picker state
+  const [labItineraries, setLabItineraries] = useState<LabItinerary[]>([]);
+  const [loadingItineraries, setLoadingItineraries] = useState(false);
+  const [selectedItineraryId, setSelectedItineraryId] = useState<string>(
+    response.converted_itinerary_id || ""
+  );
+  const [showPicker, setShowPicker] = useState(false);
+
+  // Push state
+  const [isPushed, setIsPushed] = useState(response.itinerary_visible_to_client ?? false);
+  const [lastPushedAt, setLastPushedAt] = useState<string | null>(response.itinerary_last_pushed_at || null);
+  const [pushing, setPushing] = useState(false);
+  const [pushSuccess, setPushSuccess] = useState(false);
+
+  // Fetch agent's itineraries from The Lab
+  const fetchLabItineraries = useCallback(async () => {
+    if (!user?.id) return;
+    setLoadingItineraries(true);
+    try {
+      const { data } = await supabase
+        .from("itineraries")
+        .select("id, title, destinations, start_date, updated_at")
+        .eq("user_id", user.id)
+        .order("updated_at", { ascending: false })
+        .limit(30);
+      setLabItineraries(data || []);
+    } finally {
+      setLoadingItineraries(false);
+    }
+  }, [user?.id, supabase]);
+
+  useEffect(() => { fetchLabItineraries(); }, [fetchLabItineraries]);
+
+  const selectedItinerary = labItineraries.find(it => it.id === selectedItineraryId);
+
+  const handleSaveNote = async () => {
     setSaving(true);
     setSaveError(null);
     try {
@@ -191,13 +244,13 @@ function AgentControlsPanel({ response, formId }: { response: ResponseDetailShee
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           agent_note: note || null,
-          itinerary_share_url: shareUrl || null,
           workflow_status: workflowStatus,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Save failed");
       setSaved(true);
+      onUpdated?.();
       setTimeout(() => setSaved(false), 2000);
     } catch (err: any) {
       setSaveError(err.message);
@@ -206,8 +259,65 @@ function AgentControlsPanel({ response, formId }: { response: ResponseDetailShee
     }
   };
 
+  const handleLinkItinerary = async (itinId: string) => {
+    setSelectedItineraryId(itinId);
+    setShowPicker(false);
+    // Persist the link immediately
+    try {
+      await fetch(`/api/enquiry-forms/${formId}/responses/${response.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ converted_itinerary_id: itinId }),
+      });
+      onUpdated?.();
+    } catch (err) {
+      console.error("Failed to link itinerary:", err);
+    }
+  };
+
+  const handlePushToClient = async () => {
+    if (!selectedItineraryId) return;
+    setPushing(true);
+    setSaveError(null);
+    try {
+      const res = await fetch(`/api/enquiry-forms/${formId}/responses/${response.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          converted_itinerary_id: selectedItineraryId,
+          itinerary_visible_to_client: true,
+          // Auto-set status to itinerary_ready when pushing
+          workflow_status: "itinerary_ready",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Push failed");
+      setIsPushed(true);
+      setWorkflowStatus("itinerary_ready");
+      const now = new Date().toISOString();
+      setLastPushedAt(now);
+      setPushSuccess(true);
+      onUpdated?.();
+      setTimeout(() => setPushSuccess(false), 3000);
+    } catch (err: any) {
+      setSaveError(err.message);
+    } finally {
+      setPushing(false);
+    }
+  };
+
+  const formatPushedAgo = (ts: string) => {
+    const diff = Date.now() - new Date(ts).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    return new Date(ts).toLocaleDateString();
+  };
+
   return (
-    <div className="space-y-4 px-5 py-4">
+    <div className="space-y-5 px-5 py-4">
       {/* Workflow status selector */}
       <div>
         <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2">
@@ -248,20 +358,6 @@ function AgentControlsPanel({ response, formId }: { response: ResponseDetailShee
         />
       </div>
 
-      {/* Itinerary share URL */}
-      <div>
-        <label className="block text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-1.5 flex items-center gap-1.5">
-          <Link2 className="w-3 h-3" /> Itinerary Link (share with client)
-        </label>
-        <input
-          type="url"
-          value={shareUrl}
-          onChange={(e) => setShareUrl(e.target.value)}
-          placeholder="https://… or leave blank"
-          className="w-full h-10 px-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/40 text-sm transition-colors"
-        />
-      </div>
-
       {saveError && (
         <div className="flex items-center gap-2 p-2.5 bg-red-500/10 border border-red-500/20 rounded-xl text-xs text-red-400">
           <AlertCircle className="w-3.5 h-3.5 shrink-0" /> {saveError}
@@ -269,19 +365,152 @@ function AgentControlsPanel({ response, formId }: { response: ResponseDetailShee
       )}
 
       <button
-        onClick={handleSave}
+        onClick={handleSaveNote}
         disabled={saving}
         id="save-agent-controls-btn"
-        className="w-full h-10 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+        className="w-full h-10 rounded-xl bg-white/5 border border-white/10 text-gray-200 font-semibold text-sm hover:bg-white/10 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
       >
         {saving ? (
           <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
         ) : saved ? (
-          <><CheckCircle2 className="w-4 h-4" /> Saved!</>
+          <><CheckCircle2 className="w-4 h-4 text-green-400" /> Saved!</>
         ) : (
-          <><Save className="w-4 h-4" /> Save Changes</>
+          <><Save className="w-4 h-4" /> Save Note & Status</>
         )}
       </button>
+
+      {/* Divider */}
+      <div className="border-t border-white/[0.06]" />
+
+      {/* ── Itinerary Section ── */}
+      <div>
+        <p className="text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-3 flex items-center gap-1.5">
+          <Compass className="w-3 h-3 text-purple-400" /> Itinerary for Client Dashboard
+        </p>
+
+        {/* Selected itinerary display / picker trigger */}
+        <div
+          onClick={() => setShowPicker(!showPicker)}
+          className={cn(
+            "relative flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all",
+            selectedItinerary
+              ? "bg-purple-500/10 border-purple-500/30 hover:bg-purple-500/15"
+              : "bg-white/[0.03] border-white/10 hover:border-white/20"
+          )}
+        >
+          <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
+            <Compass className="w-4 h-4 text-purple-400" />
+          </div>
+          <div className="flex-1 min-w-0">
+            {selectedItinerary ? (
+              <>
+                <p className="text-sm font-semibold text-white truncate">
+                  {selectedItinerary.title || "Untitled Itinerary"}
+                </p>
+                <p className="text-[10px] text-gray-500 mt-0.5 truncate">
+                  {selectedItinerary.destinations || ""}{selectedItinerary.start_date ? ` · ${new Date(selectedItinerary.start_date).toLocaleDateString()}` : ""}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500">Select an itinerary from The Lab…</p>
+            )}
+          </div>
+          <ChevronDown className={cn("w-4 h-4 text-gray-500 transition-transform", showPicker && "rotate-180")} />
+        </div>
+
+        {/* Dropdown list */}
+        {showPicker && (
+          <div className="mt-1 rounded-xl border border-white/10 bg-[#0e0e18] overflow-hidden shadow-2xl">
+            {loadingItineraries ? (
+              <div className="flex items-center justify-center py-6">
+                <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+              </div>
+            ) : labItineraries.length === 0 ? (
+              <div className="px-4 py-6 text-center text-xs text-gray-500">
+                No itineraries found in The Lab.
+              </div>
+            ) : (
+              <div className="max-h-52 overflow-y-auto divide-y divide-white/5">
+                {labItineraries.map((itin) => (
+                  <button
+                    key={itin.id}
+                    onClick={() => handleLinkItinerary(itin.id)}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-white/5 transition-colors",
+                      selectedItineraryId === itin.id && "bg-purple-500/10"
+                    )}
+                  >
+                    <Compass className="w-3.5 h-3.5 text-purple-400/70 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-white truncate">
+                        {itin.title || "Untitled Itinerary"}
+                      </p>
+                      <p className="text-[10px] text-gray-600 truncate">
+                        {itin.destinations || "—"}
+                        {itin.start_date ? ` · ${new Date(itin.start_date).toLocaleDateString()}` : ""}
+                      </p>
+                    </div>
+                    {selectedItineraryId === itin.id && (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Push status indicator */}
+        {isPushed && lastPushedAt && (
+          <div className="mt-2 flex items-center gap-1.5 text-[10px] text-green-400">
+            <CheckCircle2 className="w-3 h-3" />
+            <span>Last pushed to client {formatPushedAgo(lastPushedAt)}</span>
+          </div>
+        )}
+        {!isPushed && selectedItinerary && (
+          <p className="mt-2 text-[10px] text-amber-400/80">
+            ⚠ Itinerary selected but not yet pushed to client.
+          </p>
+        )}
+
+        {/* Update Client Dashboard CTA */}
+        <button
+          onClick={handlePushToClient}
+          disabled={!selectedItineraryId || pushing}
+          id="push-itinerary-to-client-btn"
+          className={cn(
+            "mt-3 w-full h-11 rounded-xl font-semibold text-sm transition-all flex items-center justify-center gap-2 shadow-lg",
+            pushSuccess
+              ? "bg-green-500/20 border border-green-500/30 text-green-300"
+              : selectedItineraryId
+              ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:brightness-110 shadow-purple-500/20"
+              : "bg-white/5 border border-white/10 text-gray-600 cursor-not-allowed"
+          )}
+        >
+          {pushing ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Updating…</>
+          ) : pushSuccess ? (
+            <><CheckCircle2 className="w-4 h-4" /> Client Dashboard Updated!</>
+          ) : (
+            <><Upload className="w-4 h-4" /> Update Client Dashboard</>
+          )}
+        </button>
+        <p className="text-[10px] text-gray-700 mt-1.5 text-center">
+          Client sees the itinerary only after you click this
+        </p>
+
+        {/* Open in The Lab shortcut */}
+        {selectedItinerary && (
+          <a
+            href={`/the-lab?itineraryId=${selectedItinerary.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 w-full h-9 rounded-xl border border-white/10 text-gray-400 text-xs font-medium hover:text-white hover:border-white/20 transition-all flex items-center justify-center gap-1.5"
+          >
+            <ExternalLink className="w-3.5 h-3.5" /> Edit in The Lab
+          </a>
+        )}
+      </div>
     </div>
   );
 }
@@ -289,12 +518,30 @@ function AgentControlsPanel({ response, formId }: { response: ResponseDetailShee
 // ─── Main Sheet ───────────────────────────────────────────────────────────────
 type SheetTab = "details" | "messages" | "controls";
 
-export function ResponseDetailSheet({ response, formId, onClose, onConverted, convertResponse }: ResponseDetailSheetProps) {
+export function ResponseDetailSheet({ response, formId, onClose, onConverted, onUpdated, convertResponse }: ResponseDetailSheetProps) {
   const router = useRouter();
   const [converting, setConverting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<SheetTab>("details");
   const { unreadCount } = useClientMessages(response.id, "agent");
+
+  let crmContext: any = null;
+  try {
+    crmContext = useCrmContext();
+  } catch (e) {
+    // Context is missing or we are outside the provider
+  }
+
+  const linkedClient = crmContext?.data?.data?.enrichedClients?.find(
+    (c: any) => c.id === response.client_id
+  );
+
+  const handleOpenClientProfile = () => {
+    if (crmContext && linkedClient) {
+      crmContext.setSelectedClient(linkedClient);
+      onClose();
+    }
+  };
 
   const handleConvert = async () => {
     setConverting(true);
@@ -407,6 +654,31 @@ export function ResponseDetailSheet({ response, formId, onClose, onConverted, co
                 <Field label="Travellers" value={paxStr || String(totalPax)} icon={<Users className="w-3.5 h-3.5" />} />
               </div>
 
+              {/* Linked Client Profile Link (if present) */}
+              {response.client_id && (
+                <div className="bg-gradient-to-r from-purple-500/5 to-indigo-500/5 border border-purple-500/25 rounded-xl p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
+                      <Users className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Linked CRM Client</p>
+                      <p className="text-sm font-semibold text-white mt-0.5">
+                        {linkedClient?.name || response.client_name || "Linked Client"}
+                      </p>
+                    </div>
+                  </div>
+                  {linkedClient && (
+                    <button
+                      onClick={handleOpenClientProfile}
+                      className="px-3 py-1.5 rounded-lg bg-purple-500/10 border border-purple-500/25 text-purple-300 text-xs font-semibold hover:bg-purple-500/25 hover:text-white transition-all"
+                    >
+                      View Profile
+                    </button>
+                  )}
+                </div>
+              )}
+
               {/* Preferences */}
               <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 space-y-3">
                 <p className="text-xs font-bold uppercase tracking-widest text-gray-600 mb-3">Preferences</p>
@@ -506,7 +778,7 @@ export function ResponseDetailSheet({ response, formId, onClose, onConverted, co
 
           {/* ── CONTROLS TAB ── */}
           {activeTab === "controls" && (
-            <AgentControlsPanel response={response} formId={formId} />
+            <AgentControlsPanel response={response} formId={formId} onUpdated={onUpdated} />
           )}
         </div>
 
@@ -531,11 +803,17 @@ export function ResponseDetailSheet({ response, formId, onClose, onConverted, co
               </div>
             )}
             {response.status === "converted" && response.converted_itinerary_id && (
-              <div className="shrink-0 p-5 border-t border-white/[0.07]">
+              <div className="shrink-0 p-5 border-t border-white/[0.07] space-y-3">
                 <div className="flex items-center justify-center gap-2 text-green-400 text-sm font-medium">
                   <span className="w-5 h-5 rounded-full bg-green-500/20 flex items-center justify-center">✓</span>
                   Already converted to an itinerary
                 </div>
+                <button
+                  onClick={() => router.push(`/the-lab?itineraryId=${response.converted_itinerary_id}`)}
+                  className="w-full h-11 rounded-xl bg-white/5 border border-white/10 text-white font-medium text-sm hover:bg-white/10 transition-all flex items-center justify-center gap-2"
+                >
+                  <ExternalLink className="w-4 h-4 text-purple-400" /> Open Itinerary in The Lab
+                </button>
               </div>
             )}
           </>

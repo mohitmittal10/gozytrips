@@ -76,7 +76,27 @@ import { useCrmFilters } from '../hooks/useCrmFilters';
 import { useCrmData } from '../hooks/useCrmData';
 
 export function CrmProvider({ children }: { children: React.ReactNode }) {
-    const [activeTab, setActiveTab] = useState("dashboard");
+    const [activeTab, setActiveTabState] = useState("dashboard");
+
+    React.useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const urlTab = params.get("tab");
+        const storedTab = localStorage.getItem("crm_active_tab");
+        if (urlTab) {
+            setActiveTabState(urlTab);
+        } else if (storedTab) {
+            setActiveTabState(storedTab);
+        }
+    }, []);
+
+    const setActiveTab = (tab: string) => {
+        setActiveTabState(tab);
+        localStorage.setItem("crm_active_tab", tab);
+        const url = new URL(window.location.href);
+        url.searchParams.set("tab", tab);
+        window.history.replaceState({}, "", url.toString());
+    };
+
     const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
 
     // Modals & Sheets

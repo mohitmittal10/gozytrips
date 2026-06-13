@@ -42,7 +42,28 @@ export default function TheLab() {
   const queryFromUrl = searchParams.get('q');
   const enquiryIdFromUrl = searchParams.get('enquiry');
 
-  const [activeLabTab, setActiveLabTab] = useState<ActiveLabTab>(itineraryIdFromUrl ? 'itinerary' : 'new');
+  const [activeLabTab, setActiveLabTabState] = useState<ActiveLabTab>(itineraryIdFromUrl ? 'itinerary' : 'new');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const urlTab = params.get("tab") as ActiveLabTab | null;
+    const storedTab = localStorage.getItem("the_lab_active_tab") as ActiveLabTab | null;
+    const validTabs: ActiveLabTab[] = ['new', 'itinerary', 'history'];
+    
+    if (urlTab && validTabs.includes(urlTab)) {
+      setActiveLabTabState(urlTab);
+    } else if (storedTab && validTabs.includes(storedTab)) {
+      setActiveLabTabState(storedTab);
+    }
+  }, []);
+
+  const setActiveLabTab = (tab: ActiveLabTab) => {
+    setActiveLabTabState(tab);
+    localStorage.setItem("the_lab_active_tab", tab);
+    const url = new URL(window.location.href);
+    url.searchParams.set("tab", tab);
+    window.history.replaceState({}, "", url.toString());
+  };
   const [enquiryBanner, setEnquiryBanner] = useState<{ clientName: string; responseId: string } | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
@@ -52,7 +73,7 @@ export default function TheLab() {
   const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
 
   // Modular Hooks
-  const { clients } = useClients();
+  const { clients, fetchClients } = useClients();
   const { user, agencySettings } = useAuth();
   const supabase = createClient();
   const [currentTripId, setCurrentTripId] = useState<string | null>(itineraryIdFromUrl);
@@ -181,14 +202,16 @@ export default function TheLab() {
           clientName: response.client_name || response.client_email,
           responseId: enquiryIdFromUrl,
         });
+        if (response.client_id) {
+          setSelectedClientId(response.client_id);
+        }
       } catch (err) {
         console.error("[TheLab] Failed to pre-fill from enquiry:", err);
       }
     };
 
     prefillFromEnquiry();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enquiryIdFromUrl]);
+  }, [enquiryIdFromUrl, form, setSelectedClientId]);
 
   // Cleanup legacy localStorage keys one-time
   useEffect(() => {
@@ -274,9 +297,72 @@ export default function TheLab() {
     
     if (res) {
       if (!feedback) {
+        let resolvedClientId = "none";
+        let shareToken = "";
+        
+        if (typeof window !== 'undefined') {
+          shareToken = window.crypto?.randomUUID ? window.crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+          });
+        }
+
+        if (enquiryBanner?.responseId && user?.id) {
+          try {
+            // 1. Fetch enquiry response to get client email and name
+            const { data: respData, error: respErr } = await supabase
+              .from("client_enquiry_responses")
+              .select("client_email, client_name, client_id")
+              .eq("id", enquiryBanner.responseId)
+              .single();
+
+            if (respErr) throw respErr;
+
+            if (respData?.client_id) {
+              resolvedClientId = respData.client_id;
+            } else if (respData?.client_email) {
+              const email = respData.client_email.trim().toLowerCase();
+
+              // 2. Check if client already exists by email and user_id (agent)
+              const { data: existingClient, error: clientErr } = await supabase
+                .from("clients")
+                .select("id")
+                .eq("email", email)
+                .eq("user_id", user.id)
+                .maybeSingle();
+
+              if (clientErr) throw clientErr;
+
+              if (existingClient) {
+                resolvedClientId = existingClient.id;
+              } else {
+                // 3. Client doesn't exist, let's create one automatically
+                const name = respData.client_name || email.split('@')[0] || "Unnamed Client";
+                const { data: newClient, error: insertErr } = await supabase
+                  .from("clients")
+                  .insert([{
+                    name,
+                    email,
+                    user_id: user.id
+                  }])
+                  .select("id")
+                  .single();
+
+                if (insertErr) throw insertErr;
+                if (newClient) {
+                  resolvedClientId = newClient.id;
+                  await fetchClients(); // Refresh local list of clients
+                }
+              }
+            }
+          } catch (err) {
+            console.error("Error auto-resolving client in The Lab generation:", err);
+          }
+        }
+
         // Generation succeeded for a NEW itinerary.
         // NOW insert the record with the full itinerary data.
-        await saveNow({
+        const newTripId = await saveNow({
           itinerary: res,
           hotels: [],
           flights: [],
@@ -286,16 +372,42 @@ export default function TheLab() {
           tripMetadata: values,
           selectedStatus: 'draft',
           optimizationCount: 0,
+          selectedClientId: resolvedClientId,
+          share_token: shareToken || null,
+          share_enabled: shareToken ? true : undefined,
           inclusions: "",
           exclusions: "",
           termsAndConditions: "",
           cancellationPolicy: "",
           paymentMethods: "",
         }, null); // explicitId=null → INSERT a new record
+
+        if (resolvedClientId !== "none") {
+          setSelectedClientId(resolvedClientId);
+        }
+
+        if (newTripId && enquiryBanner?.responseId) {
+          try {
+            const shareUrl = shareToken ? `${window.location.origin}/invoice/${shareToken}` : null;
+            await supabase
+              .from("client_enquiry_responses")
+              .update({
+                converted_itinerary_id: newTripId,
+                status: "converted",
+                converted_at: new Date().toISOString(),
+                workflow_status: "submitted",
+                client_id: resolvedClientId === "none" ? null : resolvedClientId,
+                ...(shareUrl ? { itinerary_share_url: shareUrl } : {})
+              })
+              .eq("id", enquiryBanner.responseId);
+          } catch (err) {
+            console.error("Failed to link generated itinerary to enquiry response:", err);
+          }
+        }
       }
       setActiveLabTab('itinerary');
     }
-  }, [generate, tripMetadata, setCurrentTripId, saveNow, resetForNewTrip, setHotels, setFlights, setCabs, setBuses, setPricing, setInclusions, setExclusions]);
+  }, [generate, tripMetadata, setCurrentTripId, saveNow, resetForNewTrip, setHotels, setFlights, setCabs, setBuses, setPricing, setInclusions, setExclusions, enquiryBanner, fetchClients, user, supabase, setSelectedClientId]);
 
 
   const isDesigningNew = activeLabTab === 'new';
