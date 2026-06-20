@@ -56,9 +56,13 @@ export const DesertFooter = ({ agent, agencySettings }: { agent: ThemeProps["age
     >
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
             <div style={{ width: "100%", maxWidth: "920px", background: "#e6d5c3", borderRadius: "24px", padding: "56px 48px", textAlign: "center", boxShadow: "0 18px 45px rgba(17,24,39,0.08)" }}>
-                <div style={{ width: "64px", height: "64px", margin: "0 auto 28px auto", borderRadius: "999px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", color: "#433429", fontSize: "24px", fontWeight: 700 }}>
-                    CT
-                </div>
+                {agent.logoUrl ? (
+                    <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "64px", maxWidth: "180px", objectFit: "contain", margin: "0 auto 28px auto", display: "block" }} />
+                ) : (
+                    <div style={{ width: "64px", height: "64px", margin: "0 auto 28px auto", borderRadius: "999px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", color: "#433429", fontSize: "24px", fontWeight: 700 }}>
+                        {(agent.companyName || "CT").substring(0, 2).toUpperCase()}
+                    </div>
+                )}
                 <h2 style={{ margin: "0 0 14px 0", fontSize: "36px", color: "#433429", fontWeight: 500 }}>
                     Contact {agent.companyName}
                 </h2>
@@ -72,24 +76,34 @@ export const DesertFooter = ({ agent, agencySettings }: { agent: ThemeProps["age
                     {!agent.agentPhone && !agent.agentEmail && !agent.agentWebsite && <p style={{ margin: 0, fontSize: "16px", color: "rgba(67,52,41,0.7)" }}>Contact details will appear here from your profile settings.</p>}
                 </div>
                 
-                <div style={{ marginTop: "40px", paddingTop: "40px", borderTop: "1px solid rgba(67,52,41,0.15)", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", textAlign: "left", color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                    <div>
-                        <p style={{ margin: "0 0 10px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "rgba(67,52,41,0.6)", fontWeight: 700 }}>Bank Account</p>
-                        <p style={{ margin: "0 0 4px 0", fontSize: "14px", fontWeight: 700 }}>{agencySettings?.bankName || 'HDFC Bank'}</p>
-                        <p style={{ margin: "0 0 2px 0", fontSize: "12px", color: "rgba(67,52,41,0.8)" }}>ACC: <span style={{ fontWeight: 600 }}>{agencySettings?.bankAccountNumber || '1234567890'}</span></p>
-                        <p style={{ margin: 0, fontSize: "12px", color: "rgba(67,52,41,0.8)" }}>IFSC: <span style={{ fontWeight: 600 }}>{agencySettings?.bankIfscCode || 'HDFC0001234'}</span></p>
+                {(agencySettings?.bankAccountNumber || agencySettings?.gstNumber || agencySettings?.upiId) && (
+                    <div style={{ marginTop: "40px", paddingTop: "40px", borderTop: "1px solid rgba(67,52,41,0.15)", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px", textAlign: "left", color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                        {agencySettings?.bankAccountNumber && (
+                            <div>
+                                <p style={{ margin: "0 0 10px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "rgba(67,52,41,0.6)", fontWeight: 700 }}>Bank Account</p>
+                                <p style={{ margin: "0 0 4px 0", fontSize: "14px", fontWeight: 700 }}>{agencySettings?.bankName || ''}</p>
+                                <p style={{ margin: "0 0 2px 0", fontSize: "12px", color: "rgba(67,52,41,0.8)" }}>ACC: <span style={{ fontWeight: 600 }}>{agencySettings?.bankAccountNumber}</span></p>
+                                {agencySettings?.bankIfscCode && (
+                                    <p style={{ margin: 0, fontSize: "12px", color: "rgba(67,52,41,0.8)" }}>IFSC: <span style={{ fontWeight: 600 }}>{agencySettings?.bankIfscCode}</span></p>
+                                )}
+                            </div>
+                        )}
+                        {agencySettings?.gstNumber && (
+                            <div>
+                                <p style={{ margin: "0 0 10px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "rgba(67,52,41,0.6)", fontWeight: 700 }}>Tax Information</p>
+                                <p style={{ margin: "0 0 4px 0", fontSize: "12px", color: "rgba(67,52,41,0.8)" }}>GST Number:</p>
+                                <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{agencySettings?.gstNumber}</p>
+                            </div>
+                        )}
+                        {agencySettings?.upiId && (
+                            <div>
+                                <p style={{ margin: "0 0 10px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "rgba(67,52,41,0.6)", fontWeight: 700 }}>UPI Payment</p>
+                                <p style={{ margin: "0 0 4px 0", fontSize: "12px", color: "rgba(67,52,41,0.8)" }}>Scan or Pay to:</p>
+                                <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{agencySettings?.upiId}</p>
+                            </div>
+                        )}
                     </div>
-                    <div>
-                        <p style={{ margin: "0 0 10px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "rgba(67,52,41,0.6)", fontWeight: 700 }}>Tax Information</p>
-                        <p style={{ margin: "0 0 4px 0", fontSize: "12px", color: "rgba(67,52,41,0.8)" }}>GST Number:</p>
-                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{agencySettings?.gstNumber || '29GGGGG1314R9Z6'}</p>
-                    </div>
-                    <div>
-                        <p style={{ margin: "0 0 10px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "rgba(67,52,41,0.6)", fontWeight: 700 }}>UPI Payment</p>
-                        <p style={{ margin: "0 0 4px 0", fontSize: "12px", color: "rgba(67,52,41,0.8)" }}>Scan or Pay to:</p>
-                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{agencySettings?.upiId || 'YOUR-AGENCY@UP9Z6'}</p>
-                    </div>
-                </div>
+                )}
             </div>
         </div>
     </section>
@@ -106,11 +120,12 @@ export const DesertTheme = ({
     const heroDescription = getHeroDescription(itinerary);
     const agencyDetails = getAgencyDetails(agent);
     
-    const isManual = pricing?.costingType === 'manual';
     const adultPax = Number(pricing?.adultPax || 2);
     const childPax = Number(pricing?.childPax || 0);
+    const infantPax = Number(pricing?.infantPax || 0);
+    const totalPax = adultPax + childPax + infantPax;
     const resolvedBase = baseCost || 0;
-    const { costWithMarkup, taxAmount } = calcPricingFromBaseCost(resolvedBase, pricing);
+    const { baseCost: resolvedBaseCost, markupAmount, costWithMarkup, taxAmount, finalTotal: calculatedFinalTotal } = calcPricingFromBaseCost(resolvedBase, pricing);
     
     const inclusionsList = parseList(inclusions);
     const exclusionsList = parseList(exclusions);
@@ -174,6 +189,20 @@ export const DesertTheme = ({
                 <div style={{ position: "relative", height: "620px", overflow: "hidden" }}>
                     <img src={getCoverImage(itinerary)} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} crossOrigin="anonymous" />
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.6), transparent 55%)" }} />
+                    {/* Agency logo stamp — top right */}
+                    <div style={{ position: "absolute", top: "32px", right: "64px", zIndex: 10, display: "flex", alignItems: "center", gap: "14px", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)", borderRadius: "12px", padding: "12px 20px", boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
+                        {agent.logoUrl ? (
+                            <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "36px", maxWidth: "100px", objectFit: "contain", display: "block" }} />
+                        ) : (
+                            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#fff7ed", display: "flex", alignItems: "center", justifyContent: "center", color: "#ea580c", fontWeight: 800, fontSize: "16px" }}>
+                                {(agent.companyName || "T").substring(0, 1).toUpperCase()}
+                            </div>
+                        )}
+                        <div style={{ borderLeft: "1px solid #e5e7eb", paddingLeft: "14px" }}>
+                            <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "#111827", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.companyName}</p>
+                            <p style={{ margin: 0, fontSize: "9px", color: "#9ca3af", letterSpacing: "0.04em", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontWeight: 500, marginTop: "2px", textTransform: "uppercase" }}>Travel Collection</p>
+                        </div>
+                    </div>
                     <div style={{ position: "absolute", left: "64px", right: "64px", bottom: "72px", color: "#ffffff" }}>
                         <h1 style={{ margin: "0 0 24px 0", fontSize: "64px", lineHeight: "0.98", fontWeight: 500, letterSpacing: "-0.8px" }}>
                             {title}
@@ -214,6 +243,9 @@ export const DesertTheme = ({
                     <p style={{ margin: "0 0 16px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "3px", color: "#fb923c", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                         Your Travel Agency
                     </p>
+                    {agent.logoUrl && (
+                        <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "64px", maxWidth: "200px", objectFit: "contain", marginBottom: "20px", display: "block" }} />
+                    )}
                     <h2 style={{ margin: "0 0 28px 0", fontSize: "52px", lineHeight: "1.08", color: "#111827", fontWeight: 500 }}>
                         {agent.companyName}
                     </h2>
@@ -394,7 +426,7 @@ export const DesertTheme = ({
                         <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "16px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                             {inclusionsList.length > 0 ? inclusionsList.map((inc, i) => (
                                 <li key={i} style={{ display: "flex", gap: "16px", fontSize: "15px", color: "#374151", lineHeight: "1.7", fontWeight: 500 }}><span style={{ color: "#fb923c", fontSize: "18px", marginTop: "-2px" }}>✓</span> <span>{inc}</span></li>
-                            )) : <li style={{ fontSize: "15px", color: "#9ca3af" }}>Standard inclusions apply.</li>}
+                            )) : <li style={{ fontSize: "15px", color: "#9ca3af" }}>No inclusions specified.</li>}
                         </ul>
                     </div>
                     <div style={{ flex: 1 }}>
@@ -403,7 +435,7 @@ export const DesertTheme = ({
                         <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "16px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                             {exclusionsList.length > 0 ? exclusionsList.map((exc, i) => (
                                 <li key={i} style={{ display: "flex", gap: "16px", fontSize: "15px", color: "#6b7280", lineHeight: "1.7", fontWeight: 500 }}><span style={{ color: "#d1d5db", fontSize: "18px", marginTop: "-2px" }}>✗</span> <span>{exc}</span></li>
-                            )) : <li style={{ fontSize: "15px", color: "#9ca3af" }}>Personal expenses not included.</li>}
+                            )) : <li style={{ fontSize: "15px", color: "#9ca3af" }}>No exclusions specified.</li>}
                         </ul>
                     </div>
                 </div>
@@ -435,71 +467,103 @@ export const DesertTheme = ({
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>{isManual ? "Package Cost" : "Itinerary Valuation"} (for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''})</td>
-                                        <td>1</td>
-                                        <td>{formatCurrency(costWithMarkup, currency)}</td>
-                                        <td>{formatCurrency(costWithMarkup, currency)}</td>
-                                    </tr>
+                                    {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
+                                        pricing.manualOptions.map((item: any, idx: number) => {
+                                            const qty = item.type === 'per-person' ? totalPax : 1;
+                                            const rate = Number(item.amount) || 0;
+                                            const amount = qty * rate;
+                                            return (
+                                                <tr key={item.id || idx}>
+                                                    <td>{item.name} {item.type === 'per-person' ? `(Per Person)` : ''}</td>
+                                                    <td>{qty}</td>
+                                                    <td>{formatCurrency(rate, currency)}</td>
+                                                    <td>{formatCurrency(amount, currency)}</td>
+                                                </tr>
+                                            );
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td>{"Package Cost"} (for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''})</td>
+                                            <td>1</td>
+                                            <td>{formatCurrency(costWithMarkup, currency)}</td>
+                                            <td>{formatCurrency(costWithMarkup, currency)}</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
                         <div style={{ background: "#fcfaf7", borderTop: "1px solid #f3e8d8", padding: "24px 32px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-end" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#6b7280" }}><span>Subtotal</span><span style={{ fontWeight: 600, color: "#1f2937" }}>{formatCurrency(costWithMarkup, currency)}</span></div>
-                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#6b7280" }}><span>Taxes & Fees</span><span style={{ fontWeight: 600, color: "#1f2937" }}>{formatCurrency(taxAmount, currency)}</span></div>
-                            <div style={{ width: "260px", height: "1px", background: "#f3e8d8", margin: "4px 0" }}></div>
-                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "20px", color: "#b48b63", fontWeight: 800, fontFamily: "var(--font-mono)" }}><span>Grand Total</span><span>{formatCurrency(finalTotal, currency)}</span></div>
+                            {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
+                                <>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "14px", color: "#6b7280" }}><span>Subtotal (Base Cost)</span><span style={{ fontWeight: 600, color: "#1f2937" }}>{formatCurrency(resolvedBaseCost, currency)}</span></div>
+                                    {markupAmount > 0 && (
+                                        <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "14px", color: "#6b7280" }}><span>Service Fee / Markup</span><span style={{ fontWeight: 600, color: "#1f2937" }}>+ {formatCurrency(markupAmount, currency)}</span></div>
+                                    )}
+                                    {taxAmount > 0 && (
+                                        <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "14px", color: "#6b7280" }}><span>Taxes & Fees ({pricing.taxPercentage}%)</span><span style={{ fontWeight: 600, color: "#1f2937" }}>+ {formatCurrency(taxAmount, currency)}</span></div>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#6b7280" }}><span>Subtotal</span><span style={{ fontWeight: 600, color: "#1f2937" }}>{formatCurrency(costWithMarkup, currency)}</span></div>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#6b7280" }}><span>Taxes & Fees</span><span style={{ fontWeight: 600, color: "#1f2937" }}>{formatCurrency(taxAmount, currency)}</span></div>
+                                </>
+                            )}
+                            <div style={{ width: "320px", height: "1px", background: "#f3e8d8", margin: "4px 0" }}></div>
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "20px", color: "#b48b63", fontWeight: 800, fontFamily: "var(--font-mono)" }}><span>Grand Total</span><span>{formatCurrency(calculatedFinalTotal, currency)}</span></div>
                         </div>
                     </div>
  
                     {/* Payment Schedule — full width */}
-                    <div style={{ background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px", marginBottom: "40px" }}>
-                        <h3 style={{ margin: "0 0 24px 0", fontSize: "18px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Payment Schedule</h3>
-                        <div className="table-wrap" style={{ border: "none", borderRadius: 0, boxShadow: "none", margin: 0, background: "transparent" }}>
-                            <table className="payment-table">
-                                <colgroup>
-                                    <col style={{ width: '40%' }} />
-                                    <col style={{ width: '20%' }} />
-                                    <col style={{ width: '20%' }} />
-                                    <col style={{ width: '20%' }} />
-                                </colgroup>
-                                <thead>
-                                    <tr>
-                                        <th>Installment</th>
-                                        <th>Due Date</th>
-                                        <th>Percentage</th>
-                                        <th>Amount</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {(pricing?.milestones?.length > 0 ? pricing.milestones : [{ id: 'fallback', name: 'Full Payment', percentage: 100, dueDate: 'At Booking' }]).map((m: any, i: number) => {
-                                        const amount = m.id === 'fallback' ? finalTotal : (finalTotal * m.percentage) / 100;
-                                        return (
-                                            <tr key={i}>
-                                                <td>{m.name}</td>
-                                                <td>{m.dueDate}</td>
-                                                <td>{m.id === 'fallback' ? '-' : `${m.percentage}%`}</td>
-                                                <td>{formatCurrency(amount, currency)}</td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
+                    {pricing?.milestones && pricing.milestones.length > 0 && (
+                        <div style={{ background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px", marginBottom: "40px" }}>
+                            <h3 style={{ margin: "0 0 24px 0", fontSize: "18px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Payment Schedule</h3>
+                            <div className="table-wrap" style={{ border: "none", borderRadius: 0, boxShadow: "none", margin: 0, background: "transparent" }}>
+                                <table className="payment-table">
+                                    <colgroup>
+                                        <col style={{ width: '40%' }} />
+                                        <col style={{ width: '20%' }} />
+                                        <col style={{ width: '20%' }} />
+                                        <col style={{ width: '20%' }} />
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th>Installment</th>
+                                            <th>Due Date</th>
+                                            <th>Percentage</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {pricing.milestones.map((m: any, i: number) => {
+                                            const amount = (calculatedFinalTotal * m.percentage) / 100;
+                                            return (
+                                                <tr key={m.id || i}>
+                                                    <td>{m.name}</td>
+                                                    <td>{m.dueDate}</td>
+                                                    <td>{m.percentage}%</td>
+                                                    <td>{formatCurrency(amount, currency)}</td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     {/* Policies & Methods — below, side by side */}
                     <div style={{ display: "flex", gap: "40px" }}>
                         <div style={{ flex: 1, background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
                             <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Terms & Policies</h3>
                             <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
-                                {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>• {p}</div>) : "• Standard cancellation fees apply."}
+                                {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
                             </div>
                         </div>
                         <div style={{ flex: 1, background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
                             <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Accepted Methods</h3>
                             <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
-                                {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>• {p}</div>) : "• Bank Transfer, Credit Card."}
+                                {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
                             </div>
                         </div>
                     </div>

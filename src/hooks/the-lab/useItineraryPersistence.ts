@@ -107,8 +107,7 @@ export function useItineraryPersistence({
               // Ensure arrays are never undefined from old DB records
               manualOptions: pricing?.manualOptions ?? [],
               milestones: pricing?.milestones ?? defaultPricingConfig.milestones,
-              // Default costingType to 'manual' if not explicitly stored
-              costingType: pricing?.costingType ?? 'manual',
+
               // DB currency column always wins
               currency: data.currency || pricing?.currency || DEFAULT_CURRENCY,
             },
@@ -174,7 +173,7 @@ export function useItineraryPersistence({
         // Always ensure these are arrays and costingType is set
         manualOptions: data.pricing?.manualOptions ?? [],
         milestones: data.pricing?.milestones ?? defaultPricingConfig.milestones,
-        costingType: data.pricing?.costingType ?? 'manual',
+
       };
 
       const itineraryData = {
@@ -260,7 +259,7 @@ export function useItineraryPersistence({
         markup_value: Number(pricingCfg.markupValue || 15),
         markup_type: pricingCfg.markupType || 'percentage',
         tax_percentage: Number(pricingCfg.taxPercentage || 0),
-        costing_type: pricingCfg.costingType || 'manual',
+
         client_price: finalClientPrice > 0 ? finalClientPrice : null,
         itinerary_data: itineraryData || {},
         generation_preferences: formValues,

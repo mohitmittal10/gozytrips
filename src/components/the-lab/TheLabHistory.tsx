@@ -5,6 +5,7 @@ import {
   History, 
   Calendar, 
   ChevronRight, 
+  ChevronLeft,
   Clock,
   Sparkles,
   Search,
@@ -55,6 +56,8 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const { agencySettings } = useAuth();
   const supabase = createClient();
 
@@ -93,6 +96,10 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
     fetchHistory();
   }, [fetchHistory]);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   const handleLoad = (id: string) => {
     setCurrentTripId(id);
     setActiveLabTab('itinerary');
@@ -104,11 +111,15 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
     return title.includes(searchQuery.toLowerCase()) || dest.includes(searchQuery.toLowerCase());
   });
 
+  const totalPages = Math.ceil(filteredItineraries.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginatedItineraries = filteredItineraries.slice(startIndex, startIndex + itemsPerPage);
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-32 space-y-8">
         <div className="relative group">
-          <div className="absolute -inset-4 bg-purple-500/20 rounded-full blur-2xl opacity-50 group-hover:opacity-75 transition-opacity" />
+          <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl opacity-50 group-hover:opacity-75 transition-opacity" />
           <UniqueLoading variant="morph" size="lg" className="relative z-10" />
         </div>
         <div className="text-center space-y-2">
@@ -140,9 +151,9 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
   if (itineraries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-32 text-center px-4 animate-in fade-in duration-1000">
-        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-zinc-500/10 to-zinc-800/10 flex items-center justify-center mb-8 border border-white/5 shadow-2xl relative">
-          <History className="w-10 h-10 text-zinc-700" />
-          <div className="absolute inset-0 rounded-full border border-zinc-700/20 scale-125 animate-ping opacity-20" />
+        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center mb-8 border border-primary/10 shadow-2xl relative">
+          <History className="w-10 h-10 text-primary/70" />
+          <div className="absolute inset-0 rounded-full border border-primary/20 scale-125 animate-ping opacity-20" />
         </div>
         <h3 className="text-3xl font-serif font-bold text-white mb-4 uppercase tracking-wider">The Archive is Empty</h3>
         <p className="text-zinc-500 max-w-sm mx-auto text-sm leading-relaxed mb-10">
@@ -164,20 +175,20 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
-            <History className="w-5 h-5 text-purple-400" />
+            <History className="w-5 h-5 text-primary" />
             Itinerary Archive
           </h2>
           <p className="text-zinc-500 text-xs mt-0.5">{itineraries.length} total generation(s) found</p>
         </div>
 
         <div className="relative w-full sm:w-64 group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-primary/50" />
           <input 
             type="text" 
             placeholder="Search projects..." 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-purple-500/30 focus:border-purple-500/40 transition-all"
+            className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:ring-1 focus:ring-primary/30 focus:border-primary/40 transition-all"
           />
         </div>
       </div>
@@ -194,8 +205,8 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
           <div className="col-span-1 text-right">Open</div>
         </div>
 
-        {filteredItineraries.length > 0 ? (
-          filteredItineraries.map((item) => {
+        {paginatedItineraries.length > 0 ? (
+          paginatedItineraries.map((item) => {
             const prefs = item.generation_preferences || {};
             const displayTitle = item.title || item.destinations || prefs.destinations || "Untitled Project";
             const startDate = item.start_date ? new Date(`${item.start_date}T00:00:00`) : (prefs.startDate ? new Date(prefs.startDate) : null);
@@ -218,7 +229,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
               <div 
                 key={item.id}
                 onClick={() => handleLoad(item.id)}
-                className="group relative overflow-hidden rounded-xl border border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.05] transition-all duration-300 cursor-pointer p-4 xl:py-3"
+                className="group relative overflow-hidden rounded-xl border border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.05] hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer p-4 xl:py-3"
               >
                 <div className="flex flex-col xl:grid xl:grid-cols-12 gap-3 items-start xl:items-center">
                   
@@ -228,9 +239,9 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                       "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider",
                       status === 'confirmed' 
                         ? "bg-emerald-500/10 text-emerald-400" 
-                        : "bg-purple-500/10 text-purple-400"
+                        : "bg-primary/10 text-primary"
                     )}>
-                      <div className={cn("w-1 h-1 rounded-full", status === 'confirmed' ? "bg-emerald-400" : "bg-purple-400")} />
+                      <div className={cn("w-1 h-1 rounded-full", status === 'confirmed' ? "bg-emerald-400" : "bg-primary")} />
                       {status}
                     </div>
                   </div>
@@ -238,7 +249,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                   {/* Title & Destinations */}
                   <div className="col-span-3 w-full">
                     <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-white group-hover:text-purple-300 transition-colors truncate">
+                      <span className="text-sm font-semibold text-white group-hover:text-primary transition-colors truncate">
                         {displayTitle}
                       </span>
                       <span className="text-[10px] text-zinc-500 font-mono mt-0.5">ID: {item.trip_id}</span>
@@ -247,7 +258,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
 
                   {/* Departure */}
                   <div className="col-span-2 w-full xl:w-auto flex items-center gap-2 text-zinc-400">
-                    <Calendar className="w-3 h-3 text-zinc-600 shrink-0" />
+                    <Calendar className="w-3 h-3 text-primary/70 shrink-0" />
                     <span className="text-xs font-medium">
                       {startDate ? format(startDate, "MMM d, yyyy") : "—"}
                     </span>
@@ -255,7 +266,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
 
                   {/* Last Modified */}
                   <div className="col-span-2 w-full xl:w-auto flex items-center gap-2 text-zinc-400">
-                    <Clock className="w-3 h-3 text-zinc-600 shrink-0" />
+                    <Clock className="w-3 h-3 text-primary/70 shrink-0" />
                     <span className="text-xs font-medium">
                       {format(new Date(item.last_activity_at), "MMM d, HH:mm")}
                     </span>
@@ -267,7 +278,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                       <div className="flex flex-wrap gap-x-4 gap-y-1.5 items-center">
                         {/* Client Price */}
                         <div className="flex items-center gap-1.5">
-                          <Receipt className="w-3 h-3 text-emerald-500/60 shrink-0" />
+                          <Receipt className="w-3 h-3 text-primary/70 shrink-0" />
                           <div className="flex flex-col leading-none">
                             <span className="text-[9px] text-zinc-600 uppercase tracking-widest">Client Price</span>
                             <span className="text-sm font-bold text-emerald-400">
@@ -279,7 +290,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                         {/* Markup */}
                         {markupValue !== null && (
                           <div className="flex items-center gap-1.5">
-                            <TrendingUp className="w-3 h-3 text-blue-400/60 shrink-0" />
+                            <TrendingUp className="w-3 h-3 text-primary/70 shrink-0" />
                             <div className="flex flex-col leading-none">
                               <span className="text-[9px] text-zinc-600 uppercase tracking-widest">Markup</span>
                               <span className="text-xs font-semibold text-blue-400">
@@ -302,7 +313,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                         {/* Pax */}
                         {totalPax > 0 && (
                           <div className="flex items-center gap-1">
-                            <Users className="w-3 h-3 text-zinc-500 shrink-0" />
+                            <Users className="w-3 h-3 text-primary/70 shrink-0" />
                             <div className="flex flex-col leading-none">
                               <span className="text-[9px] text-zinc-600 uppercase tracking-widest">Pax</span>
                               <span className="text-xs font-semibold text-zinc-300">
@@ -319,8 +330,8 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
 
                   {/* Action */}
                   <div className="col-span-1 w-full xl:w-auto xl:text-right">
-                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/5 group-hover:bg-purple-500 group-hover:border-purple-500 transition-all">
-                      <ChevronRight className="w-4 h-4 text-zinc-500 group-hover:text-white" />
+                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/5 group-hover:bg-primary group-hover:border-primary transition-all">
+                      <ChevronRight className="w-4 h-4 text-primary/60 group-hover:text-white" />
                     </div>
                   </div>
                 </div>
@@ -329,11 +340,73 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
           })
         ) : (
           <div className="py-12 text-center bg-white/[0.02] rounded-xl border border-dashed border-white/10">
-            <Search className="w-8 h-8 text-zinc-800 mx-auto mb-3" />
+            <Search className="w-8 h-8 text-primary/40 mx-auto mb-3" />
             <p className="text-zinc-600 text-sm">No matches for "{searchQuery}"</p>
           </div>
         )}
       </div>
+
+      {/* Pagination Footer */}
+      {totalPages > 1 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl border border-white/[0.04] bg-white/[0.01] backdrop-blur-sm mt-4">
+          <p className="text-xs text-zinc-500 font-medium">
+            Showing <span className="text-zinc-300 font-bold">{startIndex + 1}</span>-
+            <span className="text-zinc-300 font-bold">{Math.min(startIndex + itemsPerPage, filteredItineraries.length)}</span> of{" "}
+            <span className="text-zinc-300 font-bold">{filteredItineraries.length}</span> generations
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
+              disabled={currentPage === 1}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 disabled:hover:text-zinc-400 transition-all cursor-pointer disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            
+            <div className="flex items-center gap-1">
+              {Array.from({ length: totalPages }, (_, idx) => {
+                const pageNum = idx + 1;
+                
+                // Keep only first, last, current, and surrounding pages
+                if (totalPages > 5) {
+                  if (pageNum !== 1 && pageNum !== totalPages && Math.abs(pageNum - currentPage) > 1) {
+                    if (pageNum === 2 && currentPage > 3) {
+                      return <span key="dots-start" className="text-zinc-600 px-1 text-xs select-none">...</span>;
+                    }
+                    if (pageNum === totalPages - 1 && currentPage < totalPages - 2) {
+                      return <span key="dots-end" className="text-zinc-600 px-1 text-xs select-none">...</span>;
+                    }
+                    return null;
+                  }
+                }
+
+                return (
+                  <button
+                    key={pageNum}
+                    onClick={() => setCurrentPage(pageNum)}
+                    className={cn(
+                      "h-8 min-w-[2rem] px-2 rounded-lg text-xs font-semibold tracking-wide transition-all cursor-pointer",
+                      currentPage === pageNum
+                        ? "bg-primary/20 border border-primary/40 text-primary shadow-[0_0_12px_rgba(255,92,51,0.15)] font-bold"
+                        : "bg-transparent text-zinc-400 hover:text-white hover:bg-white/5"
+                    )}
+                  >
+                    {pageNum}
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 disabled:hover:text-zinc-400 transition-all cursor-pointer disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

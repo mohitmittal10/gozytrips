@@ -31,7 +31,7 @@ export interface TripFinancial {
     adultPax: number;
     childPax: number;
     infantPax: number;
-    costingType: 'automatic' | 'manual';
+
 
     // Dates
     createdAt: string;

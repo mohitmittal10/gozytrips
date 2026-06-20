@@ -18,11 +18,12 @@ export const CorporateTheme = ({
     const brandColor = agent.primaryColor || "#0f172a";
     const totalActivities = Array.isArray(itinerary.itinerary) ? itinerary.itinerary.reduce((s, d) => s + (d.timeline?.length || 0), 0) : 0;
     const currency = pricing?.currency || DEFAULT_CURRENCY;
-    const isManual = pricing?.costingType === 'manual';
     const adultPax = Number(pricing?.adultPax || 2);
     const childPax = Number(pricing?.childPax || 0);
+    const infantPax = Number(pricing?.infantPax || 0);
+    const totalPax = adultPax + childPax + infantPax;
     const resolvedBase = baseCost || 0;
-    const { costWithMarkup, taxAmount } = calcPricingFromBaseCost(resolvedBase, pricing);
+    const { baseCost: resolvedBaseCost, markupAmount, costWithMarkup, taxAmount, finalTotal: calculatedFinalTotal } = calcPricingFromBaseCost(resolvedBase, pricing);
 
     const inclusionsList = parseList(inclusions);
     const exclusionsList = parseList(exclusions);
@@ -85,9 +86,19 @@ export const CorporateTheme = ({
             {/* Letterhead — cover section */}
             <div data-pdf-section="cover" style={{ paddingBottom: "10px" }}>
                 <div style={{ background: brandColor, padding: "35px 50px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
-                        <h1 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px 0", letterSpacing: "1.5px", textTransform: "uppercase" }}>{agent.companyName}</h1>
-                        <p style={{ fontSize: "11px", opacity: 0.8, margin: 0, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" }}>Travel Management Services</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+                        {agent.logoUrl && (
+                            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                                <div style={{ padding: "8px 12px", background: "rgba(255,255,255,0.1)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center" }}>
+                                    <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "44px", maxWidth: "130px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1) opacity(0.95)" }} />
+                                </div>
+                                <div style={{ width: "1px", height: "40px", background: "rgba(255,255,255,0.2)" }} />
+                            </div>
+                        )}
+                        <div>
+                            <h1 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px 0", letterSpacing: "1.5px", textTransform: "uppercase" }}>{agent.companyName}</h1>
+                            <p style={{ fontSize: "11px", opacity: 0.8, margin: 0, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" }}>Travel Management Services</p>
+                        </div>
                     </div>
                     <div style={{ textAlign: "right", fontSize: "12px", lineHeight: "1.8", opacity: 0.9, fontWeight: 500 }}>
                         <p style={{ margin: "2px 0", fontWeight: 700, color: "#ffffff" }}>{agent.agentName}</p>
@@ -205,7 +216,7 @@ export const CorporateTheme = ({
                             ))}
                         </div>
 
-                        {(day as any).dailyStats?.totalCost && (!(itinerary as any).pricing || (itinerary as any).pricing.costingType !== 'manual') && (
+                        {(day as any).dailyStats?.totalCost && (
                             <div style={{ display: "flex", gap: "30px", padding: "10px 20px", background: "rgba(255,255,255,0.44)", border: "1px solid rgba(148,163,184,0.18)", borderTop: "none", borderRadius: "0 0 8px 8px", fontSize: "12px", color: "#64748b", fontWeight: 700 }}>
                                 <span>Day Estimated Budget: {formatCurrency((day as any).dailyStats?.totalCost, (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}</span>
                             </div>
@@ -292,7 +303,7 @@ export const CorporateTheme = ({
                         <ul style={{ margin: 0, padding: "20px", listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
                             {inclusionsList.length > 0 ? inclusionsList.map((inc, i) => (
                                 <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#334155", fontWeight: 500 }}><span style={{ color: brandColor }}>✓</span> <span>{inc}</span></li>
-                            )) : <li style={{ fontSize: "13px", color: "#64748b" }}>Standard inclusions apply.</li>}
+                            )) : <li style={{ fontSize: "13px", color: "#64748b" }}>No inclusions specified.</li>}
                         </ul>
                     </div>
                     <div style={{ flex: 1, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden" }}>
@@ -302,7 +313,7 @@ export const CorporateTheme = ({
                         <ul style={{ margin: 0, padding: "20px", listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
                             {exclusionsList.length > 0 ? exclusionsList.map((exc, i) => (
                                 <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#475569", fontWeight: 500 }}><span style={{ color: "#94a3b8" }}>✗</span> <span>{exc}</span></li>
-                            )) : <li style={{ fontSize: "13px", color: "#64748b" }}>Personal expenses not included.</li>}
+                            )) : <li style={{ fontSize: "13px", color: "#64748b" }}>No exclusions specified.</li>}
                         </ul>
                     </div>
                 </div>
@@ -329,111 +340,154 @@ export const CorporateTheme = ({
                                 <th>Amount</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>{isManual ? "Package Cost" : "Itinerary Valuation"} (for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''})</td>
-                                <td>1</td>
-                                <td>{formatCurrency(costWithMarkup, currency)}</td>
-                                <td>{formatCurrency(costWithMarkup, currency)}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <div style={{ background: "rgba(15, 23, 42, 0.02)", border: "1px solid rgba(148,163,184,0.2)", borderTop: "none", padding: "20px 24px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-end", borderRadius: "0 0 8px 8px", marginTop: "-40px", marginBottom: "40px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "13px", color: "#475569" }}><span>Subtotal:</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{formatCurrency(costWithMarkup, currency)}</span></div>
-                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "13px", color: "#475569" }}><span>Taxes & Fees:</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{formatCurrency(taxAmount, currency)}</span></div>
-                    <div style={{ width: "260px", height: "1px", background: "rgba(148,163,184,0.3)", margin: "4px 0" }}></div>
-                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "16px", color: brandColor, fontWeight: 800 }}><span>Grand Total:</span><span style={{ fontFamily: "var(--font-mono)" }}>{formatCurrency(finalTotal, currency)}</span></div>
-                </div>
-
-                {/* Payment Schedule — full width */}
-                <div style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden", marginBottom: "24px" }}>
-                    <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "14px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
-                        <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Payment Schedule</h3>
-                    </div>
-                    <div className="table-wrap" style={{ border: "none", borderRadius: 0, boxShadow: "none", margin: 0 }}>
-                        <table className="payment-table">
-                            <colgroup>
-                                <col style={{ width: '40%' }} />
-                                <col style={{ width: '20%' }} />
-                                <col style={{ width: '20%' }} />
-                                <col style={{ width: '20%' }} />
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th>Installment</th>
-                                    <th>Due Date</th>
-                                    <th>Percentage</th>
-                                    <th>Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {(pricing?.milestones?.length > 0 ? pricing.milestones : [{ id: 'fallback', name: 'Full Payment', percentage: 100, dueDate: 'At Booking' }]).map((m: any, i: number) => {
-                                    const amount = m.id === 'fallback' ? finalTotal : (finalTotal * m.percentage) / 100;
-                                    return (
-                                        <tr key={i}>
-                                            <td>{m.name}</td>
-                                            <td>{m.dueDate}</td>
-                                            <td>{m.id === 'fallback' ? '-' : `${m.percentage}%`}</td>
-                                            <td>{formatCurrency(amount, currency)}</td>
+                                <tbody>
+                                    {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
+                                        pricing.manualOptions.map((item: any, idx: number) => {
+                                            const qty = item.type === 'per-person' ? totalPax : 1;
+                                            const rate = Number(item.amount) || 0;
+                                            const amount = qty * rate;
+                                            return (
+                                                <tr key={item.id || idx}>
+                                                    <td>{item.name} {item.type === 'per-person' ? `(Per Person)` : ''}</td>
+                                                    <td>{qty}</td>
+                                                    <td>{formatCurrency(rate, currency)}</td>
+                                                    <td>{formatCurrency(amount, currency)}</td>
+                                                </tr>
+                                            );
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td>{"Package Cost"} (for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''})</td>
+                                            <td>1</td>
+                                            <td>{formatCurrency(costWithMarkup, currency)}</td>
+                                            <td>{formatCurrency(costWithMarkup, currency)}</td>
                                         </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
 
-                {/* Policies & Methods — below, side by side */}
-                <div style={{ display: "flex", gap: "30px" }}>
-                    <div style={{ flex: 1, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden" }}>
-                        <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "12px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
-                            <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Terms & Policies</h3>
+                        <div style={{ background: "rgba(15, 23, 42, 0.02)", border: "1px solid rgba(148,163,184,0.2)", borderTop: "none", padding: "20px 24px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-end", borderRadius: "0 0 8px 8px", marginTop: "-40px", marginBottom: "40px" }}>
+                            {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
+                                <>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#475569" }}><span>Subtotal (Base Cost):</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{formatCurrency(resolvedBaseCost, currency)}</span></div>
+                                    {markupAmount > 0 && (
+                                        <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#475569" }}><span>Service Fee / Markup:</span><span style={{ fontWeight: 600, color: "#0f172a" }}>+ {formatCurrency(markupAmount, currency)}</span></div>
+                                    )}
+                                    {taxAmount > 0 && (
+                                        <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#475569" }}><span>Taxes & Fees ({pricing.taxPercentage}%):</span><span style={{ fontWeight: 600, color: "#0f172a" }}>+ {formatCurrency(taxAmount, currency)}</span></div>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#475569" }}><span>Subtotal:</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{formatCurrency(costWithMarkup, currency)}</span></div>
+                                    <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#475569" }}><span>Taxes & Fees:</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{formatCurrency(taxAmount, currency)}</span></div>
+                                </>
+                            )}
+                            <div style={{ width: "320px", height: "1px", background: "rgba(148,163,184,0.3)", margin: "4px 0" }}></div>
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "16px", color: brandColor, fontWeight: 800 }}><span>Grand Total:</span><span style={{ fontFamily: "var(--font-mono)" }}>{formatCurrency(calculatedFinalTotal, currency)}</span></div>
                         </div>
-                        <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
-                            {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>• {p}</div>) : "• Standard cancellation fees apply."}
+
+                        {/* Payment Schedule — full width */}
+                        {pricing?.milestones && pricing.milestones.length > 0 && (
+                            <div style={{ background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden", marginBottom: "24px" }}>
+                                <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "14px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
+                                    <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Payment Schedule</h3>
+                                </div>
+                                <div className="table-wrap" style={{ border: "none", borderRadius: 0, boxShadow: "none", margin: 0 }}>
+                                    <table className="payment-table">
+                                        <colgroup>
+                                            <col style={{ width: '40%' }} />
+                                            <col style={{ width: '20%' }} />
+                                            <col style={{ width: '20%' }} />
+                                            <col style={{ width: '20%' }} />
+                                        </colgroup>
+                                        <thead>
+                                            <tr>
+                                                <th>Installment</th>
+                                                <th>Due Date</th>
+                                                <th>Percentage</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {pricing.milestones.map((m: any, i: number) => {
+                                                const amount = (calculatedFinalTotal * m.percentage) / 100;
+                                                return (
+                                                    <tr key={m.id || i}>
+                                                        <td>{m.name}</td>
+                                                        <td>{m.dueDate}</td>
+                                                        <td>{m.percentage}%</td>
+                                                        <td>{formatCurrency(amount, currency)}</td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Policies & Methods — below, side by side */}
+                        <div style={{ display: "flex", gap: "30px" }}>
+                            <div style={{ flex: 1, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden" }}>
+                                <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "12px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
+                                    <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Terms & Policies</h3>
+                                </div>
+                                <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
+                                    {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
+                                </div>
+                            </div>
+                            <div style={{ flex: 1, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden" }}>
+                                <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "12px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
+                                    <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Accepted Methods</h3>
+                                </div>
+                                <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
+                                    {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div style={{ flex: 1, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden" }}>
-                        <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "12px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
-                            <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Accepted Methods</h3>
-                        </div>
-                        <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
-                            {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>• {p}</div>) : "• Bank Transfer, Credit Card."}
-                        </div>
+
+                {/* Detailed Footer */}
+                <div data-pdf-section="footer" style={{ padding: "40px 50px 20px 50px", borderTop: `2px solid ${brandColor}`, background: "white" }}>
+                    {(agencySettings?.bankAccountNumber || agencySettings?.gstNumber || agencySettings?.upiId) && (
+                        <>
+                            <h2 style={{ fontSize: "16px", color: brandColor, fontWeight: 800, margin: "0 0 24px 0", letterSpacing: "-0.5px" }}>Agency Remittance Details</h2>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "20px", marginBottom: "30px" }}>
+                                {agencySettings?.bankAccountNumber && (
+                                    <div style={{ padding: "16px", background: "rgba(248,250,252,0.8)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "6px" }}>
+                                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, marginBottom: "8px" }}>Bank Account</div>
+                                        <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "4px", color: "#0f172a" }}>{agencySettings?.bankName || ''}</div>
+                                        <div style={{ fontSize: "11px", color: "#475569", marginBottom: "2px" }}>ACC: <span style={{ fontWeight: 600, color: "#0f172a" }}>{agencySettings?.bankAccountNumber}</span></div>
+                                        {agencySettings?.bankIfscCode && (
+                                            <div style={{ fontSize: "11px", color: "#475569" }}>IFSC: <span style={{ fontWeight: 600, color: "#0f172a" }}>{agencySettings?.bankIfscCode}</span></div>
+                                        )}
+                                    </div>
+                                )}
+                                {agencySettings?.gstNumber && (
+                                    <div style={{ padding: "16px", background: "rgba(248,250,252,0.8)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "6px" }}>
+                                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, marginBottom: "8px" }}>Tax Information</div>
+                                        <div style={{ fontSize: "11px", color: "#475569" }}>GST Number:<br /><span style={{ color: "#0f172a", fontSize: "13px", fontWeight: 700, display: "inline-block", marginTop: "4px" }}>{agencySettings?.gstNumber}</span></div>
+                                    </div>
+                                )}
+                                {agencySettings?.upiId && (
+                                    <div style={{ padding: "16px", background: "rgba(248,250,252,0.8)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "6px" }}>
+                                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, marginBottom: "8px" }}>UPI Payment</div>
+                                        <div style={{ fontSize: "11px", color: "#475569" }}>Scan or Pay to:<br /><span style={{ color: "#0f172a", fontSize: "13px", fontWeight: 700, display: "inline-block", marginTop: "4px" }}>{agencySettings?.upiId}</span></div>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(148,163,184,0.2)", paddingTop: "16px" }}>
+                        <p style={{ margin: 0, fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700 }}>Confidential · Prepared for client by {agent.companyName}</p>
+                        <p style={{ margin: 0, fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700 }}>Page generated: {new Date().toLocaleDateString()}</p>
                     </div>
                 </div>
             </div>
-
-            {/* Detailed Footer */}
-            <div data-pdf-section="footer" style={{ padding: "40px 50px 20px 50px", borderTop: `2px solid ${brandColor}`, background: "white" }}>
-                <h2 style={{ fontSize: "16px", color: brandColor, fontWeight: 800, margin: "0 0 24px 0", letterSpacing: "-0.5px" }}>Agency Remittance Details</h2>
-
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "30px" }}>
-                    <div style={{ padding: "16px", background: "rgba(248,250,252,0.8)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "6px" }}>
-                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, marginBottom: "8px" }}>Bank Account</div>
-                        <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "4px", color: "#0f172a" }}>{agencySettings?.bankName || 'HDFC Bank'}</div>
-                        <div style={{ fontSize: "11px", color: "#475569", marginBottom: "2px" }}>ACC: <span style={{ fontWeight: 600, color: "#0f172a" }}>{agencySettings?.bankAccountNumber || '1234567890'}</span></div>
-                        <div style={{ fontSize: "11px", color: "#475569" }}>IFSC: <span style={{ fontWeight: 600, color: "#0f172a" }}>{agencySettings?.bankIfscCode || 'HDFC0001234'}</span></div>
-                    </div>
-                    <div style={{ padding: "16px", background: "rgba(248,250,252,0.8)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "6px" }}>
-                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, marginBottom: "8px" }}>Tax Information</div>
-                        <div style={{ fontSize: "11px", color: "#475569" }}>GST Number:<br /><span style={{ color: "#0f172a", fontSize: "13px", fontWeight: 700, display: "inline-block", marginTop: "4px" }}>{agencySettings?.gstNumber || '29GGGGG1314R9Z6'}</span></div>
-                    </div>
-                    <div style={{ padding: "16px", background: "rgba(248,250,252,0.8)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "6px" }}>
-                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700, marginBottom: "8px" }}>UPI Payment</div>
-                        <div style={{ fontSize: "11px", color: "#475569" }}>Scan or Pay to:<br /><span style={{ color: "#0f172a", fontSize: "13px", fontWeight: 700, display: "inline-block", marginTop: "4px" }}>{agencySettings?.upiId || 'YOUR-AGENCY@UP9Z6'}</span></div>
-                    </div>
-                </div>
-
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(148,163,184,0.2)", paddingTop: "16px" }}>
-                    <p style={{ margin: 0, fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700 }}>Confidential · Prepared for client by {agent.companyName}</p>
-                    <p style={{ margin: 0, fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700 }}>Page generated: {new Date().toLocaleDateString()}</p>
-                </div>
-            </div>
-        </div>
-    );
-};
+        );
+    };
 
 

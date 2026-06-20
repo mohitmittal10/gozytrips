@@ -1092,11 +1092,10 @@ export function ClientDashboard({ formMeta, shareToken, responseId }: ClientDash
               const markupType = itin.markup_type || pricing.markupType || "percentage";
               const markupValue = itin.markup_value ?? pricing.markupValue ?? 0;
               const taxPct = itin.tax_percentage ?? pricing.taxPercentage ?? 0;
-              const costingType = pricing.costingType ?? "manual";
 
-              // Compute base cost from manual options if costingType is manual
+              // Compute base cost from manual options
               let computedBaseCost = 0;
-              if (costingType === "manual" && Array.isArray(pricing.manualOptions) && pricing.manualOptions.length > 0) {
+              if (Array.isArray(pricing.manualOptions) && pricing.manualOptions.length > 0) {
                 for (const item of pricing.manualOptions) {
                   const amount = Number(item.amount) || 0;
                   computedBaseCost += item.type === "per-person" ? amount * totalPax : amount;

@@ -51,14 +51,14 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
             "group relative flex items-center transition-all duration-200 rounded-xl mb-4",
             isSidebarExpanded ? "w-full px-4 gap-3 h-12" : "justify-center w-10 h-10",
             activeLabTab === 'new'
-              ? 'bg-purple-500 text-white shadow-lg shadow-purple-500/25'
-              : 'text-emerald-500 hover:text-emerald-400 hover:bg-emerald-500/10'
+              ? 'bg-primary/20 text-primary shadow-lg shadow-primary/15'
+              : 'text-primary hover:text-primary/80 hover:bg-primary/10'
           )}
           title={isSidebarExpanded ? undefined : "New Itinerary"}
         >
           <div className={cn(
             "flex items-center justify-center rounded-lg transition-colors",
-            activeLabTab === 'new' ? "bg-white/20" : "bg-emerald-500/10",
+            activeLabTab === 'new' ? "bg-primary/20" : "bg-primary/10",
             isSidebarExpanded ? "p-1.5" : "w-8 h-8"
           )}>
             <Plus className={cn(isSidebarExpanded ? "w-4 h-4" : "w-5 h-5")} />
@@ -91,8 +91,8 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
                 "relative group flex items-center rounded-xl transition-all duration-200",
                 isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10",
                 activeLabTab === item.id
-                  ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
-                  : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-gray-500 hover:text-primary hover:bg-white/[0.06]'
               )}
               title={isSidebarExpanded ? undefined : item.label}
             >

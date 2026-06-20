@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Save, Settings, DollarSign, Home, Shield, User, Cloud, ShieldCheck } from "lucide-react";
+import { Save, Settings, DollarSign, Home, Shield, User, Cloud, ShieldCheck, Upload, X, Building2 } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { createClient } from "@/lib/supabase/client";
@@ -37,6 +37,8 @@ export function UnifiedSettings() {
   const supabase = createClient();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [profileData, setProfileData] = useState({
     full_name: "",
     bio: "",
@@ -166,6 +168,79 @@ export function UnifiedSettings() {
     }
   }, [userProfile, agencySettings]);
 
+  // Sync logo preview from profile
+  useEffect(() => {
+    setLogoPreview(userProfile?.logo_url || null);
+  }, [userProfile?.logo_url]);
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    // Validate type
+    if (!file.type.startsWith('image/')) {
+      toast({ variant: 'destructive', title: 'Invalid file type', description: 'Please upload an image file (PNG, JPG, SVG, etc.).' });
+      return;
+    }
+    // Validate size (2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ variant: 'destructive', title: 'File too large', description: 'Logo must be under 2MB.' });
+      return;
+    }
+
+    setLogoUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const filePath = `${user.id}/logo.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('agency-logos')
+        .upload(filePath, file, { upsert: true, contentType: file.type });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage
+        .from('agency-logos')
+        .getPublicUrl(filePath);
+
+      const publicUrl = urlData.publicUrl;
+
+      const { error: updateError } = await supabase
+        .from('user_profiles')
+        .update({ logo_url: publicUrl, updated_at: new Date().toISOString() })
+        .eq('id', user.id);
+
+      if (updateError) throw updateError;
+
+      setLogoPreview(publicUrl);
+      await refreshProfile();
+      toast({ title: 'Logo uploaded', description: 'Your agency logo has been saved.' });
+    } catch (err: any) {
+      console.error(err);
+      toast({ variant: 'destructive', title: 'Upload failed', description: err.message });
+    } finally {
+      setLogoUploading(false);
+      // Reset input so the same file can be re-selected
+      e.target.value = '';
+    }
+  };
+
+  const handleLogoRemove = async () => {
+    if (!user) return;
+    setLogoUploading(true);
+    try {
+      await supabase.from('user_profiles')
+        .update({ logo_url: null, updated_at: new Date().toISOString() })
+        .eq('id', user.id);
+      setLogoPreview(null);
+      await refreshProfile();
+      toast({ title: 'Logo removed', description: 'Your agency logo has been cleared.' });
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Error', description: err.message });
+    } finally {
+      setLogoUploading(false);
+    }
+  };
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -233,7 +308,7 @@ export function UnifiedSettings() {
   const handleSave = async () => {
     if (!user) return;
 
-    // ── Validate before saving ───────────────────────────────────────────────
+    // â”€â”€ Validate before saving â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const { valid, errors } = validateSettings();
     if (!valid) {
       toast({
@@ -425,8 +500,72 @@ export function UnifiedSettings() {
                 <CardDescription className="text-gray-500">This information appears on your itineraries and client portals.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 px-3 sm:px-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
+                {/* Agency Logo Uploader */}
+                <div className="space-y-3">
+                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Agency Logo</Label>
+                  <div className="flex items-center gap-4">
+                    {/* Preview */}
+                    <div className="relative w-20 h-20 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center overflow-hidden flex-shrink-0">
+                      {logoPreview ? (
+                        <img
+                          src={logoPreview}
+                          alt="Agency logo"
+                          className="w-full h-full object-contain p-1"
+                        />
+                      ) : (
+                        <Building2 className="w-8 h-8 text-gray-600" />
+                      )}
+                      {logoUploading && (
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                          <span className="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex flex-col gap-2">
+                      <label
+                        htmlFor="logo-upload-input"
+                        className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all ${
+                          logoUploading
+                            ? 'opacity-50 pointer-events-none bg-white/5 text-gray-400 border border-white/10'
+                            : 'bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20'
+                        }`}
+                      >
+                        <Upload className="w-4 h-4" />
+                        {logoPreview ? 'Replace Logo' : 'Upload Logo'}
+                      </label>
+                      <input
+                        id="logo-upload-input"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleLogoUpload}
+                        disabled={logoUploading}
+                      />
+                      {logoPreview && (
+                        <button
+                          type="button"
+                          onClick={handleLogoRemove}
+                          disabled={logoUploading}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/30 transition-all disabled:opacity-50 disabled:pointer-events-none"
+                        >
+                          <X className="w-4 h-4" />
+                          Remove
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="text-xs text-gray-500 ml-2">
+                      <p>Appears on all generated itinerary PDFs.</p>
+                      <p className="mt-1">Max 2MB Â· PNG, JPG, SVG, WebP</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-white/5 pt-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                   <div className="space-y-1.5">
                     <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Agent Full Name</Label>
                     <Input value={profileData.full_name} onChange={(e) => updateProfile('full_name', e.target.value)} placeholder="Your Name" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                   </div>
@@ -460,6 +599,7 @@ export function UnifiedSettings() {
                   <div className="space-y-1.5 sm:col-span-2">
                     <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Email Signature</Label>
                     <Textarea value={agencyData.agent_signature} onChange={(e) => updateAgency('agent_signature', e.target.value)} className="bg-white/5 border-white/10 text-white min-h-[100px] text-sm font-mono" placeholder="Warm Regards,&#10;Agent Name&#10;Company" />
+                  </div>
                   </div>
                 </div>
               </CardContent>
@@ -644,3 +784,4 @@ export function UnifiedSettings() {
     </div>
   );
 }
+

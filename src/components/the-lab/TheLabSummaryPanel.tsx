@@ -1,4 +1,4 @@
-// Right-side summary panel for status, AI optimization feedback, and client dossier
+// Right-side summary panel for status, AI optimization feedback, and client detail
 import React from 'react';
 import { cn } from "@/lib/utils";
 import { MorphingSquare } from "@/components/ui/morphing-square";
@@ -90,12 +90,12 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
               <span className="text-white text-xs font-bold leading-none">{itinerary.itinerary[0]?.areaFocus?.split(',')[0]}</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-[9px] font-black text-secondary uppercase tracking-widest mb-0.5">Duration</span>
+              <span className="text-[9px] font-black text-primary/80 uppercase tracking-widest mb-0.5">Duration</span>
               <span className="text-white text-xs font-bold leading-none">{itinerary.itinerary.length} Days</span>
             </div>
             {finalTotal !== undefined && finalTotal > 0 && (
               <div className="flex flex-col">
-                <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest mb-0.5">Total Cost</span>
+                <span className="text-[9px] font-black text-primary/80 uppercase tracking-widest mb-0.5">Total Cost</span>
                 <span className="text-white text-xs font-bold leading-none">
                   {currencySymbol}{finalTotal.toLocaleString('en-IN')}
                 </span>
@@ -162,9 +162,9 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
         </button>
       </div>
 
-      {/* Client Dossier */}
+      {/* Client Details */}
       <div className="liquid-glass p-4 rounded-2xl">
-        <h5 className="text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-4">Client Dossier</h5>
+        <h5 className="text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-4">Client Details</h5>
         {(() => {
           const selectedClient = clients.find(c => c.id === selectedClientId);
           if (!selectedClient) {

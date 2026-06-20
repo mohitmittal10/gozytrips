@@ -70,8 +70,8 @@ export function CrmApp() {
                                     { id: 'client-forms', icon: FileText, label: 'Client Forms' },
                                     { id: 'archive', icon: Archive, label: 'Archive' }
                                 ].map((tab) => (
-                                    <Button key={tab.id} onClick={() => setActiveTab(tab.id)} variant={activeTab === tab.id ? 'secondary' : 'ghost'} className={cn("w-full justify-start h-10 px-3 hover:bg-white/10 transition-all group", activeTab === tab.id ? "bg-white/10 text-white" : "text-gray-400 hover:text-white", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
-                                        <tab.icon className={cn("w-4 h-4 shrink-0", activeTab === tab.id ? "text-purple-400" : "text-gray-500 group-hover:text-purple-400")} />
+                                    <Button key={tab.id} onClick={() => setActiveTab(tab.id)} variant={activeTab === tab.id ? 'secondary' : 'ghost'} className={cn("w-full justify-start h-10 px-3 transition-all group", activeTab === tab.id ? "bg-primary/10 text-primary" : "text-gray-400 hover:text-white hover:bg-white/5", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
+                                        <tab.icon className={cn("w-4 h-4 shrink-0", activeTab === tab.id ? "text-primary" : "text-gray-500 group-hover:text-primary")} />
                                         <span className={cn(
                                             "text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden",
                                             isSidebarExpanded ? "ml-3 w-32 opacity-100" : "w-0 opacity-0 ml-0"
@@ -116,7 +116,7 @@ export function CrmApp() {
                                         className={cn(
                                             "flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all shrink-0 border",
                                             activeTab === tab.id
-                                                ? "bg-purple-500 text-white border-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                                                ? "bg-primary text-white border-primary/80 shadow-[0_0_15px_rgba(255,92,51,0.4)]"
                                                 : "bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:text-gray-200"
                                         )}
                                     >

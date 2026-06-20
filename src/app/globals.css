@@ -31,6 +31,17 @@
     --radius-2xl: 1.5rem;
     --radius-3xl: 1.875rem;
     --radius-full: 9999px;
+    --ds-gray-200: hsla(0, 0%, 92%, 1);
+    --ds-gray-900: hsla(0, 0%, 40%, 1);
+    --ds-gray-1000: hsla(0, 0%, 9%, 1);
+    --ds-gray-alpha-200: hsla(0, 0%, 0%, 0.08);
+    --accents-2: #eaeaea;
+    --ds-background-100: hsla(0, 0%, 100%, 1);
+    --geist-success: #0070f3;
+    --geist-error: #ee0000;
+    --geist-warning: #f5a623;
+    --geist-violet: #7928ca;
+    --geist-foreground: #000;
   }
 
   .dark {
@@ -62,6 +73,14 @@
     --sidebar-border: 225 30% 10%;
     --sidebar-ring: 12 100% 60%;
     --button-ripple-color: oklch(0.985 0 0 / 0.5);
+    --ds-gray-200: hsla(0, 0%, 12%, 1);
+    --ds-gray-900: hsla(0, 0%, 63%, 1);
+    --ds-gray-1000: hsla(0, 0%, 93%, 1);
+    --ds-gray-alpha-200: hsla(0, 0%, 100%, 0.09);
+    --accents-2: #333333;
+    --ds-background-100: hsla(0, 0%, 4%, 1);
+    --geist-error: #ff0000;
+    --geist-foreground: #fff;
   }
 
   .testimonial-theme {

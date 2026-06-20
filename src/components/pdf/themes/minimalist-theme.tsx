@@ -18,11 +18,12 @@ export const MinimalistTheme = ({
     const accent = agent.primaryColor || "#000000";
     const totalActivities = Array.isArray(itinerary.itinerary) ? itinerary.itinerary.reduce((s, d) => s + (d.timeline?.length || 0), 0) : 0;
     const currency = pricing?.currency || DEFAULT_CURRENCY;
-    const isManual = pricing?.costingType === 'manual';
     const adultPax = Number(pricing?.adultPax || 2);
     const childPax = Number(pricing?.childPax || 0);
+    const infantPax = Number(pricing?.infantPax || 0);
+    const totalPax = adultPax + childPax + infantPax;
     const resolvedBase = baseCost || 0;
-    const { costWithMarkup, taxAmount } = calcPricingFromBaseCost(resolvedBase, pricing);
+    const { baseCost: resolvedBaseCost, markupAmount, costWithMarkup, taxAmount, finalTotal: calculatedFinalTotal } = calcPricingFromBaseCost(resolvedBase, pricing);
     
     const inclusionsList = parseList(inclusions);
     const exclusionsList = parseList(exclusions);
@@ -92,7 +93,15 @@ export const MinimalistTheme = ({
                     />
                     <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to right, rgba(0,0,0,0.6), transparent)` }} />
                     <div style={{ position: "absolute", bottom: "35px", left: "45px", right: "45px", color: "#fff" }}>
-                        <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "5px", margin: "0 0 12px 0", opacity: 0.85, fontWeight: 700 }}>{agent.companyName}</p>
+                        {agent.logoUrl ? (
+                            <div style={{ display: "inline-flex", alignItems: "center", gap: "10px", marginBottom: "12px", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "8px", padding: "7px 14px" }}>
+                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "28px", maxWidth: "80px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1) opacity(0.9)" }} />
+                                <div style={{ width: "1px", height: "20px", background: "rgba(255,255,255,0.3)" }} />
+                                <p style={{ margin: 0, fontSize: "9px", fontWeight: 800, color: "rgba(255,255,255,0.9)", letterSpacing: "0.12em", textTransform: "uppercase" }}>{agent.companyName}</p>
+                            </div>
+                        ) : (
+                            <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "5px", margin: "0 0 12px 0", opacity: 0.85, fontWeight: 700 }}>{agent.companyName}</p>
+                        )}
                         <h1 style={{ fontSize: "40px", fontWeight: 900, margin: 0, lineHeight: "1.1", textTransform: "uppercase", letterSpacing: "-1px", fontFamily: "'Outfit', sans-serif" }}>{title}</h1>
                     </div>
                 </div>
@@ -110,7 +119,7 @@ export const MinimalistTheme = ({
                     <div style={{ display: "flex", gap: "20px", marginBottom: "40px", pageBreakInside: "avoid" }}>
                         {[
                             { label: "Duration", value: `${itinerary.itinerary.length} Days` },
-                            { label: "Est. Budget", value: formatCurrency(finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY) },
+                            { label: "Est. Budget", value: formatCurrency(calculatedFinalTotal || finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY) },
                             { label: "Activities", value: `${totalActivities}+ Items` },
                         ].map((stat, i) => (
                             <div key={i} style={{ flex: 1, padding: "20px", border: "1px solid rgba(148,163,184,0.24)", borderTop: `3px solid ${accent}`, background: "rgba(255,255,255,0.62)", borderRadius: "8px", boxShadow: "0 8px 24px rgba(15,23,42,0.04)" }}>
@@ -190,7 +199,7 @@ export const MinimalistTheme = ({
                                 </div>
                                 <div style={{ display: "flex", gap: "16px", marginTop: "4px", fontSize: "11px", color: "#64748b", fontWeight: 600 }}>
                                     {day.date && <span>{formatDate(day.date)}</span>}
-                                    {(day as any).dailyStats?.totalCost && (!(itinerary as any).pricing || (itinerary as any).pricing.costingType !== 'manual') && (
+                                    {(day as any).dailyStats?.totalCost && (
                                         <span style={{ color: accent }}>{formatCurrency((day as any).dailyStats?.totalCost, (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}</span>
                                     )}
                                 </div>
@@ -294,7 +303,7 @@ export const MinimalistTheme = ({
                         <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "10px" }}>
                             {inclusionsList.length > 0 ? inclusionsList.map((inc, i) => (
                                 <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#334155", fontWeight: 500 }}><span style={{ color: accent }}>+</span> <span>{inc}</span></li>
-                            )) : <li style={{ fontSize: "13px", color: "#64748b" }}>Standard inclusions apply.</li>}
+                            )) : <li style={{ fontSize: "13px", color: "#64748b" }}>No inclusions specified.</li>}
                         </ul>
                     </div>
                     <div style={{ flex: 1 }}>
@@ -305,7 +314,7 @@ export const MinimalistTheme = ({
                         <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "10px" }}>
                             {exclusionsList.length > 0 ? exclusionsList.map((exc, i) => (
                                 <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#475569", fontWeight: 500 }}><span style={{ color: "#94a3b8" }}>-</span> <span>{exc}</span></li>
-                            )) : <li style={{ fontSize: "13px", color: "#64748b" }}>Personal expenses not included.</li>}
+                            )) : <li style={{ fontSize: "13px", color: "#64748b" }}>No exclusions specified.</li>}
                         </ul>
                     </div>
                 </div>
@@ -335,70 +344,102 @@ export const MinimalistTheme = ({
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td>{isManual ? "Package Cost" : "Itinerary Valuation"} (for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''})</td>
-                                <td>1</td>
-                                <td>{formatCurrency(costWithMarkup, currency)}</td>
-                                <td>{formatCurrency(costWithMarkup, currency)}</td>
-                            </tr>
+                            {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
+                                pricing.manualOptions.map((item: any, idx: number) => {
+                                    const qty = item.type === 'per-person' ? totalPax : 1;
+                                    const rate = Number(item.amount) || 0;
+                                    const amount = qty * rate;
+                                    return (
+                                        <tr key={item.id || idx}>
+                                            <td>{item.name} {item.type === 'per-person' ? `(Per Person)` : ''}</td>
+                                            <td>{qty}</td>
+                                            <td>{formatCurrency(rate, currency)}</td>
+                                            <td>{formatCurrency(amount, currency)}</td>
+                                        </tr>
+                                    );
+                                })
+                            ) : (
+                                <tr>
+                                    <td>{"Package Cost"} (for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''})</td>
+                                    <td>1</td>
+                                    <td>{formatCurrency(costWithMarkup, currency)}</td>
+                                    <td>{formatCurrency(costWithMarkup, currency)}</td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
                 <div style={{ background: "white", borderTop: "1px solid rgba(148,163,184,0.2)", padding: "20px 16px", display: "flex", flexDirection: "column", gap: "8px", alignItems: "flex-end", marginBottom: "40px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569" }}><span>Subtotal</span><span>{formatCurrency(costWithMarkup, currency)}</span></div>
-                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569", marginTop: "4px" }}><span>Taxes & Fees</span><span>{formatCurrency(taxAmount, currency)}</span></div>
+                    {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
+                        <>
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569" }}><span>Subtotal (Base Cost)</span><span>{formatCurrency(resolvedBaseCost, currency)}</span></div>
+                            {markupAmount > 0 && (
+                                <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569", marginTop: "4px" }}><span>Service Fee / Markup</span><span>+ {formatCurrency(markupAmount, currency)}</span></div>
+                            )}
+                            {taxAmount > 0 && (
+                                <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569", marginTop: "4px" }}><span>Taxes & Fees ({pricing.taxPercentage}%)</span><span>+ {formatCurrency(taxAmount, currency)}</span></div>
+                            )}
+                        </>
+                    ) : (
+                        <>
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569" }}><span>Subtotal</span><span>{formatCurrency(costWithMarkup, currency)}</span></div>
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569", marginTop: "4px" }}><span>Taxes & Fees</span><span>{formatCurrency(taxAmount, currency)}</span></div>
+                        </>
+                    )}
                     <div style={{ width: "260px", height: "1px", background: "rgba(148,163,184,0.2)", margin: "6px 0" }}></div>
-                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "18px", color: accent, fontWeight: 800, fontFamily: "var(--font-mono)" }}><span>Grand Total</span><span>{formatCurrency(finalTotal, currency)}</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "18px", color: accent, fontWeight: 800, fontFamily: "var(--font-mono)" }}><span>Grand Total</span><span>{formatCurrency(calculatedFinalTotal, currency)}</span></div>
                 </div>
 
                 {/* Payment Schedule — full width */}
-                <div style={{ marginBottom: "30px" }}>
-                    <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "16px" }}>Payment Schedule</div>
-                    <div className="table-wrap" style={{ border: "none", borderRadius: 0, boxShadow: "none", margin: 0 }}>
-                        <table className="payment-table">
-                            <colgroup>
-                                <col style={{ width: '40%' }} />
-                                <col style={{ width: '20%' }} />
-                                <col style={{ width: '20%' }} />
-                                <col style={{ width: '20%' }} />
-                            </colgroup>
-                            <thead>
-                                <tr>
-                                    <th>Installment</th>
-                                    <th>Due Date</th>
-                                    <th>Percentage</th>
-                                    <th>Amount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {(pricing?.milestones?.length > 0 ? pricing.milestones : [{ id: 'fallback', name: 'Full Payment', percentage: 100, dueDate: 'At Booking' }]).map((m: any, i: number) => {
-                                    const amount = m.id === 'fallback' ? finalTotal : (finalTotal * m.percentage) / 100;
-                                    return (
-                                        <tr key={i}>
-                                            <td>{m.name}</td>
-                                            <td>{m.dueDate}</td>
-                                            <td>{m.id === 'fallback' ? '-' : `${m.percentage}%`}</td>
-                                            <td>{formatCurrency(amount, currency)}</td>
-                                        </tr>
-                                    );
-                                })}
-                            </tbody>
-                        </table>
+                {pricing?.milestones && pricing.milestones.length > 0 && (
+                    <div style={{ marginBottom: "30px" }}>
+                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "16px" }}>Payment Schedule</div>
+                        <div className="table-wrap" style={{ border: "none", borderRadius: 0, boxShadow: "none", margin: 0 }}>
+                            <table className="payment-table">
+                                <colgroup>
+                                    <col style={{ width: '40%' }} />
+                                    <col style={{ width: '20%' }} />
+                                    <col style={{ width: '20%' }} />
+                                    <col style={{ width: '20%' }} />
+                                </colgroup>
+                                <thead>
+                                    <tr>
+                                        <th>Installment</th>
+                                        <th>Due Date</th>
+                                        <th>Percentage</th>
+                                        <th>Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {pricing.milestones.map((m: any, i: number) => {
+                                        const amount = (calculatedFinalTotal * m.percentage) / 100;
+                                        return (
+                                            <tr key={i}>
+                                                <td>{m.name}</td>
+                                                <td>{m.dueDate}</td>
+                                                <td>{m.percentage}%</td>
+                                                <td>{formatCurrency(amount, currency)}</td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                )}
 
                 {/* Policies & Methods — below, side by side */}
                 <div style={{ display: "flex", gap: "40px" }}>
                     <div style={{ flex: 1 }}>
                         <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Policies</div>
                         <div style={{ fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
-                            {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>- {p}</div>) : "- Standard cancellation fees apply."}
+                            {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>- {p}</div>) : "Not specified."}
                         </div>
                     </div>
                     <div style={{ flex: 1 }}>
                         <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Methods</div>
                         <div style={{ fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
-                            {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>- {p}</div>) : "- Bank Transfer, Credit Card."}
+                            {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>- {p}</div>) : "Not specified."}
                         </div>
                     </div>
                 </div>
@@ -406,25 +447,40 @@ export const MinimalistTheme = ({
 
             {/* Detailed Footer */}
             <div data-pdf-section="footer" style={{ padding: "40px 45px", borderTop: "2px solid #0f172a", background: "#0f172a", color: "white" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "20px", marginBottom: "40px" }}>
-                    <div>
-                        <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "12px" }}>Bank Account</div>
-                        <div style={{ fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{agencySettings?.bankName || 'HDFC Bank'}</div>
-                        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)" }}>ACC: {agencySettings?.bankAccountNumber || '1234567890'}</div>
-                        <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)" }}>IFSC: {agencySettings?.bankIfscCode || 'HDFC0001234'}</div>
+                {(agencySettings?.bankAccountNumber || agencySettings?.gstNumber || agencySettings?.upiId) && (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "20px", marginBottom: "40px" }}>
+                        {agencySettings?.bankAccountNumber && (
+                            <div>
+                                <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "12px" }}>Bank Account</div>
+                                <div style={{ fontSize: "13px", fontWeight: 600, marginBottom: "4px" }}>{agencySettings?.bankName || ''}</div>
+                                <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)" }}>ACC: {agencySettings?.bankAccountNumber}</div>
+                                {agencySettings?.bankIfscCode && (
+                                    <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)" }}>IFSC: {agencySettings?.bankIfscCode}</div>
+                                )}
+                            </div>
+                        )}
+                        {agencySettings?.gstNumber && (
+                            <div>
+                                <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "12px" }}>Tax Information</div>
+                                <div style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>GST: {agencySettings?.gstNumber}</div>
+                            </div>
+                        )}
+                        {agencySettings?.upiId && (
+                            <div>
+                                <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "12px" }}>UPI Payment</div>
+                                <div style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>{agencySettings?.upiId}</div>
+                            </div>
+                        )}
                     </div>
-                    <div>
-                        <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "12px" }}>Tax Information</div>
-                        <div style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>GST: {agencySettings?.gstNumber || '29GGGGG1314R9Z6'}</div>
-                    </div>
-                    <div>
-                        <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "12px" }}>UPI Payment</div>
-                        <div style={{ fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.8)" }}>{agencySettings?.upiId || 'YOUR-AGENCY@UP9Z6'}</div>
-                    </div>
-                </div>
+                )}
                 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "20px", fontSize: "10px", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 700 }}>
-                    <span style={{ color: "white" }}>{agent.companyName}</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                        {agent.logoUrl && (
+                            <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "100px", objectFit: "contain", filter: "brightness(0) invert(1) opacity(0.8)" }} />
+                        )}
+                        <span style={{ color: "white" }}>{agent.companyName}</span>
+                    </div>
                     <span>{new Date().toLocaleDateString()}</span>
                 </div>
             </div>

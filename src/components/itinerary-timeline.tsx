@@ -5,8 +5,9 @@ import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from "@/components/hotel
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Trash2, Plus, Sparkles } from "lucide-react";
-import { useState, useCallback, useContext } from "react";
+import { Trash2, Plus, Minus, Sparkles } from "lucide-react";
+import { useState, useCallback, useContext, useEffect } from "react";
+import { CustomTabs } from "@/components/ui/custom-tabs";
 import { ItineraryContext } from "@/contexts/itinerary-context";
 import { getCurrencySymbol } from "@/lib/utils/currency";
 import { useAuth } from "@/contexts/auth-context";
@@ -121,10 +122,8 @@ function SortableActivity({
   return (
     <div ref={setNodeRef} style={style} className="relative group/step">
       <div className={cn(
-        "absolute -left-[31px] top-6 w-6 h-6 bg-background rounded-full z-10 transition-transform group-hover/step:scale-110",
-        stepIndex % 3 === 0 ? "border-[5px] border-primary shadow-[0_0_15px_rgba(255,92,51,0.4)]" : 
-        stepIndex % 3 === 1 ? "border-[5px] border-accent shadow-[0_0_15px_rgba(236,72,153,0.4)]" :
-        "border-[5px] border-secondary shadow-[0_0_15px_rgba(124,58,237,0.4)]"
+        "absolute -left-[31px] top-1/2 -translate-y-1/2 w-6 h-6 bg-background rounded-full z-10 transition-transform group-hover/step:scale-110",
+        "border-[5px] border-primary shadow-[0_0_15px_rgba(255,92,51,0.4)]"
       )}></div>
 
       <div className="flex items-start gap-2">
@@ -266,6 +265,13 @@ const ItineraryTimeline = ({
   destinations,
 }: ItineraryTimelineProps) => {
   const { toast } = useToast();
+
+  const defaultTab = flights.length > 0 ? "flights" : hotels.length > 0 ? "hotels" : cabs.length > 0 ? "cabs" : buses.length > 0 ? "buses" : "flights";
+  const [selectedLogisticsTab, setSelectedLogisticsTab] = useState<string>(defaultTab);
+  
+  useEffect(() => {
+    setSelectedLogisticsTab(flights.length > 0 ? "flights" : hotels.length > 0 ? "hotels" : cabs.length > 0 ? "cabs" : buses.length > 0 ? "buses" : "flights");
+  }, [flights.length, hotels.length, cabs.length, buses.length]);
 
   const [regeneratingDayIndex, setRegeneratingDayIndex] = useState<number | null>(null);
   const [promptText, setPromptText] = useState("");
@@ -666,47 +672,66 @@ const ItineraryTimeline = ({
               <CardHeader className="bg-white/5">
                 <CardTitle className="font-headline text-3xl text-primary">Travel Logistics Summary</CardTitle>
               </CardHeader>
-              <CardContent className="py-6 space-y-8">
-                {flights.length > 0 && (
-                  <div className="space-y-4">
-                    <h4 className="font-semibold text-lg text-foreground/80">Flight Details</h4>
-                    <div className="space-y-2">
+              <CardContent className="py-6">
+                <div className="mb-6">
+                  <CustomTabs
+                    selected={selectedLogisticsTab}
+                    setSelected={setSelectedLogisticsTab}
+                    tabs={[
+                      ...(flights.length > 0 ? [{
+                        title: `Flights (${flights.length})`,
+                        value: "flights",
+                        icon: selectedLogisticsTab === "flights" ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />
+                      }] : []),
+                      ...(hotels.length > 0 ? [{
+                        title: `Hotels (${hotels.length})`,
+                        value: "hotels",
+                        icon: selectedLogisticsTab === "hotels" ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />
+                      }] : []),
+                      ...(cabs.length > 0 ? [{
+                        title: `Cabs (${cabs.length})`,
+                        value: "cabs",
+                        icon: selectedLogisticsTab === "cabs" ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />
+                      }] : []),
+                      ...(buses.length > 0 ? [{
+                        title: `Buses (${buses.length})`,
+                        value: "buses",
+                        icon: selectedLogisticsTab === "buses" ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />
+                      }] : [])
+                    ]}
+                  />
+                </div>
+                
+                <div className="space-y-8 min-h-[100px]">
+                  {selectedLogisticsTab === "flights" && flights.length > 0 && (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
                       {flights.map(flight => (
                         <FlightBanner key={flight.id} flight={flight} />
                       ))}
                     </div>
-                  </div>
-                )}
-                {hotels.length > 0 && (
-                  <div className="space-y-4">
-                    <h4 className="font-semibold text-lg text-foreground/80">Hotel Details</h4>
-                    <div className="space-y-2">
+                  )}
+                  {selectedLogisticsTab === "hotels" && hotels.length > 0 && (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
                       {hotels.map(hotel => (
                         <HotelBanner key={hotel.id} hotel={hotel} />
                       ))}
                     </div>
-                  </div>
-                )}
-                {cabs.length > 0 && (
-                  <div className="space-y-4">
-                    <h4 className="font-semibold text-lg text-foreground/80">Cabs / Private Transport</h4>
-                    <div className="space-y-2">
+                  )}
+                  {selectedLogisticsTab === "cabs" && cabs.length > 0 && (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
                       {cabs.map(cab => (
                         <CabBanner key={cab.id} cab={cab} />
                       ))}
                     </div>
-                  </div>
-                )}
-                {buses.length > 0 && (
-                  <div className="space-y-4">
-                    <h4 className="font-semibold text-lg text-foreground/80">Tourist Bus Details</h4>
-                    <div className="space-y-2">
+                  )}
+                  {selectedLogisticsTab === "buses" && buses.length > 0 && (
+                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
                       {buses.map(bus => (
                         <BusBanner key={bus.id} bus={bus} />
                       ))}
                     </div>
-                  </div>
-                )}
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>

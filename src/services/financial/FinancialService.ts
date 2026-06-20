@@ -56,77 +56,14 @@ export function calcBaseCost(
     infant: pricing?.infantPax || 0
   };
 
-  // Treat 'manual' as the default mode — undefined/null costingType also uses manual.
-  const effectiveCostingType = pricing?.costingType ?? 'manual';
-  if (effectiveCostingType === 'manual') {
-    let manualCost = 0;
-    const totalPax = pax.adult + pax.child + pax.infant;
-    for (const item of (pricing?.manualOptions ?? []) as any[]) {
-      const amount = Number(item.amount) || 0;
-      manualCost += item.type === 'per-person' ? amount * totalPax : amount;
-    }
-    return manualCost;
+  let manualCost = 0;
+  const totalPax = pax.adult + pax.child + pax.infant;
+  for (const item of (pricing?.manualOptions ?? []) as any[]) {
+    const amount = Number(item.amount) || 0;
+    manualCost += item.type === 'per-person' ? amount * totalPax : amount;
   }
 
-  let cost = 0;
-
-  // Timeline step costs
-  if (Array.isArray(state.itinerary)) {
-    for (const day of state.itinerary) {
-      if (day && Array.isArray(day.timeline)) {
-        for (const step of day.timeline) {
-          if (step && typeof step === 'object') {
-            const c = Number(step.cost);
-            if (!isNaN(c) && c > 0) cost += c;
-          }
-        }
-      }
-    }
-  }
-
-  // Hotels (per person * pax count)
-  if (Array.isArray(state.hotels)) {
-    for (const h of state.hotels) {
-      if (h && typeof h === 'object') {
-        if (h.costAdult) cost += (Number(h.costAdult) || 0) * pax.adult;
-        if (h.costChild) cost += (Number(h.costChild) || 0) * pax.child;
-        if (h.costInfant) cost += (Number(h.costInfant) || 0) * pax.infant;
-      }
-    }
-  }
-
-  // Flights (per person * pax count)
-  if (Array.isArray(state.flights)) {
-    for (const f of state.flights) {
-      if (f && typeof f === 'object') {
-        if (f.costAdult) cost += (Number(f.costAdult) || 0) * pax.adult;
-        if (f.costChild) cost += (Number(f.costChild) || 0) * pax.child;
-        if (f.costInfant) cost += (Number(f.costInfant) || 0) * pax.infant;
-      }
-    }
-  }
-
-  // Cabs (flat total)
-  if (Array.isArray(state.cabs)) {
-    for (const c of state.cabs) {
-      if (c && typeof c === 'object') {
-        if (c.totalCost) cost += Number(c.totalCost) || 0;
-      }
-    }
-  }
-
-  // Buses (per person * pax count)
-  if (Array.isArray(state.buses)) {
-    for (const b of state.buses) {
-      if (b && typeof b === 'object') {
-        if (b.costAdult) cost += (Number(b.costAdult) || 0) * pax.adult;
-        if (b.costChild) cost += (Number(b.costChild) || 0) * pax.child;
-        if (b.costInfant) cost += (Number(b.costInfant) || 0) * pax.infant;
-      }
-    }
-  }
-
-  return cost;
+  return manualCost;
 }
 
 export function calcMarkupAmount(baseCost: number, pricing: PricingConfig): number {

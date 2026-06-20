@@ -511,7 +511,7 @@ export default function TheLab() {
                     pricing={pricing} 
                     setPricing={setPricing} 
                     agencySettings={null} 
-                    handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
+                    handleSaveItinerary={(latestPricing?: any) => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing: latestPricing || pricing, showTimestamps, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
                     isSaving={isSaving} 
                     setCurrentTripId={setCurrentTripId} 
                     setActiveLabTab={setActiveLabTab} 

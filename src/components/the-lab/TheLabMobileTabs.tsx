@@ -46,8 +46,8 @@ const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
             className={cn(
               "flex items-center justify-center gap-1 px-2.5 py-2 rounded-lg transition-all duration-200 whitespace-nowrap flex-grow shrink-0 min-h-[40px]",
               activeLabTab === item.id
-                ? 'bg-gradient-to-br from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25'
-                : 'text-gray-500 hover:text-white hover:bg-white/[0.06]'
+                ? 'bg-primary text-white shadow-lg shadow-primary/25'
+                : 'text-gray-500 hover:text-primary hover:bg-white/[0.06]'
             )}
           >
             <item.icon className="w-3.5 h-3.5 flex-shrink-0" />
@@ -101,5 +101,3 @@ const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
 });
 
 export default TheLabMobileTabs;
-
-

@@ -55,6 +55,8 @@ export const TropicalTheme = ({
     // Parse pax from pricing
     const adultPax = Number(pricing?.adultPax || 2);
     const childPax = Number(pricing?.childPax || 0);
+    const infantPax = Number(pricing?.infantPax || 0);
+    const totalPax = adultPax + childPax + infantPax;
     
     // Calculate total days
     const totalDays = Array.isArray(itinerary.itinerary) ? itinerary.itinerary.length : 0;
@@ -65,9 +67,9 @@ export const TropicalTheme = ({
     const inclusionsList = parseList(inclusions || '');
     const exclusionsList = parseList(exclusions || '');
 
-    const { costWithMarkup, taxAmount } = pricing ? calcPricingFromBaseCost(baseCost || 0, pricing) : { costWithMarkup: finalTotal, taxAmount: 0 };
+    const resolvedBase = baseCost || 0;
+    const { baseCost: resolvedBaseCost, markupAmount, costWithMarkup, taxAmount, finalTotal: calculatedFinalTotal } = calcPricingFromBaseCost(resolvedBase, pricing);
     const currency = pricing?.currency || DEFAULT_CURRENCY;
-    const isManual = pricing?.costingType === "manual";
     
     // Parse list for cancellation policy which was added below earlier
     const parseListPolicy = (str: string) => str.split('\n').filter(s => s.trim().length > 0).map(s => s.replace(/^- /, ''));
@@ -754,6 +756,20 @@ export const TropicalTheme = ({
                 <div className="hero" data-pdf-section="cover">
                     <img src={getCoverImage(itinerary)} alt="Resort Banner" crossOrigin="anonymous" />
                     <div className="hero-overlay"></div>
+                    {/* Agency brand badge — top left of hero */}
+                    <div style={{ position: "absolute", top: "28px", left: "32px", zIndex: 20, display: "flex", alignItems: "center", gap: "12px", background: "rgba(255,255,255,0.15)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: "14px", padding: "10px 18px", boxShadow: "0 4px 24px rgba(0,0,0,0.15)" }}>
+                        {agent.logoUrl ? (
+                            <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "36px", maxWidth: "100px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1)" }} />
+                        ) : (
+                            <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "14px", fontFamily: "var(--font-sans)" }}>
+                                {(agent.companyName || "T").substring(0, 1).toUpperCase()}
+                            </div>
+                        )}
+                        <div style={{ borderLeft: "1px solid rgba(255,255,255,0.35)", paddingLeft: "12px" }}>
+                            <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "white", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "var(--font-sans)" }}>{agent.companyName}</p>
+                            <p style={{ margin: 0, fontSize: "9px", color: "rgba(255,255,255,0.75)", letterSpacing: "0.05em", fontFamily: "var(--font-sans)", fontWeight: 500, textTransform: "uppercase", marginTop: "2px" }}>Travel Specialists</p>
+                        </div>
+                    </div>
                 </div>
 
                 <div style={{ background: "var(--bg)", paddingBottom: "48px" }}>
@@ -775,6 +791,11 @@ export const TropicalTheme = ({
                         <div className="meta-box">
                             <div className="meta-col">
                                 <span className="meta-label">Agency Details</span>
+                                {agent.logoUrl && (
+                                    <div style={{ marginBottom: "10px", paddingBottom: "10px", borderBottom: "1px solid var(--stone-100)" }}>
+                                        <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "44px", maxWidth: "140px", objectFit: "contain", display: "block" }} />
+                                    </div>
+                                )}
                                 <h3>🌴 {agent.companyName}</h3>
                                 <ul className="meta-list">
                                     {agent.agentEmail && (
@@ -925,7 +946,7 @@ export const TropicalTheme = ({
                                         <li key={i}><span className="n-blue">{i + 1}.</span><span>{inc}</span></li>
                                     ))
                                 ) : (
-                                    <li><span className="n-blue">-</span><span>Standard inclusions apply.</span></li>
+                                    <li><span className="n-blue">-</span><span>No inclusions specified.</span></li>
                                 )}
                             </ul>
                         </div>
@@ -937,7 +958,7 @@ export const TropicalTheme = ({
                                         <li key={i}><span className="n-grey">{i + 1}.</span><span>{exc}</span></li>
                                     ))
                                 ) : (
-                                    <li><span className="n-grey">-</span><span>Personal expenses not included.</span></li>
+                                    <li><span className="n-grey">-</span><span>No exclusions specified.</span></li>
                                 )}
                             </ul>
                         </div>
@@ -1047,93 +1068,118 @@ export const TropicalTheme = ({
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td>{isManual ? "Consolidated Package Cost" : "Package Cost (Incl. Accommodations, Flights, Activities)"} for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''}</td>
-                                            <td>1</td>
-                                            <td>{formatCurrency(costWithMarkup, currency)}</td>
-                                            <td>{formatCurrency(costWithMarkup, currency)}</td>
-                                        </tr>
+                                        {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
+                                            pricing.manualOptions.map((item: any, idx: number) => {
+                                                const qty = item.type === 'per-person' ? totalPax : 1;
+                                                const rate = Number(item.amount) || 0;
+                                                const amount = qty * rate;
+                                                return (
+                                                    <tr key={item.id || idx}>
+                                                        <td>{item.name} {item.type === 'per-person' ? `(Per Person)` : ''}</td>
+                                                        <td>{qty}</td>
+                                                        <td>{formatCurrency(rate, currency)}</td>
+                                                        <td>{formatCurrency(amount, currency)}</td>
+                                                    </tr>
+                                                );
+                                            })
+                                        ) : (
+                                            <tr>
+                                                <td>{"Consolidated Package Cost"} for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''}</td>
+                                                <td>1</td>
+                                                <td>{formatCurrency(costWithMarkup, currency)}</td>
+                                                <td>{formatCurrency(costWithMarkup, currency)}</td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
 
                             <div className="totals">
-                                <div className="total-row"><span>Subtotal:</span><span>{formatCurrency(costWithMarkup, currency)}</span></div>
-                                <div className="total-row"><span>Taxes & Fees:</span><span>{formatCurrency(taxAmount, currency)}</span></div>
+                                {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
+                                    <>
+                                        <div className="total-row"><span>Subtotal (Base Cost):</span><span>{formatCurrency(resolvedBaseCost, currency)}</span></div>
+                                        {markupAmount > 0 && (
+                                            <div className="total-row"><span>Service Fee / Markup:</span><span>+ {formatCurrency(markupAmount, currency)}</span></div>
+                                        )}
+                                        {taxAmount > 0 && (
+                                            <div className="total-row"><span>Taxes & Fees ({pricing.taxPercentage}%):</span><span>+ {formatCurrency(taxAmount, currency)}</span></div>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="total-row"><span>Subtotal:</span><span>{formatCurrency(costWithMarkup, currency)}</span></div>
+                                        <div className="total-row"><span>Taxes & Fees:</span><span>{formatCurrency(taxAmount, currency)}</span></div>
+                                    </>
+                                )}
                                 <div className="total-divider"></div>
-                                <div className="total-grand"><span>Grand Total:</span><span>{formatCurrency(finalTotal, currency)}</span></div>
+                                <div className="total-grand"><span>Grand Total:</span><span>{formatCurrency(calculatedFinalTotal, currency)}</span></div>
                             </div>
 
                             {/* Payment Schedule */}
-                            <div className="payment-section">
-                                <h2>
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
-                                    Payment Schedule
-                                </h2>
-                                <div className="table-wrap">
-                                    <table className="payment-table">
-                                        <colgroup>
-                                            <col style={{ width: '40%' }} />
-                                            <col style={{ width: '20%' }} />
-                                            <col style={{ width: '20%' }} />
-                                            <col style={{ width: '20%' }} />
-                                        </colgroup>
-                                        <thead>
-                                            <tr>
-                                                <th>Installment</th>
-                                                <th>Due Date</th>
-                                                <th>Percentage</th>
-                                                <th>Amount</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {(pricing?.milestones && pricing.milestones.length > 0 ? pricing.milestones : [{ id: 'fallback', name: isManual ? 'Package Cost' : 'Advance Payment', percentage: 100, dueDate: 'At Booking' }]).map((m: any, i: number, arr: any[]) => {
-                                                const amount = m.id === 'fallback' ? finalTotal : (finalTotal * m.percentage) / 100;
-                                                return (
-                                                    <tr key={m.id || i}>
-                                                        <td>{m.name}</td>
-                                                        <td style={{ textAlign: "center", fontFamily: "var(--font-sans)", fontWeight: 600, color: "var(--stone-500)" }}>{m.dueDate}</td>
-                                                        <td style={{ textAlign: "center", fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--stone-500)" }}>{m.id === 'fallback' ? '-' : `${m.percentage}%`}</td>
-                                                        <td>{formatCurrency(amount, currency)}</td>
-                                                    </tr>
-                                                );
-                                            })}
-                                        </tbody>
-                                    </table>
+                            {pricing?.milestones && pricing.milestones.length > 0 && (
+                                <div className="payment-section">
+                                    <h2>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
+                                        Payment Schedule
+                                    </h2>
+                                    <div className="table-wrap">
+                                        <table className="payment-table">
+                                            <colgroup>
+                                                <col style={{ width: '40%' }} />
+                                                <col style={{ width: '20%' }} />
+                                                <col style={{ width: '20%' }} />
+                                                <col style={{ width: '20%' }} />
+                                            </colgroup>
+                                            <thead>
+                                                <tr>
+                                                    <th>Installment</th>
+                                                    <th>Due Date</th>
+                                                    <th>Percentage</th>
+                                                    <th>Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {pricing.milestones.map((m: any, i: number, arr: any[]) => {
+                                                    const amount = (calculatedFinalTotal * m.percentage) / 100;
+                                                    return (
+                                                        <tr key={m.id || i}>
+                                                            <td>{m.name}</td>
+                                                            <td style={{ textAlign: "center", fontFamily: "var(--font-sans)", fontWeight: 600, color: "var(--stone-500)" }}>{m.dueDate}</td>
+                                                            <td style={{ textAlign: "center", fontFamily: "var(--font-mono)", fontWeight: 700, color: "var(--stone-500)" }}>{m.percentage}%</td>
+                                                            <td>{formatCurrency(amount, currency)}</td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
+                            )}
 
-                                <div className="policy-grid">
-                                    <div className="policy-col">
-                                        <span className="policy-label">Payment Methods</span>
-                                        <ul className="policy-list">
-                                            {paymentMethods ? (
-                                                parseList(paymentMethods).map((pol, i) => (
-                                                    <li key={i}>{pol}</li>
-                                                ))
-                                            ) : agent?.bankDetails ? (
-                                                <li>{agent.bankDetails}</li>
-                                            ) : (
-                                                <li>Standard payment terms apply.</li>
-                                            )}
-                                        </ul>
-                                    </div>
-                                    <div className="policy-col">
-                                        <span className="policy-label">Cancellation Policy</span>
-                                        <ul className="policy-list">
-                                            {cancellationPolicy ? (
-                                                parseList(cancellationPolicy).map((pol, i) => (
-                                                    <li key={i}>{pol}</li>
-                                                ))
-                                            ) : (
-                                                <>
-                                                    <li>45+ days prior: 100% refund of total package.</li>
-                                                    <li>30-44 days prior: 75% refund of total package.</li>
-                                                    <li>15-29 days prior: 50% refund of total package.</li>
-                                                    <li>Less than 15 days prior: Standard service fees apply, non-refundable.</li>
-                                                </>
-                                            )}
-                                        </ul>
-                                    </div>
+                            <div className="policy-grid">
+                                <div className="policy-col">
+                                    <span className="policy-label">Payment Methods</span>
+                                    <ul className="policy-list">
+                                        {paymentMethods ? (
+                                            parseList(paymentMethods).map((pol, i) => (
+                                                <li key={i}>{pol}</li>
+                                            ))
+                                        ) : (
+                                            <li>Not specified.</li>
+                                        )}
+                                    </ul>
+                                </div>
+                                <div className="policy-col">
+                                    <span className="policy-label">Cancellation Policy</span>
+                                    <ul className="policy-list">
+                                        {cancellationPolicy ? (
+                                            parseList(cancellationPolicy).map((pol, i) => (
+                                                <li key={i}>{pol}</li>
+                                            ))
+                                        ) : (
+                                            <li>Not specified.</li>
+                                        )}
+                                    </ul>
                                 </div>
                             </div>
                         </div>
@@ -1146,25 +1192,41 @@ export const TropicalTheme = ({
                             <path d="M0,0 L1200,0 L1200,80 C800,0 400,120 0,80 Z" className="shape-fill"></path>
                         </svg>
                     </div>
-                    <h2>Agency Account Details</h2>
-                    <div className="footer-grid">
-                        <div className="footer-card">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
-                            <h4>Bank Details</h4>
-                            <span className="bank-name">{agencySettings?.bankName || 'HDFC Bank'}</span>
-                            <p>ACC: {agencySettings?.bankAccountNumber || '1234567890'}<br/>IFSC: {agencySettings?.bankIfscCode || 'HDFC0001234'}</p>
+                    {(agencySettings?.bankAccountNumber || agencySettings?.gstNumber || agencySettings?.upiId) && (
+                        <>
+                            <h2>Agency Account Details</h2>
+                            <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "24px", maxWidth: "900px", margin: "0 auto 32px auto" }}>
+                                {agencySettings?.bankAccountNumber && (
+                                    <div className="footer-card">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+                                        <h4>Bank Details</h4>
+                                        <span className="bank-name">{agencySettings?.bankName || ''}</span>
+                                        <p>ACC: {agencySettings?.bankAccountNumber}{agencySettings?.bankIfscCode && <><br/>IFSC: {agencySettings?.bankIfscCode}</>}</p>
+                                    </div>
+                                )}
+                                {agencySettings?.gstNumber && (
+                                    <div className="footer-card">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                        <h4>GST / Tax ID Number</h4>
+                                        <span className="footer-tag">{agencySettings?.gstNumber}</span>
+                                    </div>
+                                )}
+                                {agencySettings?.upiId && (
+                                    <div className="footer-card">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                                        <h4>UPI ID</h4>
+                                        <span className="footer-tag">{agencySettings?.upiId}</span>
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+                    {agent.logoUrl && (
+                        <div style={{ textAlign: "center", marginTop: "32px", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,0.12)" }}>
+                            <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "52px", maxWidth: "160px", objectFit: "contain", filter: "brightness(0) invert(1) opacity(0.85)", display: "inline-block" }} />
+                            <p style={{ marginTop: "8px", fontSize: "11px", color: "rgba(255,255,255,0.55)", fontFamily: "var(--font-mono)", letterSpacing: "0.05em" }}>{agent.companyName}</p>
                         </div>
-                        <div className="footer-card">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                            <h4>GST / Tax ID Number</h4>
-                            <span className="footer-tag">{agencySettings?.gstNumber || '29GGGGG1314R9Z6'}</span>
-                        </div>
-                        <div className="footer-card">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                            <h4>UPI ID</h4>
-                            <span className="footer-tag">{agencySettings?.upiId || 'YOUR-AGENCY@UP9Z6'}</span>
-                        </div>
-                    </div>
+                    )}
                 </footer>
             </div>
         </div>

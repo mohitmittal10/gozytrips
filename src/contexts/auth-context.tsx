@@ -19,6 +19,7 @@ interface UserProfile {
   business_phone: string | null;
   website: string | null;
   brand_color: string | null;
+  logo_url?: string | null;
   google_refresh_token: string | null;
   google_drive_folder_id: string | null;
   backup_frequency: string | null;

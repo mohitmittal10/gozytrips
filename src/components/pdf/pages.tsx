@@ -132,7 +132,7 @@ const getPricingThemeStyles = (theme: PdfTheme, accentColor: string) => {
 export const PdfPricingPage = ({ pricing, baseCost = 0, agent, theme }: { pricing: PricingConfig; baseCost?: number; agent: ReturnType<typeof getAgentInfo>; theme: PdfTheme }) => {
     const { costWithMarkup, taxAmount, finalTotal, milestoneAmounts } = calcPricingFromBaseCost(baseCost, pricing);
     const currency = pricing.currency;
-    const isManual = pricing.costingType === "manual";
+    const isManual = true;
     const styles = getPricingThemeStyles(theme, agent.primaryColor);
 
     if (theme === 'desert') {

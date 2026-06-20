@@ -226,7 +226,7 @@ export function useItinerarySave({
         adult_pax:          paxInfo.adult,
         child_pax:          paxInfo.child,
         infant_pax:         paxInfo.infant,
-        costing_type:       pricingCfg.costingType || "manual",
+
         commission_rate:    0,
         commission_amount:  0,
         currency:           pricingCfg.currency || "INR",

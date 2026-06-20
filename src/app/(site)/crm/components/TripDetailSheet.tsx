@@ -698,7 +698,7 @@ export const TripDetailSheet = ({
                                         <div className="space-y-2.5 text-sm">
                                             <div className="flex justify-between">
                                                 <span className="text-gray-400">Costing Mode</span>
-                                                <span className="capitalize text-white font-medium">{pricingConfig.costingType || "automated"}</span>
+                                                <span className="capitalize text-white font-medium">Manual</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-gray-400">Base Cost</span>

@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from '@/types/pricing';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
-    Hotel, Plane, Plus, Trash2, Star, ChevronDown, X, Camera, Car, Bus
+    Hotel, Plane, Plus, Minus, Trash2, Star, ChevronDown, X, Camera, Car, Bus, Minimize2, Maximize2
 } from "lucide-react";
+import { CustomTabs } from "@/components/ui/custom-tabs";
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
@@ -156,9 +156,10 @@ function DaySelect({ value, onChange, totalDays }: { value: number; onChange: (v
 
 // ── Cards ──────────────────────────────────────────────────────────────────────
 
-function HotelCard({ hotel, totalDays, onChange, onDelete }: {
+function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed }: {
     hotel: HotelInfo; totalDays: number;
     onChange: (updated: HotelInfo) => void; onDelete: () => void;
+    isCollapsed?: boolean;
 }) {
     const update = (field: keyof HotelInfo, value: any) =>
         onChange({ ...hotel, [field]: value } as any);
@@ -183,12 +184,49 @@ function HotelCard({ hotel, totalDays, onChange, onDelete }: {
         update("imageUrls", newUrls.length > 0 ? newUrls : undefined);
     };
 
+    if (isCollapsed) {
+        return (
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                        <Hotel className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-semibold text-white">{hotel.name || "Untitled Hotel"}</span>
+                            <span className="text-[10px] bg-white/5 text-gray-400 px-1.5 py-0.5 rounded">Day {hotel.dayIndex + 1}</span>
+                            <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">{hotel.nights || 1} Nights</span>
+                        </div>
+                        {hotel.address && <p className="text-xs text-gray-400 mt-1">{hotel.address}</p>}
+                        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-500">
+                            <span>In: {hotel.checkIn || "N/A"}</span>
+                            <span className="w-1 h-1 rounded-full bg-white/10" />
+                            <span>Out: {hotel.checkOut || "N/A"}</span>
+                            {hotel.bookingRef && (
+                                <>
+                                    <span className="w-1 h-1 rounded-full bg-white/10" />
+                                    <span>Ref: {hotel.bookingRef}</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <StarRating value={hotel.starRating} onChange={(v) => update("starRating", v)} />
+                    <button onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors p-1.5 hover:bg-white/5 rounded-lg">
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3 group">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Hotel className="w-4 h-4 text-blue-400" />
-                    <span className="text-sm font-semibold text-blue-400">Hotel</span>
+                    <Hotel className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-primary">Hotel</span>
                     <DaySelect value={hotel.dayIndex} onChange={(v) => update("dayIndex", v)} totalDays={totalDays} />
                     <span className="text-sm text-gray-400 ml-2">for</span>
                     <Input
@@ -259,19 +297,60 @@ function HotelCard({ hotel, totalDays, onChange, onDelete }: {
     );
 }
 
-function FlightCard({ flight, totalDays, onChange, onDelete }: {
+function FlightCard({ flight, totalDays, onChange, onDelete, isCollapsed }: {
     flight: FlightInfo; totalDays: number;
     onChange: (updated: FlightInfo) => void; onDelete: () => void;
+    isCollapsed?: boolean;
 }) {
     const update = (field: keyof FlightInfo, value: string | number | undefined) =>
         onChange({ ...flight, [field]: value } as any);
+
+    if (isCollapsed) {
+        return (
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                        <Plane className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-semibold text-white">
+                                {flight.airline || "Untitled Airline"} {flight.flightNumber}
+                            </span>
+                            <span className="text-[10px] bg-white/5 text-gray-400 px-1.5 py-0.5 rounded">Day {flight.dayIndex + 1}</span>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1">
+                            {flight.departureAirport || "DEP"} → {flight.arrivalAirport || "ARR"}
+                            {flight.terminal && <span className="text-gray-500 text-[10px] ml-1.5">(Term: {flight.terminal})</span>}
+                        </p>
+                        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-500">
+                            <span>Dep: {flight.departure || "N/A"}</span>
+                            <span className="w-1 h-1 rounded-full bg-white/10" />
+                            <span>Arr: {flight.arrival || "N/A"}</span>
+                            {flight.pnr && (
+                                <>
+                                    <span className="w-1 h-1 rounded-full bg-white/10" />
+                                    <span>PNR: {flight.pnr}</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                <div className="flex items-center">
+                    <button onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors p-1.5 hover:bg-white/5 rounded-lg">
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3 group">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Plane className="w-4 h-4 text-emerald-400" />
-                    <span className="text-sm font-semibold text-emerald-400">Flight</span>
+                    <Plane className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-primary">Flight</span>
                     <DaySelect value={flight.dayIndex} onChange={(v) => update("dayIndex", v)} totalDays={totalDays} />
                 </div>
                 <button onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors">
@@ -300,19 +379,59 @@ function FlightCard({ flight, totalDays, onChange, onDelete }: {
     );
 }
 
-function CabCard({ cab, totalDays, onChange, onDelete }: {
+function CabCard({ cab, totalDays, onChange, onDelete, isCollapsed }: {
     cab: CabInfo; totalDays: number;
     onChange: (updated: CabInfo) => void; onDelete: () => void;
+    isCollapsed?: boolean;
 }) {
     const update = (field: keyof CabInfo, value: any) =>
         onChange({ ...cab, [field]: value } as any);
+
+    if (isCollapsed) {
+        return (
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                        <Car className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-semibold text-white">{cab.vehicleType || "Cab Transfer"}</span>
+                            <span className="text-[10px] bg-white/5 text-gray-400 px-1.5 py-0.5 rounded">Day {cab.dayIndex + 1}</span>
+                        </div>
+                        {cab.route && <p className="text-xs text-gray-400 mt-1">{cab.route}</p>}
+                        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-500">
+                            <span>Pickup: {cab.pickupTime || "N/A"}</span>
+                            {cab.driverName && (
+                                <>
+                                    <span className="w-1 h-1 rounded-full bg-white/10" />
+                                    <span>Driver: {cab.driverName}</span>
+                                </>
+                            )}
+                            {cab.bookingRef && (
+                                <>
+                                    <span className="w-1 h-1 rounded-full bg-white/10" />
+                                    <span>Ref: {cab.bookingRef}</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                <div className="flex items-center">
+                    <button onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors p-1.5 hover:bg-white/5 rounded-lg">
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3 group">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Car className="w-4 h-4 text-orange-400" />
-                    <span className="text-sm font-semibold text-orange-400">Cab / Taxi</span>
+                    <Car className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-primary">Cab / Taxi</span>
                     <DaySelect value={cab.dayIndex} onChange={(v) => update("dayIndex", v)} totalDays={totalDays} />
                 </div>
                 <button onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors">
@@ -332,19 +451,55 @@ function CabCard({ cab, totalDays, onChange, onDelete }: {
     );
 }
 
-function BusCard({ bus, totalDays, onChange, onDelete }: {
+function BusCard({ bus, totalDays, onChange, onDelete, isCollapsed }: {
     bus: BusInfo; totalDays: number;
     onChange: (updated: BusInfo) => void; onDelete: () => void;
+    isCollapsed?: boolean;
 }) {
     const update = (field: keyof BusInfo, value: any) =>
         onChange({ ...bus, [field]: value } as any);
+
+    if (isCollapsed) {
+        return (
+            <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                        <Bus className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <span className="text-sm font-semibold text-white">{bus.busType || "Bus Transfer"}</span>
+                            <span className="text-[10px] bg-white/5 text-gray-400 px-1.5 py-0.5 rounded">Day {bus.dayIndex + 1}</span>
+                        </div>
+                        {bus.route && <p className="text-xs text-gray-400 mt-1">{bus.route}</p>}
+                        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-500">
+                            <span>Reporting: {bus.reportingTime || "N/A"}</span>
+                            <span className="w-1 h-1 rounded-full bg-white/10" />
+                            <span>Departure: {bus.departureTime || "N/A"}</span>
+                            {bus.pnr && (
+                                <>
+                                    <span className="w-1 h-1 rounded-full bg-white/10" />
+                                    <span>PNR: {bus.pnr}</span>
+                                </>
+                            )}
+                        </div>
+                    </div>
+                </div>
+                <div className="flex items-center">
+                    <button onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors p-1.5 hover:bg-white/5 rounded-lg">
+                        <Trash2 className="w-4 h-4" />
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3 group">
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                    <Bus className="w-4 h-4 text-yellow-400" />
-                    <span className="text-sm font-semibold text-yellow-400">Tourist Bus</span>
+                    <Bus className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-semibold text-primary">Tourist Bus</span>
                     <DaySelect value={bus.dayIndex} onChange={(v) => update("dayIndex", v)} totalDays={totalDays} />
                 </div>
                 <button onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors">
@@ -388,10 +543,43 @@ export type HotelFlightEditorProps = {
 export default function HotelFlightEditor({
     hotels, flights, cabs, buses, totalDays, currency, onHotelsChange, onFlightsChange, onCabsChange, onBusesChange
 }: HotelFlightEditorProps) {
-    const addHotel = () => onHotelsChange([...hotels, emptyHotel(0)]);
-    const addFlight = () => onFlightsChange([...flights, emptyFlight(0)]);
-    const addCab = () => onCabsChange([...cabs, emptyCab(0)]);
-    const addBus = () => onBusesChange([...buses, emptyBus(0)]);
+    const TAB_CONFIG = [
+        { value: "flights", label: "Flights", count: flights.length, icon: Plane, description: "Manage flight options and itineraries." },
+        { value: "hotels", label: "Hotels", count: hotels.length, icon: Hotel, description: "Manage accommodation options and stays." },
+        { value: "cabs",    label: "Cabs",    count: cabs.length, icon: Car,   description: "Manage cab transfers and routes." },
+        { value: "buses",  label: "Buses",   count: buses.length, icon: Bus,   description: "Manage bus travels and timings." },
+    ] as const;
+
+    const [selectedEditorTab, setSelectedEditorTab] = useState<string>("flights");
+    const [slideDir, setSlideDir] = useState<"left" | "right">("right");
+    const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+    const [indicator, setIndicator] = useState({ left: 0, width: 0 });
+    const firstRender = useRef(true);
+    const [isCollapsed, setIsCollapsed] = useState(false);
+
+    useEffect(() => {
+        const idx = TAB_CONFIG.findIndex(t => t.value === selectedEditorTab);
+        const el = tabRefs.current[idx];
+        if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
+        firstRender.current = false;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedEditorTab, flights.length, hotels.length, cabs.length, buses.length]);
+
+    // When clicking an unselected tab: add an item + switch to it.
+    // When clicking the already-selected tab: just add another item.
+    const handleTabClick = (value: string) => {
+        if (value === "hotels") { onHotelsChange([...hotels, emptyHotel(0)]); setSelectedEditorTab("hotels"); }
+        else if (value === "flights") { onFlightsChange([...flights, emptyFlight(0)]); setSelectedEditorTab("flights"); }
+        else if (value === "cabs") { onCabsChange([...cabs, emptyCab(0)]); setSelectedEditorTab("cabs"); }
+        else if (value === "buses") { onBusesChange([...buses, emptyBus(0)]); setSelectedEditorTab("buses"); }
+    };
+
+    const handleTabSelect = (value: string) => {
+        const oldIdx = TAB_CONFIG.findIndex(t => t.value === selectedEditorTab);
+        const newIdx = TAB_CONFIG.findIndex(t => t.value === value);
+        setSlideDir(newIdx > oldIdx ? "right" : "left");
+        setSelectedEditorTab(value);
+    };
 
     const updateHotel = (id: string, updated: HotelInfo) =>
         onHotelsChange(hotels.map((h) => (h.id === id ? updated : h)));
@@ -407,128 +595,172 @@ export default function HotelFlightEditor({
     const deleteCab = (id: string) => onCabsChange(cabs.filter((c) => c.id !== id));
     const deleteBus = (id: string) => onBusesChange(buses.filter((b) => b.id !== id));
 
-    const itemCount = hotels.length + flights.length + cabs.length + buses.length;
+    const active = TAB_CONFIG.find(t => t.value === selectedEditorTab)!;
+    const Icon = active.icon;
 
     return (
-        <Card className="glass-card the-lab-page-card border-white/5 bg-obsidian-dark/40">
-            <CardHeader className="bg-white/5 pb-4 border-b border-white/5">
-                <div className="flex items-center justify-between">
-                    <CardTitle className="flex items-center gap-3 text-lg font-bold tracking-tight text-white">
-                        <div className="flex -space-x-2">
-                            <Hotel className="w-5 h-5 text-blue-400 bg-obsidian p-1 rounded-full border border-blue-400/20" />
-                            <Plane className="w-5 h-5 text-emerald-400 bg-obsidian p-1 rounded-full border border-emerald-400/20" />
-                            <Car className="w-5 h-5 text-orange-400 bg-obsidian p-1 rounded-full border border-orange-400/20" />
-                            <Bus className="w-5 h-5 text-yellow-400 bg-obsidian p-1 rounded-full border border-yellow-400/20" />
-                        </div>
-                        <span>Travel Logistics</span>
-                        {itemCount > 0 && (
-                            <span className="text-[10px] bg-primary/20 text-primary px-2.5 py-0.5 rounded-full font-bold uppercase tracking-widest">
-                                {itemCount} {itemCount === 1 ? "item" : "items"}
-                            </span>
-                        )}
-                    </CardTitle>
-                </div>
-            </CardHeader>
+        <div className="max-w-5xl mx-auto w-full animate-in fade-in duration-300">
+            {/* Inject keyframes for directional slide */}
+            <style>{`
+                @keyframes slideFromRight { from { opacity:0; transform:translateX(12px); } to { opacity:1; transform:translateX(0); } }
+                @keyframes slideFromLeft  { from { opacity:0; transform:translateX(-12px); } to { opacity:1; transform:translateX(0); } }
+            `}</style>
 
-            <CardContent className="space-y-6 pt-6 bg-transparent">
-                {/* Add buttons */}
-                <div className="flex flex-wrap gap-2 pb-2">
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={addHotel}
-                        className="gap-2 text-blue-400 border-blue-400/30 hover:bg-blue-400/10 hover:border-blue-400 transition-all font-semibold"
-                    >
-                        <Plus className="w-3.5 h-3.5" />
-                        Add Hotel
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={addFlight}
-                        className="gap-2 text-emerald-400 border-emerald-400/30 hover:bg-emerald-400/10 hover:border-emerald-400 transition-all font-semibold"
-                    >
-                        <Plus className="w-3.5 h-3.5" />
-                        Add Flight
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={addCab}
-                        className="gap-2 text-orange-400 border-orange-400/30 hover:bg-orange-400/10 hover:border-orange-400 transition-all font-semibold"
-                    >
-                        <Plus className="w-3.5 h-3.5" />
-                        Add Cab
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={addBus}
-                        className="gap-2 text-yellow-400 border-yellow-400/30 hover:bg-yellow-400/10 hover:border-yellow-400 transition-all font-semibold"
-                    >
-                        <Plus className="w-3.5 h-3.5" />
-                        Add Tourist Bus
-                    </Button>
-                </div>
-
-                {/* Items */}
-                <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                    {hotels.map((hotel) => (
-                        <HotelCard
-                            key={hotel.id}
-                            hotel={hotel}
-                            totalDays={totalDays}
-                            onChange={(updated) => updateHotel(hotel.id, updated)}
-                            onDelete={() => deleteHotel(hotel.id)}
+            {/* Tab bar */}
+            <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 mb-6 shadow-xl">
+                <div className="flex items-center justify-between flex-wrap gap-3">
+                    <div className="relative flex gap-1 pb-[1px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                        {TAB_CONFIG.map((tab, i) => {
+                            const isSelected = selectedEditorTab === tab.value;
+                            const TabIcon = tab.icon;
+                            return (
+                                <button
+                                    key={tab.value}
+                                    ref={el => { tabRefs.current[i] = el; }}
+                                    onClick={() => handleTabSelect(tab.value)}
+                                    type="button"
+                                    className={`flex items-center gap-1.5 px-3 pb-[8px] pt-1 cursor-pointer font-sans text-sm font-semibold transition-colors duration-200 select-none rounded-t-sm ${
+                                        isSelected
+                                            ? "text-primary"
+                                            : "text-foreground/40 hover:text-foreground/70"
+                                    }`}
+                                >
+                                    <TabIcon className="w-3.5 h-3.5 shrink-0" />
+                                    <span className="hidden sm:inline">{tab.label}</span>
+                                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full transition-colors ${
+                                        isSelected ? "bg-primary/20 text-primary" : "bg-white/5 text-foreground/40"
+                                    }`}>{tab.count}</span>
+                                </button>
+                            );
+                        })}
+                        {/* Sliding underline indicator */}
+                        <div
+                            className="absolute bottom-0 h-[2px] rounded-full bg-primary shadow-[0_0_8px_rgba(255,92,51,0.5)]"
+                            style={{
+                                left: indicator.left,
+                                width: indicator.width,
+                                transition: firstRender.current ? 'none' : 'left 0.3s cubic-bezier(0.4,0,0.2,1), width 0.3s cubic-bezier(0.4,0,0.2,1)',
+                            }}
                         />
-                    ))}
+                    </div>
 
-                    {flights.map((flight) => (
-                        <FlightCard
-                            key={flight.id}
-                            flight={flight}
-                            totalDays={totalDays}
-                            onChange={(updated) => updateFlight(flight.id, updated)}
-                            onDelete={() => deleteFlight(flight.id)}
-                        />
-                    ))}
-
-                    {cabs.map((cab) => (
-                        <CabCard
-                            key={cab.id}
-                            cab={cab}
-                            totalDays={totalDays}
-                            onChange={(updated) => updateCab(cab.id, updated)}
-                            onDelete={() => deleteCab(cab.id)}
-                        />
-                    ))}
-
-                    {buses.map((bus) => (
-                        <BusCard
-                            key={bus.id}
-                            bus={bus}
-                            totalDays={totalDays}
-                            onChange={(updated) => updateBus(bus.id, updated)}
-                            onDelete={() => deleteBus(bus.id)}
-                        />
-                    ))}
-
-                    {itemCount === 0 && (
-                        <div className="flex flex-col items-center justify-center py-12 px-4 rounded-2xl border-2 border-dashed border-white/5 bg-white/[0.02]">
-                            <div className="p-3 rounded-full bg-white/5 mb-3">
-                                <Car className="w-6 h-6 text-gray-500" />
+                    {/* Active section label & Add button */}
+                    <div className="flex items-center gap-4 flex-wrap">
+                        <div className="flex items-center gap-2.5">
+                            <div className="p-1.5 bg-primary/10 rounded-lg">
+                                <Icon className="w-4 h-4 text-primary" />
                             </div>
-                            <p className="text-gray-400 font-medium">No logistics added yet</p>
-                            <p className="text-gray-500 text-xs mt-1">Click the buttons above to add hotels, flights, cabs, or buses.</p>
+                            <div>
+                                <p className="text-xs font-bold text-white leading-none">{active.label}</p>
+                                <p className="text-[11px] text-foreground/40 mt-0.5 leading-none">{active.description}</p>
+                            </div>
                         </div>
-                    )}
+
+                        <div className="h-6 w-[1px] bg-white/[0.08] hidden sm:block" />
+
+                        {/* Collapse/Expand Toggle */}
+                        <button
+                            type="button"
+                            onClick={() => setIsCollapsed(!isCollapsed)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-white/80 hover:text-white text-xs font-semibold hover:bg-white/5 transition-all cursor-pointer select-none animate-in fade-in duration-200"
+                        >
+                            {isCollapsed ? (
+                                <>
+                                    <Maximize2 className="w-3.5 h-3.5" />
+                                    <span>Edit Mode</span>
+                                </>
+                            ) : (
+                                <>
+                                    <Minimize2 className="w-3.5 h-3.5" />
+                                    <span>Collapse View</span>
+                                </>
+                            )}
+                        </button>
+
+                        <div className="h-6 w-[1px] bg-white/[0.08] hidden sm:block" />
+
+                        <button
+                            type="button"
+                            onClick={() => handleTabClick(selectedEditorTab)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 text-primary text-xs font-bold hover:bg-primary/10 transition-all cursor-pointer animate-in fade-in duration-200"
+                        >
+                            <Plus className="w-3.5 h-3.5" />
+                            Add {selectedEditorTab === "flights" ? "Flight" : selectedEditorTab === "hotels" ? "Hotel" : selectedEditorTab === "cabs" ? "Cab" : "Bus"}
+                        </button>
+                    </div>
                 </div>
-            </CardContent>
-        </Card>
+            </div>
+
+            {/* Content pane */}
+            <div
+                key={selectedEditorTab}
+                className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden"
+                style={{ animation: `${slideDir === 'right' ? 'slideFromRight' : 'slideFromLeft'} 0.22s cubic-bezier(0.4,0,0.2,1) both` }}
+            >
+                <div className="p-6 lg:p-8">
+                    <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar min-h-[200px]">
+                        {selectedEditorTab === "hotels" && hotels.map((hotel) => (
+                            <HotelCard
+                                key={hotel.id}
+                                hotel={hotel}
+                                totalDays={totalDays}
+                                onChange={(updated) => updateHotel(hotel.id, updated)}
+                                onDelete={() => deleteHotel(hotel.id)}
+                                isCollapsed={isCollapsed}
+                            />
+                        ))}
+
+                        {selectedEditorTab === "flights" && flights.map((flight) => (
+                            <FlightCard
+                                key={flight.id}
+                                flight={flight}
+                                totalDays={totalDays}
+                                onChange={(updated) => updateFlight(flight.id, updated)}
+                                onDelete={() => deleteFlight(flight.id)}
+                                isCollapsed={isCollapsed}
+                            />
+                        ))}
+
+                        {selectedEditorTab === "cabs" && cabs.map((cab) => (
+                            <CabCard
+                                key={cab.id}
+                                cab={cab}
+                                totalDays={totalDays}
+                                onChange={(updated) => updateCab(cab.id, updated)}
+                                onDelete={() => deleteCab(cab.id)}
+                                isCollapsed={isCollapsed}
+                            />
+                        ))}
+
+                        {selectedEditorTab === "buses" && buses.map((bus) => (
+                            <BusCard
+                                key={bus.id}
+                                bus={bus}
+                                totalDays={totalDays}
+                                onChange={(updated) => updateBus(bus.id, updated)}
+                                onDelete={() => deleteBus(bus.id)}
+                                isCollapsed={isCollapsed}
+                            />
+                        ))}
+
+                        {((selectedEditorTab === "hotels" && hotels.length === 0) ||
+                          (selectedEditorTab === "flights" && flights.length === 0) ||
+                          (selectedEditorTab === "cabs" && cabs.length === 0) ||
+                          (selectedEditorTab === "buses" && buses.length === 0)) && (
+                            <div className="flex flex-col items-center justify-center py-12 px-4 rounded-2xl border border-dashed border-white/[0.08] bg-white/[0.01]">
+                                <div className="p-3 rounded-full bg-primary/10 mb-3">
+                                    <Plus className="w-6 h-6 text-primary/70" />
+                                </div>
+                                <p className="text-gray-400 font-medium">No {selectedEditorTab} added yet</p>
+                                <p className="text-gray-500 text-xs mt-1">
+                                    Click <span className="text-primary font-semibold">Add {selectedEditorTab === "flights" ? "Flight" : selectedEditorTab === "hotels" ? "Hotel" : selectedEditorTab === "cabs" ? "Cab" : "Bus"}</span> to get started.
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        </div>
     );
 }
 

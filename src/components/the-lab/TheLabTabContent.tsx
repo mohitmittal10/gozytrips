@@ -60,7 +60,7 @@ interface TheLabTabContentProps {
   pricing: any;
   setPricing: (val: any) => void;
   agencySettings: any;
-  handleSaveItinerary: () => void;
+  handleSaveItinerary: (pricing?: any) => void;
   isSaving: boolean;
   setCurrentTripId: (id: string | null) => void;
   setActiveLabTab: (tab: ActiveLabTab) => void;
@@ -150,7 +150,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
       )}
 
       {/* Tab Content - Logistics (Hotels & Flights) */}
-      {activeLabTab === 'flights-hotels' && !isGenerating && itinerary?.itinerary?.length > 0 && (
+      {activeLabTab === 'flights-hotels' && itinerary?.itinerary?.length > 0 && (
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Logistics editor failed to load.">
           <MemoizedHotelFlightEditor
             hotels={hotels}
@@ -168,7 +168,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
       )}
 
       {/* Tab Content - Financials (Pricing) */}
-      {activeLabTab === 'pricing' && !isGenerating && itinerary?.itinerary?.length > 0 && (
+      {activeLabTab === 'pricing' && itinerary?.itinerary?.length > 0 && (
         <ItineraryErrorBoundary onReset={() => setPricing(undefined)} fallbackMessage="Pricing module failed to load.">
           <ItineraryProvider
             key={JSON.stringify(itinerary?.itinerary?.length)}
