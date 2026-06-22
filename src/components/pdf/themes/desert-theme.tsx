@@ -12,7 +12,6 @@ const parseList = (text?: string) => {
 };
 
 const PAGE_STYLE: React.CSSProperties = {
-    minHeight: "1120px",
     display: "flex",
     flexDirection: "column",
     justifyContent: "flex-start",
@@ -56,13 +55,6 @@ export const DesertFooter = ({ agent, agencySettings }: { agent: ThemeProps["age
     >
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
             <div style={{ width: "100%", maxWidth: "920px", background: "#e6d5c3", borderRadius: "24px", padding: "56px 48px", textAlign: "center", boxShadow: "0 18px 45px rgba(17,24,39,0.08)" }}>
-                {agent.logoUrl ? (
-                    <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "64px", maxWidth: "180px", objectFit: "contain", margin: "0 auto 28px auto", display: "block" }} />
-                ) : (
-                    <div style={{ width: "64px", height: "64px", margin: "0 auto 28px auto", borderRadius: "999px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", color: "#433429", fontSize: "24px", fontWeight: 700 }}>
-                        {(agent.companyName || "CT").substring(0, 2).toUpperCase()}
-                    </div>
-                )}
                 <h2 style={{ margin: "0 0 14px 0", fontSize: "36px", color: "#433429", fontWeight: 500 }}>
                     Contact {agent.companyName}
                 </h2>
@@ -213,7 +205,7 @@ export const DesertTheme = ({
                     </div>
                 </div>
 
-                <div data-pdf-section="quick-stats" style={{ background: "#ffffff", borderBottom: "1px solid #f3f4f6", padding: "42px 64px", marginTop: "auto" }}>
+                <div data-pdf-section="quick-stats" style={{ background: "#ffffff", borderBottom: "1px solid #f3f4f6", padding: "42px 64px" }}>
                     <div style={{ display: "flex", gap: "24px" }}>
                         {[
                             { label: "Duration", value: `${days} Days / ${nights}` },
@@ -243,9 +235,6 @@ export const DesertTheme = ({
                     <p style={{ margin: "0 0 16px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "3px", color: "#fb923c", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                         Your Travel Agency
                     </p>
-                    {agent.logoUrl && (
-                        <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "64px", maxWidth: "200px", objectFit: "contain", marginBottom: "20px", display: "block" }} />
-                    )}
                     <h2 style={{ margin: "0 0 28px 0", fontSize: "52px", lineHeight: "1.08", color: "#111827", fontWeight: 500 }}>
                         {agent.companyName}
                     </h2>

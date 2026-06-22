@@ -128,7 +128,7 @@ export default function TheLab() {
 
   const form = useForm<TheLabFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { startingLocation: "", endingLocation: "", startDate: undefined, endDate: undefined, destinations: "", travelTimePreference: "no_preference", leisureTime: false },
+    defaultValues: { startingLocation: "", endingLocation: "", startDate: undefined, endDate: undefined, destinations: "", travelTimePreference: "no_preference", leisureTime: false, daywiseDestinations: "", hotels: [] },
   });
 
   // Hydrate from persistence
@@ -156,7 +156,10 @@ export default function TheLab() {
         // Only reset the form when the user has navigated to a DIFFERENT specific
         // trip from history. This prevents the new-trip form from being prefilled
         // on initial auto-load and avoids wiping user edits on re-renders.
-        form.reset(loadedData.tripMetadata as any);
+        form.reset({
+          ...loadedData.tripMetadata,
+          hotels: loadedData.hotels || [],
+        } as any);
         formSyncedForIdRef.current = currentTripId;
       }
     } else if (queryFromUrl) {
@@ -195,6 +198,7 @@ export default function TheLab() {
           leisureTime: response.leisure_time ?? false,
           leisureDay: response.leisure_day ?? undefined,
           travelTimePreference: response.travel_time_preference || "no_preference",
+          daywiseDestinations: "",
         };
 
         form.reset(prefillValues as any);
@@ -231,9 +235,26 @@ export default function TheLab() {
   useEffect(() => {
     const subscription = form.watch((values) => {
       setTripMetadata(values);
+      if (values.hotels) {
+        // Only update if they are different to prevent loop
+        const formHotelsJson = JSON.stringify(values.hotels);
+        const stateHotelsJson = JSON.stringify(hotels);
+        if (formHotelsJson !== stateHotelsJson) {
+          setHotels(values.hotels as any);
+        }
+      }
     });
     return () => subscription.unsubscribe();
-  }, [form]);
+  }, [form, hotels]);
+
+  // Sync hotels state from logistics tab back into the form
+  useEffect(() => {
+    const formHotelsJson = JSON.stringify(form.getValues("hotels") || []);
+    const stateHotelsJson = JSON.stringify(hotels);
+    if (formHotelsJson !== stateHotelsJson) {
+      form.setValue("hotels", hotels, { shouldDirty: true });
+    }
+  }, [hotels, form]);
 
   const [loadingTextIndex, setLoadingTextIndex] = useState(0);
   useEffect(() => {
@@ -278,7 +299,7 @@ export default function TheLab() {
       // resetForNewTrip cancels pending auto-save timers and nulls the ref,
       // but does NOT write to the DB. No phantom records are created.
       setCurrentTripId(null);
-      setHotels([]);
+      setHotels(values.hotels || []);
       setFlights([]);
       setCabs([]);
       setBuses([]);
@@ -364,7 +385,21 @@ export default function TheLab() {
         // NOW insert the record with the full itinerary data.
         const newTripId = await saveNow({
           itinerary: res,
-          hotels: [],
+          hotels: (values.hotels || []).map(h => ({
+            id: h.id,
+            dayIndex: h.dayIndex,
+            name: h.name,
+            address: h.address || "",
+            checkIn: h.checkIn || "2:00 PM",
+            checkOut: h.checkOut || "11:00 AM",
+            bookingRef: h.bookingRef || "",
+            starRating: h.starRating || 3,
+            nights: h.nights || 1,
+            costAdult: h.costAdult,
+            costChild: h.costChild,
+            costInfant: h.costInfant,
+            imageUrls: h.imageUrls,
+          })),
           flights: [],
           cabs: [],
           buses: [],

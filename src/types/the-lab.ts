@@ -58,6 +58,26 @@ export const formSchema = z.object({
     "prefer_afternoon_travel",
     "prefer_night_travel"
   ]).default("no_preference"),
+  daywiseDestinations: z
+    .string()
+    .max(1000, "Day-wise plan is too long (max 1000 characters).")
+    .optional()
+    .transform((v) => sanitizeText(v, 1000)),
+  hotels: z.array(z.object({
+    id: z.string(),
+    dayIndex: z.number(),
+    name: z.string(),
+    address: z.string().optional(),
+    checkIn: z.string().optional(),
+    checkOut: z.string().optional(),
+    bookingRef: z.string().optional(),
+    starRating: z.number().optional(),
+    nights: z.number().optional(),
+    costAdult: z.number().optional(),
+    costChild: z.number().optional(),
+    costInfant: z.number().optional(),
+    imageUrls: z.array(z.string()).optional(),
+  })).optional().default([]),
 }).refine((data) => data.endDate > data.startDate, {
   message: "End date must be after start date.",
   path: ["endDate"],

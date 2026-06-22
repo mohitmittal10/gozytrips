@@ -662,6 +662,22 @@ export const TropicalTheme = ({
                     line-height: 1.5;
                 }
 
+                .tropical-wrap .section-logo-badge {
+                    position: absolute;
+                    top: 18px;
+                    right: 24px;
+                    z-index: 10;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: rgba(255,255,255,0.88);
+                    border: 1px solid var(--stone-100);
+                    border-radius: 10px;
+                    padding: 7px 12px;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+                    pointer-events: none;
+                }
+
                 .tropical-wrap footer {
                     position: relative;
                     background: linear-gradient(135deg, #4f80b5, #1e3c72);
@@ -753,23 +769,21 @@ export const TropicalTheme = ({
 
             <div className="tropical-wrap">
                 {/* ── HEADER ── */}
-                <div className="hero" data-pdf-section="cover">
+                <div className="hero" data-pdf-section="cover" style={{ position: "relative" }}>
                     <img src={getCoverImage(itinerary)} alt="Resort Banner" crossOrigin="anonymous" />
                     <div className="hero-overlay"></div>
-                    {/* Agency brand badge — top left of hero */}
-                    <div style={{ position: "absolute", top: "28px", left: "32px", zIndex: 20, display: "flex", alignItems: "center", gap: "12px", background: "rgba(255,255,255,0.15)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: "14px", padding: "10px 18px", boxShadow: "0 4px 24px rgba(0,0,0,0.15)" }}>
-                        {agent.logoUrl ? (
-                            <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "36px", maxWidth: "100px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1)" }} />
-                        ) : (
-                            <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "14px", fontFamily: "var(--font-sans)" }}>
-                                {(agent.companyName || "T").substring(0, 1).toUpperCase()}
-                            </div>
-                        )}
-                        <div style={{ borderLeft: "1px solid rgba(255,255,255,0.35)", paddingLeft: "12px" }}>
-                            <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "white", letterSpacing: "0.08em", textTransform: "uppercase", fontFamily: "var(--font-sans)" }}>{agent.companyName}</p>
-                            <p style={{ margin: 0, fontSize: "9px", color: "rgba(255,255,255,0.75)", letterSpacing: "0.05em", fontFamily: "var(--font-sans)", fontWeight: 500, textTransform: "uppercase", marginTop: "2px" }}>Travel Specialists</p>
+                    {/* Agency logo badge — top right of hero (logo only, no name) */}
+                    {(agent.logoUrl || agent.companyName) && (
+                        <div style={{ position: "absolute", top: "24px", right: "28px", zIndex: 20, background: "rgba(255,255,255,0.18)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.35)", borderRadius: "12px", padding: "9px 14px", boxShadow: "0 4px 20px rgba(0,0,0,0.18)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            {agent.logoUrl ? (
+                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "34px", maxWidth: "100px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1)" }} />
+                            ) : (
+                                <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "14px", fontFamily: "var(--font-sans)" }}>
+                                    {(agent.companyName || "T").substring(0, 1).toUpperCase()}
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    )}
                 </div>
 
                 <div style={{ background: "var(--bg)", paddingBottom: "48px" }}>
@@ -791,11 +805,6 @@ export const TropicalTheme = ({
                         <div className="meta-box">
                             <div className="meta-col">
                                 <span className="meta-label">Agency Details</span>
-                                {agent.logoUrl && (
-                                    <div style={{ marginBottom: "10px", paddingBottom: "10px", borderBottom: "1px solid var(--stone-100)" }}>
-                                        <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "44px", maxWidth: "140px", objectFit: "contain", display: "block" }} />
-                                    </div>
-                                )}
                                 <h3>🌴 {agent.companyName}</h3>
                                 <ul className="meta-list">
                                     {agent.agentEmail && (
@@ -1221,12 +1230,9 @@ export const TropicalTheme = ({
                             </div>
                         </>
                     )}
-                    {agent.logoUrl && (
-                        <div style={{ textAlign: "center", marginTop: "32px", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,0.12)" }}>
-                            <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "52px", maxWidth: "160px", objectFit: "contain", filter: "brightness(0) invert(1) opacity(0.85)", display: "inline-block" }} />
-                            <p style={{ marginTop: "8px", fontSize: "11px", color: "rgba(255,255,255,0.55)", fontFamily: "var(--font-mono)", letterSpacing: "0.05em" }}>{agent.companyName}</p>
-                        </div>
-                    )}
+                    <div style={{ textAlign: "center", marginTop: "32px", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,0.12)" }}>
+                        <p style={{ marginTop: 0, fontSize: "13px", color: "rgba(255,255,255,0.7)", fontFamily: "var(--font-mono)", letterSpacing: "0.05em", fontWeight: 600 }}>{agent.companyName}</p>
+                    </div>
                 </footer>
             </div>
         </div>

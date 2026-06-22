@@ -61,6 +61,9 @@ export function useItineraryGeneration() {
         leisureDay: effectiveValues.leisureDay ?? undefined,
         travelTimePreference: effectiveValues.travelTimePreference,
         feedback: typeof feedback === 'string' ? feedback : "",
+        daywiseDestinations: effectiveValues.daywiseDestinations || "",
+        hotels: effectiveValues.hotels || [],
+        hotelsText: "",
       });
 
       // Fetch dynamic images

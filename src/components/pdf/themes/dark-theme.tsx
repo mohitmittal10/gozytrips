@@ -104,18 +104,19 @@ export const DarkTheme = ({
                         crossOrigin="anonymous"
                     />
                     <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to right, #070a13 40%, rgba(7,10,19,0.3))` }} />
-                    <div style={{ position: "absolute", bottom: "40px", left: "45px", right: "45px", zIndex: 1 }}>
-                        {agent.logoUrl && (
-                            <div style={{ display: "inline-flex", alignItems: "center", gap: "12px", marginBottom: "14px", background: "rgba(0,0,0,0.4)", border: `1px solid rgba(${rgbAccent}, 0.5)`, borderRadius: "10px", padding: "10px 16px", boxShadow: `0 0 18px rgba(${rgbAccent},0.2), inset 0 1px 0 rgba(255,255,255,0.05)` }}>
+                    {/* Agency logo badge — top right (logo only) */}
+                    {(agent.logoUrl || agent.companyName) && (
+                        <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.4)", backdropFilter: "blur(10px)", border: `1px solid rgba(${rgbAccent}, 0.5)`, borderRadius: "10px", padding: "9px 14px", boxShadow: `0 0 18px rgba(${rgbAccent},0.2), inset 0 1px 0 rgba(255,255,255,0.05)` }}>
+                            {agent.logoUrl ? (
                                 <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "100px", objectFit: "contain", display: "block", filter: `drop-shadow(0 0 4px rgba(${rgbAccent},0.8))` }} />
-                                <div style={{ borderLeft: `1px solid rgba(${rgbAccent},0.4)`, paddingLeft: "12px" }}>
-                                    <p style={{ margin: 0, fontSize: "9px", fontWeight: 800, color: accent, letterSpacing: "0.15em", textTransform: "uppercase" }}>{agent.companyName}</p>
+                            ) : (
+                                <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: `rgba(${rgbAccent},0.3)`, display: "flex", alignItems: "center", justifyContent: "center", color: accent, fontWeight: 800, fontSize: "13px" }}>
+                                    {(agent.companyName || "T").substring(0, 1).toUpperCase()}
                                 </div>
-                            </div>
-                        )}
-                        {!agent.logoUrl && (
-                            <p style={{ fontSize: "11px", letterSpacing: "5px", textTransform: "uppercase", color: accent, margin: "0 0 12px 0", fontWeight: 800 }}>{agent.companyName}</p>
-                        )}
+                            )}
+                        </div>
+                    )}
+                    <div style={{ position: "absolute", bottom: "40px", left: "45px", right: "45px", zIndex: 1 }}>
                         <h1 style={{ fontSize: "40px", fontWeight: 900, margin: "0 0 8px 0", color: "#ffffff", lineHeight: "1.1", letterSpacing: "-1px", fontFamily: "'Outfit', sans-serif", textShadow: `0 0 20px rgba(${rgbAccent}, 0.3)` }}>{title}</h1>
                         <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0, fontWeight: 500 }}>Bespoke Journey designed by {agent.agentName}</p>
                     </div>
@@ -490,9 +491,6 @@ export const DarkTheme = ({
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "20px" }}>
                     <p style={{ margin: 0, fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2.5px", fontWeight: 800 }}>Premium Curated Edition</p>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        {agent.logoUrl && (
-                            <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "100px", objectFit: "contain", filter: `drop-shadow(0 0 6px rgba(${rgbAccent},0.5))` }} />
-                        )}
                         <p style={{ margin: 0, fontSize: "14px", color: accent, fontWeight: 900, letterSpacing: "1px", fontFamily: "'Outfit', sans-serif", textShadow: `0 0 10px rgba(${rgbAccent},0.4)` }}>{agent.companyName}</p>
                 </div>
             </div>

@@ -126,19 +126,18 @@ export const ClassicTheme = ({
                 <div style={{ position: "relative", height: "320px", overflow: "hidden", marginBottom: "35px", borderRadius: "0 0 24px 24px" }}>
                     <img src={getCoverImage(itinerary)} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
                     <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: `linear-gradient(135deg, rgba(${rgbAccent}, 0.85), rgba(15, 23, 42, 0.8))` }} />
-                    {/* Agency logo badge — top left */}
-                    <div style={{ position: "absolute", top: "22px", left: "30px", zIndex: 10, display: "flex", alignItems: "center", gap: "12px", background: "rgba(255,255,255,0.12)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.25)", borderRadius: "12px", padding: "9px 16px" }}>
-                        {agent.logoUrl ? (
-                            <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "90px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1)" }} />
-                        ) : (
-                            <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "13px" }}>
-                                {(agent.companyName || "T").substring(0, 1).toUpperCase()}
-                            </div>
-                        )}
-                        <div style={{ borderLeft: "1px solid rgba(255,255,255,0.3)", paddingLeft: "11px" }}>
-                            <p style={{ margin: 0, fontSize: "10px", fontWeight: 800, color: "white", letterSpacing: "0.1em", textTransform: "uppercase" }}>{agent.companyName}</p>
+                    {/* Agency logo badge — top right (logo only) */}
+                    {(agent.logoUrl || agent.companyName) && (
+                        <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.14)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.28)", borderRadius: "12px", padding: "9px 14px" }}>
+                            {agent.logoUrl ? (
+                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "90px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1)" }} />
+                            ) : (
+                                <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "13px" }}>
+                                    {(agent.companyName || "T").substring(0, 1).toUpperCase()}
+                                </div>
+                            )}
                         </div>
-                    </div>
+                    )}
                     <div style={{ position: "absolute", bottom: "45px", left: 0, right: 0, width: "100%", padding: `0 ${CONTENT_PADDING_X}`, boxSizing: "border-box", zIndex: 1, color: "white", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
 
                         <h1 style={{ fontSize: "44px", fontWeight: 900, margin: "0 auto 10px auto", textShadow: "0 4px 12px rgba(0,0,0,0.35)", fontFamily: "'Outfit', sans-serif", letterSpacing: "-1.5px", lineHeight: "1.08", textAlign: "center" }}>{title}</h1>
@@ -157,11 +156,6 @@ export const ClassicTheme = ({
                             </div>
                         )}
                         <div style={{ flex: agent.agentBio ? "0 1 auto" : "1 1 auto", minWidth: "200px", textAlign: "right", marginLeft: agent.agentBio ? undefined : "auto", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px" }}>
-                            {agent.logoUrl && (
-                                <div style={{ marginBottom: "8px", paddingBottom: "10px", borderBottom: `2px solid ${agent.primaryColor}`, alignSelf: "flex-end" }}>
-                                    <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "52px", maxWidth: "160px", objectFit: "contain", display: "block" }} />
-                                </div>
-                            )}
                             <h2 style={{ fontSize: "20px", margin: "0 0 4px 0", color: "#0f172a", fontWeight: 800, letterSpacing: "-0.5px" }}>{agent.companyName}</h2>
                             <p style={{ color: agent.primaryColor, fontSize: "13.5px", margin: "0 0 8px 0", fontWeight: 700 }}>{agent.agentName}</p>
                             {agent.agentPhone && <p style={{ color: "#64748b", fontSize: "12px", margin: "2px 0" }}>{agent.agentPhone}</p>}
@@ -552,9 +546,6 @@ export const ClassicTheme = ({
                     </>
                 )}
                 <div style={{ textAlign: "center", marginTop: "60px", paddingTop: "40px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-                    {agent.logoUrl ? (
-                        <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "56px", maxWidth: "180px", objectFit: "contain", marginBottom: "12px", filter: "brightness(0) invert(1) opacity(0.9)" }} />
-                    ) : null}
                     <div style={{ fontSize: "22px", fontWeight: 900, marginBottom: "8px", background: `linear-gradient(to right, ${agent.primaryColor || "#a855f7"}, #ec4899)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontFamily: "'Outfit', sans-serif" }}>{agent.companyName}</div>
                     <p style={{ margin: "0 0 6px 0", color: "#94a3b8", fontSize: "13px", fontWeight: 500 }}>Bespoke Travel Solutions</p>
                     <p style={{ margin: 0, color: "#475569", fontSize: "11px" }}>Generated on {new Date().toLocaleDateString()} • Designed in The Lab</p>

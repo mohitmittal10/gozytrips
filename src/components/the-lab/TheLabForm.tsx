@@ -2,7 +2,7 @@
 import React from 'react';
 import { UseFormReturn } from "react-hook-form";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Check, ArrowRight } from "lucide-react";
+import { Calendar as CalendarIcon, Check, ArrowRight, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,6 +69,244 @@ const StepDestinations = React.memo(({ form }: { form: UseFormReturn<TheLabFormV
   </div>
 ));
 StepDestinations.displayName = 'StepDestinations';
+
+const StepDaywisePlan = React.memo(({ form }: { form: UseFormReturn<TheLabFormValues> }) => {
+  const startDate = form.watch("startDate");
+  const endDate = form.watch("endDate");
+  const daywiseDestinations = form.watch("daywiseDestinations") || "";
+
+  const dayCount = React.useMemo(() => {
+    if (!startDate || !endDate) return 0;
+    const s = new Date(startDate);
+    const e = new Date(endDate);
+    if (isNaN(s.getTime()) || isNaN(e.getTime()) || e < s) return 0;
+    return Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  }, [startDate, endDate]);
+
+  const [localDays, setLocalDays] = React.useState<string[]>([]);
+
+  // Sync inputs from standard format Day X: Content
+  React.useEffect(() => {
+    if (dayCount > 0) {
+      const parsed = Array(dayCount).fill("");
+      const lines = daywiseDestinations.split("\n");
+      lines.forEach((line) => {
+        const match = line.match(/^Day\s*(\d+)\s*[:\-]\s*(.*)$/i);
+        if (match) {
+          const dayNum = parseInt(match[1], 10);
+          if (dayNum >= 1 && dayNum <= dayCount) {
+            parsed[dayNum - 1] = match[2].trim();
+          }
+        }
+      });
+      setLocalDays(parsed);
+    }
+  }, [dayCount, daywiseDestinations]);
+
+  const handleDayChange = (index: number, val: string) => {
+    const updated = [...localDays];
+    updated[index] = val;
+    setLocalDays(updated);
+
+    const combined = updated
+      .map((content, idx) => `Day ${idx + 1}: ${content.trim()}`)
+      .filter((_, idx) => updated[idx].trim().length > 0)
+      .join("\n");
+    
+    form.setValue("daywiseDestinations", combined, { shouldDirty: true, shouldValidate: true });
+  };
+
+  if (dayCount === 0) {
+    return (
+      <div className="text-center py-8 text-zinc-500 animate-in fade-in duration-500">
+        <p className="text-sm font-medium">Please select a valid Start and End Date first to generate your day-wise form template.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
+      <div className="flex items-center justify-between pb-2 border-b border-white/5">
+        <div>
+          <span className={LabelClass}>Day-by-Day Focus</span>
+          <p className="text-[10px] text-zinc-500 mt-0.5">Specify focus or activities. AI will construct detailed schedules around these.</p>
+        </div>
+        <span className="text-[10px] bg-primary/10 border border-primary/20 text-primary px-2.5 py-0.5 rounded-full font-bold">{dayCount} Days</span>
+      </div>
+
+      <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+        {Array.from({ length: dayCount }).map((_, index) => {
+          const dayDate = new Date(new Date(startDate).getTime() + index * 24 * 60 * 60 * 1000);
+          const formattedDate = format(dayDate, "eee, MMM dd");
+
+          return (
+            <div key={index} className="flex gap-4 items-center p-2.5 bg-white/5 border border-white/10 rounded-xl hover:border-primary/30 transition-all duration-200">
+              <div className="min-w-[80px]">
+                <span className="text-[10px] font-bold text-zinc-400 block">DAY {index + 1}</span>
+                <span className="text-[9px] text-zinc-500 font-medium block mt-0.5">{formattedDate}</span>
+              </div>
+              <div className="flex-1">
+                <Input
+                  placeholder={`e.g., Delhi arrival, sightseeing at Red Fort`}
+                  value={localDays[index] || ""}
+                  onChange={(e) => handleDayChange(index, e.target.value)}
+                  className="h-9 text-xs border-white/5 focus:border-primary/50 bg-white/5 backdrop-blur rounded-lg"
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
+StepDaywisePlan.displayName = 'StepDaywisePlan';
+
+function StarRating({ value, onChange }: { value: number; onChange: (v: number) => void }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((s) => (
+        <button
+          key={s}
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onChange(s);
+          }}
+          className="p-0.5 transition-colors"
+        >
+          <Star
+            className={cn(
+              "w-3 h-3 transition-colors",
+              s <= value ? "text-yellow-400 fill-yellow-400" : "text-zinc-600"
+            )}
+          />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormValues> }) => {
+  const startDate = form.watch("startDate");
+  const endDate = form.watch("endDate");
+  const formHotels = form.watch("hotels") || [];
+
+  const dayCount = React.useMemo(() => {
+    if (!startDate || !endDate) return 0;
+    const s = new Date(startDate);
+    const e = new Date(endDate);
+    if (isNaN(s.getTime()) || isNaN(e.getTime()) || e < s) return 0;
+    return Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  }, [startDate, endDate]);
+
+  const staySlotsCount = Math.max(0, dayCount - 1);
+
+  React.useEffect(() => {
+    if (staySlotsCount > 0 && formHotels.length !== staySlotsCount) {
+      const updatedHotels = [...formHotels];
+      if (updatedHotels.length < staySlotsCount) {
+        for (let i = updatedHotels.length; i < staySlotsCount; i++) {
+          updatedHotels.push({
+            id: `h-wiz-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
+            dayIndex: i,
+            name: "",
+            address: "",
+            starRating: 3,
+            nights: 1,
+            checkIn: "2:00 PM",
+            checkOut: "11:00 AM",
+            bookingRef: "",
+          });
+        }
+      } else if (updatedHotels.length > staySlotsCount) {
+        updatedHotels.splice(staySlotsCount);
+      }
+      form.setValue("hotels", updatedHotels, { shouldDirty: true });
+    }
+  }, [staySlotsCount, formHotels.length]);
+
+  const handleHotelChange = (index: number, field: string, value: any) => {
+    const updated = [...formHotels];
+    if (!updated[index]) {
+      updated[index] = {
+        id: `h-wiz-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 4)}`,
+        dayIndex: index,
+        name: "",
+        address: "",
+        starRating: 3,
+        nights: 1,
+        checkIn: "2:00 PM",
+        checkOut: "11:00 AM",
+        bookingRef: "",
+      };
+    }
+    updated[index] = { ...updated[index], [field]: value };
+    form.setValue("hotels", updated, { shouldDirty: true, shouldValidate: true });
+  };
+
+  if (dayCount <= 1) {
+    return (
+      <div className="text-center py-8 text-zinc-500 animate-in fade-in duration-500">
+        <p className="text-sm font-medium">Please select a valid Start and End Date (at least 2 days) first to configure stay options.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
+      <div className="flex items-center justify-between pb-2 border-b border-white/5">
+        <div>
+          <span className={LabelClass}>Stay & Accommodation Options</span>
+          <p className="text-[10px] text-zinc-500 mt-0.5">Specify stay options for each night. These sync with the Logistics tab.</p>
+        </div>
+        <span className="text-[10px] bg-primary/10 border border-primary/20 text-primary px-2.5 py-0.5 rounded-full font-bold">{staySlotsCount} Nights</span>
+      </div>
+
+      <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+        {Array.from({ length: staySlotsCount }).map((_, index) => {
+          const dayDate = new Date(new Date(startDate).getTime() + index * 24 * 60 * 60 * 1000);
+          const formattedDate = format(dayDate, "eee, MMM dd");
+          const hotel = formHotels[index] || { name: "", address: "", starRating: 3 };
+
+          return (
+            <div key={index} className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-primary/30 transition-all duration-200 space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-bold text-zinc-400">NIGHT {index + 1} ({formattedDate})</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-[9px] text-zinc-500 mr-1">Rating:</span>
+                  <StarRating value={hotel.starRating || 3} onChange={(v) => handleHotelChange(index, "starRating", v)} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold">Hotel / Stay Name</label>
+                  <Input
+                    placeholder="e.g., Marriott, Cozy Homestay"
+                    value={hotel.name || ""}
+                    onChange={(e) => handleHotelChange(index, "name", e.target.value)}
+                    className="h-8.5 text-xs border-white/5 bg-white/5 backdrop-blur rounded-lg"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold">City / Place</label>
+                  <Input
+                    placeholder="e.g., Delhi, Paris"
+                    value={hotel.address || ""}
+                    onChange={(e) => handleHotelChange(index, "address", e.target.value)}
+                    className="h-8.5 text-xs border-white/5 bg-white/5 backdrop-blur rounded-lg"
+                  />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+});
+StepStayOptions.displayName = 'StepStayOptions';
 
 const StepDates = React.memo(({ form, sidebarMode }: { form: UseFormReturn<TheLabFormValues>, sidebarMode?: boolean }) => (
   <div className={cn("grid gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700", sidebarMode ? "grid-cols-1" : "grid-cols-2")}>
@@ -307,7 +545,9 @@ const TheLabForm = React.memo(function TheLabForm({
 
         {currentStep === 0 && <StepDestinations form={form} />}
         {currentStep === 1 && <StepDates form={form} sidebarMode={sidebarMode} />}
-        {currentStep === 2 && <StepPreferences form={form} sidebarMode={sidebarMode} />}
+        {currentStep === 2 && <StepDaywisePlan form={form} />}
+        {currentStep === 3 && <StepPreferences form={form} sidebarMode={sidebarMode} />}
+        {currentStep === 4 && <StepStayOptions form={form} />}
 
 
         {/* Actions */}

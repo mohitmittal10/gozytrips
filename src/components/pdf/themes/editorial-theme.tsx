@@ -84,21 +84,19 @@ export const EditorialTheme = ({
                 <div style={{ position: "relative", height: "460px", overflow: "hidden" }}>
                     <img src={getCoverImage(itinerary)} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
                     <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "65%", background: "linear-gradient(to top, rgba(15,23,42,0.9) 10%, rgba(15,23,42,0.3) 60%, transparent)" }} />
-                    <div style={{ position: "absolute", bottom: "50px", left: "60px", right: "60px", color: "white", zIndex: 1 }}>
-                        {agent.logoUrl ? (
-                            <div style={{ display: "inline-flex", alignItems: "center", gap: "12px", marginBottom: "16px", paddingBottom: "14px", borderBottom: `1px solid rgba(255,255,255,0.2)` }}>
-                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "44px", maxWidth: "140px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1) opacity(0.95)" }} />
-                                <div style={{ width: "1px", height: "32px", background: "rgba(255,255,255,0.25)" }} />
-                                <div>
-                                    <p style={{ margin: 0, fontSize: "9px", fontWeight: 700, color: gold, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Est. Luxury Travel</p>
+                    {/* Agency logo badge — top right (logo only) */}
+                    {(agent.logoUrl || agent.companyName) && (
+                        <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.12)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: "12px", padding: "9px 14px" }}>
+                            {agent.logoUrl ? (
+                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "90px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1) opacity(0.95)" }} />
+                            ) : (
+                                <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "13px" }}>
+                                    {(agent.companyName || "T").substring(0, 1).toUpperCase()}
                                 </div>
-                            </div>
-                        ) : (
-                            <p style={{ fontSize: "12px", letterSpacing: "5px", textTransform: "uppercase", margin: "0 0 15px 0", color: gold, fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}>{agent.companyName}</p>
-                        )}
-                        {!agent.logoUrl && (
-                            <p style={{ fontSize: "12px", letterSpacing: "5px", textTransform: "uppercase", margin: "0 0 15px 0", color: gold, fontFamily: "'Montserrat', sans-serif", fontWeight: 700 }}>{agent.companyName}</p>
-                        )}
+                            )}
+                        </div>
+                    )}
+                    <div style={{ position: "absolute", bottom: "50px", left: "60px", right: "60px", color: "white", zIndex: 1 }}>
                         <h1 style={{ fontSize: "48px", fontWeight: "normal", margin: "0 0 20px 0", lineHeight: "1.15", fontFamily: "'Playfair Display', serif", fontStyle: "italic", letterSpacing: "-0.5px" }}>{title}</h1>
                         <div style={{ width: "80px", height: "2px", background: gold, marginBottom: "20px" }} />
                         <p style={{ fontSize: "14px", opacity: 0.9, margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" }}>{itinerary.itinerary?.length || 0}-Day Curated Journey • Designed by {agent.agentName}</p>
@@ -446,9 +444,6 @@ export const EditorialTheme = ({
                 )}
 
                 <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "40px" }}>
-                    {agent.logoUrl && (
-                        <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "48px", maxWidth: "160px", objectFit: "contain", margin: "0 auto 16px auto", display: "block", filter: "brightness(0) invert(1) opacity(0.85)" }} />
-                    )}
                     <p style={{ fontSize: "14px", letterSpacing: "6px", textTransform: "uppercase", color: gold, margin: "0 0 12px 0", fontWeight: 700 }}>{agent.companyName}</p>
                     <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", margin: 0 }}>Curated on {new Date().toLocaleDateString()} · Editorial Edition</p>
                 </div>

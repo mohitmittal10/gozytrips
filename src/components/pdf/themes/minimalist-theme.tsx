@@ -92,16 +92,19 @@ export const MinimalistTheme = ({
                         crossOrigin="anonymous"
                     />
                     <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to right, rgba(0,0,0,0.6), transparent)` }} />
-                    <div style={{ position: "absolute", bottom: "35px", left: "45px", right: "45px", color: "#fff" }}>
-                        {agent.logoUrl ? (
-                            <div style={{ display: "inline-flex", alignItems: "center", gap: "10px", marginBottom: "12px", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "8px", padding: "7px 14px" }}>
+                    {/* Agency logo badge — top right (logo only) */}
+                    {(agent.logoUrl || agent.companyName) && (
+                        <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "8px", padding: "9px 14px" }}>
+                            {agent.logoUrl ? (
                                 <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "28px", maxWidth: "80px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1) opacity(0.9)" }} />
-                                <div style={{ width: "1px", height: "20px", background: "rgba(255,255,255,0.3)" }} />
-                                <p style={{ margin: 0, fontSize: "9px", fontWeight: 800, color: "rgba(255,255,255,0.9)", letterSpacing: "0.12em", textTransform: "uppercase" }}>{agent.companyName}</p>
-                            </div>
-                        ) : (
-                            <p style={{ fontSize: "10px", textTransform: "uppercase", letterSpacing: "5px", margin: "0 0 12px 0", opacity: 0.85, fontWeight: 700 }}>{agent.companyName}</p>
-                        )}
+                            ) : (
+                                <div style={{ width: "26px", height: "26px", borderRadius: "6px", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "12px" }}>
+                                    {(agent.companyName || "T").substring(0, 1).toUpperCase()}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <div style={{ position: "absolute", bottom: "35px", left: "45px", right: "45px", color: "#fff" }}>
                         <h1 style={{ fontSize: "40px", fontWeight: 900, margin: 0, lineHeight: "1.1", textTransform: "uppercase", letterSpacing: "-1px", fontFamily: "'Outfit', sans-serif" }}>{title}</h1>
                     </div>
                 </div>
@@ -476,9 +479,6 @@ export const MinimalistTheme = ({
                 
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "20px", fontSize: "10px", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 700 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        {agent.logoUrl && (
-                            <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "100px", objectFit: "contain", filter: "brightness(0) invert(1) opacity(0.8)" }} />
-                        )}
                         <span style={{ color: "white" }}>{agent.companyName}</span>
                     </div>
                     <span>{new Date().toLocaleDateString()}</span>

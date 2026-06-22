@@ -85,7 +85,7 @@ export const CorporateTheme = ({
             </style>
             {/* Letterhead — cover section */}
             <div data-pdf-section="cover" style={{ paddingBottom: "10px" }}>
-                <div style={{ background: brandColor, padding: "35px 50px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ position: "relative", background: brandColor, padding: "35px 50px", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                         {agent.logoUrl && (
                             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>

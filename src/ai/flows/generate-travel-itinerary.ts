@@ -45,6 +45,23 @@ const TravelItineraryInputSchema = z.object({
     "prefer_night_travel"
   ]).default("no_preference").describe('User preferences for travel timing.'),
   feedback: z.string().max(1000).optional().default('').describe('Actionable feedback from a previous optimization pass to refine the itinerary.'),
+  daywiseDestinations: z.string().max(1000).optional().default('').describe('Agent-specified day-by-day destination or activity plan (e.g. "Day 1: Delhi, Day 2: Agra"). When provided, the AI must follow this plan exactly.'),
+  hotelsText: z.string().optional().default('').describe('Pre-formatted list of hotels/stays selected by the agent for each night.'),
+  hotels: z.array(z.object({
+    id: z.string(),
+    dayIndex: z.number(),
+    name: z.string(),
+    address: z.string().optional(),
+    starRating: z.number().optional(),
+    checkIn: z.string().optional(),
+    checkOut: z.string().optional(),
+    bookingRef: z.string().optional(),
+    nights: z.number().optional(),
+    costAdult: z.number().optional(),
+    costChild: z.number().optional(),
+    costInfant: z.number().optional(),
+    imageUrls: z.array(z.string()).optional(),
+  })).optional().default([]),
 });
 
 export type TravelItineraryInput = z.infer<typeof TravelItineraryInputSchema>;
@@ -98,12 +115,20 @@ export async function generateTravelItinerary(input: TravelItineraryInput): Prom
     'Must Include': input.mustInclude,
     'Avoid': input.avoid,
     'Feedback': input.feedback,
+    'Daywise Destinations': input.daywiseDestinations,
   });
 
   // ── Security: Rate limiting ────────────────────────────────────────────────
   await checkRateLimit(user.id, 'ai_generation');
 
   // ── Security: Sanitize freetext fields ────────────────────────────────────
+  const formattedHotelsText = input.hotels && input.hotels.length > 0
+    ? input.hotels
+        .filter(h => h.name && h.name.trim().length > 0)
+        .map(h => `Night of Day ${h.dayIndex + 1}: ${h.name.trim()}${h.address ? ` (in ${h.address.trim()})` : ''}`)
+        .join('\n')
+    : '';
+
   const sanitizedInput: TravelItineraryInput = {
     ...input,
     startingLocation: sanitizeText(input.startingLocation, 100),
@@ -112,6 +137,8 @@ export async function generateTravelItinerary(input: TravelItineraryInput): Prom
     mustInclude: sanitizeForPrompt(input.mustInclude, 500),
     avoid: sanitizeForPrompt(input.avoid, 500),
     feedback: sanitizeForPrompt(input.feedback, 1000),
+    daywiseDestinations: sanitizeForPrompt(input.daywiseDestinations, 1000),
+    hotelsText: formattedHotelsText,
   };
 
   const { canGenerateItinerary, planType } = await checkSubscriptionAccess(user.id);
@@ -159,6 +186,37 @@ You are an expert travel planner. Generate a detailed, day-by-day travel itinera
   - DO NOT replace a listed destination with a "nearby", "similar", or "more famous" alternative. If the user said "Coorg", plan for Coorg — not Ooty, not Wayanad.
   - The "areaFocus" for every day MUST be one of the stated destinations (or a district/neighbourhood clearly within it).
   - If a destination is unfamiliar to you, still plan EXACTLY for that place — never silently swap it.
+
+{{#if daywiseDestinations}}
+══════════════════════════════════════════════════════
+  RULE 1A — DAY-WISE PLAN (OVERRIDES SCHEDULING DECISIONS)
+══════════════════════════════════════════════════════
+  The agent has provided a specific day-by-day plan. You MUST follow it EXACTLY:
+
+  <agent_daywise_plan>
+{{daywiseDestinations}}
+  </agent_daywise_plan>
+
+  - Each day's "areaFocus" and activities MUST match what is specified for that day in the plan above.
+  - Do NOT reorder days, swap destinations, or deviate from this plan under any circumstances.
+  - If a specific activity is listed for a day, it MUST appear in that day's timeline.
+  - If the plan says "Day 2: Agra", then Day 2's areaFocus MUST be Agra, regardless of any other considerations.
+  - Only fill in scheduling details (times, sequence, meal breaks, transit) around the specified destinations/activities.
+{{/if}}
+
+{{#if hotelsText}}
+══════════════════════════════════════════════════════
+  RULE 1B — AGENT-SPECIFIED STAY / ACCOMMODATION
+══════════════════════════════════════════════════════
+  The agent has specified hotels for this trip. You MUST use these hotels for their respective nights/stays in the timeline:
+
+  <agent_specified_stays>
+{{hotelsText}}
+  </agent_specified_stays>
+
+  - For each night of the trip, output the specified hotel in the final timeline description when check-in/night stay occurs.
+  - Do NOT invent other hotels or names for nights where a hotel is specified above.
+{{/if}}
 
 {{#if travelTimePreference}}
 ══════════════════════════════════════════════════════
