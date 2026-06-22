@@ -1,6 +1,6 @@
 // Multi-step wizard UI wrapping the input form
 import React from 'react';
-import { UseFormReturn } from "react-hook-form";
+import { UseFormReturn, useFieldArray } from "react-hook-form";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Check, ArrowRight, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -191,7 +191,11 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
 const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormValues> }) => {
   const startDate = form.watch("startDate");
   const endDate = form.watch("endDate");
-  const formHotels = form.watch("hotels") || [];
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "hotels",
+  });
 
   const dayCount = React.useMemo(() => {
     if (!startDate || !endDate) return 0;
@@ -204,11 +208,11 @@ const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
   const staySlotsCount = Math.max(0, dayCount - 1);
 
   React.useEffect(() => {
-    if (staySlotsCount > 0 && formHotels.length !== staySlotsCount) {
-      const updatedHotels = [...formHotels];
-      if (updatedHotels.length < staySlotsCount) {
-        for (let i = updatedHotels.length; i < staySlotsCount; i++) {
-          updatedHotels.push({
+    if (staySlotsCount > 0 && fields.length !== staySlotsCount) {
+      if (fields.length < staySlotsCount) {
+        const toAdd = [];
+        for (let i = fields.length; i < staySlotsCount; i++) {
+          toAdd.push({
             id: `h-wiz-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
             dayIndex: i,
             name: "",
@@ -220,31 +224,14 @@ const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
             bookingRef: "",
           });
         }
-      } else if (updatedHotels.length > staySlotsCount) {
-        updatedHotels.splice(staySlotsCount);
+        append(toAdd);
+      } else if (fields.length > staySlotsCount) {
+        for (let i = fields.length - 1; i >= staySlotsCount; i--) {
+          remove(i);
+        }
       }
-      form.setValue("hotels", updatedHotels, { shouldDirty: true });
     }
-  }, [staySlotsCount, formHotels.length]);
-
-  const handleHotelChange = (index: number, field: string, value: any) => {
-    const updated = [...formHotels];
-    if (!updated[index]) {
-      updated[index] = {
-        id: `h-wiz-${Date.now()}-${index}-${Math.random().toString(36).substr(2, 4)}`,
-        dayIndex: index,
-        name: "",
-        address: "",
-        starRating: 3,
-        nights: 1,
-        checkIn: "2:00 PM",
-        checkOut: "11:00 AM",
-        bookingRef: "",
-      };
-    }
-    updated[index] = { ...updated[index], [field]: value };
-    form.setValue("hotels", updated, { shouldDirty: true, shouldValidate: true });
-  };
+  }, [staySlotsCount, fields.length, append, remove]);
 
   if (dayCount <= 1) {
     return (
@@ -265,18 +252,21 @@ const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
       </div>
 
       <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-        {Array.from({ length: staySlotsCount }).map((_, index) => {
+        {fields.map((field, index) => {
           const dayDate = new Date(new Date(startDate).getTime() + index * 24 * 60 * 60 * 1000);
           const formattedDate = format(dayDate, "eee, MMM dd");
-          const hotel = formHotels[index] || { name: "", address: "", starRating: 3 };
+          const hotelRating = form.watch(`hotels.${index}.starRating`) || 3;
 
           return (
-            <div key={index} className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-primary/30 transition-all duration-200 space-y-2">
+            <div key={field.id} className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-primary/30 transition-all duration-200 space-y-2">
               <div className="flex justify-between items-center">
                 <span className="text-[10px] font-bold text-zinc-400">NIGHT {index + 1} ({formattedDate})</span>
                 <div className="flex items-center gap-1">
                   <span className="text-[9px] text-zinc-500 mr-1">Rating:</span>
-                  <StarRating value={hotel.starRating || 3} onChange={(v) => handleHotelChange(index, "starRating", v)} />
+                  <StarRating 
+                    value={hotelRating} 
+                    onChange={(v) => form.setValue(`hotels.${index}.starRating`, v, { shouldDirty: true, shouldValidate: true })} 
+                  />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -284,8 +274,7 @@ const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
                   <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold">Hotel / Stay Name</label>
                   <Input
                     placeholder="e.g., Marriott, Cozy Homestay"
-                    value={hotel.name || ""}
-                    onChange={(e) => handleHotelChange(index, "name", e.target.value)}
+                    {...form.register(`hotels.${index}.name` as const)}
                     className="h-8.5 text-xs border-white/5 bg-white/5 backdrop-blur rounded-lg"
                   />
                 </div>
@@ -293,8 +282,7 @@ const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
                   <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold">City / Place</label>
                   <Input
                     placeholder="e.g., Delhi, Paris"
-                    value={hotel.address || ""}
-                    onChange={(e) => handleHotelChange(index, "address", e.target.value)}
+                    {...form.register(`hotels.${index}.address` as const)}
                     className="h-8.5 text-xs border-white/5 bg-white/5 backdrop-blur rounded-lg"
                   />
                 </div>
