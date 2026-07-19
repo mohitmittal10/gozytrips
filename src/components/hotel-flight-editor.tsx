@@ -18,7 +18,8 @@ import {
 
 export type HotelInfo = {
     id: string;
-    dayIndex: number;
+    dayIndex: number;        // primary day (first selected day, for backward compat)
+    dayIndices?: number[];   // all selected days (undefined = just dayIndex)
     name: string;
     address: string;
     checkIn: string;
@@ -43,6 +44,16 @@ export type FlightInfo = {
     arrivalAirport: string;
     terminal: string;
     pnr: string;
+    layover?: string;
+    flightType?: 'direct' | 'connecting';
+    connectingAirline?: string;
+    connectingFlightNumber?: string;
+    connectingDeparture?: string;
+    connectingArrival?: string;
+    connectingDepartureAirport?: string;
+    connectingArrivalAirport?: string;
+    connectingTerminal?: string;
+    connectingPnr?: string;
     costAdult?: number;
     costChild?: number;
     costInfant?: number;
@@ -79,11 +90,12 @@ let _idCounter = 0;
 const uid = () => `hf-${Date.now()}-${++_idCounter}`;
 
 const emptyHotel = (dayIndex: number): HotelInfo => ({
-    id: uid(), dayIndex, nights: 1, name: "", address: "", checkIn: "2:00 PM", checkOut: "11:00 AM", bookingRef: "", starRating: 3,
+    id: uid(), dayIndex, dayIndices: [dayIndex], nights: 1, name: "", address: "", checkIn: "2:00 PM", checkOut: "11:00 AM", bookingRef: "", starRating: 3,
 });
 
 const emptyFlight = (dayIndex: number): FlightInfo => ({
-    id: uid(), dayIndex, airline: "", flightNumber: "", departure: "", arrival: "", departureAirport: "", arrivalAirport: "", terminal: "", pnr: "",
+    id: uid(), dayIndex, airline: "", flightNumber: "", departure: "", arrival: "", departureAirport: "", arrivalAirport: "", terminal: "", pnr: "", layover: "", flightType: "direct",
+    connectingAirline: "", connectingFlightNumber: "", connectingDeparture: "", connectingArrival: "", connectingDepartureAirport: "", connectingArrivalAirport: "", connectingTerminal: "", connectingPnr: "",
 });
 
 const emptyCab = (dayIndex: number): CabInfo => ({
@@ -156,11 +168,27 @@ function DaySelect({ value, onChange, totalDays }: { value: number; onChange: (v
 
 // ── Cards ──────────────────────────────────────────────────────────────────────
 
-function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed }: {
+function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, occupiedDays = [], onClaimDay }: {
     hotel: HotelInfo; totalDays: number;
     onChange: (updated: HotelInfo) => void; onDelete: () => void;
     isCollapsed?: boolean;
+    occupiedDays?: number[];  // days claimed by other hotels
+    onClaimDay?: (dayIndex: number) => void; // move a taken day to this hotel
 }) {
+    const selectedDays = hotel.dayIndices?.length ? hotel.dayIndices : [hotel.dayIndex];
+
+    const toggleDay = (idx: number) => {
+        const current = new Set(selectedDays);
+        if (current.has(idx)) {
+            if (current.size === 1) return; // must keep at least 1
+            current.delete(idx);
+        } else {
+            current.add(idx);
+        }
+        const sorted = Array.from(current).sort((a, b) => a - b);
+        // nights auto-derived: 1 night per selected day
+        onChange({ ...hotel, dayIndices: sorted, dayIndex: sorted[0], nights: sorted.length });
+    };
     const update = (field: keyof HotelInfo, value: any) =>
         onChange({ ...hotel, [field]: value } as any);
 
@@ -194,8 +222,10 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed }: {
                     <div>
                         <div className="flex items-center gap-2 flex-wrap">
                             <span className="text-sm font-semibold text-white">{hotel.name || "Untitled Hotel"}</span>
-                            <span className="text-[10px] bg-white/5 text-gray-400 px-1.5 py-0.5 rounded">Day {hotel.dayIndex + 1}</span>
-                            <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">{hotel.nights || 1} Nights</span>
+                            {selectedDays.map(d => (
+                                <span key={d} className="text-[10px] bg-white/5 text-gray-400 px-1.5 py-0.5 rounded">Day {d + 1}</span>
+                            ))}
+                            <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">{hotel.nights || 1} Night{(hotel.nights || 1) > 1 ? 's' : ''} each</span>
                         </div>
                         {hotel.address && <p className="text-xs text-gray-400 mt-1">{hotel.address}</p>}
                         <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-500">
@@ -223,22 +253,57 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed }: {
 
     return (
         <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3 group">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Hotel className="w-4 h-4 text-primary" />
-                    <span className="text-sm font-semibold text-primary">Hotel</span>
-                    <DaySelect value={hotel.dayIndex} onChange={(v) => update("dayIndex", v)} totalDays={totalDays} />
-                    <span className="text-sm text-gray-400 ml-2">for</span>
-                    <Input
-                        type="number"
-                        min={1}
-                        value={hotel.nights || 1}
-                        onChange={(e) => update("nights", Math.max(1, parseInt(e.target.value) || 1))}
-                        className="w-16 h-8 text-sm text-center px-1"
-                    />
-                    <span className="text-sm text-gray-400">nights</span>
+            <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-wrap items-center gap-2 flex-1">
+                    <Hotel className="w-4 h-4 text-primary shrink-0" />
+                    <span className="text-sm font-semibold text-primary shrink-0">Hotel — select days:</span>
+                    <div className="flex flex-wrap gap-1.5">
+                        {Array.from({ length: totalDays }, (_, i) => {
+                            const isSelected = selectedDays.includes(i);
+                            const isOccupied = !isSelected && occupiedDays.includes(i);
+                            const isLastSelected = isSelected && selectedDays.length === 1;
+                            return (
+                                <button
+                                    key={i}
+                                    type="button"
+                                    onClick={() => {
+                                        if (isOccupied) {
+                                            onClaimDay?.(i);
+                                        } else {
+                                            toggleDay(i);
+                                        }
+                                    }}
+                                    title={
+                                        isOccupied
+                                            ? 'Click to move this day to this hotel'
+                                            : isLastSelected
+                                                ? 'At least one day must be selected'
+                                                : undefined
+                                    }
+                                    className={cn(
+                                        "px-2 py-0.5 rounded-md text-xs font-semibold border transition-all select-none",
+                                        isSelected
+                                            ? isLastSelected
+                                                ? "bg-primary text-white border-primary cursor-default opacity-80"
+                                                : "bg-primary text-white border-primary shadow-sm shadow-primary/30 cursor-pointer hover:bg-primary/80"
+                                            : isOccupied
+                                                ? "bg-amber-500/10 text-amber-400 border-amber-500/30 cursor-pointer hover:bg-amber-500/20 hover:border-amber-400/60"
+                                                : "bg-white/5 text-gray-400 border-white/10 hover:border-white/30 hover:text-gray-200 cursor-pointer"
+                                    )}
+                                >
+                                    Day {i + 1}
+                                    {isOccupied && <span className="ml-1 text-[9px] font-bold opacity-80">→</span>}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <div className="flex items-center gap-1.5 ml-2 border-l border-white/10 pl-2">
+                        <span className="text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
+                            {selectedDays.length} Night{selectedDays.length !== 1 ? 's' : ''}
+                        </span>
+                    </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 shrink-0">
                     <StarRating value={hotel.starRating} onChange={(v) => update("starRating", v)} />
                     <button onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors">
                         <Trash2 className="w-4 h-4" />
@@ -318,19 +383,50 @@ function FlightCard({ flight, totalDays, onChange, onDelete, isCollapsed }: {
                                 {flight.airline || "Untitled Airline"} {flight.flightNumber}
                             </span>
                             <span className="text-[10px] bg-white/5 text-gray-400 px-1.5 py-0.5 rounded">Day {flight.dayIndex + 1}</span>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-semibold ${flight.flightType === 'connecting' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                                {flight.flightType === 'connecting' ? 'Connecting' : 'Direct'}
+                            </span>
                         </div>
                         <p className="text-xs text-gray-400 mt-1">
                             {flight.departureAirport || "DEP"} → {flight.arrivalAirport || "ARR"}
+                            {flight.flightType === 'connecting' && flight.connectingArrivalAirport && ` → ${flight.connectingArrivalAirport}`}
                             {flight.terminal && <span className="text-gray-500 text-[10px] ml-1.5">(Term: {flight.terminal})</span>}
+                            {flight.flightType === 'connecting' && flight.connectingTerminal && <span className="text-gray-500 text-[10px] ml-1.5">(Conn Term: {flight.connectingTerminal})</span>}
                         </p>
-                        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-500">
-                            <span>Dep: {flight.departure || "N/A"}</span>
-                            <span className="w-1 h-1 rounded-full bg-white/10" />
-                            <span>Arr: {flight.arrival || "N/A"}</span>
+                        <div className="flex items-center gap-3 mt-1.5 text-[11px] text-gray-500 flex-wrap">
+                            {flight.flightType === 'connecting' ? (
+                                <>
+                                    <span>Leg 1: {flight.departure || "N/A"} - {flight.arrival || "N/A"}</span>
+                                    {flight.connectingDeparture && (
+                                        <>
+                                            <span className="w-1 h-1 rounded-full bg-white/10" />
+                                            <span>Leg 2: {flight.connectingDeparture} - {flight.connectingArrival || "N/A"}</span>
+                                        </>
+                                    )}
+                                </>
+                            ) : (
+                                <>
+                                    <span>Dep: {flight.departure || "N/A"}</span>
+                                    <span className="w-1 h-1 rounded-full bg-white/10" />
+                                    <span>Arr: {flight.arrival || "N/A"}</span>
+                                </>
+                            )}
                             {flight.pnr && (
                                 <>
                                     <span className="w-1 h-1 rounded-full bg-white/10" />
                                     <span>PNR: {flight.pnr}</span>
+                                </>
+                            )}
+                            {flight.flightType === 'connecting' && flight.connectingPnr && (
+                                <>
+                                    <span className="w-1 h-1 rounded-full bg-white/10" />
+                                    <span>Conn PNR: {flight.connectingPnr}</span>
+                                </>
+                            )}
+                            {flight.layover && (
+                                <>
+                                    <span className="w-1 h-1 rounded-full bg-white/10" />
+                                    <span>Layover: {flight.layover}</span>
                                 </>
                             )}
                         </div>
@@ -364,8 +460,38 @@ function FlightCard({ flight, totalDays, onChange, onDelete, isCollapsed }: {
                 <Field label="To" value={flight.arrivalAirport} onChange={(v) => update("arrivalAirport", v)} placeholder="BOM — Mumbai" />
                 <Field label="Departure" value={flight.departure} onChange={(v) => update("departure", v)} placeholder="06:30 AM" />
                 <Field label="Arrival" value={flight.arrival} onChange={(v) => update("arrival", v)} placeholder="09:15 AM" />
+                <div className="space-y-1">
+                    <label className="text-[11px] uppercase tracking-wider text-gray-500 font-semibold">Flight Type</label>
+                    <Select value={flight.flightType || "direct"} onValueChange={(v) => update("flightType", v as any)}>
+                        <SelectTrigger className="the-lab-input h-8 text-sm bg-black/20 border-white/10">
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+                            <SelectItem value="direct">Direct</SelectItem>
+                            <SelectItem value="connecting">Connecting</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
                 <Field label="Terminal" value={flight.terminal} onChange={(v) => update("terminal", v)} placeholder="T3" />
-                <Field label="PNR" value={flight.pnr} onChange={(v) => update("pnr", v)} placeholder="ABC123" />
+                <Field label="PNR" value={flight.pnr} onChange={(v) => update("pnr", v)} placeholder="ABC123" className="col-span-2" />
+                {flight.flightType === 'connecting' && (
+                    <Field label="Layover" value={flight.layover} onChange={(v) => update("layover", v)} placeholder="e.g. 2h 15m in BOM" className="col-span-2" />
+                )}
+                {flight.flightType === 'connecting' && (
+                    <div className="col-span-2 space-y-3 pt-2 border-t border-white/5 mt-2!">
+                        <label className="text-xs font-semibold text-primary">Connecting Flight Leg Details</label>
+                        <div className="grid grid-cols-2 gap-3">
+                            <Field label="Connecting Airline" value={flight.connectingAirline} onChange={(v) => update("connectingAirline", v)} placeholder="e.g. Emirates" />
+                            <Field label="Connecting Flight No." value={flight.connectingFlightNumber} onChange={(v) => update("connectingFlightNumber", v)} placeholder="e.g. EK 501" />
+                            <Field label="Connecting From" value={flight.connectingDepartureAirport} onChange={(v) => update("connectingDepartureAirport", v)} placeholder="e.g. DXB" />
+                            <Field label="Connecting To" value={flight.connectingArrivalAirport} onChange={(v) => update("connectingArrivalAirport", v)} placeholder="e.g. LHR" />
+                            <Field label="Connecting Departure" value={flight.connectingDeparture} onChange={(v) => update("connectingDeparture", v)} placeholder="e.g. 02:15 PM" />
+                            <Field label="Connecting Arrival" value={flight.connectingArrival} onChange={(v) => update("connectingArrival", v)} placeholder="e.g. 06:40 PM" />
+                            <Field label="Connecting Terminal" value={flight.connectingTerminal} onChange={(v) => update("connectingTerminal", v)} placeholder="e.g. T3" />
+                            <Field label="Connecting PNR" value={flight.connectingPnr} onChange={(v) => update("connectingPnr", v)} placeholder="e.g. XYZ987" />
+                        </div>
+                    </div>
+                )}
             </div>
             <div className="pt-2 border-t border-white/5 space-y-2 mt-2!">
                 <label className="text-xs font-semibold text-gray-400">Costs (Optional)</label>
@@ -583,6 +709,23 @@ export default function HotelFlightEditor({
 
     const updateHotel = (id: string, updated: HotelInfo) =>
         onHotelsChange(hotels.map((h) => (h.id === id ? updated : h)));
+
+    // Atomically move a day from whatever hotel owns it to the target hotel
+    const claimDay = (targetHotelId: string, dayIdx: number) => {
+        onHotelsChange(hotels.map((h) => {
+            const days = h.dayIndices?.length ? h.dayIndices : [h.dayIndex];
+            if (h.id === targetHotelId) {
+                const sorted = [...new Set([...days, dayIdx])].sort((a, b) => a - b);
+                return { ...h, dayIndices: sorted, dayIndex: sorted[0], nights: sorted.length };
+            } else if (days.includes(dayIdx)) {
+                const remaining = days.filter(d => d !== dayIdx);
+                if (remaining.length === 0) return h; // can't strip last day — keep as-is
+                return { ...h, dayIndices: remaining, dayIndex: remaining[0], nights: remaining.length };
+            }
+            return h;
+        }));
+    };
+
     const updateFlight = (id: string, updated: FlightInfo) =>
         onFlightsChange(flights.map((f) => (f.id === id ? updated : f)));
     const updateCab = (id: string, updated: CabInfo) =>
@@ -699,16 +842,23 @@ export default function HotelFlightEditor({
             >
                 <div className="p-6 lg:p-8">
                     <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar min-h-[200px]">
-                        {selectedEditorTab === "hotels" && hotels.map((hotel) => (
-                            <HotelCard
-                                key={hotel.id}
-                                hotel={hotel}
-                                totalDays={totalDays}
-                                onChange={(updated) => updateHotel(hotel.id, updated)}
-                                onDelete={() => deleteHotel(hotel.id)}
-                                isCollapsed={isCollapsed}
-                            />
-                        ))}
+                        {selectedEditorTab === "hotels" && hotels.map((hotel) => {
+                            const occupiedDays = hotels
+                                .filter(h => h.id !== hotel.id)
+                                .flatMap(h => h.dayIndices?.length ? h.dayIndices : [h.dayIndex]);
+                            return (
+                                <HotelCard
+                                    key={hotel.id}
+                                    hotel={hotel}
+                                    totalDays={totalDays}
+                                    onChange={(updated) => updateHotel(hotel.id, updated)}
+                                    onDelete={() => deleteHotel(hotel.id)}
+                                    isCollapsed={isCollapsed}
+                                    occupiedDays={occupiedDays}
+                                    onClaimDay={(dayIdx) => claimDay(hotel.id, dayIdx)}
+                                />
+                            );
+                        })}
 
                         {selectedEditorTab === "flights" && flights.map((flight) => (
                             <FlightCard

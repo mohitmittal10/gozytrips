@@ -66,6 +66,7 @@ export const formSchema = z.object({
   hotels: z.array(z.object({
     id: z.string(),
     dayIndex: z.number(),
+    dayIndices: z.array(z.number()).optional(),
     name: z.string(),
     address: z.string().optional(),
     checkIn: z.string().optional(),

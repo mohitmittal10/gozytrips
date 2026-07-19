@@ -4,7 +4,7 @@ import type { HotelInfo, FlightInfo } from '@/components/hotel-flight-editor';
 import type { PdfTheme } from './theme-config';
 import { formatMoneyWithDecimals } from '@/lib/utils/currency';
 import { formatPlural, getAgentInfo, formatDate, formatTitleCase } from './utils';
-import { PdfFlightBlock, PdfHotelBlock, type PdfLogisticsBlockStyle } from './shared-blocks';
+import { PdfFlightBlock, PdfHotelBlock, type PdfLogisticsBlockStyle, groupHotelsByName } from './shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
 
@@ -416,7 +416,7 @@ export const PdfFlightAndHotelSummary = ({ flights, hotels, accentColor, theme }
             {hotels && hotels.length > 0 && (
                 <div>
                     <h3 style={{ fontSize: "20px", color: styles.sectionHeadingColor, marginBottom: "15px", fontWeight: "bold" }}>Hotel Details</h3>
-                    {hotels.map((hotel, hi) => (
+                    {groupHotelsByName(hotels).map((hotel, hi) => (
                         <PdfHotelBlock key={hi} hotel={hotel} accentColor={accentColor} textColor={styles.textColor} styleVariant={styles.blockStyle} />
                     ))}
                 </div>

@@ -1,6 +1,6 @@
-// Thin wrapper over PdfPreviewEditor hiding complex dependencies from orchestrator
-import React from 'react';
-import { PdfPreviewEditor } from "@/components/pdf-preview-editor";
+// Thin wrapper over PdfPreviewEditor — forwards ref so parent can call preRender()
+import React, { forwardRef } from 'react';
+import { PdfPreviewEditor, type PdfPreviewEditorRef } from "@/components/pdf-preview-editor";
 import { useAuth } from "@/contexts/auth-context";
 import { type PdfTheme } from "@/components/pdf-template";
 
@@ -28,61 +28,65 @@ interface TheLabPdfPreviewProps {
   onThemeChange?: (theme: PdfTheme) => void;
 }
 
-export function TheLabPdfPreview({
-  isPreviewOpen,
-  setIsPreviewOpen,
-  itinerary,
-  hotels,
-  flights,
-  pricing,
-  baseCost,
-  tripTitle,
-  clientName,
-  showTimestamps,
-  inclusions,
-  exclusions,
-  termsAndConditions,
-  cancellationPolicy,
-  paymentMethods,
-  agencySettings,
-  itineraryId,
-  pdfOverrides,
-  onPdfOverridesChange,
-  theme,
-  onThemeChange,
-}: TheLabPdfPreviewProps) {
-  const { userProfile } = useAuth();
+export const TheLabPdfPreview = forwardRef<PdfPreviewEditorRef, TheLabPdfPreviewProps>(
+  function TheLabPdfPreview(
+    {
+      isPreviewOpen,
+      setIsPreviewOpen,
+      itinerary,
+      hotels,
+      flights,
+      pricing,
+      baseCost,
+      tripTitle,
+      clientName,
+      showTimestamps,
+      inclusions,
+      exclusions,
+      termsAndConditions,
+      cancellationPolicy,
+      paymentMethods,
+      agencySettings,
+      itineraryId,
+      pdfOverrides,
+      onPdfOverridesChange,
+      theme,
+      onThemeChange,
+    },
+    ref
+  ) {
+    const { userProfile } = useAuth();
 
-  return (
-    <PdfPreviewEditor
-      isOpen={isPreviewOpen}
-      onOpenChange={setIsPreviewOpen}
-      templateProps={{
-        itinerary,
-        title: tripTitle,
-        clientName,
-        userProfile,
-        hotels,
-        flights,
-        pricing,
-        baseCost,
-        showTimestamps,
-        inclusions,
-        exclusions,
-        termsAndConditions,
-        cancellationPolicy,
-        paymentMethods,
-        agencySettings,
-      }}
-      initialTheme={theme}
-      theme={theme}
-      onThemeChange={onThemeChange}
-      itineraryId={itineraryId || undefined}
-      pdfOverrides={pdfOverrides}
-      onPdfOverridesChange={onPdfOverridesChange}
-      filename="WanderLabs_Itinerary.pdf"
-    />
-  );
-}
-
-
+    return (
+      <PdfPreviewEditor
+        ref={ref}
+        isOpen={isPreviewOpen}
+        onOpenChange={setIsPreviewOpen}
+        templateProps={{
+          itinerary,
+          title: tripTitle,
+          clientName,
+          userProfile,
+          hotels,
+          flights,
+          pricing,
+          baseCost,
+          showTimestamps,
+          inclusions,
+          exclusions,
+          termsAndConditions,
+          cancellationPolicy,
+          paymentMethods,
+          agencySettings,
+        }}
+        initialTheme={theme}
+        theme={theme}
+        onThemeChange={onThemeChange}
+        itineraryId={itineraryId || undefined}
+        pdfOverrides={pdfOverrides}
+        onPdfOverridesChange={onPdfOverridesChange}
+        filename="WanderLabs_Itinerary.pdf"
+      />
+    );
+  }
+);

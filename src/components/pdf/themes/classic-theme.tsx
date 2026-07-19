@@ -6,6 +6,7 @@ import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getAgentInfo, getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { getThematicBackground, glassStyles } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
+import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 
 export type ThemeProps = {
@@ -303,12 +304,12 @@ export const ClassicTheme = ({
                     <h2 style={{ margin: "0 0 30px 0", fontSize: "28px", color: "#0f172a", fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-0.5px" }}>Travel & Logistics</h2>
                     
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
-                        {hotels.map((h, i) => (
+                        {groupHotelsByName(hotels).map((h, i) => (
                             <div key={`hotel-${i}`} style={{ ...glassStyles, borderRadius: "16px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
                                 <img src={h.imageUrls?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop'} alt={h.name} style={{ width: "100%", height: "160px", objectFit: "cover" }} crossOrigin="anonymous" />
                                 <div style={{ padding: "24px" }}>
                                     <h4 style={{ margin: "0 0 4px 0", fontSize: "18px", color: "#0f172a", fontWeight: 800 }}>{h.name}</h4>
-                                    <div style={{ color: agent.primaryColor, fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>🏨 Hotel • Day {h.dayIndex + 1}</div>
+                                    <div style={{ color: agent.primaryColor, fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>🏨 Hotel • {formatHotelStays(h.stays)}</div>
                                     <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
                                         <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Check-in</span><span style={{ fontWeight: 600 }}>{h.checkIn}</span></div>
                                         <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Check-out</span><span style={{ fontWeight: 600 }}>{h.checkOut}</span></div>
@@ -321,11 +322,21 @@ export const ClassicTheme = ({
                             <div key={`flight-${i}`} style={{ ...glassStyles, borderRadius: "16px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
                                 <div style={{ height: "160px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: "40px" }}>✈️</span></div>
                                 <div style={{ padding: "24px" }}>
-                                    <h4 style={{ margin: "0 0 4px 0", fontSize: "18px", color: "#0f172a", fontWeight: 800 }}>{f.airline}</h4>
+                                    <h4 style={{ margin: "0 0 4px 0", fontSize: "18px", color: "#0f172a", fontWeight: 800 }}>{f.airline} {f.flightNumber}</h4>
                                     <div style={{ color: agent.primaryColor, fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>Flight • Day {f.dayIndex + 1}</div>
                                     <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
                                         <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Route</span><span style={{ fontWeight: 600 }}>{f.departureAirport} → {f.arrivalAirport}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Departure</span><span style={{ fontWeight: 600 }}>{f.departure}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Type</span><span style={{ fontWeight: 600 }}>{f.flightType === 'connecting' ? 'Connecting' : 'Direct'}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Departure / Arrival</span><span style={{ fontWeight: 600 }}>{f.departure} – {f.arrival}</span></div>
+                                        {f.layover && <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Layover</span><span style={{ fontWeight: 600, color: "#f59e0b" }}>{f.layover}</span></div>}
+                                        {f.flightType === 'connecting' && f.connectingDepartureAirport && (
+                                            <>
+                                                <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Connecting Route</span><span style={{ fontWeight: 600 }}>{f.connectingDepartureAirport} → {f.connectingArrivalAirport}</span></div>
+                                                <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Connecting Flight</span><span style={{ fontWeight: 600 }}>{f.connectingAirline} {f.connectingFlightNumber}</span></div>
+                                                <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Connecting Time</span><span style={{ fontWeight: 600 }}>{f.connectingDeparture} – {f.connectingArrival}</span></div>
+                                                {f.connectingPnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Connecting PNR</span><span style={{ fontWeight: 600 }}>{f.connectingPnr}</span></div>}
+                                            </>
+                                        )}
                                         {f.pnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>PNR</span><span style={{ fontWeight: 600 }}>{f.pnr}</span></div>}
                                     </div>
                                 </div>
@@ -511,6 +522,14 @@ export const ClassicTheme = ({
                             </div>
                         </div>
                     </div>
+                    {termsAndConditions && (
+                        <div style={{ marginTop: "32px", borderTop: "1px solid #e2e8f0", paddingTop: "24px" }}>
+                            <h3 style={{ margin: "0 0 12px 0", fontSize: "14px", color: "#0f172a", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Terms & Conditions</h3>
+                            <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.6" }}>
+                                {parseList(termsAndConditions).map((p, i) => <div key={i}>• {p}</div>)}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -545,10 +564,21 @@ export const ClassicTheme = ({
                         </div>
                     </>
                 )}
-                <div style={{ textAlign: "center", marginTop: "60px", paddingTop: "40px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-                    <div style={{ fontSize: "22px", fontWeight: 900, marginBottom: "8px", background: `linear-gradient(to right, ${agent.primaryColor || "#a855f7"}, #ec4899)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontFamily: "'Outfit', sans-serif" }}>{agent.companyName}</div>
-                    <p style={{ margin: "0 0 6px 0", color: "#94a3b8", fontSize: "13px", fontWeight: 500 }}>Bespoke Travel Solutions</p>
-                    <p style={{ margin: 0, color: "#475569", fontSize: "11px" }}>Generated on {new Date().toLocaleDateString()} • Designed in The Lab</p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "60px", paddingTop: "40px", borderTop: "1px solid rgba(255,255,255,0.1)", flexWrap: "wrap", gap: "24px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <div style={{ fontSize: "24px", fontWeight: 900, background: `linear-gradient(to right, ${agent.primaryColor || "#a855f7"}, #ec4899)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontFamily: "'Outfit', sans-serif" }}>{agent.companyName}</div>
+                        <p style={{ margin: "4px 0 0 0", color: "#94a3b8", fontSize: "13px", fontWeight: 600 }}>Bespoke Travel Solutions</p>
+                        <p style={{ margin: "2px 0 0 0", color: "#64748b", fontSize: "11px" }}>Curated by {agent.agentName}</p>
+                    </div>
+                    
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-end", textAlign: "right" }}>
+                        {agent.agentPhone && <p style={{ margin: 0, color: "#cbd5e1", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}><span>📞</span> {agent.agentPhone}</p>}
+                        {agent.agentEmail && <p style={{ margin: 0, color: "#cbd5e1", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}><span>✉️</span> {agent.agentEmail}</p>}
+                        {agent.agentWebsite && <p style={{ margin: 0, color: agent.primaryColor || "#a855f7", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}><span>🌐</span> {agent.agentWebsite}</p>}
+                    </div>
+                </div>
+                <div style={{ textAlign: "center", marginTop: "30px", fontSize: "10px", color: "#475569" }}>
+                    Generated on {new Date().toLocaleDateString()} • Designed in The Lab
                 </div>
             </div>
         </div>

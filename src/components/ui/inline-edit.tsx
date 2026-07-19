@@ -12,6 +12,7 @@ interface InlineEditProps {
   multiline?: boolean;
   placeholder?: string;
   onEditStart?: () => void;
+  disabled?: boolean;
 }
 
 export function InlineEdit({
@@ -22,6 +23,7 @@ export function InlineEdit({
   multiline = false,
   placeholder = "Enter text...",
   onEditStart,
+  disabled = false,
 }: InlineEditProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -62,9 +64,16 @@ export function InlineEdit({
   };
 
   if (!editing) {
+    if (disabled) {
+      return <span className={className}>{value}</span>;
+    }
+
     return (
       <span
-        className={cn("group/edit cursor-pointer inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-colors hover:bg-primary/10", className)}
+        className={cn(
+          "group/edit cursor-pointer inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-colors hover:bg-primary/10 border-b border-dashed border-zinc-700/60 hover:border-primary/50",
+          className
+        )}
         onClick={() => {
           if (onEditStart) onEditStart();
           setEditing(true);

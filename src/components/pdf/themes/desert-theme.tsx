@@ -4,6 +4,7 @@ import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDate } from '../utils';
 import { PdfDaywiseIndex } from '../pages';
+import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 
 const parseList = (text?: string) => {
@@ -56,7 +57,7 @@ export const DesertFooter = ({ agent, agencySettings }: { agent: ThemeProps["age
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
             <div style={{ width: "100%", maxWidth: "920px", background: "#e6d5c3", borderRadius: "24px", padding: "56px 48px", textAlign: "center", boxShadow: "0 18px 45px rgba(17,24,39,0.08)" }}>
                 <h2 style={{ margin: "0 0 14px 0", fontSize: "36px", color: "#433429", fontWeight: 500 }}>
-                    Contact {agent.companyName}
+                     {agent.companyName}
                 </h2>
                 <p style={{ margin: "0 auto 34px auto", maxWidth: "540px", fontSize: "16px", lineHeight: "1.9", color: "rgba(67,52,41,0.72)", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                     {getAgencyNarrative(agent)}
@@ -66,6 +67,7 @@ export const DesertFooter = ({ agent, agencySettings }: { agent: ThemeProps["age
                     {agent.agentEmail && <p style={{ margin: 0, fontSize: "16px", color: "rgba(67,52,41,0.7)" }}>{agent.agentEmail}</p>}
                     {agent.agentWebsite && <p style={{ margin: 0, fontSize: "16px", color: "rgba(67,52,41,0.7)" }}>{agent.agentWebsite}</p>}
                     {!agent.agentPhone && !agent.agentEmail && !agent.agentWebsite && <p style={{ margin: 0, fontSize: "16px", color: "rgba(67,52,41,0.7)" }}>Contact details will appear here from your profile settings.</p>}
+                    <p style={{ margin: "16px 0 0 0", fontSize: "13px", color: "rgba(67,52,41,0.6)", fontWeight: 600 }}>Curated by {agent.agentName}</p>
                 </div>
                 
                 {(agencySettings?.bankAccountNumber || agencySettings?.gstNumber || agencySettings?.upiId) && (
@@ -96,6 +98,10 @@ export const DesertFooter = ({ agent, agencySettings }: { agent: ThemeProps["age
                         )}
                     </div>
                 )}
+                
+                <div style={{ textAlign: "center", marginTop: "40px", paddingTop: "20px", borderTop: "1px solid rgba(67,52,41,0.15)", fontSize: "11px", color: "rgba(67,52,41,0.5)" }}>
+                    Generated on {new Date().toLocaleDateString()} • Designed in The Lab
+                </div>
             </div>
         </div>
     </section>
@@ -344,13 +350,15 @@ export const DesertTheme = ({
                     </div>
                     
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "40px", maxWidth: "1000px", margin: "0 auto" }}>
-                        {hotels.map((h, i) => (
+                        {groupHotelsByName(hotels).map((h, i) => (
                             <div key={`hotel-${i}`} style={{ display: "flex", gap: "24px", background: "#ffffff", border: "1px solid #f3e8d8", padding: "24px", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
                                 <div style={{ flexShrink: 0 }}>
                                     <img src={h.imageUrls?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop'} alt={h.name} style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "8px" }} crossOrigin="anonymous" />
                                 </div>
                                 <div style={{ flex: 1, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                                    <div style={{ color: "#fb923c", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "8px" }}>Hotel • Day {h.dayIndex + 1}</div>
+                                    <div style={{ color: "#fb923c", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "8px" }}>
+                                        Hotel • {formatHotelStays(h.stays)}
+                                    </div>
                                     <h4 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1f2937", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>{h.name}</h4>
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px", fontSize: "13px", color: "#6b7280" }}>
                                         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Check-in</span><span style={{ fontWeight: 600, color: "#374151" }}>{h.checkIn}</span></div>
@@ -365,10 +373,20 @@ export const DesertTheme = ({
                                 <div style={{ width: "100px", height: "100px", background: "#fcfaf7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", borderRadius: "8px" }}>✈️</div>
                                 <div style={{ flex: 1, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     <div style={{ color: "#fb923c", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "8px" }}>Flight • Day {f.dayIndex + 1}</div>
-                                    <h4 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1f2937", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>{f.airline}</h4>
+                                    <h4 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1f2937", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>{f.airline} {f.flightNumber}</h4>
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px", fontSize: "13px", color: "#6b7280" }}>
                                         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Route</span><span style={{ fontWeight: 600, color: "#374151" }}>{f.departureAirport} → {f.arrivalAirport}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Departure</span><span style={{ fontWeight: 600, color: "#374151" }}>{f.departure}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Type</span><span style={{ fontWeight: 600, color: "#374151" }}>{f.flightType === 'connecting' ? 'Connecting' : 'Direct'}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Departure / Arrival</span><span style={{ fontWeight: 600, color: "#374151" }}>{f.departure} – {f.arrival}</span></div>
+                                        {f.layover && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Layover</span><span style={{ fontWeight: 600, color: "#f59e0b" }}>{f.layover}</span></div>}
+                                        {f.flightType === 'connecting' && f.connectingDepartureAirport && (
+                                            <>
+                                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Connecting Route</span><span style={{ fontWeight: 600, color: "#374151" }}>{f.connectingDepartureAirport} → {f.connectingArrivalAirport}</span></div>
+                                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Connecting Flight</span><span style={{ fontWeight: 600, color: "#374151" }}>{f.connectingAirline} {f.connectingFlightNumber}</span></div>
+                                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Connecting Time</span><span style={{ fontWeight: 600, color: "#374151" }}>{f.connectingDeparture} – {f.connectingArrival}</span></div>
+                                                {f.connectingPnr && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Connecting PNR</span><span style={{ fontWeight: 600, color: "#b48b63" }}>{f.connectingPnr}</span></div>}
+                                            </>
+                                        )}
                                         {f.pnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span>PNR</span><span style={{ fontWeight: 600, color: "#b48b63" }}>{f.pnr}</span></div>}
                                     </div>
                                 </div>
@@ -434,7 +452,7 @@ export const DesertTheme = ({
             <section data-pdf-section="pricing" style={{ padding: "88px 64px", background: "#ffffff" }}>
                 <div style={{ textAlign: "center", marginBottom: "60px", pageBreakInside: "avoid", breakInside: "avoid" }}>
                     <p style={{ margin: "0 0 16px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "4px", color: "#b48b63", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Commercials</p>
-                    <h2 style={{ margin: 0, fontSize: "40px", color: "#111827", fontWeight: 500 }}>Investment Summary</h2>
+                    <h2 style={{ margin: 0, fontSize: "40px", color: "#111827", fontWeight: 500 }}>Payment Summary</h2>
                 </div>
 
                 <div style={{ maxWidth: "1000px", margin: "0 auto", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
@@ -544,20 +562,29 @@ export const DesertTheme = ({
                     {/* Policies & Methods — below, side by side */}
                     <div style={{ display: "flex", gap: "40px" }}>
                         <div style={{ flex: 1, background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
-                            <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Terms & Policies</h3>
+                            <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Cancellation Policy</h3>
                             <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
                                 {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
                             </div>
                         </div>
                         <div style={{ flex: 1, background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
-                            <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Accepted Methods</h3>
+                            <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Accepted Payment Methods</h3>
                             <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
                                 {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
                             </div>
                         </div>
                     </div>
+                    {termsAndConditions && (
+                        <div style={{ marginTop: "32px", background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
+                            <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Terms & Conditions</h3>
+                            <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
+                                {parseList(termsAndConditions).map((p, i) => <div key={i}>• {p}</div>)}
+                            </div>
+                        </div>
+                    )}
                 </div>
             </section>
+            <DesertFooter agent={agent} agencySettings={agencySettings} />
         </div>
     );
 };

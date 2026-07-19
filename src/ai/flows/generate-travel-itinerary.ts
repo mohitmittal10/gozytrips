@@ -145,7 +145,9 @@ export async function generateTravelItinerary(input: TravelItineraryInput): Prom
   const isAllowed = await canGenerateItinerary();
 
   if (!isAllowed) {
-    throw new Error(`Plan limit reached: Your ${planType} plan has reached its monthly AI itinerary limit. Please upgrade to Pro for unlimited generations.`);
+    const err = new Error(`Plan limit reached: Your ${planType} plan has reached its monthly AI itinerary limit. Please upgrade to Pro for unlimited generations.`);
+    (err as any).code = 'PLAN_LIMIT_REACHED';
+    throw err;
   }
 
   console.log('Input keys:', Object.keys(sanitizedInput));

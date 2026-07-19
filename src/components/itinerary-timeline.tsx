@@ -5,7 +5,7 @@ import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from "@/components/hotel
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Trash2, Plus, Minus, Sparkles } from "lucide-react";
+import { Trash2, Plus, Minus, Sparkles, Plane, Hotel, Car, Bus } from "lucide-react";
 import { useState, useCallback, useContext, useEffect } from "react";
 import { CustomTabs } from "@/components/ui/custom-tabs";
 import { ItineraryContext } from "@/contexts/itinerary-context";
@@ -164,6 +164,7 @@ function SortableActivity({
                       className="text-[10px] font-black text-primary tracking-widest uppercase block mt-0.5"
                       inputClassName="text-[10px] font-black"
                       placeholder="e.g. 08:00 AM"
+                      disabled={!isEditable}
                     />
                   ) : <div className="text-[10px] font-black text-primary tracking-widest uppercase opacity-0 mt-0.5">-</div>}
                   
@@ -176,6 +177,7 @@ function SortableActivity({
                   className="text-slate-300 text-[13px] leading-tight mb-2 font-medium block"
                   multiline
                   placeholder="Activity description..."
+                  disabled={!isEditable}
                 />
               </div>
             </div>
@@ -532,6 +534,18 @@ const ItineraryTimeline = ({
         )}
       </div>
 
+      {editable && (
+        <div className="mb-6 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5 text-zinc-300 text-xs sm:text-sm flex items-center gap-2.5 animate-in fade-in duration-300">
+          <span className="flex h-2 w-2 relative shrink-0">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+          </span>
+          <span>
+            <strong className="text-primary font-bold">Edit Mode Active:</strong> Click directly on any day title, activity details, or time to edit them inline. Drag cards to reorder. All changes are saved automatically.
+          </span>
+        </div>
+      )}
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -666,72 +680,215 @@ const ItineraryTimeline = ({
       {/* Global Logistics Summary */}
       {(flights.length > 0 || hotels.length > 0 || cabs.length > 0 || buses.length > 0) && (
         <div className="relative flex items-start gap-6 sm:gap-12 mt-16 sm:flex-row">
-
           <div className="flex-1">
-            <Card className="glass-card overflow-hidden">
-              <CardHeader className="bg-white/5">
-                <CardTitle className="font-headline text-3xl text-primary">Travel Logistics Summary</CardTitle>
+            <Card className="overflow-hidden border border-white/[0.08] bg-zinc-950/70 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl">
+              <CardHeader className="bg-white/[0.02] border-b border-white/[0.08] px-6 py-5">
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <CardTitle className="font-headline text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-orange-500">
+                      Trip Logistics Overview
+                    </CardTitle>
+                  </div>
+                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest pl-4">
+                    complete travel plan at a glance
+                  </p>
+                </div>
               </CardHeader>
-              <CardContent className="py-6">
-                <div className="mb-6">
-                  <CustomTabs
-                    selected={selectedLogisticsTab}
-                    setSelected={setSelectedLogisticsTab}
-                    tabs={[
-                      ...(flights.length > 0 ? [{
-                        title: `Flights (${flights.length})`,
-                        value: "flights",
-                        icon: selectedLogisticsTab === "flights" ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />
-                      }] : []),
-                      ...(hotels.length > 0 ? [{
-                        title: `Hotels (${hotels.length})`,
-                        value: "hotels",
-                        icon: selectedLogisticsTab === "hotels" ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />
-                      }] : []),
-                      ...(cabs.length > 0 ? [{
-                        title: `Cabs (${cabs.length})`,
-                        value: "cabs",
-                        icon: selectedLogisticsTab === "cabs" ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />
-                      }] : []),
-                      ...(buses.length > 0 ? [{
-                        title: `Buses (${buses.length})`,
-                        value: "buses",
-                        icon: selectedLogisticsTab === "buses" ? <Minus className="w-4 h-4" /> : <Plus className="w-4 h-4" />
-                      }] : [])
-                    ]}
-                  />
-                </div>
-                
-                <div className="space-y-8 min-h-[100px]">
-                  {selectedLogisticsTab === "flights" && flights.length > 0 && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              <CardContent className="p-6 space-y-8">
+                {/* FLIGHT DETAILS */}
+                {flights.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2.5 border-b border-white/[0.08] pb-3">
+                      <div className="p-1.5 bg-primary/10 text-primary rounded-lg border border-primary/20">
+                        <Plane className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-xs font-bold text-zinc-400 tracking-widest uppercase">Flight Details</h4>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
                       {flights.map(flight => (
-                        <FlightBanner key={flight.id} flight={flight} />
+                        <div 
+                          key={flight.id} 
+                          className="group relative p-4 rounded-xl border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/30 hover:shadow-[0_0_12px_rgba(255,92,51,0.04)] transition-all duration-300 flex flex-col gap-2.5"
+                        >
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <div className="font-semibold text-zinc-100 text-sm group-hover:text-primary transition-colors">
+                                {flight.airline || "Airline"} {flight.flightNumber}
+                              </div>
+                              <span className={`text-[9px] px-1.5 py-0.5 rounded font-semibold ${flight.flightType === 'connecting' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                                {flight.flightType === 'connecting' ? 'Connecting' : 'Direct'}
+                              </span>
+                            </div>
+                            {flight.pnr && (
+                              <div className="text-[9px] font-black tracking-wider px-2 py-0.5 bg-zinc-800 text-zinc-300 border border-zinc-700/50 rounded uppercase whitespace-nowrap">
+                                PNR: {flight.pnr}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xs text-zinc-400 leading-relaxed font-medium space-y-1.5">
+                            <div>
+                              <span className="text-zinc-300 font-semibold">{flight.flightType === 'connecting' ? 'Leg 1: ' : ''}{flight.departureAirport || "DEP"} → {flight.arrivalAirport || "ARR"}</span>
+                              <span className="mx-2 text-zinc-600">|</span>
+                              <span>{flight.departure} – {flight.arrival}</span>
+                              {flight.terminal && (
+                                <>
+                                  <span className="mx-2 text-zinc-600">|</span>
+                                  <span className="text-zinc-500">Term: {flight.terminal}</span>
+                                </>
+                              )}
+                            </div>
+                            {flight.flightType === 'connecting' && flight.connectingDepartureAirport && (
+                              <div className="pt-1.5 border-t border-white/[0.04]">
+                                <span className="text-zinc-300 font-semibold">Leg 2: {flight.connectingDepartureAirport} → {flight.connectingArrivalAirport || "ARR"}</span>
+                                <span className="mx-2 text-zinc-600">|</span>
+                                <span>{flight.connectingDeparture} – {flight.connectingArrival || "N/A"}</span>
+                                {flight.connectingAirline && (
+                                  <>
+                                    <span className="mx-2 text-zinc-600">|</span>
+                                    <span>{flight.connectingAirline} {flight.connectingFlightNumber}</span>
+                                  </>
+                                )}
+                                {flight.connectingTerminal && (
+                                  <>
+                                    <span className="mx-2 text-zinc-600">|</span>
+                                    <span className="text-zinc-500">Term: {flight.connectingTerminal}</span>
+                                  </>
+                                )}
+                                {flight.connectingPnr && (
+                                  <>
+                                    <span className="mx-2 text-zinc-600">|</span>
+                                    <span className="text-zinc-400">PNR: {flight.connectingPnr}</span>
+                                  </>
+                                )}
+                              </div>
+                            )}
+                            {flight.layover && (
+                              <div className="text-amber-500/90 font-semibold bg-amber-500/5 px-2 py-0.5 rounded w-fit border border-amber-500/10">
+                                Layover: {flight.layover}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       ))}
                     </div>
-                  )}
-                  {selectedLogisticsTab === "hotels" && hotels.length > 0 && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  </div>
+                )}
+
+                {/* HOTEL DETAILS */}
+                {hotels.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2.5 border-b border-white/[0.08] pb-3">
+                      <div className="p-1.5 bg-primary/10 text-primary rounded-lg border border-primary/20">
+                        <Hotel className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-xs font-bold text-zinc-400 tracking-widest uppercase">Hotel Details</h4>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
                       {hotels.map(hotel => (
-                        <HotelBanner key={hotel.id} hotel={hotel} />
+                        <div 
+                          key={hotel.id} 
+                          className="group relative p-4 rounded-xl border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/30 hover:shadow-[0_0_12px_rgba(255,92,51,0.04)] transition-all duration-300 flex flex-col gap-2.5"
+                        >
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="font-semibold text-zinc-100 text-sm group-hover:text-primary transition-colors">
+                              {hotel.name || "Hotel"}
+                            </div>
+                            {hotel.bookingRef && (
+                              <div className="text-[9px] font-black tracking-wider px-2 py-0.5 bg-zinc-800 text-zinc-300 border border-zinc-700/50 rounded uppercase whitespace-nowrap">
+                                Ref: {hotel.bookingRef}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xs text-zinc-400 leading-relaxed font-medium flex flex-col gap-1.5">
+                            <div className="truncate text-zinc-300">{hotel.address || "Address not provided"}</div>
+                            <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-semibold bg-black/20 py-1 px-2 rounded w-fit border border-white/[0.02]">
+                              <span>Check-in: <span className="text-zinc-300">{hotel.checkIn}</span></span>
+                              <span className="text-zinc-700">•</span>
+                              <span>Check-out: <span className="text-zinc-300">{hotel.checkOut}</span></span>
+                            </div>
+                          </div>
+                        </div>
                       ))}
                     </div>
-                  )}
-                  {selectedLogisticsTab === "cabs" && cabs.length > 0 && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  </div>
+                )}
+
+                {/* CAB DETAILS */}
+                {cabs.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2.5 border-b border-white/[0.08] pb-3">
+                      <div className="p-1.5 bg-primary/10 text-primary rounded-lg border border-primary/20">
+                        <Car className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-xs font-bold text-zinc-400 tracking-widest uppercase">Cabs / Private Transport</h4>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
                       {cabs.map(cab => (
-                        <CabBanner key={cab.id} cab={cab} />
+                        <div 
+                          key={cab.id} 
+                          className="group relative p-4 rounded-xl border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/30 hover:shadow-[0_0_12px_rgba(255,92,51,0.04)] transition-all duration-300 flex flex-col gap-2.5"
+                        >
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="font-semibold text-zinc-100 text-sm group-hover:text-primary transition-colors">
+                              {cab.vehicleType || "Vehicle"}
+                            </div>
+                            {cab.bookingRef && (
+                              <div className="text-[9px] font-black tracking-wider px-2 py-0.5 bg-zinc-800 text-zinc-300 border border-zinc-700/50 rounded uppercase whitespace-nowrap">
+                                Ref: {cab.bookingRef}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xs text-zinc-400 leading-relaxed font-medium">
+                            <span className="text-zinc-500">Pickup:</span> <span className="text-zinc-300">{cab.pickupTime}</span>
+                            {(cab.driverName || cab.driverContact) && (
+                              <>
+                                <span className="mx-2 text-zinc-600">|</span>
+                                <span className="text-zinc-400">{cab.driverName}</span>
+                                {cab.driverContact && <span className="text-zinc-500 ml-1">({cab.driverContact})</span>}
+                              </>
+                            )}
+                          </div>
+                        </div>
                       ))}
                     </div>
-                  )}
-                  {selectedLogisticsTab === "buses" && buses.length > 0 && (
-                    <div className="space-y-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  </div>
+                )}
+
+                {/* BUS DETAILS */}
+                {buses.length > 0 && (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2.5 border-b border-white/[0.08] pb-3">
+                      <div className="p-1.5 bg-primary/10 text-primary rounded-lg border border-primary/20">
+                        <Bus className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-xs font-bold text-zinc-400 tracking-widest uppercase">Tourist Bus Details</h4>
+                    </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
                       {buses.map(bus => (
-                        <BusBanner key={bus.id} bus={bus} />
+                        <div 
+                          key={bus.id} 
+                          className="group relative p-4 rounded-xl border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/30 hover:shadow-[0_0_12px_rgba(255,92,51,0.04)] transition-all duration-300 flex flex-col gap-2.5"
+                        >
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="font-semibold text-zinc-100 text-sm group-hover:text-primary transition-colors">
+                              {bus.busType || "Bus"}
+                            </div>
+                            {bus.pnr && (
+                              <div className="text-[9px] font-black tracking-wider px-2 py-0.5 bg-zinc-800 text-zinc-300 border border-zinc-700/50 rounded uppercase whitespace-nowrap">
+                                PNR: {bus.pnr}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-xs text-zinc-400 leading-relaxed font-medium">
+                            <span className="text-zinc-500">Reporting:</span> <span className="text-zinc-300 font-semibold">{bus.reportingTime}</span>
+                            <span className="mx-2 text-zinc-600">|</span>
+                            <span className="text-zinc-500">Departure:</span> <span className="text-zinc-300 font-semibold">{bus.departureTime}</span>
+                          </div>
+                        </div>
                       ))}
                     </div>
-                  )}
-                </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

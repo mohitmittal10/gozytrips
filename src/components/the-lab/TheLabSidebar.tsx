@@ -25,7 +25,7 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
 
   return (
     <div className={cn(
-      "hidden lg:flex flex-col shrink-0 sticky top-24 self-start transition-all duration-300 z-40",
+      "hidden lg:flex flex-col shrink-0 transition-all duration-300 z-40",
       isSidebarExpanded ? "w-64" : "w-16"
     )}>
       <div className={cn(

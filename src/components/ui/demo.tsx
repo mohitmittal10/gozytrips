@@ -1,6 +1,5 @@
-import { MorphingSquare } from "@/components/ui/morphing-square";
+import { Component } from "@/components/ui/quantum-pulse-loade";
 
 export default function DemoOne() {
-  return <MorphingSquare message='Loading...' />;
+  return <Component />;
 }
-

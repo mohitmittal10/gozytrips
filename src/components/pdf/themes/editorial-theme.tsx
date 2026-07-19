@@ -5,6 +5,7 @@ import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { getThematicBackground, glassStyles } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
+import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 
 const parseList = (text?: string) => {
@@ -211,10 +212,12 @@ export const EditorialTheme = ({
                     <h2 style={{ margin: "0 0 40px 0", fontSize: "32px", color: "#0f172a", fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: "normal", textAlign: "center" }}>Travel & Logistics</h2>
                     
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "30px" }}>
-                        {hotels.map((h, i) => (
+                        {groupHotelsByName(hotels).map((h, i) => (
                             <div key={`hotel-${i}`} style={{ background: "white", padding: "20px", display: "flex", flexDirection: "column", border: "1px solid rgba(184,134,11,0.15)", borderRadius: "2px" }}>
                                 <img src={h.imageUrls?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop'} alt={h.name} style={{ width: "100%", height: "200px", objectFit: "cover", marginBottom: "20px" }} crossOrigin="anonymous" />
-                                <div style={{ color: gold, fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "10px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Hotel • Day {h.dayIndex + 1}</div>
+                                <div style={{ color: gold, fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "10px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                                    Hotel • {formatHotelStays(h.stays)}
+                                </div>
                                 <h4 style={{ margin: "0 0 20px 0", fontSize: "20px", color: "#0f172a", fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: "normal" }}>{h.name}</h4>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "13px", fontFamily: "'Plus Jakarta Sans', sans-serif", borderTop: "1px solid rgba(184,134,11,0.15)", paddingTop: "15px", marginTop: "auto" }}>
                                     <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Check-in</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{h.checkIn}</span></div>
@@ -226,10 +229,20 @@ export const EditorialTheme = ({
                         {flights.map((f, i) => (
                             <div key={`flight-${i}`} style={{ background: "white", padding: "30px", display: "flex", flexDirection: "column", border: "1px solid rgba(184,134,11,0.15)", borderRadius: "2px" }}>
                                 <div style={{ color: gold, fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "10px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Flight • Day {f.dayIndex + 1}</div>
-                                <h4 style={{ margin: "0 0 20px 0", fontSize: "20px", color: "#0f172a", fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: "normal" }}>{f.airline}</h4>
+                                <h4 style={{ margin: "0 0 20px 0", fontSize: "20px", color: "#0f172a", fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: "normal" }}>{f.airline} {f.flightNumber}</h4>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px", fontSize: "13px", fontFamily: "'Plus Jakarta Sans', sans-serif", borderTop: "1px solid rgba(184,134,11,0.15)", paddingTop: "15px" }}>
                                     <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Route</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.departureAirport} → {f.arrivalAirport}</span></div>
-                                    <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Departure</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.departure}</span></div>
+                                    <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Type</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.flightType === 'connecting' ? 'Connecting' : 'Direct'}</span></div>
+                                    <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Departure / Arrival</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.departure} – {f.arrival}</span></div>
+                                    {f.layover && <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Layover</span><span style={{ fontWeight: 600, color: "#f59e0b" }}>{f.layover}</span></div>}
+                                    {f.flightType === 'connecting' && f.connectingDepartureAirport && (
+                                        <>
+                                            <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Connecting Route</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.connectingDepartureAirport} → {f.connectingArrivalAirport}</span></div>
+                                            <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Connecting Flight</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.connectingAirline} {f.connectingFlightNumber}</span></div>
+                                            <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Connecting Time</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.connectingDeparture} – {f.connectingArrival}</span></div>
+                                            {f.connectingPnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Connecting PNR</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.connectingPnr}</span></div>}
+                                        </>
+                                    )}
                                     {f.pnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>PNR</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.pnr}</span></div>}
                                 </div>
                             </div>
@@ -395,7 +408,7 @@ export const EditorialTheme = ({
                         {/* Policies & Methods — below, side by side */}
                         <div style={{ display: "flex", gap: "50px" }}>
                             <div style={{ flex: 1 }}>
-                                <h3 style={{ margin: "0 0 15px 0", fontSize: "11px", color: "#0f172a", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 700 }}>Accepted Methods</h3>
+                                <h3 style={{ margin: "0 0 15px 0", fontSize: "11px", color: "#0f172a", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 700 }}>Payment Methods</h3>
                                 <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.7" }}>
                                     {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>{p}</div>) : "Not specified."}
                                 </div>
@@ -407,6 +420,14 @@ export const EditorialTheme = ({
                                 </div>
                             </div>
                         </div>
+                        {termsAndConditions && (
+                            <div style={{ marginTop: "32px", borderTop: "1px solid rgba(15,23,42,0.08)", paddingTop: "24px" }}>
+                                <h3 style={{ margin: "0 0 15px 0", fontSize: "11px", color: "#0f172a", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 700 }}>Terms & Conditions</h3>
+                                <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.7" }}>
+                                    {parseList(termsAndConditions).map((p, i) => <div key={i}>{p}</div>)}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
@@ -443,9 +464,22 @@ export const EditorialTheme = ({
                     </>
                 )}
 
-                <div style={{ borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "40px" }}>
-                    <p style={{ fontSize: "14px", letterSpacing: "6px", textTransform: "uppercase", color: gold, margin: "0 0 12px 0", fontWeight: 700 }}>{agent.companyName}</p>
-                    <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", margin: 0 }}>Curated on {new Date().toLocaleDateString()} · Editorial Edition</p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "40px", marginBottom: "30px", flexWrap: "wrap", gap: "24px", textAlign: "left" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <h2 style={{ fontSize: "20px", fontWeight: "normal", color: gold, margin: "0 0 8px 0", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>{agent.companyName}</h2>
+                        <p style={{ fontSize: "13px", letterSpacing: "4px", textTransform: "uppercase", color: "white", margin: 0, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Bespoke Travel Solutions</p>
+                        <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", margin: "4px 0 0 0", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Curated by {agent.agentName}</p>
+                    </div>
+                    
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12px", color: "rgba(255,255,255,0.7)", textAlign: "right", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                        {agent.agentPhone && <p style={{ margin: 0 }}>T: <strong style={{ color: "white" }}>{agent.agentPhone}</strong></p>}
+                        {agent.agentEmail && <p style={{ margin: 0 }}>E: <strong style={{ color: "white" }}>{agent.agentEmail}</strong></p>}
+                        {agent.agentWebsite && <p style={{ margin: 0 }}>W: <strong style={{ color: gold }}>{agent.agentWebsite}</strong></p>}
+                    </div>
+                </div>
+                
+                <div style={{ textAlign: "center", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "16px", fontSize: "11px", color: "rgba(255,255,255,0.4)", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                    Curated on {new Date().toLocaleDateString()} · Editorial Edition
                 </div>
             </div>
         </div>

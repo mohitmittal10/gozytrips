@@ -5,6 +5,7 @@ import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getAgentInfo, getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { calcPricingFromBaseCost } from '@/services/financial';
+import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 
 export type TropicalThemeProps = {
     itinerary: TravelItineraryOutput;
@@ -979,12 +980,12 @@ export const TropicalTheme = ({
                     <section data-pdf-section="accommodations">
                         <h2 className="acc-heading">Travel & Logistics</h2>
                         <div className="acc-grid">
-                            {hotels.map((hotel, i) => (
+                            {groupHotelsByName(hotels).map((hotel, i) => (
                                 <div key={`hotel-${i}`} className="acc-card">
                                     <img src={hotel.imageUrls && hotel.imageUrls.length > 0 ? hotel.imageUrls[0] : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop'} alt={hotel.name} crossOrigin="anonymous" />
                                     <div className="acc-card-body">
                                         <h4>{hotel.name}</h4>
-                                        <span className="acc-subtitle">🏨 Hotel • Day {hotel.dayIndex + 1}</span>
+                                        <span className="acc-subtitle">🏨 Hotel • {formatHotelStays(hotel.stays)}</span>
                                         <div className="logistics-details">
                                             <div className="logistics-row"><span className="label">Check-in</span><span className="value">{hotel.checkIn}</span></div>
                                             <div className="logistics-row"><span className="label">Check-out</span><span className="value">{hotel.checkOut}</span></div>
@@ -1002,11 +1003,21 @@ export const TropicalTheme = ({
                                         </svg>
                                     </div>
                                     <div className="acc-card-body">
-                                        <h4>{flight.airline}</h4>
+                                        <h4>{flight.airline} {flight.flightNumber}</h4>
                                         <span className="acc-subtitle">✈️ Flight • Day {flight.dayIndex + 1}</span>
                                         <div className="logistics-details">
                                             <div className="logistics-row"><span className="label">Route</span><span className="value">{flight.departureAirport} → {flight.arrivalAirport}</span></div>
-                                            <div className="logistics-row"><span className="label">Departure</span><span className="value">{flight.departure}</span></div>
+                                            <div className="logistics-row"><span className="label">Type</span><span className="value">{flight.flightType === 'connecting' ? 'Connecting' : 'Direct'}</span></div>
+                                            <div className="logistics-row"><span className="label">Departure / Arrival</span><span className="value">{flight.departure} – {flight.arrival}</span></div>
+                                            {flight.layover && <div className="logistics-row"><span className="label">Layover</span><span className="value" style={{ color: '#f59e0b' }}>{flight.layover}</span></div>}
+                                            {flight.flightType === 'connecting' && flight.connectingDepartureAirport && (
+                                                <>
+                                                    <div className="logistics-row"><span className="label">Connecting Route</span><span className="value">{flight.connectingDepartureAirport} → {flight.connectingArrivalAirport}</span></div>
+                                                    <div className="logistics-row"><span className="label">Connecting Flight</span><span className="value">{flight.connectingAirline} {flight.connectingFlightNumber}</span></div>
+                                                    <div className="logistics-row"><span className="label">Connecting Time</span><span className="value">{flight.connectingDeparture} – {flight.connectingArrival}</span></div>
+                                                    {flight.connectingPnr && <div className="logistics-row"><span className="label">Connecting PNR</span><span className="value">{flight.connectingPnr}</span></div>}
+                                                </>
+                                            )}
                                             {flight.pnr && <div className="logistics-row"><span className="label">PNR</span><span className="value">{flight.pnr}</span></div>}
                                         </div>
                                     </div>
@@ -1191,6 +1202,16 @@ export const TropicalTheme = ({
                                     </ul>
                                 </div>
                             </div>
+                            {termsAndConditions && (
+                                <div style={{ marginTop: "32px", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: "24px" }}>
+                                    <span className="policy-label" style={{ display: "block", marginBottom: "12px" }}>Terms & Conditions</span>
+                                    <ul className="policy-list">
+                                        {parseList(termsAndConditions).map((pol, i) => (
+                                            <li key={i}>{pol}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
                     </section>
 
@@ -1230,8 +1251,21 @@ export const TropicalTheme = ({
                             </div>
                         </>
                     )}
-                    <div style={{ textAlign: "center", marginTop: "32px", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,0.12)" }}>
-                        <p style={{ marginTop: 0, fontSize: "13px", color: "rgba(255,255,255,0.7)", fontFamily: "var(--font-mono)", letterSpacing: "0.05em", fontWeight: 600 }}>{agent.companyName}</p>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "32px", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,0.12)", flexWrap: "wrap", gap: "20px", textAlign: "left" }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                            <span style={{ fontSize: "18px", fontWeight: 800, letterSpacing: "1px", color: "#a8c6e2", fontFamily: "var(--font-sans)", textTransform: "uppercase" }}>{agent.companyName}</span>
+                            <p style={{ margin: "2px 0 0 0", fontSize: "11px", color: "rgba(255,255,255,0.6)", fontFamily: "var(--font-sans)" }}>Curated by {agent.agentName}</p>
+                        </div>
+                        
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "11px", color: "rgba(255,255,255,0.8)", textAlign: "right", fontFamily: "var(--font-mono)" }}>
+                            {agent.agentPhone && <p style={{ margin: 0 }}>Tel: <strong>{agent.agentPhone}</strong></p>}
+                            {agent.agentEmail && <p style={{ margin: 0 }}>Email: <strong>{agent.agentEmail}</strong></p>}
+                            {agent.agentWebsite && <p style={{ margin: 0 }}>Web: <strong style={{ color: "#a8c6e2" }}>{agent.agentWebsite}</strong></p>}
+                        </div>
+                    </div>
+                    
+                    <div style={{ textAlign: "center", marginTop: "24px", fontSize: "10px", color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-sans)" }}>
+                        Generated on {new Date().toLocaleDateString()} • Designed in The Lab
                     </div>
                 </footer>
             </div>

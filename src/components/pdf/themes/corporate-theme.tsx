@@ -5,6 +5,7 @@ import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { getThematicBackground, glassStyles } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
+import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 
 const parseList = (text?: string) => {
@@ -233,11 +234,13 @@ export const CorporateTheme = ({
                     </div>
 
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
-                        {hotels.map((h, i) => (
+                        {groupHotelsByName(hotels).map((h, i) => (
                             <div key={`hotel-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "rgba(255,255,255,0.7)", borderRadius: "8px" }}>
                                 <img src={h.imageUrls?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop'} alt={h.name} style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "4px" }} crossOrigin="anonymous" />
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ color: brandColor, fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Hotel • Day {h.dayIndex + 1}</div>
+                                    <div style={{ color: brandColor, fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
+                                        Hotel • {formatHotelStays(h.stays)}
+                                    </div>
                                     <h4 style={{ margin: "0 0 10px 0", fontSize: "15px", color: "#0f172a", fontWeight: 700 }}>{h.name}</h4>
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "6px", fontSize: "11px", color: "#475569" }}>
                                         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Check-in</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{h.checkIn}</span></div>
@@ -252,10 +255,20 @@ export const CorporateTheme = ({
                                 <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.04)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", borderRadius: "4px" }}>✈️</div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: brandColor, fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Flight • Day {f.dayIndex + 1}</div>
-                                    <h4 style={{ margin: "0 0 10px 0", fontSize: "15px", color: "#0f172a", fontWeight: 700 }}>{f.airline}</h4>
+                                    <h4 style={{ margin: "0 0 10px 0", fontSize: "15px", color: "#0f172a", fontWeight: 700 }}>{f.airline} {f.flightNumber}</h4>
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "6px", fontSize: "11px", color: "#475569" }}>
                                         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Route</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.departureAirport} → {f.arrivalAirport}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Departure</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.departure}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Type</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.flightType === 'connecting' ? 'Connecting' : 'Direct'}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Departure / Arrival</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.departure} – {f.arrival}</span></div>
+                                        {f.layover && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Layover</span><span style={{ fontWeight: 600, color: "#f59e0b" }}>{f.layover}</span></div>}
+                                        {f.flightType === 'connecting' && f.connectingDepartureAirport && (
+                                            <>
+                                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Connecting Route</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.connectingDepartureAirport} → {f.connectingArrivalAirport}</span></div>
+                                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Connecting Flight</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.connectingAirline} {f.connectingFlightNumber}</span></div>
+                                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Connecting Time</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{f.connectingDeparture} – {f.connectingArrival}</span></div>
+                                                {f.connectingPnr && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Connecting PNR</span><span style={{ fontWeight: 600, color: brandColor }}>{f.connectingPnr}</span></div>}
+                                            </>
+                                        )}
                                         {f.pnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span>PNR</span><span style={{ fontWeight: 600, color: brandColor }}>{f.pnr}</span></div>}
                                     </div>
                                 </div>
@@ -432,7 +445,7 @@ export const CorporateTheme = ({
                         <div style={{ display: "flex", gap: "30px" }}>
                             <div style={{ flex: 1, background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden" }}>
                                 <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "12px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
-                                    <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Terms & Policies</h3>
+                                    <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Cancellation Policy</h3>
                                 </div>
                                 <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
                                     {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
@@ -447,6 +460,16 @@ export const CorporateTheme = ({
                                 </div>
                             </div>
                         </div>
+                        {termsAndConditions && (
+                            <div style={{ marginTop: "24px", background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.2)", borderRadius: "8px", overflow: "hidden" }}>
+                                <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "12px 20px", borderBottom: "1px solid rgba(148,163,184,0.2)" }}>
+                                    <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Terms & Conditions</h3>
+                                </div>
+                                <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
+                                    {parseList(termsAndConditions).map((p, i) => <div key={i}>• {p}</div>)}
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                 {/* Detailed Footer */}
@@ -481,9 +504,23 @@ export const CorporateTheme = ({
                         </>
                     )}
 
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(148,163,184,0.2)", paddingTop: "16px" }}>
-                        <p style={{ margin: 0, fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700 }}>Confidential · Prepared for client by {agent.companyName}</p>
-                        <p style={{ margin: 0, fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1px", fontWeight: 700 }}>Page generated: {new Date().toLocaleDateString()}</p>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(148,163,184,0.2)", paddingTop: "24px", marginBottom: "24px", flexWrap: "wrap", gap: "20px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                            <div>
+                                <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: brandColor, letterSpacing: "1px", textTransform: "uppercase" }}>{agent.companyName}</p>
+                                <p style={{ margin: "2px 0 0 0", fontSize: "11px", color: "#64748b" }}>Curated by {agent.agentName}</p>
+                            </div>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "11px", color: "#475569", textAlign: "right" }}>
+                            {agent.agentPhone && <p style={{ margin: 0 }}>Phone: <strong>{agent.agentPhone}</strong></p>}
+                            {agent.agentEmail && <p style={{ margin: 0 }}>Email: <strong>{agent.agentEmail}</strong></p>}
+                            {agent.agentWebsite && <p style={{ margin: 0 }}>Web: <strong>{agent.agentWebsite}</strong></p>}
+                        </div>
+                    </div>
+                    
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(148,163,184,0.1)", paddingTop: "12px", fontSize: "9px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px" }}>
+                        <p style={{ margin: 0 }}>Confidential · Prepared for client by {agent.companyName}</p>
+                        <p style={{ margin: 0 }}>Page generated: {new Date().toLocaleDateString()}</p>
                     </div>
                 </div>
             </div>

@@ -1,12 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import Logo from "./logo";
 import { Button } from "../ui/button";
 import { Sparkles, Globe, Users, Github, Twitter, Instagram, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 
 const Footer = () => {
+  const pathname = usePathname();
+
+  if (pathname === "/the-lab") {
+    return null;
+  }
+
   const productLinks = [
     { name: "The Lab", href: "/the-lab" },
     { name: "Pricing Plans", href: "/pricing" },

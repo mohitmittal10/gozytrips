@@ -31,7 +31,9 @@ import TheLabSummaryPanel from "./TheLabSummaryPanel";
 import TheLabHero from "./TheLabHero";
 import TheLabTabContent from "./TheLabTabContent";
 import { TheLabPdfPreview } from "./TheLabPdfPreview";
+import type { PdfPreviewEditorRef } from "@/components/pdf-preview-editor";
 import type { PdfTheme } from "@/components/pdf-template";
+import { PdfRenderOverlay } from "@/components/ui/pdf-render-overlay";
 
 const EMPTY_ARRAY: any[] = [];
 const EMPTY_OBJECT: any = {};
@@ -58,6 +60,7 @@ export default function TheLab() {
   }, []);
 
   const setActiveLabTab = (tab: ActiveLabTab) => {
+    activeLabTabRef.current = tab;
     setActiveLabTabState(tab);
     localStorage.setItem("the_lab_active_tab", tab);
     const url = new URL(window.location.href);
@@ -72,6 +75,12 @@ export default function TheLab() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
 
+  // PDF pre-render state (overlay shown before dialog opens)
+  const previewRef = useRef<PdfPreviewEditorRef>(null);
+  const [isPreRendering, setIsPreRendering] = useState(false);
+  const [preRenderProgress, setPreRenderProgress] = useState(0);
+  const [preRenderStage, setPreRenderStage] = useState('');
+
   // Modular Hooks
   const { clients, fetchClients } = useClients();
   const { user, agencySettings } = useAuth();
@@ -84,6 +93,9 @@ export default function TheLab() {
   // form.reset() when the user switches to a genuinely different trip.
   // undefined = form has never been reset for any trip yet.
   const formSyncedForIdRef = useRef<string | null | undefined>(undefined);
+  // Always-current ref for activeLabTab — lets effects read the current tab
+  // without adding it to their dep arrays (keeps dep array size constant).
+  const activeLabTabRef = useRef<ActiveLabTab>(activeLabTab);
 
   // Local state mapped from loadedData
   const [hotels, setHotels] = useState<any[]>(EMPTY_ARRAY);
@@ -247,8 +259,15 @@ export default function TheLab() {
     return () => subscription.unsubscribe();
   }, [form, hotels]);
 
-  // Sync hotels state from logistics tab back into the form
+  // Sync hotels state from logistics tab back into the form.
+  // IMPORTANT: Skip this sync when the user is on the 'new' tab (actively filling
+  // the wizard). The StepStayOptions component uses useFieldArray to append hotel
+  // slots based on selected dates. If hotels state is [] (from a previous reset)
+  // and we sync it into the form, it wipes out the freshly appended slots before
+  // the user can submit — causing the Generate button to fail at step 5.
+  // We read activeLabTab via a ref so the dep array size stays constant (2 items).
   useEffect(() => {
+    if (activeLabTabRef.current === 'new') return;
     const formHotelsJson = JSON.stringify(form.getValues("hotels") || []);
     const stateHotelsJson = JSON.stringify(hotels);
     if (formHotelsJson !== stateHotelsJson) {
@@ -264,7 +283,9 @@ export default function TheLab() {
   }, [isGenerating]);
 
   const handleCreateNew = useCallback(() => {
-    form.reset();
+    form.reset({
+      startingLocation: "", endingLocation: "", startDate: undefined, endDate: undefined, destinations: "", travelTimePreference: "no_preference", tripType: "relaxed", leisureTime: false, daywiseDestinations: "", hotels: []
+    });
     formSyncedForIdRef.current = null; // allow next history trip to reset the form
     setItinerary(null); setTripMetadata(null); setHotels([]); setFlights([]); setCabs([]); setBuses([]); setPricing(undefined);
     setInclusions(""); setExclusions(""); setTermsAndConditions(""); setCancellationPolicy(""); setPaymentMethods("");
@@ -292,9 +313,11 @@ export default function TheLab() {
   }, [currentStep, form]);
 
   const onSubmit = useCallback(async (values: TheLabFormValues, feedback?: string) => {
+    console.log("[TheLab index.tsx] onSubmit called. values:", values, "feedback:", feedback);
     setTripMetadata(values);
     
     if (!feedback) {
+      console.log("[TheLab index.tsx] Fresh generation. Resetting state values...");
       // Fresh generation: decouple from any existing record.
       // resetForNewTrip cancels pending auto-save timers and nulls the ref,
       // but does NOT write to the DB. No phantom records are created.
@@ -313,10 +336,13 @@ export default function TheLab() {
     }
     
     // Run AI generation — no DB writes happen during this.
+    console.log("[TheLab index.tsx] Triggering AI generation (calling generate)...");
     const res = await generate(values, feedback, tripMetadata);
+    console.log("[TheLab index.tsx] AI generation result (res):", res);
     if (!feedback) setOptimizationCount(0);
     
     if (res) {
+      console.log("[TheLab index.tsx] Generation succeeded. Post-processing response...");
       if (!feedback) {
         let resolvedClientId = "none";
         let shareToken = "";
@@ -381,13 +407,13 @@ export default function TheLab() {
           }
         }
 
-        // Generation succeeded for a NEW itinerary.
-        // NOW insert the record with the full itinerary data.
+        console.log("[TheLab index.tsx] Calling saveNow to insert new itinerary. values.hotels count:", values.hotels?.length || 0);
         const newTripId = await saveNow({
           itinerary: res,
           hotels: (values.hotels || []).map(h => ({
             id: h.id,
             dayIndex: h.dayIndex,
+            dayIndices: h.dayIndices?.length ? h.dayIndices : [h.dayIndex],
             name: h.name,
             address: h.address || "",
             checkIn: h.checkIn || "2:00 PM",
@@ -416,6 +442,7 @@ export default function TheLab() {
           cancellationPolicy: "",
           paymentMethods: "",
         }, null); // explicitId=null → INSERT a new record
+        console.log("[TheLab index.tsx] saveNow completed. newTripId:", newTripId);
 
         if (resolvedClientId !== "none") {
           setSelectedClientId(resolvedClientId);
@@ -440,7 +467,10 @@ export default function TheLab() {
           }
         }
       }
+      console.log("[TheLab index.tsx] Switching active tab to 'itinerary'");
       setActiveLabTab('itinerary');
+    } else {
+      console.warn("[TheLab index.tsx] Generation did not return a result.");
     }
   }, [generate, tripMetadata, setCurrentTripId, saveNow, resetForNewTrip, setHotels, setFlights, setCabs, setBuses, setPricing, setInclusions, setExclusions, enquiryBanner, fetchClients, user, supabase, setSelectedClientId]);
 
@@ -485,7 +515,26 @@ export default function TheLab() {
               setShowTimestamps={setShowTimestamps} 
               isEditing={isEditing} 
               setIsEditing={setIsEditing} 
-              handleDownloadPdf={() => setIsPreviewOpen(true)} 
+              handleDownloadPdf={async () => {
+                // If cache is already valid, open dialog instantly
+                if (previewRef.current?.hasValidCache()) {
+                  setIsPreviewOpen(true);
+                  return;
+                }
+                // Otherwise: show blur overlay, pre-render, then open
+                setIsPreRendering(true);
+                setPreRenderProgress(0);
+                setPreRenderStage('Initializing\u2026');
+                try {
+                  await previewRef.current?.preRender((progress, stage) => {
+                    setPreRenderProgress(progress);
+                    setPreRenderStage(stage);
+                  });
+                } finally {
+                  setIsPreRendering(false);
+                }
+                setIsPreviewOpen(true);
+              }} 
               handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
               isSaving={isSaving} 
               activeLabTab={activeLabTab}
@@ -500,16 +549,18 @@ export default function TheLab() {
       )}>
         <TheLabMobileTabs activeLabTab={activeLabTab} setActiveLabTab={setActiveLabTab} clients={clients} selectedClientId={selectedClientId} setSelectedClientId={setSelectedClientId} selectedStatus={selectedStatus} setSelectedStatus={handleStatusChangeAction} handleCreateNew={handleCreateNew} />
         
-        <div className="flex flex-row items-start gap-4 lg:gap-6">
-          <TheLabSidebar 
-            isSidebarExpanded={isSidebarExpanded} 
-            setIsSidebarExpanded={setIsSidebarExpanded} 
-            activeLabTab={activeLabTab} 
-            setActiveLabTab={setActiveLabTab} 
-            handleCreateNew={handleCreateNew}
-            isGenerating={isGenerating}
-            isLoading={isLoading}
-          />
+        <div className="flex flex-row items-start gap-4 lg:gap-6 w-full">
+          <div className={cn("transition-all duration-500 shrink-0 sticky top-24 self-start z-40", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
+            <TheLabSidebar 
+              isSidebarExpanded={isSidebarExpanded} 
+              setIsSidebarExpanded={setIsSidebarExpanded} 
+              activeLabTab={activeLabTab} 
+              setActiveLabTab={setActiveLabTab} 
+              handleCreateNew={handleCreateNew}
+              isGenerating={isGenerating}
+              isLoading={isLoading}
+            />
+          </div>
           
           <div className={cn(
             "flex-1 min-w-0 flex flex-col",
@@ -572,23 +623,27 @@ export default function TheLab() {
             </div>
             
             {isViewingItinerary && itinerary && (
-              <TheLabSummaryPanel 
-                itinerary={itinerary} 
-                selectedStatus={selectedStatus} 
-                clients={clients} 
-                selectedClientId={selectedClientId} 
-                optimizationCount={optimizationCount} 
-                isGenerating={isGenerating} 
-                onOptimize={(feedback) => { onSubmit(form.getValues(), feedback); setOptimizationCount(p => p + 1); }} 
-                finalTotal={finalTotal}
-                currencySymbol={currencySymbol}
-              />
+              <div className={cn("lg:col-span-4 order-1 lg:order-2 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
+                <TheLabSummaryPanel 
+                  itinerary={itinerary} 
+                  selectedStatus={selectedStatus} 
+                  clients={clients} 
+                  selectedClientId={selectedClientId} 
+                  optimizationCount={optimizationCount} 
+                  isGenerating={isGenerating} 
+                  onOptimize={(feedback) => { onSubmit(form.getValues(), feedback); setOptimizationCount(p => p + 1); }} 
+                  finalTotal={finalTotal}
+                  currencySymbol={currencySymbol}
+                  tripMetadata={tripMetadata}
+                />
+              </div>
             )}
           </div>
         </div>
       </div>
 
       <TheLabPdfPreview
+        ref={previewRef}
         isPreviewOpen={isPreviewOpen}
         setIsPreviewOpen={setIsPreviewOpen}
         itinerary={itinerary}
@@ -610,6 +665,13 @@ export default function TheLab() {
         onPdfOverridesChange={setPdfOverrides}
         theme={selectedTheme}
         onThemeChange={setSelectedTheme}
+      />
+
+      {/* Full-page blur overlay while PDF pre-renders before dialog opens */}
+      <PdfRenderOverlay
+        visible={isPreRendering}
+        progress={preRenderProgress}
+        stage={preRenderStage}
       />
 
     </section>

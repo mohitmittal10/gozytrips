@@ -5,6 +5,7 @@ import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { getThematicBackground } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
+import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 
 const parseList = (text?: string) => {
@@ -235,11 +236,13 @@ export const MinimalistTheme = ({
                     </div>
                     
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "20px" }}>
-                        {hotels.map((h, i) => (
+                        {groupHotelsByName(hotels).map((h, i) => (
                             <div key={`hotel-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "white" }}>
                                 <img src={h.imageUrls?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop'} alt={h.name} style={{ width: "80px", height: "80px", objectFit: "cover" }} crossOrigin="anonymous" />
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "4px" }}>Hotel • Day {h.dayIndex + 1}</div>
+                                    <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "4px" }}>
+                                        Hotel • {formatHotelStays(h.stays)}
+                                    </div>
                                     <h4 style={{ margin: "0 0 10px 0", fontSize: "16px", color: "#0f172a", fontWeight: 700 }}>{h.name}</h4>
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "4px", fontSize: "11px", color: "#475569" }}>
                                         <div style={{ display: "flex", justifyContent: "space-between" }}><span>IN</span><span style={{ fontWeight: 600 }}>{h.checkIn}</span></div>
@@ -254,10 +257,20 @@ export const MinimalistTheme = ({
                                 <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>✈️</div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "4px" }}>Flight • Day {f.dayIndex + 1}</div>
-                                    <h4 style={{ margin: "0 0 10px 0", fontSize: "16px", color: "#0f172a", fontWeight: 700 }}>{f.airline}</h4>
+                                    <h4 style={{ margin: "0 0 10px 0", fontSize: "16px", color: "#0f172a", fontWeight: 700 }}>{f.airline} {f.flightNumber}</h4>
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "4px", fontSize: "11px", color: "#475569" }}>
                                         <div style={{ display: "flex", justifyContent: "space-between" }}><span>RTE</span><span style={{ fontWeight: 600 }}>{f.departureAirport} → {f.arrivalAirport}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span>DEP</span><span style={{ fontWeight: 600 }}>{f.departure}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span>TYPE</span><span style={{ fontWeight: 600 }}>{f.flightType === 'connecting' ? 'Connecting' : 'Direct'}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span>DEP/ARR</span><span style={{ fontWeight: 600 }}>{f.departure} – {f.arrival}</span></div>
+                                        {f.layover && <div style={{ display: "flex", justifyContent: "space-between" }}><span>LAY</span><span style={{ fontWeight: 600, color: "#f59e0b" }}>{f.layover}</span></div>}
+                                        {f.flightType === 'connecting' && f.connectingDepartureAirport && (
+                                            <>
+                                                <div style={{ display: "flex", justifyContent: "space-between" }}><span>CONN RTE</span><span style={{ fontWeight: 600 }}>{f.connectingDepartureAirport} → {f.connectingArrivalAirport}</span></div>
+                                                <div style={{ display: "flex", justifyContent: "space-between" }}><span>CONN FLT</span><span style={{ fontWeight: 600 }}>{f.connectingAirline} {f.connectingFlightNumber}</span></div>
+                                                <div style={{ display: "flex", justifyContent: "space-between" }}><span>CONN TIME</span><span style={{ fontWeight: 600 }}>{f.connectingDeparture} – {f.connectingArrival}</span></div>
+                                                {f.connectingPnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span>CONN PNR</span><span style={{ fontWeight: 600 }}>{f.connectingPnr}</span></div>}
+                                            </>
+                                        )}
                                         {f.pnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span>PNR</span><span style={{ fontWeight: 600 }}>{f.pnr}</span></div>}
                                     </div>
                                 </div>
@@ -434,18 +447,26 @@ export const MinimalistTheme = ({
                 {/* Policies & Methods — below, side by side */}
                 <div style={{ display: "flex", gap: "40px" }}>
                     <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Policies</div>
+                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Cancellation Policy</div>
                         <div style={{ fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
                             {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>- {p}</div>) : "Not specified."}
                         </div>
                     </div>
                     <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Methods</div>
+                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Payment Methods</div>
                         <div style={{ fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
                             {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>- {p}</div>) : "Not specified."}
                         </div>
                     </div>
                 </div>
+                {termsAndConditions && (
+                    <div style={{ marginTop: "24px", borderTop: "1px solid rgba(15,23,42,0.08)", paddingTop: "20px" }}>
+                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Terms & Conditions</div>
+                        <div style={{ fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
+                            {parseList(termsAndConditions).map((p, i) => <div key={i}>- {p}</div>)}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Detailed Footer */}
@@ -477,10 +498,21 @@ export const MinimalistTheme = ({
                     </div>
                 )}
                 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "20px", fontSize: "10px", color: "rgba(255,255,255,0.5)", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 700 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <span style={{ color: "white" }}>{agent.companyName}</span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "30px", marginBottom: "20px", flexWrap: "wrap", gap: "24px", fontSize: "12px", color: "rgba(255,255,255,0.7)" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <span style={{ color: "white", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px" }}>{agent.companyName}</span>
+                        <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.4)" }}>Curated by {agent.agentName}</span>
                     </div>
+                    
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px", textAlign: "right" }}>
+                        {agent.agentPhone && <span style={{ fontSize: "11px" }}>T: {agent.agentPhone}</span>}
+                        {agent.agentEmail && <span style={{ fontSize: "11px" }}>E: {agent.agentEmail}</span>}
+                        {agent.agentWebsite && <span style={{ fontSize: "11px", color: "white", fontWeight: 600 }}>W: {agent.agentWebsite}</span>}
+                    </div>
+                </div>
+                
+                <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "12px", fontSize: "9px", color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: "1.5px" }}>
+                    <span>Prepared by {agent.companyName}</span>
                     <span>{new Date().toLocaleDateString()}</span>
                 </div>
             </div>

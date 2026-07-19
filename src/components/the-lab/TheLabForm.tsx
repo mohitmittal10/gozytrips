@@ -2,7 +2,7 @@
 import React from 'react';
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, Check, ArrowRight, Star } from "lucide-react";
+import { Calendar as CalendarIcon, Check, ArrowRight, Star, Eye, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -226,9 +226,11 @@ const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
         }
         append(toAdd);
       } else if (fields.length > staySlotsCount) {
-        for (let i = fields.length - 1; i >= staySlotsCount; i--) {
-          remove(i);
-        }
+        const indicesToRemove = Array.from(
+          { length: fields.length - staySlotsCount },
+          (_, k) => staySlotsCount + k
+        );
+        remove(indicesToRemove);
       }
     }
   }, [staySlotsCount, fields.length, append, remove]);
@@ -466,6 +468,83 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
   );
 });
 StepPreferences.displayName = 'StepPreferences';
+const WizardInputSummary = ({ form, currentStep }: { form: UseFormReturn<TheLabFormValues>; currentStep: number }) => {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const values = form.getValues();
+
+  // If we are on the first step, nothing to review yet.
+  if (currentStep === 0) return null;
+
+  const summaryItems = [];
+
+  if (currentStep > 0 && values.startingLocation) {
+    summaryItems.push({
+      label: "Locations",
+      value: `${values.startingLocation}${values.endingLocation ? ` → ${values.endingLocation}` : ""} (${values.destinations || "TBD"})`
+    });
+  }
+
+  if (currentStep > 1 && values.startDate && values.endDate) {
+    summaryItems.push({
+      label: "Dates",
+      value: `${format(new Date(values.startDate), "MMM dd")} - ${format(new Date(values.endDate), "MMM dd, yyyy")}`
+    });
+  }
+
+  if (currentStep > 2 && values.daywiseDestinations) {
+    summaryItems.push({
+      label: "Custom Plan",
+      value: values.daywiseDestinations
+    });
+  }
+
+  if (currentStep > 3) {
+    const prefList = [];
+    if (values.tripType) prefList.push(`Style: ${values.tripType}`);
+    if (values.travelTimePreference && values.travelTimePreference !== "no_preference") prefList.push(`Timing: ${values.travelTimePreference.replace(/_/g, ' ')}`);
+    if (values.mustInclude) prefList.push(`Must Include: ${values.mustInclude}`);
+    if (values.avoid) prefList.push(`Avoid: ${values.avoid}`);
+    
+    if (prefList.length > 0) {
+      summaryItems.push({
+        label: "Preferences",
+        value: prefList.join(" | ")
+      });
+    }
+  }
+
+  if (summaryItems.length === 0) return null;
+
+  return (
+    <div className="border border-white/5 bg-white/[0.02] backdrop-blur-md rounded-xl overflow-hidden transition-all duration-300">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-200 transition-colors"
+      >
+        <span className="flex items-center gap-1.5">
+          <Eye className="w-3.5 h-3.5 text-primary shrink-0" />
+          Review Form Progress
+        </span>
+        <ChevronDown 
+          className="w-3.5 h-3.5 transition-transform duration-300"
+          style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}
+        />
+      </button>
+      
+      {isOpen && (
+        <div className="px-4 pb-3 pt-1 border-t border-white/5 space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
+          {summaryItems.map((item, idx) => (
+            <div key={idx} className="flex flex-col sm:flex-row sm:items-start text-[11px] gap-1 sm:gap-4 py-1 border-b border-white/[0.02] last:border-0">
+              <span className="font-bold text-zinc-500 uppercase tracking-widest sm:w-24 shrink-0">{item.label}</span>
+              <span className="text-zinc-300 break-words line-clamp-2" title={item.value}>{item.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 
 const TheLabForm = React.memo(function TheLabForm({
@@ -475,12 +554,11 @@ const TheLabForm = React.memo(function TheLabForm({
     <Form {...form}>
       <form
         onSubmit={(e) => {
+          e.preventDefault();
           if (currentStep < theLabSteps.length - 1) {
-            e.preventDefault();
             onNext();
-          } else {
-            form.handleSubmit(onSubmit)(e);
           }
+          // Last step: handled by the button's onClick directly
         }}
         className="space-y-8"
         onKeyDown={(e) => {
@@ -531,6 +609,8 @@ const TheLabForm = React.memo(function TheLabForm({
           </>
         )}
 
+        <WizardInputSummary form={form} currentStep={currentStep} />
+
         {currentStep === 0 && <StepDestinations form={form} />}
         {currentStep === 1 && <StepDates form={form} sidebarMode={sidebarMode} />}
         {currentStep === 2 && <StepDaywisePlan form={form} />}
@@ -545,7 +625,34 @@ const TheLabForm = React.memo(function TheLabForm({
               <span className="flex items-center justify-center gap-2 text-sm font-bold">Continue <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 duration-300" strokeWidth={2} /></span>
             </Button>
           ) : (
-            <Button key="btn-generate" type="submit" disabled={isGenerating} className="w-full h-10 hover:shadow-lg bg-primary text-white rounded-xl">
+            <Button
+              key="btn-generate"
+              type="button"
+              disabled={isGenerating}
+              onClick={async (e) => {
+                e.preventDefault();
+                // Clean stale hotel entries from RHF's internal registry.
+                // RHF's shouldUnregister:false default keeps registrations from
+                // previously-rendered hotel inputs alive, causing getValues() to
+                // reconstruct partial objects (with only name/address) at old indices.
+                // Filter to only keep entries that have both id and dayIndex.
+                const rawHotels = form.getValues("hotels") || [];
+                const cleanHotels = rawHotels.filter(
+                  (h: any) => h && typeof h.id === 'string' && h.id.length > 0 && typeof h.dayIndex === 'number'
+                );
+                if (cleanHotels.length !== rawHotels.length) {
+                  form.setValue("hotels", cleanHotels, { shouldValidate: false });
+                }
+                // Validate ALL fields explicitly before submitting
+                const isValid = await form.trigger();
+                if (isValid) {
+                  onSubmit(form.getValues());
+                } else {
+                  console.error("[TheLabForm] Validation failed. Errors:", JSON.stringify(form.formState.errors, null, 2));
+                }
+              }}
+              className="w-full h-10 hover:shadow-lg bg-primary text-white rounded-xl"
+            >
               <span className="flex items-center justify-center gap-2 text-sm font-bold">{isGenerating ? "Crafting Your Journey..." : "Generate Optimized Trip"} {!isGenerating && <Check className="h-4 w-4 ml-1" strokeWidth={2} />}</span>
             </Button>
           )}

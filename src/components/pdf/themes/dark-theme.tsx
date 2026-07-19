@@ -4,6 +4,7 @@ import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
 import { PdfDaywiseIndex } from '../pages';
+import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 
 const parseList = (text?: string) => {
@@ -241,11 +242,13 @@ export const DarkTheme = ({
                     </div>
                     
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
-                        {hotels.map((h, i) => (
+                        {groupHotelsByName(hotels).map((h, i) => (
                             <div key={`hotel-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(255,255,255,0.06)", padding: "16px", background: "rgba(255,255,255,0.02)", borderRadius: "8px" }}>
                                 <img src={h.imageUrls?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop'} alt={h.name} style={{ width: "90px", height: "90px", objectFit: "cover", borderRadius: "4px" }} crossOrigin="anonymous" />
                                 <div style={{ flex: 1 }}>
-                                    <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "6px" }}>Hotel • Day {h.dayIndex + 1}</div>
+                                    <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "6px" }}>
+                                        Hotel • {formatHotelStays(h.stays)}
+                                    </div>
                                     <h4 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#ffffff", fontWeight: 700 }}>{h.name}</h4>
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "6px", fontSize: "11px", color: "#94a3b8" }}>
                                         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>IN</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{h.checkIn}</span></div>
@@ -260,10 +263,20 @@ export const DarkTheme = ({
                                 <div style={{ width: "90px", height: "90px", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", borderRadius: "4px" }}>✈️</div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "6px" }}>Flight • Day {f.dayIndex + 1}</div>
-                                    <h4 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#ffffff", fontWeight: 700 }}>{f.airline}</h4>
+                                    <h4 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#ffffff", fontWeight: 700 }}>{f.airline} {f.flightNumber}</h4>
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "6px", fontSize: "11px", color: "#94a3b8" }}>
                                         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>RTE</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{f.departureAirport} → {f.arrivalAirport}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>DEP</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{f.departure}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>TYPE</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{f.flightType === 'connecting' ? 'Connecting' : 'Direct'}</span></div>
+                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>DEP/ARR</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{f.departure} – {f.arrival}</span></div>
+                                        {f.layover && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>LAY</span><span style={{ fontWeight: 600, color: "#f59e0b" }}>{f.layover}</span></div>}
+                                        {f.flightType === 'connecting' && f.connectingDepartureAirport && (
+                                            <>
+                                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>CONN RTE</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{f.connectingDepartureAirport} → {f.connectingArrivalAirport}</span></div>
+                                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>CONN FLT</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{f.connectingAirline} {f.connectingFlightNumber}</span></div>
+                                                <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>CONN TIME</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{f.connectingDeparture} – {f.connectingArrival}</span></div>
+                                                {f.connectingPnr && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>CONN PNR</span><span style={{ fontWeight: 600, color: accent }}>{f.connectingPnr}</span></div>}
+                                            </>
+                                        )}
                                         {f.pnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span>PNR</span><span style={{ fontWeight: 600, color: accent }}>{f.pnr}</span></div>}
                                     </div>
                                 </div>
@@ -442,18 +455,26 @@ export const DarkTheme = ({
                 {/* Policies & Methods — below, side by side */}
                 <div style={{ display: "flex", gap: "30px" }}>
                     <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "10px" }}>Policies</div>
+                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "10px" }}>Cancellation Policy</div>
                         <div style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.7" }}>
                             {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
                         </div>
                     </div>
                     <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "10px" }}>Methods</div>
+                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "10px" }}>Payment Methods</div>
                         <div style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.7" }}>
                             {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
                         </div>
                     </div>
                 </div>
+                {termsAndConditions && (
+                    <div style={{ marginTop: "24px", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}>
+                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "10px" }}>Terms & Conditions</div>
+                        <div style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.7" }}>
+                            {parseList(termsAndConditions).map((p, i) => <div key={i}>• {p}</div>)}
+                        </div>
+                    </div>
+                )}
             </div>
 
             {/* Detailed Agency Footer */}
@@ -488,13 +509,24 @@ export const DarkTheme = ({
                 </div>
             )}
 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "20px" }}>
-                    <p style={{ margin: 0, fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2.5px", fontWeight: 800 }}>Premium Curated Edition</p>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <p style={{ margin: 0, fontSize: "14px", color: accent, fontWeight: 900, letterSpacing: "1px", fontFamily: "'Outfit', sans-serif", textShadow: `0 0 10px rgba(${rgbAccent},0.4)` }}>{agent.companyName}</p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "30px", marginBottom: "20px", flexWrap: "wrap", gap: "24px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <div style={{ fontSize: "20px", fontWeight: 900, color: accent, letterSpacing: "1px", fontFamily: "'Outfit', sans-serif", textShadow: `0 0 10px rgba(${rgbAccent}, 0.5)` }}>{agent.companyName}</div>
+                        <p style={{ margin: "4px 0 0 0", color: "#cbd5e1", fontSize: "12px", fontWeight: 700 }}>Bespoke Journey</p>
+                        <p style={{ margin: "2px 0 0 0", color: "#64748b", fontSize: "11px" }}>Curated by {agent.agentName}</p>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "4px", fontSize: "12px", color: "#94a3b8", textAlign: "right" }}>
+                        {agent.agentPhone && <p style={{ margin: 0 }}>Tel: <strong style={{ color: "#ffffff" }}>{agent.agentPhone}</strong></p>}
+                        {agent.agentEmail && <p style={{ margin: 0 }}>Email: <strong style={{ color: "#ffffff" }}>{agent.agentEmail}</strong></p>}
+                        {agent.agentWebsite && <p style={{ margin: 0 }}>Web: <strong style={{ color: accent, textShadow: `0 0 8px rgba(${rgbAccent},0.3)` }}>{agent.agentWebsite}</strong></p>}
+                    </div>
+                </div>
+                
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "16px", fontSize: "9px", color: "#475569" }}>
+                    <p style={{ margin: 0, textTransform: "uppercase", letterSpacing: "2px" }}>Premium Curated Edition</p>
+                    <p style={{ margin: 0 }}>Generated on {new Date().toLocaleDateString()}</p>
                 </div>
             </div>
-        </div>
     );
 };
 

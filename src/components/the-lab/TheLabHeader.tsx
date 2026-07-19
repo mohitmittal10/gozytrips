@@ -1,6 +1,6 @@
 // Sticky top bar including selections, toggles, back/edit buttons.
 import React from 'react';
-import { Pencil, Eye, Save } from 'lucide-react';
+import { Pencil, Eye, Save, Check } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -95,27 +95,17 @@ const TheLabHeader = React.memo(function TheLabHeader({
             </div>
           </div>
 
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className={cn(
-              "w-10 h-10 rounded-xl transition-all duration-300 flex items-center justify-center flex-shrink-0",
-              isEditing
-                ? "bg-primary/20 text-primary border border-primary/30 shadow-[0_0_15px_rgba(255,92,51,0.2)]"
-                : "bg-white/5 text-zinc-400 border border-white/5 hover:bg-white/10 hover:text-zinc-300"
-            )}
-            title={isEditing ? "Editing Mode Active" : "Edit Itinerary"}
-          >
-            {isEditing ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="animate-pulse">
-                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z" />
-                <path d="m15 5 4 4" />
-                <path d="M9 11c0 2-1 3-3 4-1.5.75-2 2-2 3s.5 2.25 2 3c1 0 1.5-.5 2-1s1-1.5 1-2" stroke="currentColor" fill="currentColor" fillOpacity="0.2" className="animate-bounce" />
-                <circle cx="6" cy="18" r="1.5" fill="currentColor" />
-              </svg>
-            ) : (
-              <Pencil className="w-[18px] h-[18px]" />
-            )}
-          </button>
+          <div className="flex items-center gap-3 bg-black/20 rounded-xl p-1 border border-white/5 h-10 px-3 transition-all duration-300">
+            <label htmlFor="edit-mode-toggle" className="text-[10px] font-bold uppercase text-zinc-500 select-none cursor-pointer">
+              Edit Mode
+            </label>
+            <Switch
+              id="edit-mode-toggle"
+              checked={isEditing}
+              onCheckedChange={setIsEditing}
+              className="scale-75 data-[state=checked]:bg-primary"
+            />
+          </div>
         </div>
 
         {/* Actions Group */}
