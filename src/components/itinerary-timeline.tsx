@@ -1,12 +1,12 @@
 "use client";
 
 import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
-import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from "@/components/hotel-flight-editor";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Trash2, Plus, Minus, Sparkles, Plane, Hotel, Car, Bus } from "lucide-react";
-import { useState, useCallback, useContext, useEffect } from "react";
+import { Trash2, Plus, Minus, Sparkles, Camera } from "lucide-react";
+import { uploadItineraryPhoto } from "@/lib/upload-itinerary-photo";
+import { useState, useCallback, useContext, useEffect, useRef } from "react";
 import { CustomTabs } from "@/components/ui/custom-tabs";
 import { ItineraryContext } from "@/contexts/itinerary-context";
 import { getCurrencySymbol } from "@/lib/utils/currency";
@@ -34,10 +34,6 @@ import { CSS } from "@dnd-kit/utilities";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 
-import { FlightBanner } from "@/components/banners/flight-banner";
-import { HotelBanner } from "@/components/banners/hotel-banner";
-import { CabBanner } from "@/components/banners/cab-banner";
-import { BusBanner } from "@/components/banners/bus-banner";
 import { InlineEdit } from "@/components/ui/inline-edit";
 import { useItineraryDnd } from "@/hooks/use-itinerary-dnd";
 import { useReferenceOptions } from "@/hooks/use-reference-options";
@@ -57,10 +53,6 @@ type ItineraryTimelineProps = {
   editable?: boolean;
   onItineraryChange?: (itinerary: TravelItineraryOutput["itinerary"]) => void;
   onEditingChange?: (editing: boolean) => void;
-  hotels?: HotelInfo[];
-  flights?: FlightInfo[];
-  cabs?: CabInfo[];
-  buses?: BusInfo[];
   showTimestamps?: boolean;
   currency?: string;
   destinations?: string;
@@ -104,6 +96,28 @@ function SortableActivity({
   currencySymbol?: string;
   fallbackPhotos: string[];
 }) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Photo must be under 5MB.');
+      return;
+    }
+    setIsUploadingPhoto(true);
+    try {
+      const publicUrl = await uploadItineraryPhoto(file);
+      onUpdateStep('imageUrl', publicUrl);
+    } catch (err) {
+      console.error('[PhotoUpload] Failed to upload photo:', err);
+    } finally {
+      setIsUploadingPhoto(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
   const {
     attributes,
     listeners,
@@ -142,7 +156,7 @@ function SortableActivity({
 
         <div className="flex-1 min-w-0">
             <div className="glass-panel p-2 sm:p-3 rounded-xl flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center group/card transition-all">
-              <div className="hidden sm:flex w-14 h-14 rounded-md overflow-hidden flex-shrink-0 shadow-lg border border-white/5 bg-zinc-900/50">
+              <div className="hidden sm:flex w-14 h-14 rounded-md overflow-hidden flex-shrink-0 shadow-lg border border-white/5 bg-zinc-900/50 relative group/photo">
                 <img 
                   className="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700 brightness-[0.8]" 
                   src={step.imageUrl || getActivityFallbackUrl(stepIndex, fallbackPhotos)}
@@ -152,6 +166,30 @@ function SortableActivity({
                     (e.currentTarget as HTMLImageElement).onerror = null; 
                   }}
                 />
+                {isEditable && (
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handlePhotoUpload}
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
+                      disabled={isUploadingPhoto}
+                      title="Upload custom photo"
+                      className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover/photo:opacity-100 transition-opacity duration-200 cursor-pointer"
+                    >
+                      {isUploadingPhoto ? (
+                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <Camera className="w-4 h-4 text-white drop-shadow" />
+                      )}
+                    </button>
+                  </>
+                )}
               </div>
               
               <div className="flex-1 w-full min-w-0">
@@ -258,22 +296,11 @@ const ItineraryTimeline = ({
   editable = false,
   onItineraryChange,
   onEditingChange,
-  hotels = [],
-  flights = [],
-  cabs = [],
-  buses = [],
   showTimestamps = true,
   currency,
   destinations,
 }: ItineraryTimelineProps) => {
   const { toast } = useToast();
-
-  const defaultTab = flights.length > 0 ? "flights" : hotels.length > 0 ? "hotels" : cabs.length > 0 ? "cabs" : buses.length > 0 ? "buses" : "flights";
-  const [selectedLogisticsTab, setSelectedLogisticsTab] = useState<string>(defaultTab);
-  
-  useEffect(() => {
-    setSelectedLogisticsTab(flights.length > 0 ? "flights" : hotels.length > 0 ? "hotels" : cabs.length > 0 ? "cabs" : buses.length > 0 ? "buses" : "flights");
-  }, [flights.length, hotels.length, cabs.length, buses.length]);
 
   const [regeneratingDayIndex, setRegeneratingDayIndex] = useState<number | null>(null);
   const [promptText, setPromptText] = useState("");
@@ -677,223 +704,7 @@ const ItineraryTimeline = ({
         </DragOverlay>
       </DndContext>
 
-      {/* Global Logistics Summary */}
-      {(flights.length > 0 || hotels.length > 0 || cabs.length > 0 || buses.length > 0) && (
-        <div className="relative flex items-start gap-6 sm:gap-12 mt-16 sm:flex-row">
-          <div className="flex-1">
-            <Card className="overflow-hidden border border-white/[0.08] bg-zinc-950/70 backdrop-blur-xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl">
-              <CardHeader className="bg-white/[0.02] border-b border-white/[0.08] px-6 py-5">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <CardTitle className="font-headline text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-orange-500">
-                      Trip Logistics Overview
-                    </CardTitle>
-                  </div>
-                  <p className="text-xs font-medium text-zinc-500 uppercase tracking-widest pl-4">
-                    complete travel plan at a glance
-                  </p>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6 space-y-8">
-                {/* FLIGHT DETAILS */}
-                {flights.length > 0 && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2.5 border-b border-white/[0.08] pb-3">
-                      <div className="p-1.5 bg-primary/10 text-primary rounded-lg border border-primary/20">
-                        <Plane className="w-4 h-4" />
-                      </div>
-                      <h4 className="text-xs font-bold text-zinc-400 tracking-widest uppercase">Flight Details</h4>
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
-                      {flights.map(flight => (
-                        <div 
-                          key={flight.id} 
-                          className="group relative p-4 rounded-xl border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/30 hover:shadow-[0_0_12px_rgba(255,92,51,0.04)] transition-all duration-300 flex flex-col gap-2.5"
-                        >
-                          <div className="flex justify-between items-start gap-3">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <div className="font-semibold text-zinc-100 text-sm group-hover:text-primary transition-colors">
-                                {flight.airline || "Airline"} {flight.flightNumber}
-                              </div>
-                              <span className={`text-[9px] px-1.5 py-0.5 rounded font-semibold ${flight.flightType === 'connecting' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
-                                {flight.flightType === 'connecting' ? 'Connecting' : 'Direct'}
-                              </span>
-                            </div>
-                            {flight.pnr && (
-                              <div className="text-[9px] font-black tracking-wider px-2 py-0.5 bg-zinc-800 text-zinc-300 border border-zinc-700/50 rounded uppercase whitespace-nowrap">
-                                PNR: {flight.pnr}
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-xs text-zinc-400 leading-relaxed font-medium space-y-1.5">
-                            <div>
-                              <span className="text-zinc-300 font-semibold">{flight.flightType === 'connecting' ? 'Leg 1: ' : ''}{flight.departureAirport || "DEP"} → {flight.arrivalAirport || "ARR"}</span>
-                              <span className="mx-2 text-zinc-600">|</span>
-                              <span>{flight.departure} – {flight.arrival}</span>
-                              {flight.terminal && (
-                                <>
-                                  <span className="mx-2 text-zinc-600">|</span>
-                                  <span className="text-zinc-500">Term: {flight.terminal}</span>
-                                </>
-                              )}
-                            </div>
-                            {flight.flightType === 'connecting' && flight.connectingDepartureAirport && (
-                              <div className="pt-1.5 border-t border-white/[0.04]">
-                                <span className="text-zinc-300 font-semibold">Leg 2: {flight.connectingDepartureAirport} → {flight.connectingArrivalAirport || "ARR"}</span>
-                                <span className="mx-2 text-zinc-600">|</span>
-                                <span>{flight.connectingDeparture} – {flight.connectingArrival || "N/A"}</span>
-                                {flight.connectingAirline && (
-                                  <>
-                                    <span className="mx-2 text-zinc-600">|</span>
-                                    <span>{flight.connectingAirline} {flight.connectingFlightNumber}</span>
-                                  </>
-                                )}
-                                {flight.connectingTerminal && (
-                                  <>
-                                    <span className="mx-2 text-zinc-600">|</span>
-                                    <span className="text-zinc-500">Term: {flight.connectingTerminal}</span>
-                                  </>
-                                )}
-                                {flight.connectingPnr && (
-                                  <>
-                                    <span className="mx-2 text-zinc-600">|</span>
-                                    <span className="text-zinc-400">PNR: {flight.connectingPnr}</span>
-                                  </>
-                                )}
-                              </div>
-                            )}
-                            {flight.layover && (
-                              <div className="text-amber-500/90 font-semibold bg-amber-500/5 px-2 py-0.5 rounded w-fit border border-amber-500/10">
-                                Layover: {flight.layover}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
 
-                {/* HOTEL DETAILS */}
-                {hotels.length > 0 && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2.5 border-b border-white/[0.08] pb-3">
-                      <div className="p-1.5 bg-primary/10 text-primary rounded-lg border border-primary/20">
-                        <Hotel className="w-4 h-4" />
-                      </div>
-                      <h4 className="text-xs font-bold text-zinc-400 tracking-widest uppercase">Hotel Details</h4>
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
-                      {hotels.map(hotel => (
-                        <div 
-                          key={hotel.id} 
-                          className="group relative p-4 rounded-xl border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/30 hover:shadow-[0_0_12px_rgba(255,92,51,0.04)] transition-all duration-300 flex flex-col gap-2.5"
-                        >
-                          <div className="flex justify-between items-start gap-3">
-                            <div className="font-semibold text-zinc-100 text-sm group-hover:text-primary transition-colors">
-                              {hotel.name || "Hotel"}
-                            </div>
-                            {hotel.bookingRef && (
-                              <div className="text-[9px] font-black tracking-wider px-2 py-0.5 bg-zinc-800 text-zinc-300 border border-zinc-700/50 rounded uppercase whitespace-nowrap">
-                                Ref: {hotel.bookingRef}
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-xs text-zinc-400 leading-relaxed font-medium flex flex-col gap-1.5">
-                            <div className="truncate text-zinc-300">{hotel.address || "Address not provided"}</div>
-                            <div className="flex items-center gap-2 text-[10px] text-zinc-500 font-semibold bg-black/20 py-1 px-2 rounded w-fit border border-white/[0.02]">
-                              <span>Check-in: <span className="text-zinc-300">{hotel.checkIn}</span></span>
-                              <span className="text-zinc-700">•</span>
-                              <span>Check-out: <span className="text-zinc-300">{hotel.checkOut}</span></span>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* CAB DETAILS */}
-                {cabs.length > 0 && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2.5 border-b border-white/[0.08] pb-3">
-                      <div className="p-1.5 bg-primary/10 text-primary rounded-lg border border-primary/20">
-                        <Car className="w-4 h-4" />
-                      </div>
-                      <h4 className="text-xs font-bold text-zinc-400 tracking-widest uppercase">Cabs / Private Transport</h4>
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
-                      {cabs.map(cab => (
-                        <div 
-                          key={cab.id} 
-                          className="group relative p-4 rounded-xl border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/30 hover:shadow-[0_0_12px_rgba(255,92,51,0.04)] transition-all duration-300 flex flex-col gap-2.5"
-                        >
-                          <div className="flex justify-between items-start gap-3">
-                            <div className="font-semibold text-zinc-100 text-sm group-hover:text-primary transition-colors">
-                              {cab.vehicleType || "Vehicle"}
-                            </div>
-                            {cab.bookingRef && (
-                              <div className="text-[9px] font-black tracking-wider px-2 py-0.5 bg-zinc-800 text-zinc-300 border border-zinc-700/50 rounded uppercase whitespace-nowrap">
-                                Ref: {cab.bookingRef}
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-xs text-zinc-400 leading-relaxed font-medium">
-                            <span className="text-zinc-500">Pickup:</span> <span className="text-zinc-300">{cab.pickupTime}</span>
-                            {(cab.driverName || cab.driverContact) && (
-                              <>
-                                <span className="mx-2 text-zinc-600">|</span>
-                                <span className="text-zinc-400">{cab.driverName}</span>
-                                {cab.driverContact && <span className="text-zinc-500 ml-1">({cab.driverContact})</span>}
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* BUS DETAILS */}
-                {buses.length > 0 && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2.5 border-b border-white/[0.08] pb-3">
-                      <div className="p-1.5 bg-primary/10 text-primary rounded-lg border border-primary/20">
-                        <Bus className="w-4 h-4" />
-                      </div>
-                      <h4 className="text-xs font-bold text-zinc-400 tracking-widest uppercase">Tourist Bus Details</h4>
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
-                      {buses.map(bus => (
-                        <div 
-                          key={bus.id} 
-                          className="group relative p-4 rounded-xl border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] hover:border-primary/30 hover:shadow-[0_0_12px_rgba(255,92,51,0.04)] transition-all duration-300 flex flex-col gap-2.5"
-                        >
-                          <div className="flex justify-between items-start gap-3">
-                            <div className="font-semibold text-zinc-100 text-sm group-hover:text-primary transition-colors">
-                              {bus.busType || "Bus"}
-                            </div>
-                            {bus.pnr && (
-                              <div className="text-[9px] font-black tracking-wider px-2 py-0.5 bg-zinc-800 text-zinc-300 border border-zinc-700/50 rounded uppercase whitespace-nowrap">
-                                PNR: {bus.pnr}
-                              </div>
-                            )}
-                          </div>
-                          <div className="text-xs text-zinc-400 leading-relaxed font-medium">
-                            <span className="text-zinc-500">Reporting:</span> <span className="text-zinc-300 font-semibold">{bus.reportingTime}</span>
-                            <span className="mx-2 text-zinc-600">|</span>
-                            <span className="text-zinc-500">Departure:</span> <span className="text-zinc-300 font-semibold">{bus.departureTime}</span>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      )}
 
       {/* Add day button */}
       {editable && (
@@ -954,7 +765,7 @@ const ItineraryTimeline = ({
             <Button
               onClick={handleRegenerateDay}
               disabled={isRegeneratingDay || !promptText.trim() || isOverLimit}
-              className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-0 text-white font-medium flex items-center gap-2"
+              className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 border-0 text-white font-medium flex items-center gap-2"
             >
               {isRegeneratingDay ? (
                 <>

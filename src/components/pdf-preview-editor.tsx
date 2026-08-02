@@ -255,7 +255,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
         targetTheme: PdfTheme,
         onProgress?: (p: number, stage: string) => void
       ) => {
-        onProgress?.(5, "Preparing\u2026");
+        onProgress?.(10, "Preparing layout\u2026");
 
         // 1. Resolve PDF overrides
         let resolvedOverrides: any = pdfOverrides ?? {};
@@ -266,7 +266,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
 
         // If overrides not provided via props, fetch from Supabase
         if (!pdfOverrides && itineraryId) {
-          onProgress?.(8, "Loading saved settings\u2026");
+          onProgress?.(15, "Loading saved settings\u2026");
           try {
             const { data } = await supabase
               .from("itineraries")
@@ -309,9 +309,9 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
             payloadHash === resolvedOverrides.daySummariesHash &&
             loadedSummaries.length === days.length
           ) {
-            onProgress?.(35, "Summaries cached \u2713");
+            onProgress?.(45, "Loading summaries\u2026");
           } else {
-            onProgress?.(15, "Generating AI summaries\u2026");
+            onProgress?.(25, "Generating AI summaries\u2026");
             try {
               const dest = days[0]?.areaFocus?.split(",")[0] ?? "";
               const result = await generateDaySummaries({
@@ -355,7 +355,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
         setDaySummaries(loadedSummaries);
         setAboutPlace(loadedPlace);
 
-        onProgress?.(40, "Rendering PDF\u2026");
+        onProgress?.(55, "Rendering PDF layout\u2026");
 
         // 4. Mount the hidden container
         setIsContainerMounted(true);
@@ -363,7 +363,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
         // 5. Wait for React to commit — container + template must be in DOM and painted
         await new Promise<void>((r) => requestAnimationFrame(() => setTimeout(r, 80)));
 
-        onProgress?.(55, "Capturing layout\u2026");
+        onProgress?.(75, "Capturing pages\u2026");
 
         // 6. html2canvas
         const renderOverrides: any = {

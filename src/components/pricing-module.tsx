@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Wallet, Settings, AlertCircle, Save, Minimize2, Maximize2 } from "lucide-react";
+import { Plus, Trash2, Wallet, Settings, AlertCircle, Minimize2, Maximize2 } from "lucide-react";
 import { type Currency, type PaymentMilestone, type PricingTier, type ManualCostItem, type PricingConfig } from "@/types/pricing";
 
 // Store hooks — replaces all props
@@ -269,17 +269,6 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                     <span>Total Quote</span>
                     <span className="text-primary font-mono">{formatMoney(finalTotal, pricing.currency)}</span>
                   </div>
-                  
-                  {onSave && (
-                    <Button 
-                      onClick={() => onSave?.(pricing)} 
-                      disabled={isSaving}
-                      className="w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98] mt-2 flex items-center justify-center gap-2"
-                    >
-                      <Save className="w-4 h-4" />
-                      <span>{isSaving ? "Saving..." : "Update Costing"}</span>
-                    </Button>
-                  )}
                 </div>
 
                 {/* Pax information card */}
@@ -507,23 +496,10 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                       <span>Tax</span>
                       <span>+{formatMoney(taxAmount, pricing.currency)}</span>
                     </div>
-                    <div className="pt-2 mt-2 border-t border-primary/20 flex justify-between font-bold text-white text-lg mb-4">
+                    <div className="pt-2 mt-2 border-t border-primary/20 flex justify-between font-bold text-white text-lg">
                       <span>Total Client Quote</span>
                       <span>{formatMoney(finalTotal, pricing.currency)}</span>
                     </div>
-
-                    {onSave && (
-                      <Button 
-                        onClick={() => onSave?.(pricing)} 
-                        disabled={isSaving}
-                        className="w-full h-auto bg-primary hover:bg-primary/90 text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center px-4 whitespace-normal"
-                      >
-                        <Save className="w-4 h-4 mr-2 flex-shrink-0" />
-                        <span className="text-sm text-center">
-                          {isSaving ? "Updating Costing..." : "Update"}
-                        </span>
-                      </Button>
-                    )}
                   </div>
                 </div>
               </div>

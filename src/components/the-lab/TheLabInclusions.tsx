@@ -3,18 +3,19 @@
 import React, { useState, useRef, useEffect } from "react";
 import { CheckCircle2, XCircle, ScrollText, Ban, CreditCard, Minimize2, Maximize2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { useInclusionsSlice } from "@/store/the-lab/selectors";
 
 interface TheLabInclusionsProps {
-  inclusions: string;
-  setInclusions: (val: string) => void;
-  exclusions: string;
-  setExclusions: (val: string) => void;
-  termsAndConditions: string;
-  setTermsAndConditions: (val: string) => void;
-  cancellationPolicy: string;
-  setCancellationPolicy: (val: string) => void;
-  paymentMethods: string;
-  setPaymentMethods: (val: string) => void;
+  inclusions?: string;
+  setInclusions?: (val: string) => void;
+  exclusions?: string;
+  setExclusions?: (val: string) => void;
+  termsAndConditions?: string;
+  setTermsAndConditions?: (val: string) => void;
+  cancellationPolicy?: string;
+  setCancellationPolicy?: (val: string) => void;
+  paymentMethods?: string;
+  setPaymentMethods?: (val: string) => void;
 }
 
 const TAB_CONFIG = [
@@ -57,18 +58,24 @@ const TAB_CONFIG = [
 
 type TabValue = typeof TAB_CONFIG[number]["value"];
 
-export function TheLabInclusions({
-  inclusions,
-  setInclusions,
-  exclusions,
-  setExclusions,
-  termsAndConditions,
-  setTermsAndConditions,
-  cancellationPolicy,
-  setCancellationPolicy,
-  paymentMethods,
-  setPaymentMethods,
-}: TheLabInclusionsProps) {
+export function TheLabInclusions(props: TheLabInclusionsProps) {
+  const storeInclusions = useInclusionsSlice();
+
+  const inclusions = props.inclusions ?? storeInclusions.inclusions;
+  const setInclusions = props.setInclusions ?? storeInclusions.setInclusionsText;
+
+  const exclusions = props.exclusions ?? storeInclusions.exclusions;
+  const setExclusions = props.setExclusions ?? storeInclusions.setExclusionsText;
+
+  const termsAndConditions = props.termsAndConditions ?? storeInclusions.termsAndConditions;
+  const setTermsAndConditions = props.setTermsAndConditions ?? storeInclusions.setTermsAndConditionsText;
+
+  const cancellationPolicy = props.cancellationPolicy ?? storeInclusions.cancellationPolicy;
+  const setCancellationPolicy = props.setCancellationPolicy ?? storeInclusions.setCancellationPolicyText;
+
+  const paymentMethods = props.paymentMethods ?? storeInclusions.paymentMethods;
+  const setPaymentMethods = props.setPaymentMethods ?? storeInclusions.setPaymentMethodsText;
+
   const [activeTab, setActiveTab] = useState<TabValue>("inclusions");
   const [slideDir, setSlideDir] = useState<"left" | "right">("right");
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -81,7 +88,6 @@ export function TheLabInclusions({
     const el = tabRefs.current[idx];
     if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
     firstRender.current = false;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const handleTabSelect = (value: TabValue) => {

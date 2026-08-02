@@ -127,6 +127,9 @@ export const DesertTheme = ({
     
     const inclusionsList = parseList(inclusions);
     const exclusionsList = parseList(exclusions);
+    const paymentMethodsList = parseList(paymentMethods);
+    const cancellationPolicyList = parseList(cancellationPolicy);
+    const termsAndConditionsList = parseList(termsAndConditions);
 
     return (
         <div className="desert-wrap" style={{ fontFamily: "'Noto Serif', 'Georgia', serif", backgroundColor: "#fdfcfb", color: "#131314", width: "100%" }}>
@@ -278,10 +281,12 @@ export const DesertTheme = ({
             {aboutPlace && (
                 <section data-pdf-section="about" style={{ padding: "88px 64px", background: "#fcfaf7" }}>
                     <div style={{ display: "flex", gap: "50px", alignItems: "flex-start", maxWidth: "1000px", margin: "0 auto" }}>
-                        <div style={{ flex: "0 0 350px", position: "relative" }}>
-                            <div style={{ position: "absolute", top: "-15px", left: "-15px", width: "100%", height: "100%", border: "2px solid #e6d5c3", borderRadius: "16px" }} />
-                            <img src={Array.isArray(itinerary.itinerary) && itinerary.itinerary.length > 0 ? getDayImage(itinerary.itinerary[0]) : "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop"} alt="Destination" style={{ position: "relative", width: "100%", height: "450px", objectFit: "cover", borderRadius: "16px", display: "block", zIndex: 1, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }} crossOrigin="anonymous" />
-                        </div>
+                        {Array.isArray(itinerary.itinerary) && itinerary.itinerary.length > 0 && getDayImage(itinerary.itinerary[0]) ? (
+                            <div style={{ flex: "0 0 350px", position: "relative" }}>
+                                <div style={{ position: "absolute", top: "-15px", left: "-15px", width: "100%", height: "100%", border: "2px solid #e6d5c3", borderRadius: "16px" }} />
+                                <img src={getDayImage(itinerary.itinerary[0])} alt="Destination" style={{ position: "relative", width: "100%", height: "450px", objectFit: "cover", borderRadius: "16px", display: "block", zIndex: 1, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }} crossOrigin="anonymous" />
+                            </div>
+                        ) : null}
                         <div style={{ flex: 1, paddingTop: "20px" }}>
                             <p style={{ margin: "0 0 16px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "4px", color: "#b48b63", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>About The Destination</p>
                             <h2 style={{ margin: "0 0 24px 0", fontSize: "40px", color: "#111827", fontWeight: 500, lineHeight: "1.1" }}>{aboutPlace.title}</h2>
@@ -315,11 +320,15 @@ export const DesertTheme = ({
                 </div>
 
                 <div style={{ display: "flex", flexDirection: "column", gap: "48px" }}>
-                    {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => (
+                    {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => {
+                        const dayImg = getDayImage(day);
+                        return (
                         <article key={index} data-pdf-section={`day-${index}`} style={{ display: "flex", gap: "40px", alignItems: "center", pageBreakInside: "avoid", breakInside: "avoid", flexDirection: index % 2 === 0 ? "row" : "row-reverse" }}>
-                            <div style={{ flex: "0 0 32%", overflow: "hidden", borderRadius: "8px" }}>
-                                <img src={getDayImage(day)} alt={formatTitleCase(day.areaFocus)} style={{ width: "100%", height: "256px", objectFit: "cover", display: "block" }} crossOrigin="anonymous" />
-                            </div>
+                            {dayImg ? (
+                                <div style={{ flex: "0 0 32%", overflow: "hidden", borderRadius: "8px" }}>
+                                    <img src={dayImg} alt={formatTitleCase(day.areaFocus)} style={{ width: "100%", height: "256px", objectFit: "cover", display: "block" }} crossOrigin="anonymous" />
+                                </div>
+                            ) : null}
                             <div style={{ flex: 1 }}>
                                 <p style={{ margin: "0 0 8px 0", color: "#fb923c", fontSize: "14px", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     Day {index + 1}
@@ -332,12 +341,22 @@ export const DesertTheme = ({
                                         ? `${day.timeline[0].time} - ${day.timeline[day.timeline.length - 1].time}`
                                         : formatDate(day.date) || "Full Day"}
                                 </p>
-                                <p style={{ margin: 0, fontSize: "16px", lineHeight: "1.9", color: "#6b7280", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                                    {day.timeline?.map(step => step.details).join(" ") || formatDate(day.date)}
-                                </p>
+                                <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "10px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                                    {day.timeline?.map((step, si) => (
+                                        <li key={si} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+                                            <span style={{ flexShrink: 0, marginTop: "5px", width: "6px", height: "6px", borderRadius: "50%", background: "#fb923c", display: "inline-block" }} />
+                                            <span style={{ flex: 1, fontSize: "14px", lineHeight: "1.7", color: "#6b7280" }}>
+                                                {showTimestamps && step.time && (
+                                                    <span style={{ fontWeight: 700, color: "#fb923c", marginRight: "6px", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{step.time}</span>
+                                                )}
+                                                {step.details}
+                                            </span>
+                                        </li>
+                                    )) || <li style={{ fontSize: "14px", color: "#6b7280" }}>{formatDate(day.date)}</li>}
+                                </ul>
                             </div>
                         </article>
-                    ))}
+                    ); })}
                 </div>
             </section>
 
@@ -350,24 +369,32 @@ export const DesertTheme = ({
                     </div>
                     
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "40px", maxWidth: "1000px", margin: "0 auto" }}>
-                        {groupHotelsByName(hotels).map((h, i) => (
-                            <div key={`hotel-${i}`} style={{ display: "flex", gap: "24px", background: "#ffffff", border: "1px solid #f3e8d8", padding: "24px", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
-                                <div style={{ flexShrink: 0 }}>
-                                    <img src={h.imageUrls?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop'} alt={h.name} style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "8px" }} crossOrigin="anonymous" />
-                                </div>
-                                <div style={{ flex: 1, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                                    <div style={{ color: "#fb923c", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "8px" }}>
-                                        Hotel • {formatHotelStays(h.stays)}
+                        {groupHotelsByName(hotels).map((h, i) => {
+                            const validImages = h.imageUrls ? h.imageUrls.filter(url => url && url.trim().length > 0) : [];
+                            const hasPhoto = validImages.length > 0;
+                            return (
+                                <div key={`hotel-${i}`} style={{ display: "flex", gap: "20px", background: "#ffffff", border: "1px solid #f3e8d8", padding: "24px", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.03)", borderLeft: !hasPhoto ? `4px solid #b48b63` : undefined }}>
+                                    {hasPhoto ? (
+                                        <div style={{ flexShrink: 0 }}>
+                                            <img src={validImages[0]} alt={h.name} style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "8px" }} crossOrigin="anonymous" />
+                                        </div>
+                                    ) : (
+                                        <div style={{ width: "50px", height: "50px", background: "#fdf8f0", border: "1px solid #f5e6d3", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", flexShrink: 0 }}>🏨</div>
+                                    )}
+                                    <div style={{ flex: 1, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                                        <div style={{ color: "#fb923c", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "8px" }}>
+                                            Hotel • {formatHotelStays(h.stays)}
+                                        </div>
+                                        <h4 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1f2937", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>{h.name}</h4>
+                                        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px", fontSize: "13px", color: "#6b7280" }}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Check-in</span><span style={{ fontWeight: 600, color: "#374151" }}>{h.checkIn}</span></div>
+                                            <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Check-out</span><span style={{ fontWeight: 600, color: "#374151" }}>{h.checkOut}</span></div>
+                                            {h.bookingRef && <div style={{ display: "flex", justifyContent: "space-between" }}><span>Reference</span><span style={{ fontWeight: 600, color: "#b48b63" }}>{h.bookingRef}</span></div>}
+                                        </div>
                                     </div>
-                                    <h4 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1f2937", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>{h.name}</h4>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px", fontSize: "13px", color: "#6b7280" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Check-in</span><span style={{ fontWeight: 600, color: "#374151" }}>{h.checkIn}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Check-out</span><span style={{ fontWeight: 600, color: "#374151" }}>{h.checkOut}</span></div>
-                                        {h.bookingRef && <div style={{ display: "flex", justifyContent: "space-between" }}><span>Reference</span><span style={{ fontWeight: 600, color: "#b48b63" }}>{h.bookingRef}</span></div>}
-                                    </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                         {flights.map((f, i) => (
                             <div key={`flight-${i}`} style={{ display: "flex", gap: "24px", background: "#ffffff", border: "1px solid #f3e8d8", padding: "24px", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
                                 <div style={{ width: "100px", height: "100px", background: "#fcfaf7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", borderRadius: "8px" }}>✈️</div>
@@ -425,28 +452,34 @@ export const DesertTheme = ({
             )}
 
             {/* Inclusions & Exclusions */}
-            <section data-pdf-section="inclusions" style={{ padding: "88px 64px", background: "#fcfaf7" }}>
-                <div style={{ display: "flex", gap: "60px", maxWidth: "1000px", margin: "0 auto" }}>
-                    <div style={{ flex: 1 }}>
-                        <p style={{ margin: "0 0 12px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "3px", color: "#fb923c", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>What's Included</p>
-                        <h3 style={{ margin: "0 0 32px 0", fontSize: "32px", color: "#111827", fontWeight: 500 }}>Inclusions</h3>
-                        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "16px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                            {inclusionsList.length > 0 ? inclusionsList.map((inc, i) => (
-                                <li key={i} style={{ display: "flex", gap: "16px", fontSize: "15px", color: "#374151", lineHeight: "1.7", fontWeight: 500 }}><span style={{ color: "#fb923c", fontSize: "18px", marginTop: "-2px" }}>✓</span> <span>{inc}</span></li>
-                            )) : <li style={{ fontSize: "15px", color: "#9ca3af" }}>No inclusions specified.</li>}
-                        </ul>
+            {(inclusionsList.length > 0 || exclusionsList.length > 0) && (
+                <section data-pdf-section="inclusions" style={{ padding: "88px 64px", background: "#fcfaf7" }}>
+                    <div style={{ display: "flex", gap: "60px", maxWidth: "1000px", margin: "0 auto" }}>
+                        {inclusionsList.length > 0 && (
+                            <div style={{ flex: 1 }}>
+                                <p style={{ margin: "0 0 12px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "3px", color: "#fb923c", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>What's Included</p>
+                                <h3 style={{ margin: "0 0 32px 0", fontSize: "32px", color: "#111827", fontWeight: 500 }}>Inclusions</h3>
+                                <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "16px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                                    {inclusionsList.map((inc, i) => (
+                                        <li key={i} style={{ display: "flex", gap: "16px", fontSize: "15px", color: "#374151", lineHeight: "1.7", fontWeight: 500 }}><span style={{ color: "#fb923c", fontSize: "18px", marginTop: "-2px" }}>✓</span> <span>{inc}</span></li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        {exclusionsList.length > 0 && (
+                            <div style={{ flex: 1 }}>
+                                <p style={{ margin: "0 0 12px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "3px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>What's Not Included</p>
+                                <h3 style={{ margin: "0 0 32px 0", fontSize: "32px", color: "#111827", fontWeight: 500 }}>Exclusions</h3>
+                                <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "16px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                                    {exclusionsList.map((exc, i) => (
+                                        <li key={i} style={{ display: "flex", gap: "16px", fontSize: "15px", color: "#6b7280", lineHeight: "1.7", fontWeight: 500 }}><span style={{ color: "#d1d5db", fontSize: "18px", marginTop: "-2px" }}>✗</span> <span>{exc}</span></li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
-                    <div style={{ flex: 1 }}>
-                        <p style={{ margin: "0 0 12px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "3px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>What's Not Included</p>
-                        <h3 style={{ margin: "0 0 32px 0", fontSize: "32px", color: "#111827", fontWeight: 500 }}>Exclusions</h3>
-                        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "16px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                            {exclusionsList.length > 0 ? exclusionsList.map((exc, i) => (
-                                <li key={i} style={{ display: "flex", gap: "16px", fontSize: "15px", color: "#6b7280", lineHeight: "1.7", fontWeight: 500 }}><span style={{ color: "#d1d5db", fontSize: "18px", marginTop: "-2px" }}>✗</span> <span>{exc}</span></li>
-                            )) : <li style={{ fontSize: "15px", color: "#9ca3af" }}>No exclusions specified.</li>}
-                        </ul>
-                    </div>
-                </div>
-            </section>
+                </section>
+            )}
 
             {/* Pricing & Invoice */}
             <section data-pdf-section="pricing" style={{ padding: "88px 64px", background: "#ffffff" }}>
@@ -560,25 +593,31 @@ export const DesertTheme = ({
                     )}
 
                     {/* Policies & Methods — below, side by side */}
-                    <div style={{ display: "flex", gap: "40px" }}>
-                        <div style={{ flex: 1, background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
-                            <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Cancellation Policy</h3>
-                            <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
-                                {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
-                            </div>
+                    {(paymentMethodsList.length > 0 || cancellationPolicyList.length > 0) && (
+                        <div style={{ display: "flex", gap: "40px" }}>
+                            {cancellationPolicyList.length > 0 && (
+                                <div style={{ flex: 1, background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
+                                    <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Cancellation Policy</h3>
+                                    <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
+                                        {cancellationPolicyList.map((p, i) => <div key={i}>• {p}</div>)}
+                                    </div>
+                                </div>
+                            )}
+                            {paymentMethodsList.length > 0 && (
+                                <div style={{ flex: 1, background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
+                                    <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Accepted Payment Methods</h3>
+                                    <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
+                                        {paymentMethodsList.map((p, i) => <div key={i}>• {p}</div>)}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        <div style={{ flex: 1, background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
-                            <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Accepted Payment Methods</h3>
-                            <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
-                                {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
-                            </div>
-                        </div>
-                    </div>
-                    {termsAndConditions && (
+                    )}
+                    {termsAndConditionsList.length > 0 && (
                         <div style={{ marginTop: "32px", background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
                             <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Terms & Conditions</h3>
                             <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
-                                {parseList(termsAndConditions).map((p, i) => <div key={i}>• {p}</div>)}
+                                {termsAndConditionsList.map((p, i) => <div key={i}>• {p}</div>)}
                             </div>
                         </div>
                     )}

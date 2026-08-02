@@ -35,6 +35,9 @@ import type { PdfPreviewEditorRef } from "@/components/pdf-preview-editor";
 import type { PdfTheme } from "@/components/pdf-template";
 import { PdfRenderOverlay } from "@/components/ui/pdf-render-overlay";
 
+import { useLabStore } from "@/store/the-lab/labStore";
+import { usePdfSync } from "@/hooks/the-lab/usePdfSync";
+
 const EMPTY_ARRAY: any[] = [];
 const EMPTY_OBJECT: any = {};
 
@@ -50,7 +53,7 @@ export default function TheLab() {
     const params = new URLSearchParams(window.location.search);
     const urlTab = params.get("tab") as ActiveLabTab | null;
     const storedTab = localStorage.getItem("the_lab_active_tab") as ActiveLabTab | null;
-    const validTabs: ActiveLabTab[] = ['new', 'itinerary', 'history'];
+    const validTabs: ActiveLabTab[] = ['new', 'itinerary', 'flights-hotels', 'inclusions', 'pricing', 'history'];
     
     if (urlTab && validTabs.includes(urlTab)) {
       setActiveLabTabState(urlTab);
@@ -59,21 +62,27 @@ export default function TheLab() {
     }
   }, []);
 
-  const setActiveLabTab = (tab: ActiveLabTab) => {
+  const setActiveLabTab = useCallback((tab: ActiveLabTab) => {
     activeLabTabRef.current = tab;
     setActiveLabTabState(tab);
     localStorage.setItem("the_lab_active_tab", tab);
     const url = new URL(window.location.href);
     url.searchParams.set("tab", tab);
     window.history.replaceState({}, "", url.toString());
-  };
+  }, []);
+
   const [enquiryBanner, setEnquiryBanner] = useState<{ clientName: string; responseId: string } | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [showTimestamps, setShowTimestamps] = useState(true);
+
+  const handleSetIsEditing = useCallback((editing: boolean) => {
+    setIsEditing(editing);
+    if (editing) {
+      setActiveLabTab('itinerary');
+    }
+  }, [setActiveLabTab]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [selectedTheme, setSelectedTheme] = useState<PdfTheme>('classic');
 
   // PDF pre-render state (overlay shown before dialog opens)
   const previewRef = useRef<PdfPreviewEditorRef>(null);
@@ -97,24 +106,55 @@ export default function TheLab() {
   // without adding it to their dep arrays (keeps dep array size constant).
   const activeLabTabRef = useRef<ActiveLabTab>(activeLabTab);
 
-  // Local state mapped from loadedData
-  const [hotels, setHotels] = useState<any[]>(EMPTY_ARRAY);
-  const [flights, setFlights] = useState<any[]>(EMPTY_ARRAY);
-  const [cabs, setCabs] = useState<any[]>(EMPTY_ARRAY);
-  const [buses, setBuses] = useState<any[]>(EMPTY_ARRAY);
-  const [pricing, setPricing] = useState<any>(undefined);
-  const [optimizationCount, setOptimizationCount] = useState(0);
-  const [selectedClientId, setSelectedClientId] = useState("none");
-  const [selectedStatus, setSelectedStatus] = useState("draft");
-  const [tripMetadata, setTripMetadata] = useState<any>(null);
-  const [pdfOverrides, setPdfOverrides] = useState<any>(EMPTY_OBJECT);
-  const [inclusions, setInclusions] = useState<string>("");
-  const [exclusions, setExclusions] = useState<string>("");
-  const [termsAndConditions, setTermsAndConditions] = useState<string>("");
-  const [cancellationPolicy, setCancellationPolicy] = useState<string>("");
-  const [paymentMethods, setPaymentMethods] = useState<string>("");
+  // ─── Centralized Zustand Store Subscriptions ─────────────────────────────────
+  const hotels = useLabStore((state) => state.hotels);
+  const setHotels = useLabStore((state) => state.setHotels);
+  const flights = useLabStore((state) => state.flights);
+  const setFlights = useLabStore((state) => state.setFlights);
+  const cabs = useLabStore((state) => state.cabs);
+  const setCabs = useLabStore((state) => state.setCabs);
+  const buses = useLabStore((state) => state.buses);
+  const setBuses = useLabStore((state) => state.setBuses);
 
-  const { saveItinerary, isSaving } = useItinerarySave({ currentTripId, setCurrentTripId });
+  const pricing = useLabStore((state) => state.pricing);
+  const setPricing = useLabStore((state) => state.setPricing);
+
+  const inclusions = useLabStore((state) => state.inclusions);
+  const setInclusions = useLabStore((state) => state.setInclusionsText);
+  const exclusions = useLabStore((state) => state.exclusions);
+  const setExclusions = useLabStore((state) => state.setExclusionsText);
+  const termsAndConditions = useLabStore((state) => state.termsAndConditions);
+  const setTermsAndConditions = useLabStore((state) => state.setTermsAndConditionsText);
+  const cancellationPolicy = useLabStore((state) => state.cancellationPolicy);
+  const setCancellationPolicy = useLabStore((state) => state.setCancellationPolicyText);
+  const paymentMethods = useLabStore((state) => state.paymentMethods);
+  const setPaymentMethods = useLabStore((state) => state.setPaymentMethodsText);
+
+  const showTimestamps = useLabStore((state) => state.showTimestamps);
+  const setShowTimestamps = useLabStore((state) => state.setShowTimestamps);
+  const selectedTheme = useLabStore((state) => state.selectedTheme);
+  const setSelectedTheme = useLabStore((state) => state.setSelectedTheme);
+  const pdfOverrides = useLabStore((state) => state.pdfOverrides);
+  const setPdfOverrides = useLabStore((state) => state.setPdfOverrides);
+
+  const optimizationCount = useLabStore((state) => state.optimizationCount);
+  const setOptimizationCount = useLabStore((state) => state.setOptimizationCount);
+  const selectedClientId = useLabStore((state) => state.selectedClientId);
+  const setSelectedClientId = useLabStore((state) => state.setSelectedClientId);
+  const selectedStatus = useLabStore((state) => state.selectedStatus);
+  const setSelectedStatus = useLabStore((state) => state.setSelectedStatus);
+  const tripMetadata = useLabStore((state) => state.tripMetadata);
+  const setTripMetadata = useLabStore((state) => state.setTripMetadata);
+
+  const loadStateFromPersistence = useLabStore((state) => state.loadStateFromPersistence);
+  const resetStore = useLabStore((state) => state.resetStore);
+
+  // ─── Debounced PDF Regeneration Sync ───────────────────────────────────────
+  usePdfSync({ previewRef, isPreviewOpen, debounceMs: 400 });
+
+  const { saveItinerary, isSaving: isManualSaving } = useItinerarySave({ currentTripId, setCurrentTripId });
+  const storeIsSaving = useLabStore((state) => state.isSaving);
+  const isSaving = storeIsSaving || isManualSaving;
   const { baseCost, finalTotal, currencySymbol } = useBaseCostCalculator({ itinerary, flights, hotels, cabs, buses, pricing });
 
   const tripTitle = useMemo(() => {
@@ -143,31 +183,32 @@ export default function TheLab() {
     defaultValues: { startingLocation: "", endingLocation: "", startDate: undefined, endDate: undefined, destinations: "", travelTimePreference: "no_preference", leisureTime: false, daywiseDestinations: "", hotels: [] },
   });
 
-  // Hydrate from persistence
+  // Hydrate store from persistence
   useEffect(() => {
     if (loadedData) {
       setItinerary(loadedData.itinerary);
-      setHotels(loadedData.hotels || []);
-      setFlights(loadedData.flights || []);
-      setCabs(loadedData.cabs || []);
-      setBuses(loadedData.buses || []);
-      setPricing(loadedData.pricing);
-      setOptimizationCount(loadedData.optimizationCount);
-      setSelectedClientId(loadedData.selectedClientId);
-      setSelectedStatus(loadedData.selectedStatus);
-      setTripMetadata(loadedData.tripMetadata);
-      setShowTimestamps(loadedData.showTimestamps ?? true);
-      if (loadedData.selectedTheme) setSelectedTheme(loadedData.selectedTheme as PdfTheme);
-      if (loadedData.pdfOverrides) setPdfOverrides(loadedData.pdfOverrides);
-      setInclusions(loadedData.inclusions || "");
-      setExclusions(loadedData.exclusions || "");
-      setTermsAndConditions(loadedData.termsAndConditions || "");
-      setCancellationPolicy(loadedData.cancellationPolicy || "");
-      setPaymentMethods(loadedData.paymentMethods || "");
+      loadStateFromPersistence({
+        itinerary: loadedData.itinerary,
+        hotels: loadedData.hotels || [],
+        flights: loadedData.flights || [],
+        cabs: loadedData.cabs || [],
+        buses: loadedData.buses || [],
+        pricing: loadedData.pricing,
+        optimizationCount: loadedData.optimizationCount,
+        selectedClientId: loadedData.selectedClientId,
+        selectedStatus: loadedData.selectedStatus,
+        tripMetadata: loadedData.tripMetadata,
+        showTimestamps: loadedData.showTimestamps ?? true,
+        selectedTheme: (loadedData.selectedTheme as PdfTheme) || 'classic',
+        pdfOverrides: loadedData.pdfOverrides || {},
+        inclusions: loadedData.inclusions || "",
+        exclusions: loadedData.exclusions || "",
+        termsAndConditions: loadedData.termsAndConditions || "",
+        cancellationPolicy: loadedData.cancellationPolicy || "",
+        paymentMethods: loadedData.paymentMethods || "",
+      });
+
       if (loadedData.tripMetadata && currentTripId && currentTripId !== formSyncedForIdRef.current) {
-        // Only reset the form when the user has navigated to a DIFFERENT specific
-        // trip from history. This prevents the new-trip form from being prefilled
-        // on initial auto-load and avoids wiping user edits on re-renders.
         form.reset({
           ...loadedData.tripMetadata,
           hotels: loadedData.hotels || [],
@@ -175,13 +216,12 @@ export default function TheLab() {
         formSyncedForIdRef.current = currentTripId;
       }
     } else if (queryFromUrl) {
-      // Pre-fill from 'q' parameter if no persistence data
       const currentVals = form.getValues();
       if (!currentVals.destinations) {
         form.setValue('destinations', queryFromUrl);
       }
     }
-  }, [loadedData, setItinerary, form, queryFromUrl]);
+  }, [loadedData, setItinerary, form, queryFromUrl, loadStateFromPersistence]);
 
   // Pre-fill form from ?enquiry=<responseId> (client enquiry → itinerary one-click flow)
   useEffect(() => {
@@ -246,13 +286,13 @@ export default function TheLab() {
   // Auto-sync form changes to persistence
   useEffect(() => {
     const subscription = form.watch((values) => {
-      setTripMetadata(values);
+      setTripMetadata(values as any);
       if (values.hotels) {
         // Only update if they are different to prevent loop
         const formHotelsJson = JSON.stringify(values.hotels);
         const stateHotelsJson = JSON.stringify(hotels);
         if (formHotelsJson !== stateHotelsJson) {
-          setHotels(values.hotels as any);
+          setHotels((values.hotels as any[]) || []);
         }
       }
     });
@@ -287,14 +327,14 @@ export default function TheLab() {
       startingLocation: "", endingLocation: "", startDate: undefined, endDate: undefined, destinations: "", travelTimePreference: "no_preference", tripType: "relaxed", leisureTime: false, daywiseDestinations: "", hotels: []
     });
     formSyncedForIdRef.current = null; // allow next history trip to reset the form
-    setItinerary(null); setTripMetadata(null); setHotels([]); setFlights([]); setCabs([]); setBuses([]); setPricing(undefined);
-    setInclusions(""); setExclusions(""); setTermsAndConditions(""); setCancellationPolicy(""); setPaymentMethods("");
-    setCurrentTripId(null); setSelectedClientId("none"); setSelectedStatus("draft"); setIsEditing(false); setCurrentStep(0); setOptimizationCount(0);
+    setItinerary(null);
+    resetStore();
+    setCurrentTripId(null); setIsEditing(false); setCurrentStep(0);
     // Reset persistence WITHOUT writing to DB. This cancels pending auto-save
     // timers and nulls the ref so no phantom records get created.
     resetForNewTrip();
     setActiveLabTab('new');
-  }, [form, setItinerary, resetForNewTrip, setInclusions, setExclusions]);
+  }, [form, setItinerary, resetStore, resetForNewTrip]);
 
   const handleStatusChangeAction = useCallback(async (newStatus: string) => {
     setSelectedStatus(newStatus);
@@ -322,7 +362,7 @@ export default function TheLab() {
       // resetForNewTrip cancels pending auto-save timers and nulls the ref,
       // but does NOT write to the DB. No phantom records are created.
       setCurrentTripId(null);
-      setHotels(values.hotels || []);
+      setHotels((values.hotels as any[]) || []);
       setFlights([]);
       setCabs([]);
       setBuses([]);
@@ -514,7 +554,7 @@ export default function TheLab() {
               showTimestamps={showTimestamps} 
               setShowTimestamps={setShowTimestamps} 
               isEditing={isEditing} 
-              setIsEditing={setIsEditing} 
+              setIsEditing={handleSetIsEditing} 
               handleDownloadPdf={async () => {
                 // If cache is already valid, open dialog instantly
                 if (previewRef.current?.hasValidCache()) {
@@ -537,6 +577,7 @@ export default function TheLab() {
               }} 
               handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
               isSaving={isSaving} 
+              isPreRendering={isPreRendering}
               activeLabTab={activeLabTab}
             />
           </div>
@@ -584,7 +625,7 @@ export default function TheLab() {
                     itinerary={itinerary} 
                     setItinerary={setItinerary} 
                     isEditing={isEditing} 
-                    setIsEditing={setIsEditing} 
+                    setIsEditing={handleSetIsEditing} 
                     hotels={hotels} 
                     setHotels={setHotels} 
                     flights={flights} 
@@ -631,7 +672,7 @@ export default function TheLab() {
                   selectedClientId={selectedClientId} 
                   optimizationCount={optimizationCount} 
                   isGenerating={isGenerating} 
-                  onOptimize={(feedback) => { onSubmit(form.getValues(), feedback); setOptimizationCount(p => p + 1); }} 
+                  onOptimize={(feedback) => { onSubmit(form.getValues(), feedback); setOptimizationCount(optimizationCount + 1); }} 
                   finalTotal={finalTotal}
                   currencySymbol={currencySymbol}
                   tripMetadata={tripMetadata}
@@ -672,6 +713,7 @@ export default function TheLab() {
         visible={isPreRendering}
         progress={preRenderProgress}
         stage={preRenderStage}
+        title={tripTitle}
       />
 
     </section>

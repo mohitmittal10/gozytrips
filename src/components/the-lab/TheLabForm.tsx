@@ -298,6 +298,8 @@ const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
 });
 StepStayOptions.displayName = 'StepStayOptions';
 
+import { GlassCalendar } from "@/components/ui/glass-calendar";
+
 const StepDates = React.memo(({ form, sidebarMode }: { form: UseFormReturn<TheLabFormValues>, sidebarMode?: boolean }) => (
   <div className={cn("grid gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700", sidebarMode ? "grid-cols-1" : "grid-cols-2")}>
     <FormField control={form.control} name="startDate" render={({ field }) => (
@@ -312,8 +314,12 @@ const StepDates = React.memo(({ form, sidebarMode }: { form: UseFormReturn<TheLa
               </Button>
             </FormControl>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 border border-white/10 bg-zinc-900 shadow-2xl rounded-xl" align="start">
-            <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))} initialFocus />
+          <PopoverContent className="w-auto p-0 border-none bg-transparent shadow-2xl rounded-3xl" align="start">
+            <GlassCalendar
+              selectedDate={field.value}
+              onDateSelect={field.onChange}
+              minDate={new Date()}
+            />
           </PopoverContent>
         </Popover>
         <FormMessage className="text-[10px]" />
@@ -331,8 +337,12 @@ const StepDates = React.memo(({ form, sidebarMode }: { form: UseFormReturn<TheLa
               </Button>
             </FormControl>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 border border-white/10 bg-zinc-900 shadow-2xl rounded-xl" align="start">
-            <Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => { const startDate = form.getValues("startDate"); return date < (startDate || new Date()); }} initialFocus />
+          <PopoverContent className="w-auto p-0 border-none bg-transparent shadow-2xl rounded-3xl" align="start">
+            <GlassCalendar
+              selectedDate={field.value}
+              onDateSelect={field.onChange}
+              minDate={form.getValues("startDate") || new Date()}
+            />
           </PopoverContent>
         </Popover>
         <FormMessage className="text-[10px]" />

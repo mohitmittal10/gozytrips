@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plane, DollarSign, Eye, AlertCircle, Edit, MapPin, Save } from "lucide-react";
+import { Plane, DollarSign, Eye, AlertCircle, Edit, MapPin, Save, Loader2 } from "lucide-react";
 import { PdfPreviewEditor } from "@/components/pdf-preview-editor";
 import ItineraryTimeline from "@/components/itinerary-timeline";
 import HotelFlightEditor from "@/components/hotel-flight-editor";
@@ -239,7 +239,11 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
             disabled={isSaving || !isValid}
             className="h-9 bg-primary hover:bg-primary/90 text-primary-foreground"
           >
-            <Save className="w-4 h-4 mr-2" />
+            {isSaving ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin shrink-0" />
+            ) : (
+              <Save className="w-4 h-4 mr-2 shrink-0" />
+            )}
             {isSaving ? "Saving..." : "Save Changes"}
           </Button>
 
@@ -284,7 +288,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
 
           <Button
             onClick={() => setIsPreviewOpen(true)}
-            className="h-9 glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 border-0"
+            className="h-9 glass-button bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 border-0"
           >
             <Eye className="w-4 h-4 mr-2" />
             Preview &amp; Export

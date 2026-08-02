@@ -155,7 +155,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
           <History className="w-10 h-10 text-primary/70" />
           <div className="absolute inset-0 rounded-full border border-primary/20 scale-125 animate-ping opacity-20" />
         </div>
-        <h3 className="text-3xl font-serif font-bold text-white mb-4 uppercase tracking-wider">The Archive is Empty</h3>
+        <h3 className="text-3xl font-bold text-white mb-4 uppercase tracking-wider">The Archive is Empty</h3>
         <p className="text-zinc-500 max-w-sm mx-auto text-sm leading-relaxed mb-10">
           Your travel masterpieces await. Start a new generation to begin cataloging your travel experiences.
         </p>

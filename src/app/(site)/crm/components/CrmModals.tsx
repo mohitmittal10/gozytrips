@@ -200,8 +200,6 @@ export function CrmModals() {
                                 itinerary={selectedTripForModal.itinerary_data?.itinerary || []}
                                 editable={false}
                                 showDecorations={true}
-                                hotels={(selectedTripForModal.itinerary_data as any)?.hotels || []}
-                                flights={(selectedTripForModal.itinerary_data as any)?.flights || []}
                                 destinations={(selectedTripForModal as any)?.destinations}
                             />
                         </div>

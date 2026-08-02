@@ -191,6 +191,9 @@ export default function ClientPortalPage({
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsAuthenticated(!!session?.user);
       setCheckingAuth(false);
+    }).catch(() => {
+      setIsAuthenticated(false);
+      setCheckingAuth(false);
     });
   }, []);
 

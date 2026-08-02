@@ -426,7 +426,17 @@ export const PdfFlightAndHotelSummary = ({ flights, hotels, accentColor, theme }
 };
 
 export const PdfInclusionsPage = ({ inclusions, exclusions, termsAndConditions, cancellationPolicy, accentColor, theme }: { inclusions?: string, exclusions?: string, termsAndConditions?: string, cancellationPolicy?: string, accentColor: string, theme: PdfTheme }) => {
-    if (!inclusions && !exclusions && !termsAndConditions && !cancellationPolicy) return null;
+    const parseList = (text?: string) => {
+        if (!text) return [];
+        return text.split('\n').map(s => s.trim().replace(/^- /, '')).filter(s => s.length > 0 && s !== '-');
+    };
+
+    const inclusionsList = parseList(inclusions);
+    const exclusionsList = parseList(exclusions);
+    const termsList = parseList(termsAndConditions);
+    const cancellationList = parseList(cancellationPolicy);
+
+    if (inclusionsList.length === 0 && exclusionsList.length === 0 && termsList.length === 0 && cancellationList.length === 0) return null;
     const styles = getPricingThemeStyles(theme, accentColor);
 
     return (
@@ -436,7 +446,7 @@ export const PdfInclusionsPage = ({ inclusions, exclusions, termsAndConditions, 
             </h2>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "30px" }}>
-                {inclusions && (
+                {inclusionsList.length > 0 && (
                     <div style={{ background: styles.quoteCardBackground, padding: "25px", borderRadius: styles.quoteCardRadius, border: styles.quoteCardBorder }}>
                         <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#10b981", textTransform: "uppercase", letterSpacing: "1px" }}>Included</h3>
                         <div style={{ fontSize: "15px", color: styles.bodyTextColor, whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
@@ -444,7 +454,7 @@ export const PdfInclusionsPage = ({ inclusions, exclusions, termsAndConditions, 
                         </div>
                     </div>
                 )}
-                {exclusions && (
+                {exclusionsList.length > 0 && (
                     <div style={{ background: styles.quoteCardBackground, padding: "25px", borderRadius: styles.quoteCardRadius, border: styles.quoteCardBorder }}>
                         <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#f43f5e", textTransform: "uppercase", letterSpacing: "1px" }}>Not Included</h3>
                         <div style={{ fontSize: "15px", color: styles.bodyTextColor, whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
@@ -452,7 +462,7 @@ export const PdfInclusionsPage = ({ inclusions, exclusions, termsAndConditions, 
                         </div>
                     </div>
                 )}
-                {termsAndConditions && (
+                {termsList.length > 0 && (
                     <div style={{ background: styles.quoteCardBackground, padding: "25px", borderRadius: styles.quoteCardRadius, border: styles.quoteCardBorder }}>
                         <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#3b82f6", textTransform: "uppercase", letterSpacing: "1px" }}>Terms & Conditions</h3>
                         <div style={{ fontSize: "15px", color: styles.bodyTextColor, whiteSpace: "pre-wrap", lineHeight: "1.6" }}>
@@ -460,7 +470,7 @@ export const PdfInclusionsPage = ({ inclusions, exclusions, termsAndConditions, 
                         </div>
                     </div>
                 )}
-                {cancellationPolicy && (
+                {cancellationList.length > 0 && (
                     <div style={{ background: styles.quoteCardBackground, padding: "25px", borderRadius: styles.quoteCardRadius, border: styles.quoteCardBorder }}>
                         <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#f97316", textTransform: "uppercase", letterSpacing: "1px" }}>Cancellation Policy</h3>
                         <div style={{ fontSize: "15px", color: styles.bodyTextColor, whiteSpace: "pre-wrap", lineHeight: "1.6" }}>

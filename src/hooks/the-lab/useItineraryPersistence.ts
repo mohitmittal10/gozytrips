@@ -5,6 +5,106 @@ import type { LoadedPersistenceData } from "@/types/the-lab";
 import { createClient } from "@/lib/supabase/client";
 import { calcPricingBreakdown } from "@/services/financial";
 import { defaultPricingConfig, DEFAULT_CURRENCY } from "@/types/pricing";
+import { useLabStore } from "@/store/the-lab/labStore";
+
+export function buildComparisonPayload(data: Partial<LoadedPersistenceData>) {
+  const pricingCfg = {
+    ...defaultPricingConfig,
+    ...(data.pricing || {}),
+    manualOptions: data.pricing?.manualOptions ?? [],
+    milestones: data.pricing?.milestones ?? defaultPricingConfig.milestones,
+  };
+
+  const itineraryData = {
+    ...(data.itinerary || {}),
+    hotels: data.hotels || [],
+    flights: data.flights || [],
+    cabs: data.cabs || [],
+    buses: data.buses || [],
+    pricing: pricingCfg,
+    inclusions: data.inclusions !== undefined ? data.inclusions : "",
+    exclusions: data.exclusions !== undefined ? data.exclusions : "",
+    termsAndConditions: data.termsAndConditions !== undefined ? data.termsAndConditions : "",
+    cancellationPolicy: data.cancellationPolicy !== undefined ? data.cancellationPolicy : "",
+    paymentMethods: data.paymentMethods !== undefined ? data.paymentMethods : "",
+  };
+
+  const formValues = data.tripMetadata || {};
+  const startLoc = formValues.startingLocation;
+  const dests = formValues.destinations;
+
+  let nightsDaysSuffix = "";
+  if (formValues.startDate && formValues.endDate) {
+    const s = new Date(formValues.startDate);
+    const e = new Date(formValues.endDate);
+    if (!isNaN(s.getTime()) && !isNaN(e.getTime()) && e > s) {
+      const totalDays = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24));
+      nightsDaysSuffix = ` ${totalDays}N ${totalDays + 1}D`;
+    }
+  }
+
+  let generatedTitle = "Untitled Lab Draft";
+  if (dests) {
+    if (startLoc) {
+      generatedTitle = `${startLoc} to ${dests}${nightsDaysSuffix}`;
+    } else {
+      generatedTitle = `Trip to ${dests}${nightsDaysSuffix}`;
+    }
+  }
+
+  let startDate = null;
+  let endDate = null;
+  if (formValues.startDate) {
+    const d = new Date(formValues.startDate);
+    if (!isNaN(d.getTime())) startDate = format(d, "yyyy-MM-dd");
+  }
+  if (formValues.endDate) {
+    const d = new Date(formValues.endDate);
+    if (!isNaN(d.getTime())) endDate = format(d, "yyyy-MM-dd");
+  }
+
+  const { finalTotal } = calcPricingBreakdown({
+    itinerary: (data.itinerary as any)?.itinerary || [],
+    hotels: data.hotels || [],
+    flights: data.flights || [],
+    cabs: data.cabs || [],
+    buses: data.buses || [],
+    pricing: pricingCfg
+  });
+
+  const normalizedFormValues = {
+    ...formValues,
+    startDate: startDate,
+    endDate: endDate,
+  };
+
+  return {
+    title: generatedTitle,
+    status: data.selectedStatus || "draft",
+    starting_location: formValues.startingLocation || "In Preparation",
+    ending_location: formValues.endingLocation || formValues.startingLocation || "In Preparation",
+    destinations: dests || "TBD",
+    start_date: startDate || "1970-01-01",
+    end_date: endDate || "1970-01-01",
+    budget: formValues.budget || null,
+    adult_pax: Number(pricingCfg.adultPax || 2),
+    child_pax: Number(pricingCfg.childPax || 0),
+    infant_pax: Number(pricingCfg.infantPax || 0),
+    markup_value: Number(pricingCfg.markupValue || 15),
+    markup_type: pricingCfg.markupType || 'percentage',
+    tax_percentage: Number(pricingCfg.taxPercentage || 0),
+    client_price: finalTotal > 0 ? finalTotal : null,
+    itinerary_data: itineraryData,
+    generation_preferences: normalizedFormValues,
+    client_id: data.selectedClientId === "none" ? null : data.selectedClientId,
+    optimization_count: Number(data.optimizationCount || 0),
+    show_timestamps: data.showTimestamps ?? true,
+    selected_theme: data.selectedTheme || 'classic',
+    pdf_overrides: data.pdfOverrides || {},
+    draft_source_itinerary_id: data.draftSourceItineraryId || null,
+    currency: pricingCfg.currency,
+  };
+}
 
 export function useItineraryPersistence({
   currentTripId,
@@ -126,18 +226,8 @@ export function useItineraryPersistence({
             paymentMethods: itineraryData.paymentMethods || ""
           };
 
-          // Seed the payload ref so we don't immediately re-save what we just loaded
-          lastPayloadRef.current = JSON.stringify({
-            status: newData.selectedStatus,
-            itinerary_data: itineraryData,
-            generation_preferences: data.generation_preferences || {},
-            client_id: newData.selectedClientId === "none" ? null : newData.selectedClientId,
-            optimization_count: newData.optimizationCount,
-            show_timestamps: newData.showTimestamps,
-            selected_theme: newData.selectedTheme,
-            pdf_overrides: newData.pdfOverrides,
-            draft_source_itinerary_id: newData.draftSourceItineraryId
-          });
+          // Seed the payload ref with canonical comparison structure so opening a draft doesn't trigger immediate re-save
+          lastPayloadRef.current = JSON.stringify(buildComparisonPayload(newData));
 
           setLoadedData(newData);
         } else if (active) {
@@ -167,126 +257,27 @@ export function useItineraryPersistence({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user) return null;
 
-      const pricingCfg = {
-        ...defaultPricingConfig,
-        ...(data.pricing || {}),
-        // Always ensure these are arrays and costingType is set
-        manualOptions: data.pricing?.manualOptions ?? [],
-        milestones: data.pricing?.milestones ?? defaultPricingConfig.milestones,
+      const comparisonPayload = buildComparisonPayload(data);
+      const payloadString = JSON.stringify(comparisonPayload);
 
-      };
-
-      const itineraryData = {
-        ...(data.itinerary || {}),
-        hotels: data.hotels || [],
-        flights: data.flights || [],
-        cabs: data.cabs || [],
-        buses: data.buses || [],
-        pricing: pricingCfg,
-        inclusions: data.inclusions !== undefined ? data.inclusions : "",
-        exclusions: data.exclusions !== undefined ? data.exclusions : "",
-        termsAndConditions: data.termsAndConditions !== undefined ? data.termsAndConditions : "",
-        cancellationPolicy: data.cancellationPolicy !== undefined ? data.cancellationPolicy : "",
-        paymentMethods: data.paymentMethods !== undefined ? data.paymentMethods : "",
-      };
-
-      const formValues = data.tripMetadata || {};
-      const startLoc = formValues.startingLocation;
-      const endLoc = formValues.endingLocation || startLoc;
-      const dests = formValues.destinations;
-      
-      // Compute nights/days suffix from form dates if available
-      let nightsDaysSuffix = "";
-      if (formValues.startDate && formValues.endDate) {
-        const s = new Date(formValues.startDate);
-        const e = new Date(formValues.endDate);
-        if (!isNaN(s.getTime()) && !isNaN(e.getTime()) && e > s) {
-          const totalDays = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24));
-          const nights = totalDays;
-          const days = totalDays + 1;
-          nightsDaysSuffix = ` ${nights}N ${days}D`;
-        }
-      }
-
-      let generatedTitle = "Untitled Lab Draft";
-      if (dests) {
-        if (startLoc) {
-          generatedTitle = `${startLoc} to ${dests}${nightsDaysSuffix}`;
-        } else {
-          generatedTitle = `Trip to ${dests}${nightsDaysSuffix}`;
-        }
-      }
-
-      // Format dates if present
-      let startDate = null;
-      let endDate = null;
-      if (formValues.startDate) {
-        const d = new Date(formValues.startDate);
-        if (!isNaN(d.getTime())) startDate = format(d, "yyyy-MM-dd");
-      }
-      if (formValues.endDate) {
-        const d = new Date(formValues.endDate);
-        if (!isNaN(d.getTime())) endDate = format(d, "yyyy-MM-dd");
-      }
-
-      // pricingCfg is already defined above with proper defaults
-
-      const { finalTotal } = calcPricingBreakdown({
-        itinerary: (data.itinerary as any)?.itinerary || [],
-        hotels: data.hotels || [],
-        flights: data.flights || [],
-        cabs: data.cabs || [],
-        buses: data.buses || [],
-        pricing: pricingCfg
-      });
-
-      const finalClientPrice = finalTotal;
-
-      const updatePayload: any = {
-        user_id: session.user.id,
-        title: generatedTitle,
-        status: data.selectedStatus || "draft",
-        starting_location: formValues.startingLocation || "In Preparation",
-        ending_location: formValues.endingLocation || formValues.startingLocation || "In Preparation",
-        destinations: dests || "TBD",
-        start_date: startDate || format(new Date(), "yyyy-MM-dd"),
-        end_date: endDate || format(new Date(), "yyyy-MM-dd"),
-        budget: formValues.budget || (loadedData?.tripMetadata as any)?.budget || null,
-        // Strict casting for numeric fields to prevent 400 errors
-        adult_pax: Number(pricingCfg.adultPax || 2),
-        child_pax: Number(pricingCfg.childPax || 0),
-        infant_pax: Number(pricingCfg.infantPax || 0),
-        markup_value: Number(pricingCfg.markupValue || 15),
-        markup_type: pricingCfg.markupType || 'percentage',
-        tax_percentage: Number(pricingCfg.taxPercentage || 0),
-
-        client_price: finalClientPrice > 0 ? finalClientPrice : null,
-        itinerary_data: itineraryData || {},
-        generation_preferences: formValues,
-        client_id: data.selectedClientId === "none" ? null : data.selectedClientId,
-        optimization_count: Number(data.optimizationCount || 0),
-        show_timestamps: data.showTimestamps ?? true,
-        selected_theme: data.selectedTheme || 'classic',
-        pdf_overrides: data.pdfOverrides || {},
-        draft_source_itinerary_id: data.draftSourceItineraryId,
-        ...(data.share_token !== undefined ? { share_token: data.share_token } : {}),
-        ...(data.share_enabled !== undefined ? { share_enabled: data.share_enabled } : {}),
-        last_activity_at: new Date().toISOString(),
-        currency: pricingCfg.currency,
-        updated_financial_at: new Date().toISOString()
-      };
-
-      // Dirty check: only compare data payload (not the record ID) so that
-      // switching between records always triggers an actual DB write even
-      // if the data happens to look the same.
-      const payloadString = JSON.stringify(updatePayload);
-      
       // Dirty check: Only skip if payload matches AND we aren't trying to perform 
       // an initial insertion that was previously blocked by a background no-op (allowInsert=false).
       if (payloadString === lastPayloadRef.current && (id || !allowInsert)) {
         return id;
       }
       lastPayloadRef.current = payloadString;
+
+      const now = new Date().toISOString();
+      const updatePayload: any = {
+        user_id: session.user.id,
+        ...comparisonPayload,
+        start_date: comparisonPayload.start_date === "1970-01-01" ? format(new Date(), "yyyy-MM-dd") : comparisonPayload.start_date,
+        end_date: comparisonPayload.end_date === "1970-01-01" ? format(new Date(), "yyyy-MM-dd") : comparisonPayload.end_date,
+        ...(data.share_token !== undefined ? { share_token: data.share_token } : {}),
+        ...(data.share_enabled !== undefined ? { share_enabled: data.share_enabled } : {}),
+        last_activity_at: now,
+        updated_financial_at: now
+      };
 
       if (id) {
         // UPDATE existing record
@@ -329,17 +320,33 @@ export function useItineraryPersistence({
     if (saveTimer.current) clearTimeout(saveTimer.current);
     // Capture data in the closure so the correct snapshot is used when the timer fires.
     const snapshot = data;
-    saveTimer.current = setTimeout(() => executeSave(snapshot, currentTripIdRef.current, false), 1500);
+    saveTimer.current = setTimeout(async () => {
+      useLabStore.getState().setAutosaveStatus("saving");
+      try {
+        await executeSave(snapshot, currentTripIdRef.current, false);
+        useLabStore.getState().setAutosaveStatus("saved");
+      } catch {
+        useLabStore.getState().setAutosaveStatus("error");
+      }
+    }, 1500);
   }, [executeSave]);
 
-  const saveNow = useCallback((data: Partial<LoadedPersistenceData>, explicitId?: string | null) => {
+  const saveNow = useCallback(async (data: Partial<LoadedPersistenceData>, explicitId?: string | null) => {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     const targetId = explicitId !== undefined ? explicitId : currentTripIdRef.current;
     // Immediately sync the ref so any concurrent saveAll timers use the correct ID.
     if (explicitId !== undefined) {
       currentTripIdRef.current = explicitId;
     }
-    return executeSave(data, targetId, true);
+    useLabStore.getState().setAutosaveStatus("saving");
+    try {
+      const res = await executeSave(data, targetId, true);
+      useLabStore.getState().setAutosaveStatus("saved");
+      return res;
+    } catch (err) {
+      useLabStore.getState().setAutosaveStatus("error");
+      throw err;
+    }
   }, [executeSave]);
 
   // Cleanly resets persistence state for a new trip WITHOUT writing to the DB.
@@ -351,6 +358,7 @@ export function useItineraryPersistence({
     currentTripIdRef.current = null;
     lastPayloadRef.current = ""; // Reset dirty-check so next real save always writes
     lastFetchedIdRef.current = null; // Allow a fresh fetch if needed
+    useLabStore.getState().setAutosaveStatus("saved");
   }, []);
 
   return { loadedData, isLoading, saveAll, saveNow, resetForNewTrip };

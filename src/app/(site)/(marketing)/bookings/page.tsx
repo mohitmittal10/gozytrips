@@ -97,7 +97,7 @@ export default function BookingsPage() {
             </div>
             <Button
               onClick={() => setShowDialog(true)}
-              className="glass-button bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-0 gap-2"
+              className="glass-button bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 text-white border-0 gap-2"
             >
               <Plus className="w-4 h-4" />
               New Booking

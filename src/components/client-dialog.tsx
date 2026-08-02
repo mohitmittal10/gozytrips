@@ -471,7 +471,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
               <Button
                 type="submit"
                 disabled={form.formState.isSubmitting || (hasFailedSubmit && !form.formState.isValid)}
-                className="glass-button border-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90 transition-opacity"
+                className="glass-button border-0 bg-gradient-to-r from-pink-500 to-orange-400 text-white hover:opacity-90 transition-opacity"
               >
                 {form.formState.isSubmitting ? "Saving..." : "Save Client"}
               </Button>

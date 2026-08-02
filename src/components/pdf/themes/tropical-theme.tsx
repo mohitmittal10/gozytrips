@@ -64,9 +64,12 @@ export const TropicalTheme = ({
     const totalNights = Math.max(0, totalDays - 1);
 
     // Format inclusions/exclusions string into arrays
-    const parseList = (text: string) => text ? text.split('\n').filter(l => l.trim().length > 0) : [];
+    const parseList = (text: string) => text ? text.split('\n').map(s => s.trim().replace(/^- /, '')).filter(l => l.length > 0 && l !== '-') : [];
     const inclusionsList = parseList(inclusions || '');
     const exclusionsList = parseList(exclusions || '');
+    const paymentMethodsList = parseList(paymentMethods || '');
+    const cancellationPolicyList = parseList(cancellationPolicy || '');
+    const termsAndConditionsList = parseList(termsAndConditions || '');
 
     const resolvedBase = baseCost || 0;
     const { baseCost: resolvedBaseCost, markupAmount, costWithMarkup, taxAmount, finalTotal: calculatedFinalTotal } = calcPricingFromBaseCost(resolvedBase, pricing);
@@ -770,8 +773,10 @@ export const TropicalTheme = ({
 
             <div className="tropical-wrap">
                 {/* ── HEADER ── */}
-                <div className="hero" data-pdf-section="cover" style={{ position: "relative" }}>
-                    <img src={getCoverImage(itinerary)} alt="Resort Banner" crossOrigin="anonymous" />
+                <div className="hero" data-pdf-section="cover" style={{ position: "relative", background: "#0f172a", minHeight: "260px" }}>
+                    {getCoverImage(itinerary) ? (
+                        <img src={getCoverImage(itinerary)} alt="Resort Banner" crossOrigin="anonymous" />
+                    ) : null}
                     <div className="hero-overlay"></div>
                     {/* Agency logo badge — top right of hero (logo only, no name) */}
                     {(agent.logoUrl || agent.companyName) && (
@@ -853,10 +858,12 @@ export const TropicalTheme = ({
                 {/* ── ABOUT THE DESTINATION ── */}
                 <section data-pdf-section="about">
                     <div className="about-grid">
-                        <div className="about-img-wrap">
-                            <img className="about-img" src={Array.isArray(itinerary.itinerary) && itinerary.itinerary.length > 0 ? getDayImage(itinerary.itinerary[0]) : "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop"} alt="Destination" crossOrigin="anonymous" />
-                            <div className="about-glow"></div>
-                        </div>
+                        {Array.isArray(itinerary.itinerary) && itinerary.itinerary.length > 0 && getDayImage(itinerary.itinerary[0]) ? (
+                            <div className="about-img-wrap">
+                                <img className="about-img" src={getDayImage(itinerary.itinerary[0])} alt="Destination" crossOrigin="anonymous" />
+                                <div className="about-glow"></div>
+                            </div>
+                        ) : null}
                         <div className="about-content">
                             <span className="capsule-badge">About The Destination</span>
                             <h2>{aboutPlace?.title || `Discover ${itinerary.itinerary?.[0]?.areaFocus?.split(',')[0] || "Your Destination"}`}</h2>
@@ -919,8 +926,10 @@ export const TropicalTheme = ({
                     </div>
 
                     <div className="day-cards">
-                        {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => (
-                            <div key={index} className={`day-card ${index % 2 !== 0 ? 'reversed' : ''}`} data-pdf-section={`day-${index}`}>
+                        {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => {
+                            const dayImg = getDayImage(day);
+                            return (
+                            <div key={index} className={`day-card ${index % 2 !== 0 && dayImg ? 'reversed' : ''}`} data-pdf-section={`day-${index}`}>
                                 <div>
                                     <span className="day-badge">Day {index + 1} • {formatDate(day.date)}</span>
                                     <h3>{formatTitleCase(day.areaFocus)}</h3>
@@ -937,63 +946,75 @@ export const TropicalTheme = ({
                                         ))}
                                     </ul>
                                 </div>
-                                <div className="day-img-col">
-                                    <img className="day-img" src={getDayImage(day)} alt={`Day ${index + 1}`} crossOrigin="anonymous" />
-                                </div>
+                                {dayImg ? (
+                                    <div className="day-img-col">
+                                        <img className="day-img" src={dayImg} alt={`Day ${index + 1}`} crossOrigin="anonymous" />
+                                    </div>
+                                ) : null}
                             </div>
-                        ))}
+                        );
+                    })}
                     </div>
                 </section>
 
                 {/* ── INCLUSIONS / EXCLUSIONS ── */}
-                <section data-pdf-section="inclusions">
-                    <div className="inc-exc-grid">
-                        <div className="card sky">
-                            <h3>Inclusions</h3>
-                            <ul className="card-list">
-                                {inclusionsList.length > 0 ? (
-                                    inclusionsList.map((inc, i) => (
-                                        <li key={i}><span className="n-blue">{i + 1}.</span><span>{inc}</span></li>
-                                    ))
-                                ) : (
-                                    <li><span className="n-blue">-</span><span>No inclusions specified.</span></li>
-                                )}
-                            </ul>
+                {(inclusionsList.length > 0 || exclusionsList.length > 0) && (
+                    <section data-pdf-section="inclusions">
+                        <div className="inc-exc-grid">
+                            {inclusionsList.length > 0 && (
+                                <div className="card sky">
+                                    <h3>Inclusions</h3>
+                                    <ul className="card-list">
+                                        {inclusionsList.map((inc, i) => (
+                                            <li key={i}><span className="n-blue">{i + 1}.</span><span>{inc}</span></li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                            {exclusionsList.length > 0 && (
+                                <div className="card neutral">
+                                    <h3>Exclusions</h3>
+                                    <ul className="card-list">
+                                        {exclusionsList.map((exc, i) => (
+                                            <li key={i}><span className="n-grey">{i + 1}.</span><span>{exc}</span></li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                         </div>
-                        <div className="card neutral">
-                            <h3>Exclusions</h3>
-                            <ul className="card-list">
-                                {exclusionsList.length > 0 ? (
-                                    exclusionsList.map((exc, i) => (
-                                        <li key={i}><span className="n-grey">{i + 1}.</span><span>{exc}</span></li>
-                                    ))
-                                ) : (
-                                    <li><span className="n-grey">-</span><span>No exclusions specified.</span></li>
-                                )}
-                            </ul>
-                        </div>
-                    </div>
-                </section>
+                    </section>
+                )}
 
                 {/* ── TRAVEL & ACCOMMODATIONS ── */}
                 {(hotels.length > 0 || flights.length > 0 || cabs.length > 0 || buses.length > 0) && (
                     <section data-pdf-section="accommodations">
                         <h2 className="acc-heading">Travel & Logistics</h2>
                         <div className="acc-grid">
-                            {groupHotelsByName(hotels).map((hotel, i) => (
-                                <div key={`hotel-${i}`} className="acc-card">
-                                    <img src={hotel.imageUrls && hotel.imageUrls.length > 0 ? hotel.imageUrls[0] : 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop'} alt={hotel.name} crossOrigin="anonymous" />
-                                    <div className="acc-card-body">
-                                        <h4>{hotel.name}</h4>
-                                        <span className="acc-subtitle">🏨 Hotel • {formatHotelStays(hotel.stays)}</span>
-                                        <div className="logistics-details">
-                                            <div className="logistics-row"><span className="label">Check-in</span><span className="value">{hotel.checkIn}</span></div>
-                                            <div className="logistics-row"><span className="label">Check-out</span><span className="value">{hotel.checkOut}</span></div>
-                                            {hotel.bookingRef && <div className="logistics-row"><span className="label">Booking Ref</span><span className="value">{hotel.bookingRef}</span></div>}
+                            {groupHotelsByName(hotels).map((hotel, i) => {
+                                const validImages = hotel.imageUrls ? hotel.imageUrls.filter(url => url && url.trim().length > 0) : [];
+                                const hasPhoto = validImages.length > 0;
+                                return (
+                                    <div key={`hotel-${i}`} className="acc-card" style={{ borderLeft: !hasPhoto ? "4px solid var(--emerald-500, #10b981)" : undefined }}>
+                                        {hasPhoto ? (
+                                            <img src={validImages[0]} alt={hotel.name} crossOrigin="anonymous" />
+                                        ) : (
+                                            <div style={{ padding: "16px 20px 0 20px", display: "flex", alignItems: "center", gap: "10px" }}>
+                                                <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "var(--emerald-50, #ecfdf5)", border: "1px solid var(--emerald-200, #a7f3d0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>🏨</div>
+                                                <div style={{ flex: 1, height: "2px", background: "linear-gradient(to right, var(--emerald-300, #6ee7b7), transparent)" }} />
+                                            </div>
+                                        )}
+                                        <div className="acc-card-body">
+                                            <h4>{hotel.name}</h4>
+                                            <span className="acc-subtitle">🏨 Hotel • {formatHotelStays(hotel.stays)}</span>
+                                            <div className="logistics-details">
+                                                <div className="logistics-row"><span className="label">Check-in</span><span className="value">{hotel.checkIn}</span></div>
+                                                <div className="logistics-row"><span className="label">Check-out</span><span className="value">{hotel.checkOut}</span></div>
+                                                {hotel.bookingRef && <div className="logistics-row"><span className="label">Booking Ref</span><span className="value">{hotel.bookingRef}</span></div>}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
 
                             {flights.map((flight, i) => (
                                 <div key={`flight-${i}`} className="acc-card">
@@ -1176,37 +1197,35 @@ export const TropicalTheme = ({
                                 </div>
                             )}
 
-                            <div className="policy-grid">
-                                <div className="policy-col">
-                                    <span className="policy-label">Payment Methods</span>
-                                    <ul className="policy-list">
-                                        {paymentMethods ? (
-                                            parseList(paymentMethods).map((pol, i) => (
-                                                <li key={i}>{pol}</li>
-                                            ))
-                                        ) : (
-                                            <li>Not specified.</li>
-                                        )}
-                                    </ul>
+                            {(paymentMethodsList.length > 0 || cancellationPolicyList.length > 0) && (
+                                <div className="policy-grid">
+                                    {paymentMethodsList.length > 0 && (
+                                        <div className="policy-col">
+                                            <span className="policy-label">Payment Methods</span>
+                                            <ul className="policy-list">
+                                                {paymentMethodsList.map((pol, i) => (
+                                                    <li key={i}>{pol}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+                                    {cancellationPolicyList.length > 0 && (
+                                        <div className="policy-col">
+                                            <span className="policy-label">Cancellation Policy</span>
+                                            <ul className="policy-list">
+                                                {cancellationPolicyList.map((pol, i) => (
+                                                    <li key={i}>{pol}</li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
                                 </div>
-                                <div className="policy-col">
-                                    <span className="policy-label">Cancellation Policy</span>
-                                    <ul className="policy-list">
-                                        {cancellationPolicy ? (
-                                            parseList(cancellationPolicy).map((pol, i) => (
-                                                <li key={i}>{pol}</li>
-                                            ))
-                                        ) : (
-                                            <li>Not specified.</li>
-                                        )}
-                                    </ul>
-                                </div>
-                            </div>
-                            {termsAndConditions && (
+                            )}
+                            {termsAndConditionsList.length > 0 && (
                                 <div style={{ marginTop: "32px", borderTop: "1px solid rgba(0,0,0,0.06)", paddingTop: "24px" }}>
                                     <span className="policy-label" style={{ display: "block", marginBottom: "12px" }}>Terms & Conditions</span>
                                     <ul className="policy-list">
-                                        {parseList(termsAndConditions).map((pol, i) => (
+                                        {termsAndConditionsList.map((pol, i) => (
                                             <li key={i}>{pol}</li>
                                         ))}
                                     </ul>

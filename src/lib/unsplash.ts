@@ -67,15 +67,15 @@ function buildQueryWaterfall(
         return null;
     }
 
-    // Clean the specific term — strip generic filler words
+    // Clean the specific term — strip generic filler & hotel words
     const cleanTerm = term
-        .replace(/\b(visit|check[- ]in|check[- ]out|transfer|drive|arrive|depart|departure|arrival|morning|evening|afternoon|night)\b/gi, '')
+        .replace(/\b(visit|check[- ]in|check[- ]out|transfer|drive|arrive|depart|departure|arrival|morning|evening|afternoon|night|hotel|resort|room|accommodation|stay|homestay|lodge|hostel)\b/gi, '')
         .replace(/\s+/g, ' ')
         .trim();
 
     const queries: string[] = [];
 
-    if (category === 'landmark' || category === 'sightseeing') {
+    if (category === 'landmark' || category === 'sightseeing' || category === 'hotel') {
         // Query 1: Specific landmark + location
         if (cleanTerm && cleanArea) {
             queries.push(`${cleanTerm} ${cleanArea}`);
@@ -89,16 +89,6 @@ function buildQueryWaterfall(
         // Query 3: Broad destination travel
         if (cleanArea) {
             queries.push(`${cleanArea} travel destination`);
-        }
-    } else if (category === 'hotel') {
-        // Query 1: Area + hotel type
-        if (cleanArea) {
-            queries.push(`${cleanArea} luxury hotel resort`);
-        }
-        // Query 2: Just hotel
-        queries.push('luxury hotel room travel');
-        if (cleanArea) {
-            queries.push(`${cleanArea} travel`);
         }
     } else if (category === 'beach' || category === 'nature') {
         if (cleanTerm && cleanArea) {

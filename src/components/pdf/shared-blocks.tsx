@@ -78,6 +78,7 @@ export const PdfHotelBlock = ({ hotel, accentColor, textColor, styleVariant }: {
                 ...(styleVariant.useGlass ? glassStyles : {}),
                 background: styleVariant.cardBackground,
                 border: styleVariant.border,
+                borderLeft: !hasImages ? `4px solid ${accentColor}` : styleVariant.border,
                 overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column',

@@ -29,14 +29,14 @@ export type ActivityCategory =
 const CATEGORY_PATTERNS: [RegExp, ActivityCategory][] = [
     // Mundane — skip Unsplash
     [/\b(breakfast|lunch|dinner|meal|cafe|restaurant|food|cuisine|eat|dining|snack|chai|tea)\b/i, 'food'],
-    [/\b(free\s*time|leisure|relax|rest|nap|overnight|sleep|night\s*halt)\b/i, 'rest'],
+    [/\b(free\s*time|leisure|relax|rest|nap|overnight|sleep|night\s*halt|check[- ]in|check[- ]out)\b/i, 'rest'],
     [/\b(transfer|cab|taxi|airport|railway\s*station|bus\s*stand|depart|arrival|board|flight\s*catch)\b/i, 'transit_generic'],
 
     // Specific scenic transit
     [/\b(scenic\s*drive|valley\s*drive|ghats?|mountain\s*road|heritage\s*train|toy\s*train|palace\s*on\s*wheels)\b/i, 'transit'],
 
-    // Hotel
-    [/\b(check[- ]in|check[- ]out|hotel|resort|homestay|heritage\s*hotel|palace\s*hotel|housebo(a)?t|lodge|camp)\b/i, 'hotel'],
+    // Hotel & Stay
+    [/\b(resort|homestay|heritage\s*hotel|palace\s*hotel|housebo(a)?t|lodge|camp)\b/i, 'sightseeing'],
 
     // Beach & coastal
     [/\b(beach|coastal|sea|ocean|snorkel|diving|water\s*sport|island|backwater|houseboat|lagoon)\b/i, 'beach'],
@@ -98,16 +98,15 @@ export const ACTIVITY_FALLBACKS: Record<ActivityCategory, string[]> = {
         'photo-1488085061387-422e29b40080', // night city
     ],
     hotel: [
-        'photo-1566073771259-6a8506099945', // luxury hotel pool
-        'photo-1564501049412-61c2a3083791', // heritage hotel India
-        'photo-1551882547-ff40c63fe2dc', // hotel room luxury
-        'photo-1584132967334-10e028bd69f7', // boutique hotel
-        'photo-1578681994506-b8f463906a3a', // resort pool
-        'photo-1582719508461-905c673771fd', // beachside resort
-        'photo-1540541338287-41700207dee6', // hotel lobby
-        'photo-1618773928121-c32242e63f39', // hotel room modern
-        'photo-1445019980597-93fa8acb246c', // resort sunset
-        'photo-1520250497591-112f2f40a3f4', // hotel exterior
+        'photo-1524492412937-b28074a5d7da', // Indian heritage site
+        'photo-1512343879784-a960bf40e7f2', // Jaipur city
+        'photo-1477587458883-47145ed6979c', // Varanasi ghats
+        'photo-1582510003544-4d00b7f74220', // India travel
+        'photo-1519475889208-0878bd7b4e25', // old city architecture
+        'photo-1469854523086-cc02fe5d8800', // open road travel
+        'photo-1530789253388-582c481c54b0', // aerial city travel
+        'photo-1476514525535-07fb3b4ae5f1', // aerial landscape
+        'photo-1488085061387-422e29b40080', // night city
     ],
     beach: [
         'photo-1507525428034-b723cf961d3e', // Goa beach

@@ -21,10 +21,10 @@ export const getTotalBudget = (itinerary: TravelItineraryOutput) => {
     }, 0);
 };
 
-export const FALLBACK_IMG = 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?q=80&w=1080&auto=format&fit=crop';
-export const getDayImage = (day: any): string => day?.imageUrl || FALLBACK_IMG;
+export const FALLBACK_IMG = '';
+export const getDayImage = (day: any): string => day?.imageUrl || "";
 export const getCoverImage = (itinerary: TravelItineraryOutput): string => {
-    if (!itinerary?.itinerary || itinerary.itinerary.length === 0) return FALLBACK_IMG;
+    if (!itinerary?.itinerary || itinerary.itinerary.length === 0) return "";
     return getDayImage(itinerary.itinerary[0]);
 };
 

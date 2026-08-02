@@ -1,5 +1,7 @@
-import { Component } from "@/components/ui/quantum-pulse-loade";
+"use client";
 
-export default function DemoOne() {
-  return <Component />;
+import GlassCalendarDemo from "@/components/ui/glass-calendar-demo";
+
+export default function Demo() {
+  return <GlassCalendarDemo />;
 }

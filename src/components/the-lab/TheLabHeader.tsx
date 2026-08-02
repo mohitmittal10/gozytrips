@@ -1,11 +1,13 @@
 // Sticky top bar including selections, toggles, back/edit buttons.
 import React from 'react';
-import { Pencil, Eye, Save, Check } from 'lucide-react';
+import { Pencil, Eye, Check } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useReferenceOptions } from '@/hooks/use-reference-options';
+import { AutosaveIndicator } from './AutosaveIndicator';
+import { useLabStore } from '@/store/the-lab/labStore';
 
 type Client = any; // Fallback from useClients
 
@@ -22,7 +24,8 @@ interface TheLabHeaderProps {
   setIsEditing: (editing: boolean) => void;
   handleDownloadPdf: () => void;
   handleSaveItinerary: () => void;
-  isSaving: boolean;
+  isSaving?: boolean;
+  isPreRendering?: boolean;
   activeLabTab: string;
 }
 
@@ -31,10 +34,13 @@ const TheLabHeader = React.memo(function TheLabHeader({
   selectedStatus, setSelectedStatus,
   showTimestamps, setShowTimestamps,
   isEditing, setIsEditing,
-  handleDownloadPdf, handleSaveItinerary, isSaving,
+  handleDownloadPdf, handleSaveItinerary, isSaving = false,
+  isPreRendering = false,
   activeLabTab
 }: TheLabHeaderProps) {
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
+  const storeIsSaving = useLabStore((state) => state.isSaving);
+  const effectiveIsSaving = storeIsSaving || isSaving;
   
   if (!itinerary || ['history'].includes(activeLabTab)) return null;
 
@@ -110,6 +116,7 @@ const TheLabHeader = React.memo(function TheLabHeader({
 
         {/* Actions Group */}
         <div className="flex items-center gap-3">
+          <AutosaveIndicator className="inline-flex" />
           <Button
             variant="outline"
             size="sm"
@@ -118,15 +125,6 @@ const TheLabHeader = React.memo(function TheLabHeader({
           >
             <Eye className="w-4 h-4" />
             <span className="xs:inline">Preview</span>
-          </Button>
-          <Button
-            size="sm"
-            onClick={handleSaveItinerary}
-            disabled={isSaving}
-            className="flex-1 sm:flex-none px-4 sm:px-6 py-2.5 aurora-gradient text-white rounded-xl text-xs sm:text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2 h-11 sm:h-10 border-none"
-          >
-            <Save className="w-4 h-4" />
-            {isSaving ? "Saving..." : "Save"}
           </Button>
         </div>
       </div>

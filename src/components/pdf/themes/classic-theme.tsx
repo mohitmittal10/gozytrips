@@ -66,6 +66,11 @@ export const ClassicTheme = ({
     
     const inclusionsList = parseList(inclusions);
     const exclusionsList = parseList(exclusions);
+    const paymentMethodsList = parseList(paymentMethods);
+    const cancellationPolicyList = parseList(cancellationPolicy);
+    const termsAndConditionsList = parseList(termsAndConditions);
+
+    const tagline = agent.agentBio || agencySettings?.tagline || agencySettings?.brand_tagline || "Your custom travel blueprint, prepared by experts.";
 
     return (
         <div className="classic-wrap" style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", backgroundColor: "#f8fafc", backgroundImage: `url("${getThematicBackground(itinerary, 'classic', agent.primaryColor)}")`, backgroundRepeat: "repeat", color: "#1e293b", width: "100%" }}>
@@ -124,8 +129,10 @@ export const ClassicTheme = ({
             </style>
             {/* Hero — cover section */}
             <div data-pdf-section="cover" style={{ paddingBottom: "10px" }}>
-                <div style={{ position: "relative", height: "320px", overflow: "hidden", marginBottom: "35px", borderRadius: "0 0 24px 24px" }}>
-                    <img src={getCoverImage(itinerary)} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+                <div style={{ position: "relative", height: "320px", overflow: "hidden", marginBottom: "35px", borderRadius: "0 0 24px 24px", background: `linear-gradient(135deg, rgba(${rgbAccent}, 0.95), rgba(15, 23, 42, 0.95))` }}>
+                    {getCoverImage(itinerary) ? (
+                        <img src={getCoverImage(itinerary)} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+                    ) : null}
                     <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: `linear-gradient(135deg, rgba(${rgbAccent}, 0.85), rgba(15, 23, 42, 0.8))` }} />
                     {/* Agency logo badge — top right (logo only) */}
                     {(agent.logoUrl || agent.companyName) && (
@@ -140,40 +147,49 @@ export const ClassicTheme = ({
                         </div>
                     )}
                     <div style={{ position: "absolute", bottom: "45px", left: 0, right: 0, width: "100%", padding: `0 ${CONTENT_PADDING_X}`, boxSizing: "border-box", zIndex: 1, color: "white", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
-
                         <h1 style={{ fontSize: "44px", fontWeight: 900, margin: "0 auto 10px auto", textShadow: "0 4px 12px rgba(0,0,0,0.35)", fontFamily: "'Outfit', sans-serif", letterSpacing: "-1.5px", lineHeight: "1.08", textAlign: "center" }}>{title}</h1>
-                        <p style={{ fontSize: "16px", opacity: 0.9, margin: "0 auto", fontWeight: 500, letterSpacing: "0.2px", textAlign: "center" }}>Your custom travel blueprint, prepared by experts.</p>
+                        <p style={{ fontSize: "16px", opacity: 0.9, margin: "0 auto", fontWeight: 500, letterSpacing: "0.2px", textAlign: "center" }}>{tagline}</p>
                     </div>
                 </div>
 
                 <div style={{ padding: `0 ${CONTENT_PADDING_X}`, background: "rgba(248,250,252,0.18)" }}>
-                    {/* Agent details */}
-                    <div style={{ display: "flex", justifyContent: agent.agentBio ? "space-between" : "flex-end", alignItems: "flex-start", flexWrap: "wrap", gap: "24px", borderBottom: "1px solid #e2e8f0", paddingBottom: "30px", marginBottom: "35px" }}>
-                        {agent.agentBio && (
-                            <div style={{ flex: "1 1 320px", maxWidth: "600px" }}>
-                                <div style={{ padding: "16px 22px", borderRadius: "12px", borderLeft: `4px solid ${agent.primaryColor}`, fontStyle: "italic", color: "#475569", fontSize: "13.5px", lineHeight: "1.65", ...glassStyles }}>
-                                    &quot;{agent.agentBio}&quot;
-                                </div>
-                            </div>
-                        )}
-                        <div style={{ flex: agent.agentBio ? "0 1 auto" : "1 1 auto", minWidth: "200px", textAlign: "right", marginLeft: agent.agentBio ? undefined : "auto", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "6px" }}>
-                            <h2 style={{ fontSize: "20px", margin: "0 0 4px 0", color: "#0f172a", fontWeight: 800, letterSpacing: "-0.5px" }}>{agent.companyName}</h2>
-                            <p style={{ color: agent.primaryColor, fontSize: "13.5px", margin: "0 0 8px 0", fontWeight: 700 }}>{agent.agentName}</p>
-                            {agent.agentPhone && <p style={{ color: "#64748b", fontSize: "12px", margin: "2px 0" }}>{agent.agentPhone}</p>}
-                            {agent.agentEmail && <p style={{ color: "#64748b", fontSize: "12px", margin: "2px 0" }}>{agent.agentEmail}</p>}
+                    {/* Header info row: Client & Agent details */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "24px", borderBottom: "1px solid #e2e8f0", paddingBottom: "30px", marginBottom: "35px" }}>
+                        {/* Client details */}
+                        <div style={{ flex: "1 1 280px", minWidth: "220px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                            <span style={{ fontSize: "11px", color: agent.primaryColor, textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800, marginBottom: "2px" }}>Prepared For</span>
+                            <h2 style={{ fontSize: "22px", margin: 0, color: "#0f172a", fontWeight: 800, letterSpacing: "-0.5px" }}>{clientName || "Valued Guest"}</h2>
+                            <p style={{ color: "#64748b", fontSize: "13px", margin: "4px 0 0 0", fontWeight: 600 }}>
+                                {adultPax} Adult{adultPax !== 1 ? 's' : ''}
+                                {childPax > 0 ? `, ${childPax} Child${childPax !== 1 ? 'ren' : ''}` : ''}
+                                {infantPax > 0 ? `, ${infantPax} Infant${infantPax !== 1 ? 's' : ''}` : ''}
+                            </p>
+                        </div>
+
+                        {/* Agency details */}
+                        <div style={{ flex: "1 1 280px", minWidth: "200px", textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "4px" }}>
+                            <span style={{ fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800, marginBottom: "2px" }}>Prepared By</span>
+                            <h2 style={{ fontSize: "20px", margin: 0, color: "#0f172a", fontWeight: 800, letterSpacing: "-0.5px" }}>{agent.companyName}</h2>
+                            <p style={{ color: agent.primaryColor, fontSize: "13.5px", margin: "2px 0 4px 0", fontWeight: 700 }}>{agent.agentName}</p>
+                            {agent.agentPhone && <p style={{ color: "#64748b", fontSize: "12px", margin: "1px 0" }}>{agent.agentPhone}</p>}
+                            {agent.agentEmail && <p style={{ color: "#64748b", fontSize: "12px", margin: "1px 0" }}>{agent.agentEmail}</p>}
                             {agent.agentWebsite && <p style={{ color: agent.primaryColor, fontSize: "12.5px", margin: "4px 0 0 0", fontWeight: 600, textDecoration: "underline" }}>{agent.agentWebsite}</p>}
                         </div>
                     </div>
 
                     {/* Stat cards */}
                     <div style={{ display: "flex", flexWrap: "wrap", alignItems: "stretch", gap: "20px", marginBottom: "40px" }}>
-                        <div style={{ ...glassStyles, flex: "1 1 200px", borderRadius: "16px", padding: "20px 24px", borderLeft: `4px solid ${agent.primaryColor}`, boxShadow: "0 4px 20px -2px rgba(0,0,0,0.05)" }}>
-                            <h3 style={{ margin: "0 0 6px 0", fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800 }}>Duration</h3>
-                            <p style={{ margin: 0, fontSize: "26px", fontWeight: 900, color: "#0f172a", fontFamily: "'Outfit', sans-serif" }}>{itinerary.itinerary?.length || 0} Days</p>
+                        <div style={{ ...glassStyles, flex: "1 1 180px", borderRadius: "16px", padding: "20px 24px", borderLeft: `4px solid ${agent.primaryColor}`, boxShadow: "0 4px 20px -2px rgba(0,0,0,0.05)" }}>
+                            <h3 style={{ margin: "0 0 6px 0", fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800 }}>Client</h3>
+                            <p style={{ margin: 0, fontSize: "20px", fontWeight: 900, color: "#0f172a", fontFamily: "'Outfit', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{clientName || "Valued Guest"}</p>
                         </div>
-                        <div style={{ ...glassStyles, flex: "1 1 200px", borderRadius: "16px", padding: "20px 24px", borderLeft: "4px solid #ec4899", boxShadow: "0 4px 20px -2px rgba(0,0,0,0.05)" }}>
+                        <div style={{ ...glassStyles, flex: "1 1 180px", borderRadius: "16px", padding: "20px 24px", borderLeft: "4px solid #3b82f6", boxShadow: "0 4px 20px -2px rgba(0,0,0,0.05)" }}>
+                            <h3 style={{ margin: "0 0 6px 0", fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800 }}>Duration</h3>
+                            <p style={{ margin: 0, fontSize: "20px", fontWeight: 900, color: "#0f172a", fontFamily: "'Outfit', sans-serif" }}>{itinerary.itinerary?.length || 0} Days</p>
+                        </div>
+                        <div style={{ ...glassStyles, flex: "1 1 180px", borderRadius: "16px", padding: "20px 24px", borderLeft: "4px solid #ec4899", boxShadow: "0 4px 20px -2px rgba(0,0,0,0.05)" }}>
                             <h3 style={{ margin: "0 0 6px 0", fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800 }}>Total Budget</h3>
-                            <p style={{ margin: 0, fontSize: "26px", fontWeight: 900, color: "#0f172a", fontFamily: "'Outfit', sans-serif" }}>{formatCurrency(finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}</p>
+                            <p style={{ margin: 0, fontSize: "20px", fontWeight: 900, color: "#0f172a", fontFamily: "'Outfit', sans-serif" }}>{formatCurrency(finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}</p>
                         </div>
                     </div>
                 </div>{/* end cover section */}
@@ -183,9 +199,11 @@ export const ClassicTheme = ({
             {aboutPlace && (
                 <div data-pdf-section="about" style={{ padding: `20px ${CONTENT_PADDING_X} 45px ${CONTENT_PADDING_X}` }}>
                     <div style={{ ...glassStyles, borderRadius: "24px", padding: "40px", display: "flex", gap: "40px", alignItems: "stretch", boxShadow: "0 10px 30px -10px rgba(0,0,0,0.05)", borderLeft: `6px solid ${agent.primaryColor}` }}>
-                        <div style={{ flex: "0 0 320px", borderRadius: "16px", overflow: "hidden", position: "relative" }}>
-                            <img src={Array.isArray(itinerary.itinerary) && itinerary.itinerary.length > 0 ? getDayImage(itinerary.itinerary[0]) : "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop"} alt="Destination" style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }} crossOrigin="anonymous" />
-                        </div>
+                        {Array.isArray(itinerary.itinerary) && itinerary.itinerary.length > 0 && getDayImage(itinerary.itinerary[0]) ? (
+                            <div style={{ flex: "0 0 320px", borderRadius: "16px", overflow: "hidden", position: "relative" }}>
+                                <img src={getDayImage(itinerary.itinerary[0])} alt="Destination" style={{ width: "100%", height: "100%", objectFit: "cover", position: "absolute", top: 0, left: 0 }} crossOrigin="anonymous" />
+                            </div>
+                        ) : null}
                         <div style={{ flex: 1 }}>
                             <h3 style={{ margin: "0 0 16px 0", fontSize: "14px", color: agent.primaryColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>About The Destination</h3>
                             <h2 style={{ margin: "0 0 20px 0", fontSize: "28px", color: "#0f172a", fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-0.5px" }}>{aboutPlace.title}</h2>
@@ -208,15 +226,19 @@ export const ClassicTheme = ({
 
             {/* Daily itineraries */}
             <div style={{ padding: `45px ${CONTENT_PADDING_X} 45px ${CONTENT_PADDING_X}` }}>
-                {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => (
+                {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => {
+                    const dayImg = getDayImage(day);
+                    return (
                     <div key={index} data-pdf-section={`day-${index}`} style={{ marginBottom: "35px", display: "block" }}>
 
                         {/* Photo + header block */}
-                        <div style={{ display: "block", border: "1px solid #e2e8f0", borderBottom: "none", borderRadius: "20px 20px 0 0" }}>
-                            <div style={{ height: "200px", display: "block", position: "relative" }}>
-                                <img src={getDayImage(day)} alt={formatTitleCase(day.areaFocus)} style={{ width: "100%", height: "200px", objectFit: "cover", display: "block", borderRadius: "20px 20px 0 0" }} crossOrigin="anonymous" />
-                                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.1), transparent)" }} />
-                            </div>
+                        <div style={{ display: "block", border: "1px solid #e2e8f0", borderBottom: "none", borderRadius: "20px 20px 0 0", overflow: "hidden" }}>
+                            {dayImg ? (
+                                <div style={{ height: "200px", display: "block", position: "relative" }}>
+                                    <img src={dayImg} alt={formatTitleCase(day.areaFocus)} style={{ width: "100%", height: "200px", objectFit: "cover", display: "block" }} crossOrigin="anonymous" />
+                                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.1), transparent)" }} />
+                                </div>
+                            ) : null}
                             <div style={{ background: `linear-gradient(135deg, ${agent.primaryColor || "#a855f7"} 0%, #ec4899 100%)`, padding: "20px 30px", color: "white" }}>
                                 <span style={{ fontSize: "12px", opacity: 0.95, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800 }}>Day {index + 1} • {formatDate(day.date)}</span>
                                 <h3 style={{ margin: "5px 0 0 0", fontSize: "24px", fontWeight: 900, letterSpacing: "-0.5px", fontFamily: "'Outfit', sans-serif" }}>{formatTitleCase(day.areaFocus)}</h3>
@@ -295,7 +317,7 @@ export const ClassicTheme = ({
                             )}
                         </div>
                     </div>
-                ))}
+                ); })}
             </div>
 
             {/* Travel & Logistics */}
@@ -304,20 +326,31 @@ export const ClassicTheme = ({
                     <h2 style={{ margin: "0 0 30px 0", fontSize: "28px", color: "#0f172a", fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-0.5px" }}>Travel & Logistics</h2>
                     
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
-                        {groupHotelsByName(hotels).map((h, i) => (
-                            <div key={`hotel-${i}`} style={{ ...glassStyles, borderRadius: "16px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                                <img src={h.imageUrls?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop'} alt={h.name} style={{ width: "100%", height: "160px", objectFit: "cover" }} crossOrigin="anonymous" />
-                                <div style={{ padding: "24px" }}>
-                                    <h4 style={{ margin: "0 0 4px 0", fontSize: "18px", color: "#0f172a", fontWeight: 800 }}>{h.name}</h4>
-                                    <div style={{ color: agent.primaryColor, fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>🏨 Hotel • {formatHotelStays(h.stays)}</div>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Check-in</span><span style={{ fontWeight: 600 }}>{h.checkIn}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Check-out</span><span style={{ fontWeight: 600 }}>{h.checkOut}</span></div>
-                                        {h.bookingRef && <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Booking Ref</span><span style={{ fontWeight: 600 }}>{h.bookingRef}</span></div>}
+                        {groupHotelsByName(hotels).map((h, i) => {
+                            const validImages = h.imageUrls ? h.imageUrls.filter(url => url && url.trim().length > 0) : [];
+                            const hasPhoto = validImages.length > 0;
+                            return (
+                                <div key={`hotel-${i}`} style={{ ...glassStyles, borderRadius: "16px", overflow: "hidden", display: "flex", flexDirection: "column", borderLeft: !hasPhoto ? `4px solid ${agent.primaryColor}` : undefined }}>
+                                    {hasPhoto ? (
+                                        <img src={validImages[0]} alt={h.name} style={{ width: "100%", height: "160px", objectFit: "cover" }} crossOrigin="anonymous" />
+                                    ) : (
+                                        <div style={{ padding: "20px 24px 0 24px", display: "flex", alignItems: "center", gap: "10px" }}>
+                                            <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: `${agent.primaryColor}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>🏨</div>
+                                            <div style={{ flex: 1, height: "2px", background: `linear-gradient(to right, ${agent.primaryColor}30, transparent)` }} />
+                                        </div>
+                                    )}
+                                    <div style={{ padding: "24px" }}>
+                                        <h4 style={{ margin: "0 0 4px 0", fontSize: "18px", color: "#0f172a", fontWeight: 800 }}>{h.name}</h4>
+                                        <div style={{ color: agent.primaryColor, fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>Hotel • {formatHotelStays(h.stays)}</div>
+                                        <div style={{ display: "flex", flexDirection: "column", gap: "8px", fontSize: "13px" }}>
+                                            <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Check-in</span><span style={{ fontWeight: 600 }}>{h.checkIn}</span></div>
+                                            <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Check-out</span><span style={{ fontWeight: 600 }}>{h.checkOut}</span></div>
+                                            {h.bookingRef && <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ color: "#64748b" }}>Booking Ref</span><span style={{ fontWeight: 600 }}>{h.bookingRef}</span></div>}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                         {flights.map((f, i) => (
                             <div key={`flight-${i}`} style={{ ...glassStyles, borderRadius: "16px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
                                 <div style={{ height: "160px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: "40px" }}>✈️</span></div>
@@ -375,26 +408,32 @@ export const ClassicTheme = ({
             )}
 
             {/* Inclusions & Exclusions */}
-            <div data-pdf-section="inclusions" style={{ padding: `20px ${CONTENT_PADDING_X} 45px ${CONTENT_PADDING_X}` }}>
-                <div style={{ display: "flex", gap: "24px" }}>
-                    <div style={{ flex: 1, ...glassStyles, borderRadius: "20px", padding: "30px", borderTop: `4px solid ${agent.primaryColor}` }}>
-                        <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", color: "#0f172a", fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>Inclusions</h3>
-                        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
-                            {inclusionsList.length > 0 ? inclusionsList.map((inc, i) => (
-                                <li key={i} style={{ display: "flex", gap: "12px", fontSize: "14px", color: "#334155" }}><span style={{ color: agent.primaryColor, fontWeight: 800 }}>+</span> <span>{inc}</span></li>
-                            )) : <li style={{ fontSize: "14px", color: "#64748b" }}>No inclusions specified.</li>}
-                        </ul>
-                    </div>
-                    <div style={{ flex: 1, ...glassStyles, borderRadius: "20px", padding: "30px", borderTop: `4px solid #94a3b8` }}>
-                        <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", color: "#0f172a", fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>Exclusions</h3>
-                        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
-                            {exclusionsList.length > 0 ? exclusionsList.map((exc, i) => (
-                                <li key={i} style={{ display: "flex", gap: "12px", fontSize: "14px", color: "#334155" }}><span style={{ color: "#94a3b8", fontWeight: 800 }}>-</span> <span>{exc}</span></li>
-                            )) : <li style={{ fontSize: "14px", color: "#64748b" }}>No exclusions specified.</li>}
-                        </ul>
+            {(inclusionsList.length > 0 || exclusionsList.length > 0) && (
+                <div data-pdf-section="inclusions" style={{ padding: `20px ${CONTENT_PADDING_X} 45px ${CONTENT_PADDING_X}` }}>
+                    <div style={{ display: "flex", gap: "24px" }}>
+                        {inclusionsList.length > 0 && (
+                            <div style={{ flex: 1, ...glassStyles, borderRadius: "20px", padding: "30px", borderTop: `4px solid ${agent.primaryColor}` }}>
+                                <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", color: "#0f172a", fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>Inclusions</h3>
+                                <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
+                                    {inclusionsList.map((inc, i) => (
+                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "14px", color: "#334155" }}><span style={{ color: agent.primaryColor, fontWeight: 800 }}>+</span> <span>{inc}</span></li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        {exclusionsList.length > 0 && (
+                            <div style={{ flex: 1, ...glassStyles, borderRadius: "20px", padding: "30px", borderTop: `4px solid #94a3b8` }}>
+                                <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", color: "#0f172a", fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>Exclusions</h3>
+                                <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
+                                    {exclusionsList.map((exc, i) => (
+                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "14px", color: "#334155" }}><span style={{ color: "#94a3b8", fontWeight: 800 }}>-</span> <span>{exc}</span></li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Pricing & Invoice */}
             <div data-pdf-section="pricing" style={{ padding: `20px ${CONTENT_PADDING_X} 60px ${CONTENT_PADDING_X}` }}>
@@ -508,25 +547,31 @@ export const ClassicTheme = ({
                     )}
 
                     {/* Policies & Methods — below, side by side */}
-                    <div style={{ display: "flex", gap: "40px" }}>
-                        <div style={{ flex: 1 }}>
-                            <h3 style={{ margin: "0 0 12px 0", fontSize: "14px", color: "#0f172a", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Payment Methods</h3>
-                            <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.6" }}>
-                                {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>• {p}</div>) : "Not specified."}
-                            </div>
+                    {(paymentMethodsList.length > 0 || cancellationPolicyList.length > 0) && (
+                        <div style={{ display: "flex", gap: "40px" }}>
+                            {paymentMethodsList.length > 0 && (
+                                <div style={{ flex: 1 }}>
+                                    <h3 style={{ margin: "0 0 12px 0", fontSize: "14px", color: "#0f172a", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Payment Methods</h3>
+                                    <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.6" }}>
+                                        {paymentMethodsList.map((p, i) => <div key={i}>• {p}</div>)}
+                                    </div>
+                                </div>
+                            )}
+                            {cancellationPolicyList.length > 0 && (
+                                <div style={{ flex: 1 }}>
+                                    <h3 style={{ margin: "0 0 12px 0", fontSize: "14px", color: "#0f172a", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Cancellation Policy</h3>
+                                    <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.6" }}>
+                                        {cancellationPolicyList.map((p, i) => <div key={i}>• {p}</div>)}
+                                    </div>
+                                </div>
+                            )}
                         </div>
-                        <div style={{ flex: 1 }}>
-                            <h3 style={{ margin: "0 0 12px 0", fontSize: "14px", color: "#0f172a", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Cancellation Policy</h3>
-                            <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.6" }}>
-                                {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>• {p}</div>) : "Not specified."}
-                            </div>
-                        </div>
-                    </div>
-                    {termsAndConditions && (
+                    )}
+                    {termsAndConditionsList.length > 0 && (
                         <div style={{ marginTop: "32px", borderTop: "1px solid #e2e8f0", paddingTop: "24px" }}>
                             <h3 style={{ margin: "0 0 12px 0", fontSize: "14px", color: "#0f172a", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Terms & Conditions</h3>
                             <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.6" }}>
-                                {parseList(termsAndConditions).map((p, i) => <div key={i}>• {p}</div>)}
+                                {termsAndConditionsList.map((p, i) => <div key={i}>• {p}</div>)}
                             </div>
                         </div>
                     )}
@@ -567,7 +612,7 @@ export const ClassicTheme = ({
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "60px", paddingTop: "40px", borderTop: "1px solid rgba(255,255,255,0.1)", flexWrap: "wrap", gap: "24px" }}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                         <div style={{ fontSize: "24px", fontWeight: 900, background: `linear-gradient(to right, ${agent.primaryColor || "#a855f7"}, #ec4899)`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", fontFamily: "'Outfit', sans-serif" }}>{agent.companyName}</div>
-                        <p style={{ margin: "4px 0 0 0", color: "#94a3b8", fontSize: "13px", fontWeight: 600 }}>Bespoke Travel Solutions</p>
+                        <p style={{ margin: "4px 0 0 0", color: "#94a3b8", fontSize: "13px", fontWeight: 600 }}>{tagline}</p>
                         <p style={{ margin: "2px 0 0 0", color: "#64748b", fontSize: "11px" }}>Curated by {agent.agentName}</p>
                     </div>
                     

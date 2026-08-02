@@ -609,7 +609,7 @@ export default function VendorEnquiry() {
               <Button
                 onClick={onGenerate}
                 disabled={isGenerating || !destination.trim() || !travelDates.trim()}
-                className="flex-[2] bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white h-11 text-sm font-semibold gap-2 shadow-lg shadow-purple-500/20"
+                className="flex-[2] bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 text-white h-11 text-sm font-semibold gap-2 shadow-lg shadow-orange-500/20"
               >
                 {isGenerating ? (
                   <>

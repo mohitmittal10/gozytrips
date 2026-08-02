@@ -63,6 +63,7 @@ export function CrmApp() {
                                     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
                                     { id: 'clients', icon: Users, label: 'Clients' },
                                     { id: 'trips', icon: TrendingUp, label: 'Trips' },
+                                    { id: 'itineraries', icon: Compass, label: 'Itineraries' },
                                     { id: 'bookings', icon: Ticket, label: 'Bookings' },
                                     { id: 'timeline', icon: Calendar, label: 'Timeline' },
                                     { id: 'finance', icon: DollarSign, label: 'Finances' },
@@ -103,6 +104,7 @@ export function CrmApp() {
                                     { id: 'dashboard', icon: LayoutDashboard, label: 'Dash' },
                                     { id: 'clients', icon: Users, label: 'Clients' },
                                     { id: 'trips', icon: TrendingUp, label: 'Trips' },
+                                    { id: 'itineraries', icon: Compass, label: 'Itin.' },
                                     { id: 'bookings', icon: Ticket, label: 'Book' },
                                     { id: 'timeline', icon: Calendar, label: 'Timeline' },
                                     { id: 'finance', icon: DollarSign, label: 'Fin' },
@@ -143,24 +145,20 @@ export function CrmApp() {
                                     {activeTab === 'enquiry' && <Info className="w-8 h-8 text-purple-400" />}
                                     {activeTab === 'client-forms' && <FileText className="w-8 h-8 text-purple-400" />}
                                     {activeTab === 'timeline' && <Calendar className="w-8 h-8 text-purple-400" />}
-                                    { activeTab === 'edit-itinerary' && <FileText className="w-8 h-8 text-purple-400" />}
+                                    {activeTab === 'itineraries' && <Compass className="w-8 h-8 text-purple-400" />}
                                     {activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace('-', ' ')}
                                 </h1>
                                 <p className="text-gray-500 text-sm mt-1">
                                     {activeTab === 'dashboard' ? 'Overview of your workspace performance' :
                                      activeTab === 'clients' ? 'Manage your client base and contact details' :
                                      activeTab === 'trips' ? 'Monitor your active trip pipeline' :
+                                     activeTab === 'itineraries' ? 'View, search and edit all itineraries created in The Lab' :
                                      activeTab === 'client-forms' ? 'Create client enquiry forms and track responses' :
                                      'Manage your travel operations efficiency'}
                                 </p>
                             </div>
 
                             <div className="flex items-center gap-3">
-                                {activeTab === 'trips' && (
-                                    <Button variant="outline" size="sm" onClick={() => setActiveTab('edit-itinerary')} className="border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 h-10 px-4">
-                                        <FileText className="w-4 h-4 mr-2" /> Edit Itinerary
-                                    </Button>
-                                )}
                                 <Button 
                                     onClick={() => {
                                         if (activeTab === 'bookings') context.setIsBookingDialogOpen(true);

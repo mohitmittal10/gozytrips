@@ -193,7 +193,7 @@ export default function Login() {
           <Button
             type="submit"
             disabled={loading || (hasFailedSubmit && !form.formState.isValid)}
-            className="group w-full glass-button border-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-purple-600 hover:to-pink-600"
+            className="group w-full glass-button border-0 bg-gradient-to-r from-pink-500 to-orange-400 text-white hover:from-pink-600 hover:to-orange-500"
           >
             {loading ? 'Signing in...' : 'Sign In'}
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />

@@ -8,6 +8,7 @@ import { buildLineItems } from "@/lib/helpers/trip-line-items";
 import type { SaveItineraryOptions } from "@/types/the-lab";
 import { calcPricingBreakdown } from "@/services/financial";
 import { defaultPricingConfig } from "@/types/pricing";
+import { useLabStore } from "@/store/the-lab/labStore";
 
 export function useItinerarySave({
   currentTripId,
@@ -40,6 +41,7 @@ export function useItinerarySave({
     itineraryState: any
   ) => {
     setIsSaving(true);
+    useLabStore.getState().setAutosaveStatus("saving");
     let newlyCreatedTripId: string | null = null;
     try {
       if (!user) throw new Error("Please sign in to save your itinerary.");
@@ -258,7 +260,9 @@ export function useItinerarySave({
       }
 
       toast({ title: "Saved!", description: "Your itinerary has been saved." });
+      useLabStore.getState().setAutosaveStatus("saved");
     } catch (err) {
+      useLabStore.getState().setAutosaveStatus("error");
       const message = err instanceof Error ? err.message : "An unexpected error occurred while saving.";
       toast({ variant: "destructive", title: "Error", description: message });
     } finally {

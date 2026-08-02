@@ -95,13 +95,15 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
             </div>
             <div className="flex flex-col">
               <span className="text-[9px] font-black text-primary/80 uppercase tracking-widest mb-0.5">Duration</span>
-              <span className="text-white text-xs font-bold leading-none">{itinerary.itinerary.length} Days</span>
+              <span className="text-white text-xs font-bold leading-none">
+                {itinerary.itinerary.length} Days / {Math.max(0, itinerary.itinerary.length - 1)} Nights
+              </span>
             </div>
             {finalTotal !== undefined && finalTotal > 0 && (
               <div className="flex flex-col">
                 <span className="text-[9px] font-black text-primary/80 uppercase tracking-widest mb-0.5">Total Cost</span>
                 <span className="text-white text-xs font-bold leading-none">
-                  {currencySymbol}{finalTotal.toLocaleString('en-IN')}
+                  {currencySymbol}{Math.round(finalTotal).toLocaleString('en-IN')}
                 </span>
               </div>
             )}
@@ -119,7 +121,7 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
           >
             <h4 className="font-extrabold text-sm tracking-tight flex items-center gap-2">
               <Sliders className="w-4 h-4 text-primary shrink-0" />
-              Original Parameters
+              Trip Requirements
             </h4>
             <ChevronDown 
               className="w-4 h-4 transition-transform duration-300"
@@ -190,23 +192,23 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
                 <Compass className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />
                 <div className="space-y-2 w-full">
                   <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest block">Preferences</span>
-                  <div className="grid grid-cols-2 gap-2 text-zinc-300">
+                  <div className="flex flex-wrap gap-2">
                     {tripMetadata.tripType && (
-                      <div className="bg-white/5 border border-white/5 rounded-lg px-2 py-1.5">
-                        <span className="text-zinc-500 font-bold block mb-0.5 uppercase tracking-wider text-[8px]">Style</span>
-                        <span className="text-zinc-200 font-semibold capitalize text-[10px]">{tripMetadata.tripType}</span>
+                      <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                        <span className="text-primary/70 font-black uppercase tracking-widest text-[8px]">Style</span>
+                        <span className="text-white font-bold capitalize text-[10px]">{tripMetadata.tripType}</span>
                       </div>
                     )}
                     {tripMetadata.travelTimePreference && tripMetadata.travelTimePreference !== "no_preference" && (
-                      <div className="bg-white/5 border border-white/5 rounded-lg px-2 py-1.5">
-                        <span className="text-zinc-500 font-bold block mb-0.5 uppercase tracking-wider text-[8px]">Timing</span>
-                        <span className="text-zinc-200 font-semibold capitalize text-[10px]">{tripMetadata.travelTimePreference.replace(/_/g, ' ')}</span>
+                      <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                        <span className="text-primary/70 font-black uppercase tracking-widest text-[8px]">Timing</span>
+                        <span className="text-white font-bold capitalize text-[10px]">{tripMetadata.travelTimePreference.replace(/_/g, ' ')}</span>
                       </div>
                     )}
                     {tripMetadata.leisureTime && (
-                      <div className="bg-white/5 border border-white/5 rounded-lg px-2 py-1.5 col-span-2">
-                        <span className="text-zinc-500 font-bold block mb-0.5 uppercase tracking-wider text-[8px]">Leisure Configuration</span>
-                        <span className="text-zinc-200 font-semibold text-[10px]">Configured on Day {tripMetadata.leisureDay || "N/A"}</span>
+                      <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/5 border border-white/10 hover:bg-white/10 transition-colors">
+                        <span className="text-primary/70 font-black uppercase tracking-widest text-[8px]">Leisure</span>
+                        <span className="text-white font-bold text-[10px]">Day {tripMetadata.leisureDay || "N/A"}</span>
                       </div>
                     )}
                   </div>
@@ -267,61 +269,89 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
       )}
 
       {/* AI Optimizer Section */}
-      <div className="liquid-glass p-4 rounded-2xl space-y-4">
-        <div className="flex justify-between items-center mb-3">
-          <h3 className="font-extrabold text-white text-base tracking-tight">AI Optimizer</h3>
+      <div className="liquid-glass p-4 rounded-2xl space-y-3">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
+              <span className="material-symbols-outlined text-[14px] text-primary">auto_awesome</span>
+            </div>
+            <h3 className="font-extrabold text-white text-sm tracking-tight">AI Optimizer</h3>
+          </div>
+          <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest bg-white/5 border border-white/5 px-2 py-0.5 rounded-full">
+            {optimizationCount}/{MAX_AI_OPTIMIZATIONS} used
+          </span>
         </div>
-        <div className="space-y-3">
+
+        {/* Optimization Cards */}
+        <div className="space-y-2">
           {itinerary.optimizations && itinerary.optimizations.length > 0 ? (
-            itinerary.optimizations.map((opt: any, idx: number) => (
-              <div
-                key={idx}
-                onClick={() => {
-                  if (optimizationCount >= MAX_AI_OPTIMIZATIONS || isGenerating) return;
-                  onOptimize(`${opt.type}: ${opt.message}`);
-                }}
-                title={optimizationCount >= MAX_AI_OPTIMIZATIONS ? "Optimization limit reached" : "Click to apply this specific optimization"}
-                style={{ animationDelay: `${100 + (idx * 100)}ms` }}
-                className={cn(
-                  "bg-white/5 rounded-xl p-3 border border-white/5 transition-all duration-300 group animate-in fade-in slide-in-from-right-4 fill-mode-both relative",
-                  (optimizationCount >= MAX_AI_OPTIMIZATIONS || isGenerating)
-                    ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-white/10 hover:border-primary/30 cursor-pointer"
-                )}
-              >
-                <div className="flex justify-between items-start mb-1">
-                  <p className="text-[9px] uppercase font-black text-primary/70 tracking-[0.2em]">{opt.type}</p>
-                  <span className="text-[9px] font-bold text-emerald-400 bg-emerald-400/10 px-1.5 py-0.5 rounded leading-none">
-                    {opt.impact}
-                  </span>
-                </div>
-                <p className="text-[11px] font-semibold text-white/90 leading-tight group-hover:text-white transition-colors">
-                  {opt.message}
-                </p>
-                {!(optimizationCount >= MAX_AI_OPTIMIZATIONS || isGenerating) && (
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="material-symbols-outlined text-[14px] text-primary">bolt</span>
+            itinerary.optimizations.map((opt: any, idx: number) => {
+              const isDisabled = optimizationCount >= MAX_AI_OPTIMIZATIONS || isGenerating;
+              const impactColor =
+                /high/i.test(opt.impact) ? "text-emerald-400 bg-emerald-400/10 border-emerald-400/20" :
+                /medium/i.test(opt.impact) ? "text-amber-400 bg-amber-400/10 border-amber-400/20" :
+                "text-sky-400 bg-sky-400/10 border-sky-400/20";
+              return (
+                <div
+                  key={idx}
+                  onClick={() => {
+                    if (isDisabled) return;
+                    onOptimize(`${opt.type}: ${opt.message}`);
+                  }}
+                  title={optimizationCount >= MAX_AI_OPTIMIZATIONS ? "Optimization limit reached" : "Click to apply this optimization"}
+                  style={{ animationDelay: `${80 + (idx * 80)}ms` }}
+                  className={cn(
+                    "rounded-xl border-l-2 border border-white/5 bg-white/[0.03] p-3 transition-all duration-200 group animate-in fade-in slide-in-from-right-3 fill-mode-both",
+                    isDisabled
+                      ? "opacity-40 cursor-not-allowed border-l-white/10"
+                      : "hover:bg-white/[0.07] hover:border-white/10 cursor-pointer border-l-primary/40 hover:border-l-primary"
+                  )}
+                >
+                  {/* Card top row: type label + impact badge + bolt icon */}
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <p className="text-[9px] uppercase font-black text-primary/60 tracking-[0.18em] flex-1 min-w-0 truncate">
+                      {opt.type}
+                    </p>
+                    <span className={cn(
+                      "text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border leading-none shrink-0",
+                      impactColor
+                    )}>
+                      {opt.impact}
+                    </span>
+                    {!isDisabled && (
+                      <span className="material-symbols-outlined text-[13px] text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        bolt
+                      </span>
+                    )}
                   </div>
-                )}
-              </div>
-            ))
+                  {/* Message */}
+                  <p className="text-[11px] font-semibold text-white/75 leading-snug group-hover:text-white/95 transition-colors">
+                    {opt.message}
+                  </p>
+                  {/* Apply hint on hover */}
+                  {!isDisabled && (
+                    <p className="text-[9px] text-primary/50 font-bold mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      Click to apply →
+                    </p>
+                  )}
+                </div>
+              );
+            })
           ) : (
-            <div className="py-8 text-center space-y-2 opacity-50">
-              <div className="w-10 h-10 rounded-full bg-white/5 mx-auto flex items-center justify-center">
-                <span className="material-symbols-outlined text-zinc-500">lightbulb</span>
+            <div className="py-7 text-center space-y-2">
+              <div className="w-9 h-9 rounded-full bg-white/5 mx-auto flex items-center justify-center">
+                <span className="material-symbols-outlined text-[18px] text-zinc-600">lightbulb</span>
               </div>
-              <p className="text-[10px] font-medium text-zinc-500">Generating smart insights...</p>
+              <p className="text-[10px] font-semibold text-zinc-600">Generating smart insights…</p>
             </div>
           )}
         </div>
-        
+
+        {/* Apply All Button */}
         <button
           onClick={() => {
             if (optimizationCount >= MAX_AI_OPTIMIZATIONS) return;
-            // Build feedback from AI optimization suggestions; fall back to a
-            // generic refinement instruction when the list is empty so we always
-            // pass a non-empty string. An empty string is falsy and would cause
-            // onSubmit to treat this as a fresh generation, wiping all trip state.
             const opts = itinerary.optimizations;
             const feedback =
               opts && opts.length > 0
@@ -331,16 +361,18 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
           }}
           disabled={isGenerating || !itinerary || optimizationCount >= MAX_AI_OPTIMIZATIONS}
           className={cn(
-            "w-full py-2.5 rounded-lg aurora-gradient text-white font-bold text-xs shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 mt-2",
-            (isGenerating || !itinerary || optimizationCount >= MAX_AI_OPTIMIZATIONS) && "opacity-50 cursor-not-allowed"
+            "w-full py-2.5 rounded-xl aurora-gradient text-white font-bold text-xs shadow-lg transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-1.5",
+            (isGenerating || !itinerary || optimizationCount >= MAX_AI_OPTIMIZATIONS) && "opacity-40 cursor-not-allowed"
           )}
         >
           {isGenerating ? (
-            <MorphingSquare className="w-4 h-4 bg-white" message="Refining..." messagePlacement="right" />
+            <MorphingSquare className="w-3.5 h-3.5 bg-white" message="Refining itinerary…" messagePlacement="right" />
           ) : (
             <>
-              <span className="material-symbols-outlined text-[16px]">bolt</span>
-              {optimizationCount >= MAX_AI_OPTIMIZATIONS ? "Optimization Limit Reached" : `Apply All Optimizations (${optimizationCount}/${MAX_AI_OPTIMIZATIONS})`}
+              <span className="material-symbols-outlined text-[15px]">bolt</span>
+              {optimizationCount >= MAX_AI_OPTIMIZATIONS
+                ? "Optimization Limit Reached"
+                : "Apply All Optimizations"}
             </>
           )}
         </button>

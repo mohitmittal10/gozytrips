@@ -16,6 +16,7 @@ import { CorporateTheme } from './pdf/themes/corporate-theme';
 import { DesertTheme, DesertFooter } from './pdf/themes/desert-theme';
 import { TropicalTheme } from './pdf/themes/tropical-theme';
 import { defaultPricingConfig } from '@/types/pricing';
+import { filterCompleteEntriesForExport } from '@/lib/validation/logistics-validation';
 
 export type { PdfTheme } from './pdf/theme-config';
 
@@ -50,14 +51,20 @@ export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencyS
     const agent = getAgentInfo(userProfile, agencySettings);
     const displayTitle = getSanitizedTitle(title || "", itinerary);
 
+    // Filter out incomplete entries so only fully-completed items appear in the exported PDF
+    const validHotels = filterCompleteEntriesForExport(hotels.length > 0 ? hotels : ((itinerary as any).hotels || []), "hotel");
+    const validFlights = filterCompleteEntriesForExport(flights.length > 0 ? flights : ((itinerary as any).flights || []), "flight");
+    const validCabs = filterCompleteEntriesForExport(cabs.length > 0 ? cabs : ((itinerary as any).cabs || []), "cab");
+    const validBuses = filterCompleteEntriesForExport(buses.length > 0 ? buses : ((itinerary as any).buses || []), "bus");
+
     // Calculate the definitive final total for display across all themes
     const pricingCfg = pricing || (itinerary as any).pricing || defaultPricingConfig;
     const resolvedBaseCost = baseCost || calcBaseCost({
         itinerary: itinerary.itinerary || [],
-        hotels: hotels.length > 0 ? hotels : ((itinerary as any).hotels || []),
-        flights: flights.length > 0 ? flights : ((itinerary as any).flights || []),
-        cabs: (itinerary as any).cabs || [],
-        buses: (itinerary as any).buses || [],
+        hotels: validHotels,
+        flights: validFlights,
+        cabs: validCabs,
+        buses: validBuses,
         pricing: pricingCfg
     });
     const { finalTotal } = calcPricingFromBaseCost(resolvedBaseCost, pricingCfg);
@@ -69,7 +76,7 @@ export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencyS
     const resolvedPaymentMethods = paymentMethods ?? (itinerary as any).paymentMethods;
 
     const themeProps = {
-        itinerary, title: displayTitle, clientName, agencySettings, agent, hotels, flights, cabs, buses, finalTotal, showTimestamps, inclusions: resolvedInclusions, exclusions: resolvedExclusions, termsAndConditions: resolvedTerms, cancellationPolicy: resolvedCancellation, paymentMethods: resolvedPaymentMethods, pricing: pricingCfg, baseCost: resolvedBaseCost, daySummaries, aboutPlace
+        itinerary, title: displayTitle, clientName, agencySettings, agent, hotels: validHotels, flights: validFlights, cabs: validCabs, buses: validBuses, finalTotal, showTimestamps, inclusions: resolvedInclusions, exclusions: resolvedExclusions, termsAndConditions: resolvedTerms, cancellationPolicy: resolvedCancellation, paymentMethods: resolvedPaymentMethods, pricing: pricingCfg, baseCost: resolvedBaseCost, daySummaries, aboutPlace
     };
 
     let ThemeComponent;

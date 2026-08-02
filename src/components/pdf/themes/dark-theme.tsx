@@ -38,6 +38,9 @@ export const DarkTheme = ({
     
     const inclusionsList = parseList(inclusions);
     const exclusionsList = parseList(exclusions);
+    const paymentMethodsList = parseList(paymentMethods);
+    const cancellationPolicyList = parseList(cancellationPolicy);
+    const termsAndConditionsList = parseList(termsAndConditions);
     
     return (
         <div className="dark-wrap" style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", backgroundColor: "#070a13", color: "#e2e8f0", width: "100%" }}>
@@ -97,13 +100,15 @@ export const DarkTheme = ({
 
             {/* Cover Section */}
             <div data-pdf-section="cover" style={{ paddingBottom: "10px" }}>
-                <div style={{ position: "relative", height: "300px", overflow: "hidden" }}>
-                    <img
-                        src={getCoverImage(itinerary)}
-                        alt=""
-                        style={{ width: "100%", height: "300px", objectFit: "cover", display: "block", filter: "brightness(0.35) saturate(0.7)" }}
-                        crossOrigin="anonymous"
-                    />
+                <div style={{ position: "relative", height: "300px", overflow: "hidden", background: "#0f172a" }}>
+                    {getCoverImage(itinerary) ? (
+                        <img
+                            src={getCoverImage(itinerary)}
+                            alt=""
+                            style={{ width: "100%", height: "300px", objectFit: "cover", display: "block", filter: "brightness(0.35) saturate(0.7)" }}
+                            crossOrigin="anonymous"
+                        />
+                    ) : null}
                     <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to right, #070a13 40%, rgba(7,10,19,0.3))` }} />
                     {/* Agency logo badge — top right (logo only) */}
                     {(agent.logoUrl || agent.companyName) && (
@@ -166,9 +171,11 @@ export const DarkTheme = ({
             {aboutPlace && (
                 <div data-pdf-section="about" style={{ padding: "10px 45px 45px 45px" }}>
                     <div style={{ display: "flex", gap: "40px", alignItems: "flex-start", background: "rgba(255,255,255,0.02)", padding: "30px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.06)", boxShadow: `0 4px 20px rgba(0,0,0,0.15)` }}>
-                        <div style={{ flex: "0 0 260px" }}>
-                            <img src={Array.isArray(itinerary.itinerary) && itinerary.itinerary.length > 0 ? getDayImage(itinerary.itinerary[0]) : "https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=1200&auto=format&fit=crop"} alt="Destination" style={{ width: "100%", height: "260px", objectFit: "cover", borderRadius: "6px", display: "block", borderBottom: `3px solid ${accent}` }} crossOrigin="anonymous" />
-                        </div>
+                        {Array.isArray(itinerary.itinerary) && itinerary.itinerary.length > 0 && getDayImage(itinerary.itinerary[0]) ? (
+                            <div style={{ flex: "0 0 260px" }}>
+                                <img src={getDayImage(itinerary.itinerary[0])} alt="Destination" style={{ width: "100%", height: "260px", objectFit: "cover", borderRadius: "6px", display: "block", borderBottom: `3px solid ${accent}` }} crossOrigin="anonymous" />
+                            </div>
+                        ) : null}
                         <div style={{ flex: 1 }}>
                             <h3 style={{ margin: "0 0 10px 0", fontSize: "10px", color: accent, textTransform: "uppercase", letterSpacing: "3px", fontWeight: 800 }}>Destination</h3>
                             <h2 style={{ margin: "0 0 20px 0", fontSize: "28px", color: "#ffffff", fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-0.5px" }}>{aboutPlace.title}</h2>
@@ -191,17 +198,21 @@ export const DarkTheme = ({
 
             {/* Daily itinerary */}
             <div style={{ padding: "0 45px 45px" }}>
-                {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => (
+                {Array.isArray(itinerary.itinerary) && itinerary.itinerary.map((day, index) => {
+                    const dayImg = getDayImage(day);
+                    return (
                     <div key={index} data-pdf-section={`day-${index}`} style={{ marginBottom: "35px", display: "block" }}>
 
                         {/* Day header: thumbnail + info panel */}
                         <div style={{ display: "flex", alignItems: "stretch", marginBottom: "14px", borderRadius: "10px", overflow: "hidden", border: "1px solid rgba(255,255,255,0.06)", boxShadow: `0 4px 15px rgba(0,0,0,0.1)` }}>
-                            <img
-                                src={getDayImage(day)}
-                                alt={formatTitleCase(day.areaFocus)}
-                                style={{ width: "100px", height: "90px", objectFit: "cover", flexShrink: 0, display: "block", filter: "brightness(0.5) saturate(0.8)" }}
-                                crossOrigin="anonymous"
-                            />
+                            {dayImg ? (
+                                <img
+                                    src={dayImg}
+                                    alt={formatTitleCase(day.areaFocus)}
+                                    style={{ width: "100px", height: "90px", objectFit: "cover", flexShrink: 0, display: "block", filter: "brightness(0.5) saturate(0.8)" }}
+                                    crossOrigin="anonymous"
+                                />
+                            ) : null}
                             <div style={{ flex: 1, padding: "12px 20px", borderLeft: `3px solid ${accent}`, background: "rgba(255,255,255,0.03)", display: "flex", flexDirection: "column", justifyContent: "center" }}>
                                 <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
                                     <span style={{ fontSize: "30px", fontWeight: 900, color: accent, fontFamily: "'Outfit', sans-serif", lineHeight: 1 }}>{String(index + 1).padStart(2, '0')}</span>
@@ -230,7 +241,7 @@ export const DarkTheme = ({
                             ))}
                         </div>
                     </div>
-                ))}
+                ); })}
             </div>
 
             {/* Travel & Logistics */}
@@ -242,22 +253,30 @@ export const DarkTheme = ({
                     </div>
                     
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "24px" }}>
-                        {groupHotelsByName(hotels).map((h, i) => (
-                            <div key={`hotel-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(255,255,255,0.06)", padding: "16px", background: "rgba(255,255,255,0.02)", borderRadius: "8px" }}>
-                                <img src={h.imageUrls?.[0] || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?q=80&w=600&auto=format&fit=crop'} alt={h.name} style={{ width: "90px", height: "90px", objectFit: "cover", borderRadius: "4px" }} crossOrigin="anonymous" />
-                                <div style={{ flex: 1 }}>
-                                    <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "6px" }}>
-                                        Hotel • {formatHotelStays(h.stays)}
-                                    </div>
-                                    <h4 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#ffffff", fontWeight: 700 }}>{h.name}</h4>
-                                    <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "6px", fontSize: "11px", color: "#94a3b8" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>IN</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{h.checkIn}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>OUT</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{h.checkOut}</span></div>
-                                        {h.bookingRef && <div style={{ display: "flex", justifyContent: "space-between" }}><span>REF</span><span style={{ fontWeight: 600, color: accent }}>{h.bookingRef}</span></div>}
+                        {groupHotelsByName(hotels).map((h, i) => {
+                            const validImages = h.imageUrls ? h.imageUrls.filter(url => url && url.trim().length > 0) : [];
+                            const hasPhoto = validImages.length > 0;
+                            return (
+                                <div key={`hotel-${i}`} style={{ display: "flex", gap: "16px", border: "1px solid rgba(255,255,255,0.06)", padding: "16px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", borderLeft: !hasPhoto ? `3px solid ${accent}` : undefined }}>
+                                    {hasPhoto ? (
+                                        <img src={validImages[0]} alt={h.name} style={{ width: "90px", height: "90px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} crossOrigin="anonymous" />
+                                    ) : (
+                                        <div style={{ width: "48px", height: "48px", background: `rgba(${rgbAccent},0.12)`, border: `1px solid rgba(${rgbAccent},0.25)`, borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", flexShrink: 0 }}>🏨</div>
+                                    )}
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "6px" }}>
+                                            Hotel • {formatHotelStays(h.stays)}
+                                        </div>
+                                        <h4 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#ffffff", fontWeight: 700 }}>{h.name}</h4>
+                                        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "6px", fontSize: "11px", color: "#94a3b8" }}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>IN</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{h.checkIn}</span></div>
+                                            <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>OUT</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{h.checkOut}</span></div>
+                                            {h.bookingRef && <div style={{ display: "flex", justifyContent: "space-between" }}><span>REF</span><span style={{ fontWeight: 600, color: accent }}>{h.bookingRef}</span></div>}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
                         {flights.map((f, i) => (
                             <div key={`flight-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(255,255,255,0.06)", padding: "16px", background: "rgba(255,255,255,0.02)", borderRadius: "8px" }}>
                                 <div style={{ width: "90px", height: "90px", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", borderRadius: "4px" }}>✈️</div>
@@ -315,32 +334,38 @@ export const DarkTheme = ({
             )}
 
             {/* Inclusions & Exclusions */}
-            <div data-pdf-section="inclusions" style={{ padding: "0 45px 45px 45px" }}>
-                <div style={{ display: "flex", gap: "40px" }}>
-                    <div style={{ flex: 1, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "30px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-                            <div style={{ width: "16px", height: "2px", background: accent, boxShadow: `0 0 8px ${accent}` }} />
-                            <h3 style={{ margin: 0, fontSize: "12px", color: "#ffffff", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800 }}>Inclusions</h3>
-                        </div>
-                        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
-                            {inclusionsList.length > 0 ? inclusionsList.map((inc, i) => (
-                                <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#cbd5e1", fontWeight: 500 }}><span style={{ color: accent }}>+</span> <span>{inc}</span></li>
-                            )) : <li style={{ fontSize: "13px", color: "#64748b" }}>No inclusions specified.</li>}
-                        </ul>
-                    </div>
-                    <div style={{ flex: 1, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "30px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-                            <div style={{ width: "16px", height: "2px", background: "#64748b" }} />
-                            <h3 style={{ margin: 0, fontSize: "12px", color: "#ffffff", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800 }}>Exclusions</h3>
-                        </div>
-                        <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
-                            {exclusionsList.length > 0 ? exclusionsList.map((exc, i) => (
-                                <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#94a3b8", fontWeight: 500 }}><span style={{ color: "#64748b" }}>-</span> <span>{exc}</span></li>
-                            )) : <li style={{ fontSize: "13px", color: "#64748b" }}>No exclusions specified.</li>}
-                        </ul>
+            {(inclusionsList.length > 0 || exclusionsList.length > 0) && (
+                <div data-pdf-section="inclusions" style={{ padding: "0 45px 45px 45px" }}>
+                    <div style={{ display: "flex", gap: "40px" }}>
+                        {inclusionsList.length > 0 && (
+                            <div style={{ flex: 1, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "30px" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+                                    <div style={{ width: "16px", height: "2px", background: accent, boxShadow: `0 0 8px ${accent}` }} />
+                                    <h3 style={{ margin: 0, fontSize: "12px", color: "#ffffff", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800 }}>Inclusions</h3>
+                                </div>
+                                <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
+                                    {inclusionsList.map((inc, i) => (
+                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#cbd5e1", fontWeight: 500 }}><span style={{ color: accent }}>+</span> <span>{inc}</span></li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                        {exclusionsList.length > 0 && (
+                            <div style={{ flex: 1, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "10px", padding: "30px" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+                                    <div style={{ width: "16px", height: "2px", background: "#64748b" }} />
+                                    <h3 style={{ margin: 0, fontSize: "12px", color: "#ffffff", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800 }}>Exclusions</h3>
+                                </div>
+                                <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
+                                    {exclusionsList.map((exc, i) => (
+                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#94a3b8", fontWeight: 500 }}><span style={{ color: "#64748b" }}>-</span> <span>{exc}</span></li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
                 </div>
-            </div>
+            )}
 
             {/* Pricing & Invoice */}
             <div data-pdf-section="pricing" style={{ padding: "0 45px 60px 45px" }}>
@@ -453,25 +478,31 @@ export const DarkTheme = ({
                 )}
 
                 {/* Policies & Methods — below, side by side */}
-                <div style={{ display: "flex", gap: "30px" }}>
-                    <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "10px" }}>Cancellation Policy</div>
-                        <div style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.7" }}>
-                            {cancellationPolicy ? parseList(cancellationPolicy).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
-                        </div>
+                {(paymentMethodsList.length > 0 || cancellationPolicyList.length > 0) && (
+                    <div style={{ display: "flex", gap: "30px" }}>
+                        {cancellationPolicyList.length > 0 && (
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "10px" }}>Cancellation Policy</div>
+                                <div style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.7" }}>
+                                    {cancellationPolicyList.map((p, i) => <div key={i}>• {p}</div>)}
+                                </div>
+                            </div>
+                        )}
+                        {paymentMethodsList.length > 0 && (
+                            <div style={{ flex: 1 }}>
+                                <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "10px" }}>Payment Methods</div>
+                                <div style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.7" }}>
+                                    {paymentMethodsList.map((p, i) => <div key={i}>• {p}</div>)}
+                                </div>
+                            </div>
+                        )}
                     </div>
-                    <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "10px" }}>Payment Methods</div>
-                        <div style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.7" }}>
-                            {paymentMethods ? parseList(paymentMethods).map((p, i) => <div key={i}>• {p}</div>) : "• Not specified."}
-                        </div>
-                    </div>
-                </div>
-                {termsAndConditions && (
+                )}
+                {termsAndConditionsList.length > 0 && (
                     <div style={{ marginTop: "24px", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "20px" }}>
                         <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "10px" }}>Terms & Conditions</div>
                         <div style={{ fontSize: "12px", color: "#94a3b8", lineHeight: "1.7" }}>
-                            {parseList(termsAndConditions).map((p, i) => <div key={i}>• {p}</div>)}
+                            {termsAndConditionsList.map((p, i) => <div key={i}>• {p}</div>)}
                         </div>
                     </div>
                 )}

@@ -119,8 +119,6 @@ export const TimelineView = ({
                         <ItineraryTimeline
                             itinerary={selectedTripForModal?.itinerary_data?.itinerary || []}
                             showDecorations={false}
-                            hotels={(selectedTripForModal?.itinerary_data as any)?.hotels || []}
-                            flights={(selectedTripForModal?.itinerary_data as any)?.flights || []}
                             destinations={selectedTripForModal?.destinations}
                         />
                     </div>

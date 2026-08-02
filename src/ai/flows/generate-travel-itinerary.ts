@@ -72,13 +72,13 @@ const TravelItineraryOutputSchema = z.object({
       day: z.number(),
       date: z.string(),
       areaFocus: z.string(),
-      imageSearchTerm: z.string().describe('A specific Unsplash search term (noun phrase only, no verbs/actions, include city/region context), e.g., "Taj Mahal Agra", "Kerala houseboats Alleppey", "Munnar tea plantations".'),
+      imageSearchTerm: z.string().describe('A specific Unsplash search term for the day (noun phrase only, no verbs/actions, no hotel/room/accommodation terms, include city/region context), e.g., "Taj Mahal Agra", "Kerala houseboats Alleppey", "Munnar tea plantations".'),
       timeline: z.array(
         z.object({
           time: z.string(),
           details: z.string(),
           cost: z.number().optional().describe('Do NOT generate this field. Keep it undefined/null as the agent will input costs manually.'),
-          imageSearchTerm: z.string().optional().describe('A specific Unsplash search term for this activity (noun phrase only, no verbs/actions like "visit" or "eating"), e.g., "Mysore Palace facade", "luxury hotel room Udaipur", "local bazaar shopping market Delhi".'),
+          imageSearchTerm: z.string().optional().describe('A specific Unsplash search term for this activity (noun phrase only, no verbs/actions like "visit" or "eating", DO NOT use hotel/room/accommodation terms), e.g., "Mysore Palace facade", "local bazaar shopping market Delhi", "Hawa Mahal Jaipur".'),
         })
       ),
     })
@@ -263,6 +263,12 @@ You are an expert travel planner. Generate a detailed, day-by-day travel itinera
 {{/if}}
 
 ══════════════════════════════════════════════════════
+  IMAGE SEARCH TERM PRINCIPLE
+══════════════════════════════════════════════════════
+  - NEVER output hotel, resort, room, check-in, or accommodation terms in imageSearchTerm.
+  - Always output search terms focused on scenic landmarks, nature, cityscapes, or cultural sightseeing attractions.
+
+══════════════════════════════════════════════════════
   COST ESTIMATION (CRITICAL RULE)
 ══════════════════════════════════════════════════════
   - DO NOT generate or calculate any cost values for the timeline activities.
@@ -273,14 +279,14 @@ You are an expert travel planner. Generate a detailed, day-by-day travel itinera
   IMAGE SEARCH TERMS (for Unsplash)
 ══════════════════════════════════════════════════════
   To ensure the Unsplash API retrieves highly relevant, beautiful travel photographs:
-  1. The "imageSearchTerm" fields MUST contain only specific, concrete visual noun phrases (e.g. "Amber Fort Jaipur facade", "Alleppey backwaters houseboat", "luxury hotel lobby").
+  1. The "imageSearchTerm" fields MUST contain only specific, concrete visual noun phrases (e.g. "Amber Fort Jaipur facade", "Alleppey backwaters houseboat", "Qutub Minar Delhi").
   2. ALWAYS append the destination/city name for context (e.g., "Taj Mahal Agra" instead of just "Taj Mahal", "beach sunset Goa" instead of "beach sunset").
   3. STRICTLY AVOID verbs and action words (e.g., do NOT use "visit", "exploring", "walking", "dining", "check in", "shopping"). Use noun equivalents instead (e.g., "bazaar", "heritage facade", "trekking trail").
   4. STRICTLY AVOID vague, generic, or non-visual words (e.g., "scenic view", "beautiful morning", "day 2 highlights", "cultural experience", "delicious food").
   5. DO NOT include punctuation, symbols, or special characters in the search terms.
   6. Examples of good search terms:
      - Per-day: "Marine Drive Mumbai skyline", "Hawa Mahal Jaipur pink facade", "Munnar tea plantation mountains"
-     - Per-step: "traditional Kerala thali lunch", "luxury boutique hotel heritage architecture", "Goa beach sunset palms"
+     - Per-step: "traditional Kerala thali lunch", "Udaipur palace lake view", "Goa beach sunset palms"
 
 ══════════════════════════════════════════════════════
   OPTIMISATION INSIGHTS (exactly 3–4)

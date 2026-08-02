@@ -210,7 +210,7 @@ export function CrmTabRouter() {
         }}
     />;
 
-    if (activeTab === 'edit-itinerary') return <EditItineraryView
+    if (activeTab === 'itineraries') return <EditItineraryView
         itineraryStatuses={itineraryStatuses}
         setSelectedTripForModal={context.setSelectedTripForModal}
         setShowModal={context.setShowModal}

@@ -12,6 +12,8 @@ import {
     CalendarDays,
     Users,
     Filter,
+    ChevronLeft,
+    ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -118,6 +120,14 @@ export const EditItineraryView = ({
     const [statusFilter, setStatusFilter] = useState("all");
     const [isRefreshing, setIsRefreshing] = useState(false);
 
+    // Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchQuery, statusFilter]);
+
     /** Fetch all itineraries for this user with their client name via join */
     const fetchItineraries = useCallback(async (showRefreshSpinner = false) => {
         if (!user?.id) return;
@@ -173,6 +183,11 @@ export const EditItineraryView = ({
 
         return matchesStatus && matchesSearch;
     });
+
+    const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = Math.min(startIndex + itemsPerPage, filtered.length);
+    const paginatedItineraries = filtered.slice(startIndex, startIndex + itemsPerPage);
 
     // ── Empty state ────────────────────────────────────────────────────────────
     if (!loading && !error && itineraries.length === 0) {
@@ -253,8 +268,12 @@ export const EditItineraryView = ({
             </div>
 
             {/* Row count */}
-            <p className="text-xs text-gray-600">
-                {loading ? "Loading…" : `${filtered.length} of ${itineraries.length} itinerar${itineraries.length !== 1 ? "ies" : "y"}`}
+            <p className="text-xs text-gray-500 font-medium">
+                {loading
+                    ? "Loading…"
+                    : filtered.length === 0
+                    ? "0 itineraries"
+                    : `Showing ${startIndex + 1}–${endIndex} of ${filtered.length} itinerar${filtered.length !== 1 ? "ies" : "y"}`}
             </p>
 
             {/* ── Error state ─────────────────────────────────────────────────── */}
@@ -305,7 +324,7 @@ export const EditItineraryView = ({
                     </div>
                 ) : (
                     <div className="divide-y divide-white/5 max-h-[65vh] overflow-y-auto">
-                        {filtered.map((trip) => {
+                        {paginatedItineraries.map((trip) => {
                             const title = trip.title?.trim() || "Untitled Trip";
                             const destination = trip.destinations?.trim() || null;
                             const duration = formatDuration(trip.start_date, trip.end_date);
@@ -425,6 +444,72 @@ export const EditItineraryView = ({
                     </div>
                 )}
             </div>
+
+            {/* ── Pagination Controls ─────────────────────────────────────────── */}
+            {!loading && filtered.length > 0 && totalPages > 1 && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-sm mt-4">
+                    <p className="text-xs text-gray-400 font-medium">
+                        Page <span className="text-white font-bold">{currentPage}</span> of{" "}
+                        <span className="text-white font-bold">{totalPages}</span> ({filtered.length} total)
+                    </p>
+                    <div className="flex items-center gap-2">
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                            disabled={currentPage === 1}
+                            className="h-8 w-8 rounded-lg bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-all cursor-pointer disabled:cursor-not-allowed"
+                            title="Previous page"
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                        </Button>
+
+                        <div className="flex items-center gap-1">
+                            {Array.from({ length: totalPages }, (_, idx) => {
+                                const pageNum = idx + 1;
+
+                                if (totalPages > 5) {
+                                    if (pageNum !== 1 && pageNum !== totalPages && Math.abs(pageNum - currentPage) > 1) {
+                                        if (pageNum === 2 && currentPage > 3) {
+                                            return <span key="dots-start" className="text-gray-600 px-1 text-xs select-none">...</span>;
+                                        }
+                                        if (pageNum === totalPages - 1 && currentPage < totalPages - 2) {
+                                            return <span key="dots-end" className="text-gray-600 px-1 text-xs select-none">...</span>;
+                                        }
+                                        return null;
+                                    }
+                                }
+
+                                return (
+                                    <button
+                                        key={pageNum}
+                                        onClick={() => setCurrentPage(pageNum)}
+                                        className={cn(
+                                            "h-8 min-w-[2rem] px-2 rounded-lg text-xs font-semibold tracking-wide transition-all cursor-pointer",
+                                            currentPage === pageNum
+                                                ? "bg-purple-500/20 border border-purple-500/40 text-purple-400 font-bold shadow-[0_0_10px_rgba(168,85,247,0.2)]"
+                                                : "bg-transparent text-gray-400 hover:text-white hover:bg-white/5"
+                                        )}
+                                    >
+                                        {pageNum}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                            disabled={currentPage === totalPages}
+                            className="h-8 w-8 rounded-lg bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-all cursor-pointer disabled:cursor-not-allowed"
+                            title="Next page"
+                        >
+                            <ChevronRight className="w-4 h-4" />
+                        </Button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
