@@ -121,39 +121,59 @@ export const MinimalistTheme = ({
                 {/* Main cover body */}
                 <div style={{ padding: "45px", background: "rgba(255,255,255,0.42)" }}>
                     <p style={{ fontSize: "14px", color: "#64748b", margin: "0 0 35px 0", lineHeight: "1.7", fontWeight: 500 }}>
-                        {itinerary.itinerary?.length || 0}-day bespoke journey · Curated exclusively by {agent.agentName}
+                        {agent.tagline || `${itinerary.itinerary?.length || 0}-day bespoke journey · Curated by ${agent.agentName}`}
                     </p>
 
                     {/* Stat cards row */}
-                    <div style={{ display: "flex", gap: "20px", marginBottom: "40px", pageBreakInside: "avoid" }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginBottom: "40px", pageBreakInside: "avoid" }}>
                         {[
-                            { label: "Duration", value: `${itinerary.itinerary.length} Days` },
+                            { label: "Guest / Client", value: clientName || "Valued Guest" },
+                            { label: "Travelers", value: `${adultPax} Adults${childPax > 0 ? `, ${childPax} Children` : ''}${infantPax > 0 ? `, ${infantPax} Infants` : ''}` },
+                            { label: "Duration", value: `${itinerary.itinerary?.length || 0} Days` },
                             { label: "Est. Budget", value: formatCurrency(calculatedFinalTotal || finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY) },
-                            { label: "Activities", value: `${totalActivities}+ Items` },
                         ].map((stat, i) => (
-                            <div key={i} style={{ flex: 1, padding: "20px", border: "1px solid rgba(148,163,184,0.24)", borderTop: `3px solid ${accent}`, background: "rgba(255,255,255,0.62)", borderRadius: "8px", boxShadow: "0 8px 24px rgba(15,23,42,0.04)" }}>
+                            <div key={i} style={{ flex: "1 1 180px", padding: "18px 20px", border: "1px solid rgba(148,163,184,0.24)", borderTop: `3px solid ${accent}`, background: "rgba(255,255,255,0.62)", borderRadius: "8px", boxShadow: "0 8px 24px rgba(15,23,42,0.04)" }}>
                                 <p style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "2.5px", color: "#64748b", margin: "0 0 6px 0", fontWeight: 800 }}>{stat.label}</p>
-                                <p style={{ fontSize: "20px", fontWeight: 900, margin: 0, color: "#0f172a", fontFamily: "'Outfit', sans-serif" }}>{stat.value}</p>
+                                <p style={{ fontSize: "16px", fontWeight: 900, margin: 0, color: "#0f172a", fontFamily: "'Outfit', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{stat.value}</p>
                             </div>
                         ))}
-                    </div>
-
-                    {/* Agent details row */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "30px", borderTop: "1px solid #f1f5f9", pageBreakInside: "avoid" }}>
-                        {/* Bio */}
-                        <div style={{ flex: 2, paddingRight: "40px" }}>
-                            {agent.agentBio && (
-                                <div style={{ borderLeft: `2.5px solid ${accent}`, paddingLeft: "20px" }}>
-                                    <p style={{ fontSize: "13px", lineHeight: "1.8", color: "#475569", margin: 0, fontStyle: "italic" }}>{agent.agentBio}</p>
+                    </div>                    {/* Client & Agency details section */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", paddingTop: "30px", borderTop: "1px solid #e2e8f0", pageBreakInside: "avoid" }}>
+                        {/* Client Details Box */}
+                        <div style={{ padding: "24px", background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.24)", borderTop: `3px solid ${accent}`, borderRadius: "8px", boxShadow: "0 8px 24px rgba(15,23,42,0.04)" }}>
+                            <p style={{ margin: "0 0 14px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2.5px", color: accent, fontWeight: 800 }}>👤 Client Details</p>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                                <div>
+                                    <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#64748b", fontWeight: 700 }}>Client Name</p>
+                                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#0f172a", fontFamily: "'Outfit', sans-serif" }}>{clientName || "Valued Guest"}</p>
                                 </div>
-                            )}
+                                <div style={{ display: "flex", gap: "24px" }}>
+                                    <div>
+                                        <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#64748b", fontWeight: 700 }}>Adults</p>
+                                        <p style={{ margin: 0, fontSize: "13.5px", fontWeight: 700, color: "#334155" }}>{adultPax} {adultPax === 1 ? 'Adult' : 'Adults'}</p>
+                                    </div>
+                                    <div>
+                                        <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#64748b", fontWeight: 700 }}>Children</p>
+                                        <p style={{ margin: 0, fontSize: "13.5px", fontWeight: 700, color: "#334155" }}>{childPax} {childPax === 1 ? 'Child' : 'Children'}</p>
+                                    </div>
+                                    {infantPax > 0 && (
+                                        <div>
+                                            <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#64748b", fontWeight: 700 }}>Infants</p>
+                                            <p style={{ margin: 0, fontSize: "13.5px", fontWeight: 700, color: "#334155" }}>{infantPax} {infantPax === 1 ? 'Infant' : 'Infants'}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                        {/* Contact */}
-                        <div style={{ flex: 1, textAlign: "right", fontSize: "12px", color: "#64748b", lineHeight: "2", fontWeight: 500 }}>
-                            <p style={{ fontWeight: 800, color: "#0f172a", fontSize: "14px", margin: "0 0 6px 0" }}>{agent.agentName}</p>
-                            {agent.agentPhone && <p style={{ margin: "1px 0" }}>{agent.agentPhone}</p>}
-                            {agent.agentEmail && <p style={{ margin: "1px 0" }}>{agent.agentEmail}</p>}
-                            {agent.agentWebsite && <p style={{ margin: "4px 0 0 0", color: accent, fontWeight: 700, textDecoration: "underline" }}>{agent.agentWebsite}</p>}
+
+                        {/* Agency Details Box */}
+                        <div style={{ padding: "24px", background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.24)", borderTop: "3px solid #3b82f6", borderRadius: "8px", boxShadow: "0 8px 24px rgba(15,23,42,0.04)" }}>
+                            <p style={{ margin: "0 0 14px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2.5px", color: "#3b82f6", fontWeight: 800 }}>🏢 Agency Details</p>
+                            <p style={{ fontWeight: 800, color: "#0f172a", fontSize: "16px", margin: "0 0 4px 0", fontFamily: "'Outfit', sans-serif" }}>{agent.companyName}</p>
+                            <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 10px 0", fontWeight: 600 }}>Consultant: <strong style={{ color: "#0f172a" }}>{agent.agentName}</strong></p>
+                            {agent.agentPhone && <p style={{ margin: "2px 0", fontSize: "12px", color: "#475569" }}>📞 {agent.agentPhone}</p>}
+                            {agent.agentEmail && <p style={{ margin: "2px 0", fontSize: "12px", color: "#475569" }}>✉️ {agent.agentEmail}</p>}
+                            {agent.agentWebsite && <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: accent, fontWeight: 700, textDecoration: "underline" }}>🌐 {agent.agentWebsite}</p>}
                         </div>
                     </div>
                 </div>

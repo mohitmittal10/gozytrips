@@ -105,7 +105,7 @@ export const EditorialTheme = ({
                     <div style={{ position: "absolute", bottom: "50px", left: "60px", right: "60px", color: "white", zIndex: 1 }}>
                         <h1 style={{ fontSize: "48px", fontWeight: "normal", margin: "0 0 20px 0", lineHeight: "1.15", fontFamily: "'Playfair Display', serif", fontStyle: "italic", letterSpacing: "-0.5px" }}>{title}</h1>
                         <div style={{ width: "80px", height: "2px", background: gold, marginBottom: "20px" }} />
-                        <p style={{ fontSize: "14px", opacity: 0.9, margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" }}>{itinerary.itinerary?.length || 0}-Day Curated Journey • Designed by {agent.agentName}</p>
+                        <p style={{ fontSize: "14px", opacity: 0.9, margin: 0, fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" }}>{agent.tagline || `${itinerary.itinerary?.length || 0}-Day Curated Journey • Designed by ${agent.agentName}`}</p>
                     </div>
                 </div>
 
@@ -120,10 +120,15 @@ export const EditorialTheme = ({
                             )}
                         </div>
                         <div style={{ flex: 1, fontSize: "13px", color: "#64748b", fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: "2.1", alignSelf: "center" }}>
-                            <p style={{ fontWeight: 800, color: "#0f172a", fontSize: "15px", margin: "0 0 12px 0", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>{agent.agentName}</p>
-                            {agent.agentPhone && <p style={{ margin: "2px 0" }}>{agent.agentPhone}</p>}
-                            {agent.agentEmail && <p style={{ margin: "2px 0" }}>{agent.agentEmail}</p>}
-                            {agent.agentWebsite && <p style={{ margin: "4px 0", color: gold, fontWeight: 700 }}>{agent.agentWebsite}</p>}
+                            <p style={{ fontWeight: 800, color: "#0f172a", fontSize: "15px", margin: "0 0 8px 0", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>{agent.agentName}</p>
+                            {agent.agentPhone && <p style={{ margin: "1px 0" }}>{agent.agentPhone}</p>}
+                            {agent.agentEmail && <p style={{ margin: "1px 0" }}>{agent.agentEmail}</p>}
+                            {agent.agentWebsite && <p style={{ margin: "3px 0", color: gold, fontWeight: 700 }}>{agent.agentWebsite}</p>}
+                        </div>
+                        <div style={{ flex: 1, fontSize: "13px", color: "#64748b", fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: "2.1", alignSelf: "center", borderLeft: "1px solid #e2e8f0", paddingLeft: "30px" }}>
+                            <p style={{ fontWeight: 800, color: "#0f172a", fontSize: "15px", margin: "0 0 8px 0", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>Prepared For</p>
+                            <p style={{ margin: "1px 0", fontWeight: 700, color: "#0f172a" }}>{clientName || "Valued Guest"}</p>
+                            <p style={{ margin: "1px 0", color: "#64748b" }}>{adultPax} {adultPax === 1 ? 'Adult' : 'Adults'}{childPax > 0 ? `, ${childPax} ${childPax === 1 ? 'Child' : 'Children'}` : ''}{infantPax > 0 ? `, ${infantPax} ${infantPax === 1 ? 'Infant' : 'Infants'}` : ''}</p>
                         </div>
                     </div>
 

@@ -48,59 +48,94 @@ export const DesertFooter = ({ agent, agencySettings }: { agent: ThemeProps["age
         style={{
             ...PAGE_STYLE,
             justifyContent: "flex-end",
-            background: "#ffffff",
-            padding: "72px 64px",
+            background: "#fdfcfb",
+            padding: "64px 64px 72px 64px",
             pageBreakAfter: "auto",
             breakAfter: "auto",
         }}
     >
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-            <div style={{ width: "100%", maxWidth: "920px", background: "#e6d5c3", borderRadius: "24px", padding: "56px 48px", textAlign: "center", boxShadow: "0 18px 45px rgba(17,24,39,0.08)" }}>
-                <h2 style={{ margin: "0 0 14px 0", fontSize: "36px", color: "#433429", fontWeight: 500 }}>
+            <div style={{
+                width: "100%",
+                maxWidth: "920px",
+                background: "linear-gradient(135deg, #433429 0%, #2a1e16 100%)",
+                borderRadius: "28px",
+                padding: "56px 48px",
+                textAlign: "center",
+                boxShadow: "0 24px 60px -12px rgba(67,52,41,0.28)",
+                color: "#ffffff",
+                position: "relative",
+                overflow: "hidden"
+            }}>
+                {/* Subtle decorative background circle */}
+                <div style={{ position: "absolute", top: "-80px", right: "-80px", width: "240px", height: "240px", borderRadius: "50%", background: "rgba(251, 146, 60, 0.08)", pointerEvents: "none" }} />
+                
+                {agent.logoUrl && (
+                    <div style={{ display: "inline-flex", padding: "12px 24px", background: "rgba(255,255,255,0.08)", backdropFilter: "blur(10px)", borderRadius: "16px", marginBottom: "24px", border: "1px solid rgba(255,255,255,0.12)" }}>
+                        <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "40px", maxWidth: "140px", objectFit: "contain", display: "block" }} />
+                    </div>
+                )}
+                <h2 style={{ margin: "0 0 12px 0", fontSize: "32px", color: "#ffffff", fontWeight: 500, letterSpacing: "-0.5px" }}>
                      {agent.companyName}
                 </h2>
-                <p style={{ margin: "0 auto 34px auto", maxWidth: "540px", fontSize: "16px", lineHeight: "1.9", color: "rgba(67,52,41,0.72)", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                <p style={{ margin: "0 auto 32px auto", maxWidth: "560px", fontSize: "15px", lineHeight: "1.8", color: "rgba(254, 215, 170, 0.8)", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                     {getAgencyNarrative(agent)}
                 </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px", color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                    {agent.agentPhone && <p style={{ margin: 0, fontSize: "24px", fontWeight: 700 }}>{agent.agentPhone}</p>}
-                    {agent.agentEmail && <p style={{ margin: 0, fontSize: "16px", color: "rgba(67,52,41,0.7)" }}>{agent.agentEmail}</p>}
-                    {agent.agentWebsite && <p style={{ margin: 0, fontSize: "16px", color: "rgba(67,52,41,0.7)" }}>{agent.agentWebsite}</p>}
-                    {!agent.agentPhone && !agent.agentEmail && !agent.agentWebsite && <p style={{ margin: 0, fontSize: "16px", color: "rgba(67,52,41,0.7)" }}>Contact details will appear here from your profile settings.</p>}
-                    <p style={{ margin: "16px 0 0 0", fontSize: "13px", color: "rgba(67,52,41,0.6)", fontWeight: 600 }}>Curated by {agent.agentName}</p>
+
+                {/* Contact pills */}
+                <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "16px", marginBottom: "36px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                    {agent.agentPhone && (
+                        <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: "999px", padding: "10px 22px", fontSize: "14px", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span>📞</span> {agent.agentPhone}
+                        </div>
+                    )}
+                    {agent.agentEmail && (
+                        <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: "999px", padding: "10px 22px", fontSize: "14px", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span>✉️</span> {agent.agentEmail}
+                        </div>
+                    )}
+                    {agent.agentWebsite && (
+                        <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: "999px", padding: "10px 22px", fontSize: "14px", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <span>🌐</span> {agent.agentWebsite}
+                        </div>
+                    )}
+                </div>
+
+                <div style={{ fontSize: "12px", color: "rgba(254, 215, 170, 0.6)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1.5px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                    Curated by {agent.agentName}
                 </div>
                 
                 {(agencySettings?.bankAccountNumber || agencySettings?.gstNumber || agencySettings?.upiId) && (
-                    <div style={{ marginTop: "40px", paddingTop: "40px", borderTop: "1px solid rgba(67,52,41,0.15)", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "20px", textAlign: "left", color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                    <div style={{ marginTop: "36px", paddingTop: "36px", borderTop: "1px solid rgba(255,255,255,0.12)", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "24px", textAlign: "left", color: "#ffffff", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                         {agencySettings?.bankAccountNumber && (
-                            <div>
-                                <p style={{ margin: "0 0 10px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "rgba(67,52,41,0.6)", fontWeight: 700 }}>Bank Account</p>
-                                <p style={{ margin: "0 0 4px 0", fontSize: "14px", fontWeight: 700 }}>{agencySettings?.bankName || ''}</p>
-                                <p style={{ margin: "0 0 2px 0", fontSize: "12px", color: "rgba(67,52,41,0.8)" }}>ACC: <span style={{ fontWeight: 600 }}>{agencySettings?.bankAccountNumber}</span></p>
+                            <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: "16px", padding: "18px 20px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                                <p style={{ margin: "0 0 8px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "#ea580c", fontWeight: 800 }}>Bank Account</p>
+                                <p style={{ margin: "0 0 4px 0", fontSize: "14px", fontWeight: 700 }}>{agencySettings?.bankName || 'Bank Details'}</p>
+                                <p style={{ margin: "0 0 2px 0", fontSize: "12px", color: "rgba(255,255,255,0.8)" }}>ACC: <span style={{ fontWeight: 600 }}>{agencySettings?.bankAccountNumber}</span></p>
                                 {agencySettings?.bankIfscCode && (
-                                    <p style={{ margin: 0, fontSize: "12px", color: "rgba(67,52,41,0.8)" }}>IFSC: <span style={{ fontWeight: 600 }}>{agencySettings?.bankIfscCode}</span></p>
+                                    <p style={{ margin: 0, fontSize: "12px", color: "rgba(255,255,255,0.8)" }}>IFSC: <span style={{ fontWeight: 600 }}>{agencySettings?.bankIfscCode}</span></p>
                                 )}
                             </div>
                         )}
                         {agencySettings?.gstNumber && (
-                            <div>
-                                <p style={{ margin: "0 0 10px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "rgba(67,52,41,0.6)", fontWeight: 700 }}>Tax Information</p>
-                                <p style={{ margin: "0 0 4px 0", fontSize: "12px", color: "rgba(67,52,41,0.8)" }}>GST Number:</p>
+                            <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: "16px", padding: "18px 20px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                                <p style={{ margin: "0 0 8px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "#ea580c", fontWeight: 800 }}>Tax Information</p>
+                                <p style={{ margin: "0 0 4px 0", fontSize: "12px", color: "rgba(255,255,255,0.7)" }}>GST Number:</p>
                                 <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{agencySettings?.gstNumber}</p>
                             </div>
                         )}
                         {agencySettings?.upiId && (
-                            <div>
-                                <p style={{ margin: "0 0 10px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "rgba(67,52,41,0.6)", fontWeight: 700 }}>UPI Payment</p>
-                                <p style={{ margin: "0 0 4px 0", fontSize: "12px", color: "rgba(67,52,41,0.8)" }}>Scan or Pay to:</p>
+                            <div style={{ background: "rgba(0,0,0,0.2)", borderRadius: "16px", padding: "18px 20px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                                <p style={{ margin: "0 0 8px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "#ea580c", fontWeight: 800 }}>UPI Payment</p>
+                                <p style={{ margin: "0 0 4px 0", fontSize: "12px", color: "rgba(255,255,255,0.7)" }}>Pay directly to:</p>
                                 <p style={{ margin: 0, fontSize: "13px", fontWeight: 700 }}>{agencySettings?.upiId}</p>
                             </div>
                         )}
                     </div>
                 )}
                 
-                <div style={{ textAlign: "center", marginTop: "40px", paddingTop: "20px", borderTop: "1px solid rgba(67,52,41,0.15)", fontSize: "11px", color: "rgba(67,52,41,0.5)" }}>
-                    Generated on {new Date().toLocaleDateString()} • Designed in The Lab
+                <div style={{ textAlign: "center", marginTop: "36px", paddingTop: "20px", borderTop: "1px solid rgba(255,255,255,0.1)", fontSize: "11px", color: "rgba(254, 215, 170, 0.4)", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                    Prepared for {agencySettings?.brand_name || agent.companyName} • Designed in The Lab
                 </div>
             </div>
         </div>
@@ -201,7 +236,7 @@ export const DesertTheme = ({
                         )}
                         <div style={{ borderLeft: "1px solid #e5e7eb", paddingLeft: "14px" }}>
                             <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "#111827", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.companyName}</p>
-                            <p style={{ margin: 0, fontSize: "9px", color: "#9ca3af", letterSpacing: "0.04em", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontWeight: 500, marginTop: "2px", textTransform: "uppercase" }}>Travel Collection</p>
+                            <p style={{ margin: 0, fontSize: "9px", color: "#9ca3af", letterSpacing: "0.04em", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontWeight: 500, marginTop: "2px", textTransform: "uppercase" }}>{agent.tagline || "Travel Collection"}</p>
                         </div>
                     </div>
                     <div style={{ position: "absolute", left: "64px", right: "64px", bottom: "72px", color: "#ffffff" }}>
@@ -215,21 +250,22 @@ export const DesertTheme = ({
                 </div>
 
                 <div data-pdf-section="quick-stats" style={{ background: "#ffffff", borderBottom: "1px solid #f3f4f6", padding: "42px 64px" }}>
-                    <div style={{ display: "flex", gap: "24px" }}>
+                    <div style={{ display: "flex", gap: "20px" }}>
                         {[
-                            { label: "Duration", value: `${days} Days / ${nights}` },
-                            { label: "Total Budget", value: totalBudget },
-                            { label: "Location", value: destination },
+                            { label: "Guest / Client", value: clientName || "Valued Guest", icon: "👤" },
+                            { label: "Duration", value: `${days} Days / ${nights}`, icon: "📅" },
+                            { label: "Total Budget", value: totalBudget, icon: "💰" },
+                            { label: "Location", value: destination, icon: "📍" },
                         ].map((item, index) => (
-                            <div key={index} style={{ flex: 1, display: "flex", alignItems: "center", gap: "16px" }}>
-                                <div style={{ width: "48px", height: "48px", borderRadius: "999px", background: "#fff7ed", display: "flex", alignItems: "center", justifyContent: "center", color: "#ea580c", fontSize: "18px", fontWeight: 700 }}>
-                                    {index === 0 ? "D" : index === 1 ? "$" : "L"}
+                            <div key={index} style={{ flex: 1, display: "flex", alignItems: "center", gap: "14px" }}>
+                                <div style={{ width: "44px", height: "44px", borderRadius: "999px", background: "#fff7ed", border: "1px solid #ffedd5", display: "flex", alignItems: "center", justifyContent: "center", color: "#ea580c", fontSize: "16px", fontWeight: 700, flexShrink: 0 }}>
+                                    {item.icon}
                                 </div>
-                                <div>
-                                    <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                                <div style={{ minWidth: 0 }}>
+                                    <p style={{ margin: "0 0 3px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                         {item.label}
                                     </p>
-                                    <p style={{ margin: 0, fontSize: "16px", color: "#1f2937", fontWeight: 600, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                                    <p style={{ margin: 0, fontSize: "15px", color: "#1f2937", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                                         {item.value}
                                     </p>
                                 </div>
@@ -251,27 +287,61 @@ export const DesertTheme = ({
                         {getAgencyNarrative(agent)}
                     </p>
 
-                    <div style={{ background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "22px", padding: "32px 34px" }}>
-                        <p style={{ margin: "0 0 18px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "3px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                            Agency Details
-                        </p>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", columnGap: "28px", rowGap: "18px" }}>
-                            {agencyDetails.length > 0 ? agencyDetails.map((detail, index) => (
-                                <div key={index} style={{ paddingBottom: "12px", borderBottom: "1px solid #efe5d8" }}>
-                                    <p style={{ margin: "0 0 6px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#b48b63", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                                        {index === 0 ? "Consultant" : index === 1 ? "Phone" : index === 2 ? "Email" : "Website"}
-                                    </p>
-                                    <p style={{ margin: 0, fontSize: "16px", lineHeight: "1.7", color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                                        {detail}
-                                    </p>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                        <div style={{ background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "22px", padding: "32px 34px" }}>
+                            <p style={{ margin: "0 0 18px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "3px", color: "#b48b63", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                                🏜️ Agency Details
+                            </p>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                                <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
+                                    <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Consultant</p>
+                                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.agentName}</p>
                                 </div>
-                            )) : (
-                                <div style={{ gridColumn: "1 / -1" }}>
-                                    <p style={{ margin: 0, fontSize: "16px", lineHeight: "1.8", color: "#6b7280", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                                        Agency contact details will appear here once your business profile is completed.
-                                    </p>
+                                {agent.agentPhone && (
+                                    <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
+                                        <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Phone</p>
+                                        <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.agentPhone}</p>
+                                    </div>
+                                )}
+                                {agent.agentEmail && (
+                                    <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
+                                        <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Email</p>
+                                        <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.agentEmail}</p>
+                                    </div>
+                                )}
+                                {agent.agentWebsite && (
+                                    <div>
+                                        <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Website</p>
+                                        <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.agentWebsite}</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div style={{ background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "22px", padding: "32px 34px" }}>
+                            <p style={{ margin: "0 0 18px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "3px", color: "#b48b63", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                                👤 Client Details
+                            </p>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                                <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
+                                    <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Client Name</p>
+                                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{clientName || "Valued Guest"}</p>
                                 </div>
-                            )}
+                                <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
+                                    <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Adults</p>
+                                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{adultPax} {adultPax === 1 ? 'Adult' : 'Adults'}</p>
+                                </div>
+                                <div style={{ paddingBottom: infantPax > 0 ? "10px" : "0", borderBottom: infantPax > 0 ? "1px solid #efe5d8" : "none" }}>
+                                    <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Children</p>
+                                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{childPax} {childPax === 1 ? 'Child' : 'Children'}</p>
+                                </div>
+                                {infantPax > 0 && (
+                                    <div>
+                                        <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Infants</p>
+                                        <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{infantPax} {infantPax === 1 ? 'Infant' : 'Infants'}</p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>

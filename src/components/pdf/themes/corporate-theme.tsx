@@ -101,7 +101,7 @@ export const CorporateTheme = ({
                         )}
                         <div>
                             <h1 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px 0", letterSpacing: "1.5px", textTransform: "uppercase" }}>{agent.companyName}</h1>
-                            <p style={{ fontSize: "11px", opacity: 0.8, margin: 0, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" }}>Travel Management Services</p>
+                            <p style={{ fontSize: "11px", opacity: 0.8, margin: 0, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" }}>{agent.tagline || "Travel Management Services"}</p>
                         </div>
                     </div>
                     <div style={{ textAlign: "right", fontSize: "12px", lineHeight: "1.8", opacity: 0.9, fontWeight: 500 }}>
@@ -131,6 +131,16 @@ export const CorporateTheme = ({
                             <div style={{ padding: "12px 20px", flex: "0 0 60%", color: brandColor, textTransform: "uppercase", fontSize: "11px", letterSpacing: "1.5px", fontWeight: 800 }}>Details</div>
                         </div>
                         <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.56)" }}>
+                            <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Client / Traveler</div>
+                            <div style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{clientName || "Valued Guest"}</div>
+                        </div>
+                        <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.5)" }}>
+                            <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Travelers</div>
+                            <div style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>
+                                {adultPax} {adultPax === 1 ? 'Adult' : 'Adults'}{childPax > 0 ? `, ${childPax} ${childPax === 1 ? 'Child' : 'Children'}` : ''}{infantPax > 0 ? `, ${infantPax} ${infantPax === 1 ? 'Infant' : 'Infants'}` : ''}
+                            </div>
+                        </div>
+                        <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.56)" }}>
                             <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Total Duration</div>
                             <div style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{itinerary.itinerary?.length || 0} Days</div>
                         </div>
@@ -138,7 +148,7 @@ export const CorporateTheme = ({
                             <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Estimated Budget</div>
                             <div style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{formatCurrency(finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}</div>
                         </div>
-                        <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.56)" }}>
+                        <div style={{ display: "flex", borderBottom: agent.agentWebsite ? "1px solid rgba(148,163,184,0.18)" : "none", background: "rgba(255,255,255,0.56)" }}>
                             <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Total Activities</div>
                             <div style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{itinerary.itinerary?.reduce((s, d) => s + (d.timeline?.length || 0), 0) || 0} Scheduled</div>
                         </div>
@@ -547,10 +557,7 @@ export const CorporateTheme = ({
                         </div>
                     </div>
                     
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(148,163,184,0.1)", paddingTop: "12px", fontSize: "9px", color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px" }}>
-                        <p style={{ margin: 0 }}>Confidential · Prepared for client by {agent.companyName}</p>
-                        <p style={{ margin: 0 }}>Page generated: {new Date().toLocaleDateString()}</p>
-                    </div>
+                    
                 </div>
             </div>
         );

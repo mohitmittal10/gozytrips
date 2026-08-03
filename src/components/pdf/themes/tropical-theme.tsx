@@ -797,7 +797,7 @@ export const TropicalTheme = ({
                         <div className="header-card">
                             <div className="stars">★★★★★</div>
                             <h1>{title}</h1>
-                            <p>An exquisite escape perfectly designed for you.</p>
+                            <p>{agent.tagline || "An exquisite escape perfectly designed for you."}</p>
                             <div className="pills">
                                 <span className="pill">{totalDays} Days • {totalNights} Nights</span>
                                 {(

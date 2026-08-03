@@ -58,10 +58,8 @@ export function usePdfSync({
 
       try {
         isRenderingRef.current = true;
-        // If preview editor modal is open or container is mounted, refresh cache
-        if (isPreviewOpen || editor.hasValidCache?.()) {
-          await editor.preRender();
-        }
+        // Always trigger preRender on state changes so cache stays up to date
+        await editor.preRender();
         // Mark store as synced to update lastCommittedHash and reset isDirty = false
         markPdfSynced();
       } catch (err) {

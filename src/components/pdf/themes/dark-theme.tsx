@@ -124,7 +124,7 @@ export const DarkTheme = ({
                     )}
                     <div style={{ position: "absolute", bottom: "40px", left: "45px", right: "45px", zIndex: 1 }}>
                         <h1 style={{ fontSize: "40px", fontWeight: 900, margin: "0 0 8px 0", color: "#ffffff", lineHeight: "1.1", letterSpacing: "-1px", fontFamily: "'Outfit', sans-serif", textShadow: `0 0 20px rgba(${rgbAccent}, 0.3)` }}>{title}</h1>
-                        <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0, fontWeight: 500 }}>Bespoke Journey designed by {agent.agentName}</p>
+                        <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0, fontWeight: 500 }}>{agent.tagline || `Bespoke Journey designed by ${agent.agentName}`}</p>
                     </div>
                 </div>
 
@@ -135,33 +135,57 @@ export const DarkTheme = ({
                 <div style={{ padding: "45px" }}>
 
                     {/* Stat cards */}
-                    <div style={{ display: "flex", gap: "16px", marginBottom: "35px" }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginBottom: "40px" }}>
                         {[
-                            { label: "Duration", value: `${itinerary.itinerary?.length || 0} Days` },
-                            { label: "Est. Budget", value: formatCurrency(finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY) },
-                            { label: "Activities", value: `${totalActivities}+ Items` },
+                            { label: "Guest / Client", value: clientName || "Valued Guest", sub: `${adultPax} Adults${childPax > 0 ? `, ${childPax} Children` : ''}` },
+                            { label: "Duration", value: `${itinerary.itinerary?.length || 0} Days`, sub: `${Math.max((itinerary.itinerary?.length || 0) - 1, 0)} Nights` },
+                            { label: "Est. Budget", value: formatCurrency(finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY), sub: "Total Price" },
+                            { label: "Activities", value: `${totalActivities}+ Items`, sub: "Scheduled" },
                         ].map((stat, i) => (
-                            <div key={i} style={{ flex: 1, padding: "20px", border: "1px solid rgba(255,255,255,0.06)", borderTop: `3px solid ${accent}`, background: "rgba(255,255,255,0.02)", borderRadius: "8px", boxShadow: `0 4px 20px rgba(0,0,0,0.15)` }}>
-                                <p style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "2.5px", color: "#64748b", margin: "0 0 6px 0", fontWeight: 800 }}>{stat.label}</p>
-                                <p style={{ fontSize: "20px", fontWeight: 900, margin: 0, color: accent, fontFamily: "'Outfit', sans-serif" }}>{stat.value}</p>
+                            <div key={i} style={{ flex: "1 1 180px", padding: "18px 20px", border: "1px solid rgba(255,255,255,0.06)", borderTop: `3px solid ${accent}`, background: "rgba(255,255,255,0.02)", borderRadius: "8px", boxShadow: `0 4px 20px rgba(0,0,0,0.15)` }}>
+                                <p style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "2.5px", color: "#64748b", margin: "0 0 4px 0", fontWeight: 800 }}>{stat.label}</p>
+                                <p style={{ fontSize: "18px", fontWeight: 900, margin: "0 0 2px 0", color: accent, fontFamily: "'Outfit', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{stat.value}</p>
+                                <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0, fontWeight: 500 }}>{stat.sub}</p>
                             </div>
                         ))}
                     </div>
 
-                    {/* Agent details */}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: "25px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-                        <div style={{ flex: 2, paddingRight: "40px" }}>
-                            {agent.agentBio && (
-                                <div style={{ borderLeft: `3px solid ${accent}`, paddingLeft: "18px" }}>
-                                    <p style={{ fontSize: "13px", lineHeight: "1.8", color: "#94a3b8", margin: 0, fontStyle: "italic" }}>{agent.agentBio}</p>
+                    {/* Client & Consultant Details grid */}
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "30px", paddingTop: "25px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                        {/* Client Info Card */}
+                        <div style={{ padding: "20px 24px", background: "rgba(255,255,255,0.025)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", borderLeft: `3px solid ${accent}` }}>
+                            <p style={{ margin: "0 0 12px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: accent, fontWeight: 800 }}>👤 Client Details</p>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                                <div>
+                                    <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Client Name</p>
+                                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#ffffff", fontFamily: "'Outfit', sans-serif" }}>{clientName || "Valued Guest"}</p>
                                 </div>
-                            )}
+                                <div style={{ display: "flex", gap: "20px" }}>
+                                    <div>
+                                        <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Adults</p>
+                                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#cbd5e1" }}>{adultPax} {adultPax === 1 ? 'Adult' : 'Adults'}</p>
+                                    </div>
+                                    <div>
+                                        <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Children</p>
+                                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#cbd5e1" }}>{childPax} {childPax === 1 ? 'Child' : 'Children'}</p>
+                                    </div>
+                                    {infantPax > 0 && (
+                                        <div>
+                                            <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Infants</p>
+                                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#cbd5e1" }}>{infantPax} {infantPax === 1 ? 'Infant' : 'Infants'}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
                         </div>
-                        <div style={{ flex: 1, textAlign: "right", fontSize: "12px", color: "#64748b", lineHeight: "2", fontWeight: 500 }}>
-                            <p style={{ fontWeight: 800, color: "#ffffff", fontSize: "14px", margin: "0 0 6px 0" }}>{agent.agentName}</p>
-                            {agent.agentPhone && <p style={{ margin: "1px 0" }}>{agent.agentPhone}</p>}
-                            {agent.agentEmail && <p style={{ margin: "1px 0" }}>{agent.agentEmail}</p>}
-                            {agent.agentWebsite && <p style={{ margin: "4px 0 0 0", color: accent, fontWeight: 700, textDecoration: "underline" }}>{agent.agentWebsite}</p>}
+
+                        {/* Consultant Info Card */}
+                        <div style={{ padding: "20px 24px", background: "rgba(255,255,255,0.025)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", borderLeft: "3px solid #ec4899" }}>
+                            <p style={{ margin: "0 0 12px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "#ec4899", fontWeight: 800 }}>✨ Agency Consultant</p>
+                            <p style={{ fontWeight: 800, color: "#ffffff", fontSize: "15px", margin: "0 0 6px 0", fontFamily: "'Outfit', sans-serif" }}>{agent.agentName}</p>
+                            {agent.agentPhone && <p style={{ margin: "2px 0", fontSize: "12px", color: "#94a3b8" }}>📞 {agent.agentPhone}</p>}
+                            {agent.agentEmail && <p style={{ margin: "2px 0", fontSize: "12px", color: "#94a3b8" }}>✉️ {agent.agentEmail}</p>}
+                            {agent.agentWebsite && <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: accent, fontWeight: 700, textDecoration: "underline" }}>🌐 {agent.agentWebsite}</p>}
                         </div>
                     </div>
                 </div>
@@ -509,40 +533,41 @@ export const DarkTheme = ({
             </div>
 
             {/* Detailed Agency Footer */}
-            {(agencySettings?.bankAccountNumber || agencySettings?.gstNumber || agencySettings?.upiId) && (
-                <div data-pdf-section="footer" style={{ padding: "45px", borderTop: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}>
-                    <h2 style={{ fontSize: "16px", color: "#ffffff", fontFamily: "'Outfit', sans-serif", fontWeight: 800, margin: "0 0 30px 0" }}>Agency Details</h2>
-                    
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "24px", marginBottom: "40px" }}>
-                        {agencySettings?.bankAccountNumber && (
-                            <div style={{ padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.04)" }}>
-                                <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "12px" }}>Bank Account</div>
-                                <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "4px", color: "#ffffff" }}>{agencySettings?.bankName || ''}</div>
-                                <div style={{ fontSize: "11px", color: "#94a3b8", marginBottom: "2px" }}>ACC: <span style={{ color: "#cbd5e1" }}>{agencySettings?.bankAccountNumber}</span></div>
-                                {agencySettings?.bankIfscCode && (
-                                    <div style={{ fontSize: "11px", color: "#94a3b8" }}>IFSC: <span style={{ color: "#cbd5e1" }}>{agencySettings?.bankIfscCode}</span></div>
-                                )}
-                            </div>
-                        )}
-                        {agencySettings?.gstNumber && (
-                            <div style={{ padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.04)" }}>
-                                <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "12px" }}>Tax Info</div>
-                                <div style={{ fontSize: "12px", color: "#94a3b8" }}>GST Number:<br/><span style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, display: "inline-block", marginTop: "4px" }}>{agencySettings?.gstNumber}</span></div>
-                            </div>
-                        )}
-                        {agencySettings?.upiId && (
-                            <div style={{ padding: "20px", background: "rgba(255,255,255,0.02)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.04)" }}>
-                                <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "12px" }}>UPI Payment</div>
-                                <div style={{ fontSize: "12px", color: "#94a3b8" }}>Scan or Pay to:<br/><span style={{ color: "#ffffff", fontSize: "13px", fontWeight: 600, display: "inline-block", marginTop: "4px" }}>{agencySettings?.upiId}</span></div>
-                            </div>
-                        )}
+            <div data-pdf-section="footer" style={{ padding: "45px", borderTop: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.02)" }}>
+                {(agencySettings?.bankAccountNumber || agencySettings?.gstNumber || agencySettings?.upiId) && (
+                    <div style={{ marginBottom: "35px" }}>
+                        <h2 style={{ fontSize: "15px", color: "#ffffff", fontFamily: "'Outfit', sans-serif", fontWeight: 800, margin: "0 0 20px 0", letterSpacing: "1px", textTransform: "uppercase" }}>Payment &amp; Tax Information</h2>
+                        
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "16px" }}>
+                            {agencySettings?.bankAccountNumber && (
+                                <div style={{ padding: "18px 20px", background: "rgba(255,255,255,0.025)", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                                    <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Bank Account</div>
+                                    <div style={{ fontSize: "13px", fontWeight: 700, marginBottom: "4px", color: "#ffffff" }}>{agencySettings?.bankName || 'Bank Details'}</div>
+                                    <div style={{ fontSize: "11px", color: "#94a3b8", marginBottom: "2px" }}>ACC: <span style={{ color: "#cbd5e1" }}>{agencySettings?.bankAccountNumber}</span></div>
+                                    {agencySettings?.bankIfscCode && (
+                                        <div style={{ fontSize: "11px", color: "#94a3b8" }}>IFSC: <span style={{ color: "#cbd5e1" }}>{agencySettings?.bankIfscCode}</span></div>
+                                    )}
+                                </div>
+                            )}
+                            {agencySettings?.gstNumber && (
+                                <div style={{ padding: "18px 20px", background: "rgba(255,255,255,0.025)", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                                    <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Tax Info</div>
+                                    <div style={{ fontSize: "11px", color: "#94a3b8" }}>GST Number:<br/><span style={{ color: "#ffffff", fontSize: "13px", fontWeight: 700, display: "inline-block", marginTop: "4px" }}>{agencySettings?.gstNumber}</span></div>
+                                </div>
+                            )}
+                            {agencySettings?.upiId && (
+                                <div style={{ padding: "18px 20px", background: "rgba(255,255,255,0.025)", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                                    <div style={{ fontSize: "9px", color: accent, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>UPI Payment</div>
+                                    <div style={{ fontSize: "11px", color: "#94a3b8" }}>Pay Direct to:<br/><span style={{ color: "#ffffff", fontSize: "13px", fontWeight: 700, display: "inline-block", marginTop: "4px" }}>{agencySettings?.upiId}</span></div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "30px", marginBottom: "20px", flexWrap: "wrap", gap: "24px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "24px", marginBottom: "20px", flexWrap: "wrap", gap: "24px" }}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                        <div style={{ fontSize: "20px", fontWeight: 900, color: accent, letterSpacing: "1px", fontFamily: "'Outfit', sans-serif", textShadow: `0 0 10px rgba(${rgbAccent}, 0.5)` }}>{agent.companyName}</div>
+                        <div style={{ fontSize: "18px", fontWeight: 900, color: accent, letterSpacing: "1px", fontFamily: "'Outfit', sans-serif", textShadow: `0 0 10px rgba(${rgbAccent}, 0.5)` }}>{agent.companyName}</div>
                         <p style={{ margin: "4px 0 0 0", color: "#cbd5e1", fontSize: "12px", fontWeight: 700 }}>Bespoke Journey</p>
                         <p style={{ margin: "2px 0 0 0", color: "#64748b", fontSize: "11px" }}>Curated by {agent.agentName}</p>
                     </div>
@@ -553,11 +578,9 @@ export const DarkTheme = ({
                     </div>
                 </div>
                 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "16px", fontSize: "9px", color: "#475569" }}>
-                    <p style={{ margin: 0, textTransform: "uppercase", letterSpacing: "2px" }}>Premium Curated Edition</p>
-                    <p style={{ margin: 0 }}>Generated on {new Date().toLocaleDateString()}</p>
-                </div>
+                
             </div>
+        </div>
     );
 };
 

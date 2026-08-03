@@ -70,7 +70,7 @@ export const ClassicTheme = ({
     const cancellationPolicyList = parseList(cancellationPolicy);
     const termsAndConditionsList = parseList(termsAndConditions);
 
-    const tagline = agent.agentBio || agencySettings?.tagline || agencySettings?.brand_tagline || "Your custom travel blueprint, prepared by experts.";
+    const tagline = agent.tagline || agencySettings?.tagline || agencySettings?.brand_tagline || "Your custom travel blueprint, prepared by experts.";
 
     return (
         <div className="classic-wrap" style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", backgroundColor: "#f8fafc", backgroundImage: `url("${getThematicBackground(itinerary, 'classic', agent.primaryColor)}")`, backgroundRepeat: "repeat", color: "#1e293b", width: "100%" }}>
@@ -180,8 +180,11 @@ export const ClassicTheme = ({
                     {/* Stat cards */}
                     <div style={{ display: "flex", flexWrap: "wrap", alignItems: "stretch", gap: "20px", marginBottom: "40px" }}>
                         <div style={{ ...glassStyles, flex: "1 1 180px", borderRadius: "16px", padding: "20px 24px", borderLeft: `4px solid ${agent.primaryColor}`, boxShadow: "0 4px 20px -2px rgba(0,0,0,0.05)" }}>
-                            <h3 style={{ margin: "0 0 6px 0", fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800 }}>Client</h3>
-                            <p style={{ margin: 0, fontSize: "20px", fontWeight: 900, color: "#0f172a", fontFamily: "'Outfit', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{clientName || "Valued Guest"}</p>
+                            <h3 style={{ margin: "0 0 6px 0", fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800 }}>Client Details</h3>
+                            <p style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: 900, color: "#0f172a", fontFamily: "'Outfit', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{clientName || "Valued Guest"}</p>
+                            <p style={{ margin: 0, fontSize: "12px", color: "#64748b", fontWeight: 600 }}>
+                                {adultPax} {adultPax === 1 ? 'Adult' : 'Adults'}{childPax > 0 ? `, ${childPax} ${childPax === 1 ? 'Child' : 'Children'}` : ''}{infantPax > 0 ? `, ${infantPax} ${infantPax === 1 ? 'Infant' : 'Infants'}` : ''}
+                            </p>
                         </div>
                         <div style={{ ...glassStyles, flex: "1 1 180px", borderRadius: "16px", padding: "20px 24px", borderLeft: "4px solid #3b82f6", boxShadow: "0 4px 20px -2px rgba(0,0,0,0.05)" }}>
                             <h3 style={{ margin: "0 0 6px 0", fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800 }}>Duration</h3>
