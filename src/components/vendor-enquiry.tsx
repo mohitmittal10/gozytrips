@@ -447,7 +447,7 @@ export default function VendorEnquiry() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Form */}
-        <Card className="glass-card border-white/10 bg-white/[0.02]">
+        <Card className="border-slate-800 bg-slate-900/95 shadow-2xl backdrop-blur-xl">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2">
               {React.createElement(activeType.icon, { className: `w-5 h-5 ${activeType.color}` })}
@@ -649,17 +649,17 @@ export default function VendorEnquiry() {
               <p className="text-sm text-gray-500 text-center">AI is crafting a professional enquiry email for you.</p>
             </div>
           ) : (
-            <Card className="glass-card border-white/10 bg-white/[0.02]">
-              <CardHeader className="pb-3">
+            <Card className="border-slate-800 bg-slate-900/95 shadow-2xl backdrop-blur-xl">
+              <CardHeader className="pb-3 border-b border-slate-800/80">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg flex items-center gap-2">
+                  <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
                     <Send className="w-5 h-5 text-purple-400" />
                     Email Preview
                   </CardTitle>
                   <div className="flex items-center gap-1">
                     <Button
                       variant="ghost" size="icon"
-                      className="h-8 w-8 text-gray-400 hover:text-white"
+                      className="h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-800"
                       onClick={() => setIsEditing(!isEditing)}
                       title="Edit"
                     >
@@ -667,7 +667,7 @@ export default function VendorEnquiry() {
                     </Button>
                     <Button
                       variant="ghost" size="icon"
-                      className="h-8 w-8 text-gray-400 hover:text-white"
+                      className="h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-800"
                       onClick={handleCopy}
                       title="Copy"
                     >
@@ -675,7 +675,7 @@ export default function VendorEnquiry() {
                     </Button>
                     <Button
                       variant="ghost" size="icon"
-                      className="h-8 w-8 text-gray-400 hover:text-white"
+                      className="h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-800"
                       onClick={handleReset}
                       title="Reset"
                     >
@@ -684,18 +684,18 @@ export default function VendorEnquiry() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-4">
                 {/* TO field */}
-                <div className="flex items-center gap-2 text-sm">
-                  <span className="text-gray-500 font-medium w-16">To:</span>
-                  <span className="text-gray-300">{vendorEmail || <span className="text-gray-600 italic">No vendor email set</span>}</span>
+                <div className="flex items-center gap-2 text-sm bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80">
+                  <span className="text-slate-400 font-semibold w-12">To:</span>
+                  <span className="text-purple-300 font-semibold">{vendorEmail || <span className="text-slate-500 italic">No vendor email set</span>}</span>
                 </div>
 
                 {/* Subject */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-500 font-medium text-sm">Subject:</span>
-                    <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${generatedSubject.length > 90 ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"}`}>
+                    <span className="text-slate-300 font-semibold text-sm">Subject:</span>
+                    <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${generatedSubject.length > 90 ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"}`}>
                       {generatedSubject.length}/100
                     </Badge>
                   </div>
@@ -703,21 +703,21 @@ export default function VendorEnquiry() {
                     <input
                       value={generatedSubject}
                       onChange={(e) => setGeneratedSubject(e.target.value)}
-                      className="w-full bg-white/5 border-white/10 text-white text-sm h-9 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                      className="w-full bg-slate-950 border-slate-700 text-white text-sm h-9 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500/50"
                       maxLength={100}
                     />
                   ) : (
-                    <p className="text-sm font-medium text-white bg-white/5 rounded-lg px-3 py-2 border border-white/5">
+                    <p className="text-sm font-semibold text-white bg-slate-950 rounded-lg px-3.5 py-2.5 border border-slate-800 shadow-inner leading-normal">
                       {generatedSubject}
                     </p>
                   )}
                 </div>
 
                 {/* Body */}
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-500 font-medium text-sm">Body:</span>
-                    <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${generatedBody.length > 1400 ? "bg-amber-500/10 text-amber-400 border-amber-500/20" : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"}`}>
+                    <span className="text-slate-300 font-semibold text-sm">Body:</span>
+                    <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${generatedBody.length > 1400 ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"}`}>
                       {generatedBody.length}/1500
                     </Badge>
                   </div>
@@ -725,11 +725,11 @@ export default function VendorEnquiry() {
                     <textarea
                       value={generatedBody}
                       onChange={(e) => setGeneratedBody(e.target.value.slice(0, 1500))}
-                      className="w-full h-64 rounded-md bg-white/5 border border-white/10 text-white text-sm p-3 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none font-mono leading-relaxed"
+                      className="w-full h-64 rounded-md bg-slate-950 border border-slate-700 text-white text-sm p-3 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none font-mono leading-relaxed"
                     />
                   ) : (
-                    <div className="bg-white/5 rounded-lg border border-white/5 p-4 max-h-[320px] overflow-y-auto">
-                      <pre className="text-sm text-gray-200 whitespace-pre-wrap font-sans leading-relaxed">
+                    <div className="bg-slate-950 rounded-lg border border-slate-800 p-4 max-h-[340px] overflow-y-auto shadow-inner">
+                      <pre className="text-sm text-slate-100 whitespace-pre-wrap font-sans leading-relaxed font-normal">
                         {generatedBody}
                       </pre>
                     </div>

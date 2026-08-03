@@ -27,7 +27,7 @@ const Header = () => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
@@ -43,7 +43,7 @@ const Header = () => {
 
   return (
     <nav className={cn(
-      "fixed top-0 w-full z-50 bg-[#020305]/60 backdrop-blur-2xl border-b border-white/5 transition-all duration-500 ease-in-out",
+      "fixed top-0 w-full z-50 bg-[#020305]/80 backdrop-blur-2xl border-b border-white/5 transition-all duration-500 ease-in-out",
       scrolled ? "-translate-y-full opacity-0 pointer-events-none" : "translate-y-0 opacity-100"
     )}>
       <div className="flex justify-between items-center px-4 sm:px-8 py-3 sm:py-4 max-w-7xl mx-auto">
