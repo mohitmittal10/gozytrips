@@ -72,6 +72,7 @@ const TravelItineraryOutputSchema = z.object({
       day: z.number(),
       date: z.string(),
       areaFocus: z.string(),
+      imageUrl: z.string().optional(),
       imageSearchTerm: z.string().describe('A specific Unsplash search term for the day (noun phrase only, no verbs/actions, no hotel/room/accommodation terms, include city/region context), e.g., "Taj Mahal Agra", "Kerala houseboats Alleppey", "Munnar tea plantations".'),
       timeline: z.array(
         z.object({
@@ -420,6 +421,7 @@ const RegenerateDayOutputSchema = z.object({
   day: z.number(),
   date: z.string(),
   areaFocus: z.string(),
+  imageUrl: z.string().optional(),
   imageSearchTerm: z.string().describe('A specific Unsplash search term (noun phrase only, no verbs, include city/region context) for this day\'s main highlight, e.g. "Amber Fort Jaipur".'),
   timeline: z.array(
     z.object({

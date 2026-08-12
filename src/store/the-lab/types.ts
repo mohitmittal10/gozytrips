@@ -69,6 +69,9 @@ export interface PdfRelevantData {
   showTimestamps: boolean;
   selectedTheme: PdfTheme;
   pdfOverrides: Record<string, any>;
+  selectedClientId: string;
+  selectedStatus: string;
+  optimizationCount: number;
 }
 
 export interface LabState extends TimelineSlice, LogisticsSlice, InclusionsSlice, FinanceSlice, MetaSlice, DirtyTrackingSlice, AutosaveSlice {

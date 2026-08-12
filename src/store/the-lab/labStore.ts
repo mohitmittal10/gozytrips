@@ -84,11 +84,11 @@ export const useLabStore = create<LabState>((set, get) => {
     setAutosaveStatus: (status) => set({ autosaveStatus: status, isSaving: status === "saving" }),
     setCurrentTripId: (currentTripId) => set({ currentTripId }),
     setTripMetadata: (tripMetadata) => set((state) => updateHashAndDirty({ tripMetadata })),
-    setSelectedClientId: (selectedClientId) => set({ selectedClientId }),
-    setSelectedStatus: (selectedStatus) => set({ selectedStatus }),
+    setSelectedClientId: (selectedClientId) => set((state) => updateHashAndDirty({ selectedClientId })),
+    setSelectedStatus: (selectedStatus) => set((state) => updateHashAndDirty({ selectedStatus })),
     setSelectedTheme: (selectedTheme) => set((state) => updateHashAndDirty({ selectedTheme })),
     setPdfOverrides: (pdfOverrides) => set((state) => updateHashAndDirty({ pdfOverrides })),
-    setOptimizationCount: (optimizationCount) => set({ optimizationCount }),
+    setOptimizationCount: (optimizationCount) => set((state) => updateHashAndDirty({ optimizationCount })),
 
     // ─── Lifecycle & Sync Actions ──────────────────────────────────────────
     loadStateFromPersistence: (data) =>

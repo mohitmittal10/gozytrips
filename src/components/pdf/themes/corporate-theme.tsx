@@ -213,25 +213,13 @@ export const CorporateTheme = ({
                         </div>
 
                         {/* Activity table */}
-                        <div style={{ width: "100%", fontSize: "13.5px", display: "flex", flexDirection: "column", border: "1px solid rgba(148,163,184,0.18)", borderTop: "none", borderRadius: "0 0 8px 8px", overflow: "hidden", boxShadow: "0 8px 24px rgba(15,23,42,0.05)", background: "rgba(255,255,255,0.34)" }}>
-                            <div style={{ display: "flex", background: "rgba(15, 23, 42, 0.06)", borderBottom: "1px solid rgba(148,163,184,0.18)" }}>
-                                {showTimestamps !== false ? (
-                                    <div style={{ padding: "10px 20px", flex: "0 0 120px", color: brandColor, fontSize: "11px", textTransform: "uppercase", fontWeight: 800, letterSpacing: "1px" }}>Time</div>
-                                ) : (
-                                    <div style={{ flex: "0 0 56px" }} />
-                                )}
-                                <div style={{ padding: "10px 20px", flex: 1, color: brandColor, fontSize: "11px", textTransform: "uppercase", fontWeight: 800, letterSpacing: "1px" }}>Activity Description</div>
-                            </div>
+                        <div style={{ width: "100%", fontSize: "12.5px", display: "flex", flexDirection: "column", background: "transparent" }}>
                             {Array.isArray(day.timeline) && day.timeline.map((step, si) => (
-                                <div key={si} style={{ display: "flex", alignItems: "flex-start", background: si % 2 === 0 ? "rgba(255,255,255,0.54)" : "rgba(248,250,252,0.42)", borderBottom: si === day.timeline.length - 1 ? "none" : "1px solid rgba(148,163,184,0.16)" }}>
+                                <div key={si} style={{ display: "flex", alignItems: "flex-start", padding: "8px 0" }}>
                                     {showTimestamps !== false ? (
-                                        <div style={{ padding: "14px 20px", flex: "0 0 120px", fontWeight: 700, color: brandColor, lineHeight: "1.6" }}>{step.time}</div>
-                                    ) : (
-                                        <div style={{ padding: "14px 20px", flex: "0 0 56px", display: "flex", justifyContent: "center" }}>
-                                            <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: brandColor, marginTop: "7px", flexShrink: 0 }} />
-                                        </div>
-                                    )}
-                                    <div style={{ padding: "14px 20px", flex: 1, lineHeight: "1.6", color: "#334155", fontWeight: 500 }}>{step.details}</div>
+                                        <div style={{ padding: "0 16px 0 0", flex: "0 0 90px", fontWeight: 600, color: brandColor, lineHeight: "1.6", fontSize: "11px" }}>{step.time}</div>
+                                    ) : null}
+                                    <div style={{ flex: 1, lineHeight: "1.6", color: "#334155", fontWeight: 400 }}>{step.details}</div>
                                 </div>
                             ))}
                         </div>

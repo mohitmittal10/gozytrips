@@ -77,14 +77,43 @@ function runTests() {
   const hash2 = computePdfDataHash(mutatedState);
   assertEqual(isStateDirty(hash2, hash1), true, "Mutated data marks state as dirty");
 
-  // Test 5: Undo mutation returns to non-dirty state
-  const restoredState = {
-    ...mutatedState,
-    inclusions: "Breakfast",
+  // Test 6: Client mutation triggers dirty state and undo restores pristine state
+  const clientMutatedState = {
+    ...state,
+    selectedClientId: "client-123",
   };
-  const hash3 = computePdfDataHash(restoredState);
-  assertEqual(hash3, hash1, "Restored state matches original hash");
-  assertEqual(isStateDirty(hash3, hash1), false, "Undoing changes resets dirty state to false");
+  const hashClient = computePdfDataHash(clientMutatedState);
+  assertEqual(isStateDirty(hashClient, hash1), true, "Mutated selectedClientId marks state as dirty");
+  const clientRestoredState = {
+    ...clientMutatedState,
+    selectedClientId: "none",
+  };
+  const hashClientRestored = computePdfDataHash(clientRestoredState);
+  assertEqual(isStateDirty(hashClientRestored, hash1), false, "Undoing selectedClientId resets dirty state");
+
+  // Test 7: Status mutation triggers dirty state
+  const statusMutatedState = {
+    ...state,
+    selectedStatus: "confirmed",
+  };
+  const hashStatus = computePdfDataHash(statusMutatedState);
+  assertEqual(isStateDirty(hashStatus, hash1), true, "Mutated selectedStatus marks state as dirty");
+
+  // Test 8: Optimization count mutation triggers dirty state
+  const optMutatedState = {
+    ...state,
+    optimizationCount: 2,
+  };
+  const hashOpt = computePdfDataHash(optMutatedState);
+  assertEqual(isStateDirty(hashOpt, hash1), true, "Mutated optimizationCount marks state as dirty");
+
+  // Test 9: Cabs and buses mutation triggers dirty state
+  const cabsMutatedState = {
+    ...state,
+    cabs: [{ id: "c1", name: "Airport Pickup" } as any],
+  };
+  const hashCabs = computePdfDataHash(cabsMutatedState);
+  assertEqual(isStateDirty(hashCabs, hash1), true, "Mutated cabs marks state as dirty");
 
   console.log("=== All hashState Unit Tests Passed Successfully ===");
 }

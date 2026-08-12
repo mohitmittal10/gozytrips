@@ -10,6 +10,8 @@ interface TheLabPdfPreviewProps {
   itinerary: any;
   hotels: any[];
   flights: any[];
+  cabs?: any[];
+  buses?: any[];
   pricing: any;
   baseCost: number;
   tripTitle: string;
@@ -36,6 +38,8 @@ export const TheLabPdfPreview = forwardRef<PdfPreviewEditorRef, TheLabPdfPreview
       itinerary,
       hotels,
       flights,
+      cabs,
+      buses,
       pricing,
       baseCost,
       tripTitle,
@@ -69,6 +73,8 @@ export const TheLabPdfPreview = forwardRef<PdfPreviewEditorRef, TheLabPdfPreview
           userProfile,
           hotels,
           flights,
+          cabs,
+          buses,
           pricing,
           baseCost,
           showTimestamps,

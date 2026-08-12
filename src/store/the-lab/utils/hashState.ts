@@ -77,6 +77,9 @@ export function extractPdfRelevantData(state: Partial<LabState>): PdfRelevantDat
     showTimestamps: state.showTimestamps ?? true,
     selectedTheme: state.selectedTheme || "classic",
     pdfOverrides: state.pdfOverrides || {},
+    selectedClientId: state.selectedClientId || "none",
+    selectedStatus: state.selectedStatus || "draft",
+    optimizationCount: state.optimizationCount || 0,
   };
 }
 

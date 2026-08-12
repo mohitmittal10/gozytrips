@@ -39,6 +39,8 @@ import { useItineraryDnd } from "@/hooks/use-itinerary-dnd";
 import { useReferenceOptions } from "@/hooks/use-reference-options";
 import { DEFAULT_FALLBACK_PHOTOS, getActivityFallbackUrl } from "@/lib/constants";
 
+import { fetchItineraryImages } from "@/ai/flows/fetch-itinerary-images";
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 export type DayData = TravelItineraryOutput["itinerary"][number] & { 
@@ -83,7 +85,6 @@ function SortableActivity({
   onEditingChange,
   showTimestamps,
   currencySymbol,
-  fallbackPhotos,
 }: {
   id: string;
   stepIndex: number;
@@ -94,30 +95,7 @@ function SortableActivity({
   onEditingChange?: (editing: boolean) => void;
   showTimestamps?: boolean;
   currencySymbol?: string;
-  fallbackPhotos: string[];
 }) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-
-  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert('Photo must be under 5MB.');
-      return;
-    }
-    setIsUploadingPhoto(true);
-    try {
-      const publicUrl = await uploadItineraryPhoto(file);
-      onUpdateStep('imageUrl', publicUrl);
-    } catch (err) {
-      console.error('[PhotoUpload] Failed to upload photo:', err);
-    } finally {
-      setIsUploadingPhoto(false);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    }
-  };
   const {
     attributes,
     listeners,
@@ -135,100 +113,63 @@ function SortableActivity({
 
   return (
     <div ref={setNodeRef} style={style} className="relative group/step">
-      <div className={cn(
-        "absolute -left-[31px] top-1/2 -translate-y-1/2 w-6 h-6 bg-background rounded-full z-10 transition-transform group-hover/step:scale-110",
-        "border-[5px] border-primary shadow-[0_0_15px_rgba(255,92,51,0.4)]"
-      )}></div>
-
       <div className="flex items-start gap-2">
         {/* Drag handle */}
         {isEditable && (
           <button
-            className="mt-6 cursor-grab active:cursor-grabbing text-primary/30 hover:text-primary/70 transition-colors opacity-0 group-hover/step:opacity-100"
+            className="mt-1 cursor-grab active:cursor-grabbing text-primary/30 hover:text-primary/70 transition-colors opacity-0 group-hover/step:opacity-100 flex-shrink-0"
             {...attributes}
             {...listeners}
             tabIndex={-1}
             aria-label="Drag to reorder"
           >
-            <span className="material-symbols-outlined text-[20px]">drag_indicator</span>
+            <span className="material-symbols-outlined text-[18px]">drag_indicator</span>
           </button>
         )}
 
         <div className="flex-1 min-w-0">
-            <div className="glass-panel p-2 sm:p-3 rounded-xl flex flex-col sm:flex-row gap-2 sm:gap-4 items-start sm:items-center group/card transition-all">
-              <div className="hidden sm:flex w-14 h-14 rounded-md overflow-hidden flex-shrink-0 shadow-lg border border-white/5 bg-zinc-900/50 relative group/photo">
-                <img 
-                  className="w-full h-full object-cover group-hover/card:scale-110 transition-transform duration-700 brightness-[0.8]" 
-                  src={step.imageUrl || getActivityFallbackUrl(stepIndex, fallbackPhotos)}
-                  alt="Activity"
-                  onError={(e) => { 
-                    (e.currentTarget as HTMLImageElement).src = getActivityFallbackUrl((stepIndex + 1), fallbackPhotos); 
-                    (e.currentTarget as HTMLImageElement).onerror = null; 
-                  }}
-                />
-                {isEditable && (
-                  <>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={handlePhotoUpload}
-                    />
-                    <button
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
-                      disabled={isUploadingPhoto}
-                      title="Upload custom photo"
-                      className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover/photo:opacity-100 transition-opacity duration-200 cursor-pointer"
-                    >
-                      {isUploadingPhoto ? (
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Camera className="w-4 h-4 text-white drop-shadow" />
-                      )}
-                    </button>
-                  </>
-                )}
-              </div>
-              
-              <div className="flex-1 w-full min-w-0">
-                <div className="flex justify-between items-start mb-2">
-                  {showTimestamps !== false ? (
-                    <InlineEdit
-                      value={step.time}
-                      onSave={(v) => onUpdateStep("time", v)}
-                      onEditStart={() => onEditingChange?.(true)}
-                      className="text-[10px] font-black text-primary tracking-widest uppercase block mt-0.5"
-                      inputClassName="text-[10px] font-black"
-                      placeholder="e.g. 08:00 AM"
-                      disabled={!isEditable}
-                    />
-                  ) : <div className="text-[10px] font-black text-primary tracking-widest uppercase opacity-0 mt-0.5">-</div>}
-                  
-                </div>
-                
+          <div className="p-2 sm:p-2.5 rounded-xl flex flex-col sm:flex-row gap-1.5 sm:gap-3 items-start sm:items-baseline group/card transition-all bg-white/[0.02] hover:bg-white/[0.04]">
+            {showTimestamps !== false && (
+              <div className="flex-shrink-0">
                 <InlineEdit
-                  value={step.details}
-                  onSave={(v) => onUpdateStep("details", v)}
+                  value={step.time}
+                  onSave={(v) => onUpdateStep("time", v)}
                   onEditStart={() => onEditingChange?.(true)}
-                  className="text-slate-300 text-[13px] leading-tight mb-2 font-medium block"
-                  multiline
-                  placeholder="Activity description..."
+                  className="text-[11px] font-medium text-primary tracking-wide uppercase inline-block"
+                  inputClassName="text-[11px] font-medium"
+                  placeholder="e.g. 08:00 AM"
                   disabled={!isEditable}
                 />
               </div>
+            )}
+
+            {showTimestamps !== false && (
+              <span className="hidden sm:inline text-zinc-600 text-xs select-none">—</span>
+            )}
+            
+            <div className="flex-1 w-full min-w-0">
+              <InlineEdit
+                value={step.details}
+                onSave={(v) => onUpdateStep("details", v)}
+                onEditStart={() => onEditingChange?.(true)}
+                className="text-zinc-300 text-xs leading-relaxed font-normal block"
+                inputClassName="text-xs font-normal"
+                multiline
+                placeholder="Activity description..."
+                disabled={!isEditable}
+              />
             </div>
+          </div>
         </div>
 
         {/* Delete button */}
         {isEditable && (
           <button
             onClick={onDeleteStep}
-            className="mt-1 text-red-400/50 hover:text-red-400 transition-colors opacity-0 group-hover/step:opacity-100"
+            className="mt-1 text-red-400/50 hover:text-red-400 transition-colors opacity-0 group-hover/step:opacity-100 flex-shrink-0"
             title="Delete activity"
           >
-            <span className="material-symbols-outlined text-[18px]">delete</span>
+            <span className="material-symbols-outlined text-[16px]">delete</span>
           </button>
         )}
       </div>
@@ -264,25 +205,17 @@ function AddActivityButton({ onClick }: { onClick: () => void }) {
 // ── Skeleton ───────────────────────────────────────────────────────────────────
 
 const ItineraryTimelineSkeleton = () => (
-  <div className="relative space-y-8">
-    <div className="absolute left-3 top-2 h-full w-0.5 bg-primary/20" />
+  <div className="space-y-6">
     {[...Array(3)].map((_, index) => (
-      <div key={index} className="relative flex items-start space-x-6">
-        <div className="flex-shrink-0">
-          <Skeleton className="h-6 w-6 rounded-full" />
-        </div>
-        <div className="flex-grow">
-          <Card className="glass-card animate-pulse">
-            <CardHeader>
-              <Skeleton className="h-6 w-1/4" />
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-3/4" />
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+      <Card key={index} className="glass-panel rounded-2xl animate-pulse">
+        <CardHeader className="py-3 px-4 sm:px-6">
+          <Skeleton className="h-5 w-1/4" />
+        </CardHeader>
+        <CardContent className="space-y-3 py-3 px-4 sm:px-6">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+        </CardContent>
+      </Card>
     ))}
   </div>
 );
@@ -336,6 +269,51 @@ const ItineraryTimeline = ({
 
   // ── Mutation helpers (all call onItineraryChange) ──
 
+  const [uploadingDayIndex, setUploadingDayIndex] = useState<number | null>(null);
+  const dayFileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
+
+  const handleDayPhotoUpload = async (dayIndex: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        variant: "destructive",
+        title: "Photo too large",
+        description: "Photo must be under 5MB.",
+      });
+      return;
+    }
+    setUploadingDayIndex(dayIndex);
+    try {
+      const publicUrl = await uploadItineraryPhoto(file);
+      if (onEditingChange) onEditingChange(true);
+      updateItinerary((days) => {
+        days[dayIndex] = {
+          ...days[dayIndex],
+          imageUrl: publicUrl,
+        };
+        return days;
+      });
+      toast({
+        title: "Photo updated",
+        description: `Photo for Day ${itinerary[dayIndex].day} updated.`,
+      });
+    } catch (err) {
+      console.error('[PhotoUpload] Failed to upload day photo:', err);
+      toast({
+        variant: "destructive",
+        title: "Upload failed",
+        description: "Could not upload photo. Please try again.",
+      });
+    } finally {
+      setUploadingDayIndex(null);
+      if (dayFileInputRefs.current[dayIndex]) {
+        dayFileInputRefs.current[dayIndex]!.value = '';
+      }
+    }
+  };
+
   const handleRegenerateDay = async () => {
     if (regeneratingDayIndex === null) return;
     setIsRegeneratingDay(true);
@@ -366,12 +344,22 @@ const ItineraryTimeline = ({
         otherDaysSummary: otherDays
       });
 
+      // Fetch dynamic Unsplash image for newly regenerated day
+      let newImageUrl: string | undefined = undefined;
+      try {
+        const searchTerm = result.imageSearchTerm || result.areaFocus;
+        const [fetchedUrl] = await fetchItineraryImages([searchTerm], [result.areaFocus]);
+        if (fetchedUrl) newImageUrl = fetchedUrl;
+      } catch (imgErr) {
+        console.warn('[handleRegenerateDay] Failed to fetch image for regenerated day:', imgErr);
+      }
+
       updateItinerary((days) => {
         days[dayIndex] = {
           ...days[dayIndex],
           areaFocus: result.areaFocus,
           timeline: result.timeline,
-          imageUrl: undefined,
+          imageUrl: newImageUrl || targetDay.imageUrl,
         };
         return days;
       });
@@ -535,28 +523,41 @@ const ItineraryTimeline = ({
   return (
     <div className="relative w-full max-w-5xl mx-auto py-4">
       {/* Horizontal Day Selector */}
-      <div className="flex gap-4 overflow-x-auto pb-8 mb-10 mt-2 snap-x">
+      <div className="flex gap-3 overflow-x-auto pb-6 mb-8 mt-2 snap-x">
         {itinerary.map((day, dIdx) => (
           <button
             key={dIdx}
             onClick={() => {
               document.getElementById(`day-container-${dIdx}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }}
-            className="flex-shrink-0 liquid-glass p-5 rounded-[1.5rem] w-44 text-left transition-all group hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/50 snap-start"
+            className="flex-shrink-0 liquid-glass p-2.5 sm:p-3 rounded-2xl w-48 text-left transition-all group hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/50 snap-start flex items-center gap-3 border border-white/5 bg-white/[0.02] hover:bg-white/[0.05]"
           >
-            <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1 transition-colors">
-              Day {String(dIdx + 1).padStart(2, '0')}
-            </p>
-            <p className="text-sm font-bold text-white/90 truncate">{day.areaFocus}</p>
+            <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-zinc-900/60 border border-white/10 relative">
+              <img
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 brightness-[0.85]"
+                src={day.imageUrl || getActivityFallbackUrl(dIdx, fallbackPhotos)}
+                alt={`Day ${dIdx + 1}`}
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = getActivityFallbackUrl((dIdx + 1), fallbackPhotos);
+                  (e.currentTarget as HTMLImageElement).onerror = null;
+                }}
+              />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-0.5 transition-colors">
+                Day {String(dIdx + 1).padStart(2, '0')}
+              </p>
+              <p className="text-xs font-medium text-white/90 truncate">{day.areaFocus}</p>
+            </div>
           </button>
         ))}
         {editable && (
           <button
             onClick={addDay}
-            className="flex-shrink-0 p-5 rounded-[1.5rem] w-44 text-left transition-all border-2 border-dashed border-white/10 hover:border-primary/40 hover:bg-white/5 flex flex-col justify-center items-center gap-2 text-zinc-500 hover:text-primary snap-start"
+            className="flex-shrink-0 p-3 rounded-2xl w-36 text-left transition-all border-2 border-dashed border-white/10 hover:border-primary/40 hover:bg-white/5 flex items-center justify-center gap-2 text-zinc-500 hover:text-primary snap-start"
           >
-            <Plus className="w-6 h-6" />
-            <span className="text-xs font-bold uppercase tracking-widest">Add Day</span>
+            <Plus className="w-5 h-5" />
+            <span className="text-xs font-semibold uppercase tracking-wider">Add Day</span>
           </button>
         )}
       </div>
@@ -568,7 +569,7 @@ const ItineraryTimeline = ({
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
           </span>
           <span>
-            <strong className="text-primary font-bold">Edit Mode Active:</strong> Click directly on any day title, activity details, or time to edit them inline. Drag cards to reorder. All changes are saved automatically.
+            <strong className="text-primary font-semibold">Edit Mode Active:</strong> Click directly on any day title, activity details, or time to edit them inline. Drag cards to reorder. All changes are saved automatically.
           </span>
         </div>
       )}
@@ -595,43 +596,96 @@ const ItineraryTimeline = ({
 
                 <div className="flex-1">
                   <Card className={cn(
-                    "glass-panel rounded-3xl overflow-hidden transition-all shadow-2xl border-white/5",
+                    "glass-panel rounded-2xl overflow-hidden transition-all shadow-xl border border-white/5",
                     editable && "ring-1 ring-primary/20"
                   )}>
-                    <CardHeader className="bg-obsidian-dark/40 border-b border-white/5">
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-4">
-                          <div>
+                    <CardHeader className="bg-obsidian-dark/40 py-4 px-4 sm:px-6">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        {/* Photo and Heading Group */}
+                        <div className="flex items-center gap-4 w-full sm:w-auto">
+                          {/* Day Photo */}
+                          <div className="w-24 h-24 sm:w-32 sm:h-24 rounded-2xl overflow-hidden bg-zinc-900/60 border border-white/10 flex-shrink-0 relative group/dayphoto shadow-md">
+                            <img
+                              className="w-full h-full object-cover group-hover/dayphoto:scale-105 transition-transform duration-500 brightness-[0.85]"
+                              src={day.imageUrl || getActivityFallbackUrl(dayIndex, fallbackPhotos)}
+                              alt={`Day ${day.day} - ${day.areaFocus}`}
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = getActivityFallbackUrl((dayIndex + 1), fallbackPhotos);
+                                (e.currentTarget as HTMLImageElement).onerror = null;
+                              }}
+                            />
+                            {editable && (
+                              <>
+                                <input
+                                  ref={(el) => { dayFileInputRefs.current[dayIndex] = el; }}
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => handleDayPhotoUpload(dayIndex, e)}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={(e) => { e.stopPropagation(); dayFileInputRefs.current[dayIndex]?.click(); }}
+                                  disabled={uploadingDayIndex === dayIndex}
+                                  title="Upload custom photo for this day"
+                                  className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 opacity-0 group-hover/dayphoto:opacity-100 transition-opacity duration-200 cursor-pointer"
+                                >
+                                  {uploadingDayIndex === dayIndex ? (
+                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                  ) : (
+                                    <>
+                                      <Camera className="w-5 h-5 text-white drop-shadow" />
+                                      <span className="text-[10px] text-white font-medium mt-1">Change</span>
+                                    </>
+                                  )}
+                                </button>
+                              </>
+                            )}
+                          </div>
+
+                          {/* Day Heading Info */}
+                          <div className="flex-1 min-w-0">
                             {editable ? (
                               <>
                                 <InlineEdit
                                   value={day.date}
                                   onSave={(v) => updateDayField(dayIndex, "date", v)}
                                   onEditStart={() => onEditingChange?.(true)}
-                                  className="text-xs font-bold text-zinc-500 uppercase tracking-widest"
-                                  inputClassName="text-xs"
+                                  className="text-[11px] font-normal text-zinc-400 uppercase tracking-wider block"
+                                  inputClassName="text-[11px] font-normal"
                                 />
-                                <div className="flex items-baseline gap-2">
-                                  <span className="text-4xl font-extrabold text-white tracking-tight">Day {day.day}:</span>
+                                <div className="flex items-baseline gap-2 mt-0.5">
+                                  <span className="text-base font-semibold text-white tracking-tight flex-shrink-0">
+                                    Day {String(day.day).padStart(2, '0')}:
+                                  </span>
                                   <InlineEdit
                                     value={day.areaFocus}
                                     onSave={(v) => updateDayField(dayIndex, "areaFocus", v)}
                                     onEditStart={() => onEditingChange?.(true)}
-                                    className="text-4xl font-extrabold text-white tracking-tight block"
-                                    inputClassName="text-3xl font-bold"
+                                    className="text-base font-semibold text-white tracking-tight block"
+                                    inputClassName="text-base font-semibold"
                                     placeholder="Area focus..."
                                   />
                                 </div>
                               </>
                             ) : (
-                              <h3 className="text-xl font-extrabold text-white tracking-tight">
-                                Day {String(day.day).padStart(2, '0')}: <span className="text-gradient">{day.areaFocus}</span>
-                              </h3>
+                              <>
+                                <span className="text-[11px] font-normal text-zinc-400 uppercase tracking-wider block">
+                                  {day.date || `Day ${String(day.day).padStart(2, '0')}`}
+                                </span>
+                                <h3 className="text-base font-semibold text-white tracking-tight mt-0.5">
+                                  Day {String(day.day).padStart(2, '0')}: <span className="text-zinc-200 font-medium">{day.areaFocus}</span>
+                                </h3>
+                              </>
                             )}
+                            <p className="text-xs text-zinc-500 mt-1">
+                              {day.timeline.length} {day.timeline.length === 1 ? 'activity' : 'activities'} planned
+                            </p>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2">
+                        {/* Actions (Sparkles & Delete) */}
+                        <div className="flex items-center gap-2 self-end sm:self-center">
                           {/* Sparkles button */}
                           {editable && (
                             <button
@@ -660,13 +714,13 @@ const ItineraryTimeline = ({
                       </div>
                     </CardHeader>
 
-                    <CardContent className="py-3 sm:py-4 font-body">
+                    <CardContent className="py-3 px-4 sm:px-6 font-body">
                       <SortableContext
                         items={dayStepIds}
                         strategy={verticalListSortingStrategy}
                         disabled={!editable}
                       >
-                        <div className="relative timeline-line space-y-3 pl-4 sm:pl-10">
+                        <div className="space-y-2.5">
                           {day.timeline.map((step, stepIndex) => (
                             <SortableActivity
                               key={stepId(dayIndex, stepIndex)}
@@ -679,7 +733,6 @@ const ItineraryTimeline = ({
                               onEditingChange={onEditingChange}
                               showTimestamps={showTimestamps}
                               currencySymbol={currencySymbol}
-                              fallbackPhotos={fallbackPhotos}
                             />
                           ))}
                         </div>

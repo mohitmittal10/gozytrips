@@ -690,6 +690,8 @@ export default function TheLab() {
         itinerary={itinerary}
         hotels={hotels}
         flights={flights}
+        cabs={cabs}
+        buses={buses}
         pricing={pricing}
         baseCost={baseCost}
         tripTitle={tripTitle}

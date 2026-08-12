@@ -61,23 +61,25 @@ function hashCode(str: string): string {
   return hash.toString();
 }
 
-function getItineraryHash(itinerary: any): string {
-  const days = itinerary?.itinerary ?? [];
-  const payload = days.map((d: any) => ({
-    day: d.day,
-    date: d.date,
-    areaFocus: d.areaFocus,
-    timeline: (d.timeline ?? []).map((t: any) => ({ time: t.time, details: t.details })),
-  }));
-  return hashCode(JSON.stringify(payload));
-}
-
-function getHotelsHash(hotels: any[]): string {
-  return hashCode(JSON.stringify((hotels ?? []).map((h: any) => h.id ?? h.name)));
-}
-
-function getOverridesHash(overrides: any): string {
+function getTemplatePropsHash(props: any, overrides: any): string {
   const payload = {
+    itinerary: props?.itinerary ?? null,
+    title: props?.title ?? "",
+    clientName: props?.clientName ?? "",
+    hotels: props?.hotels ?? [],
+    flights: props?.flights ?? [],
+    cabs: props?.cabs ?? [],
+    buses: props?.buses ?? [],
+    pricing: props?.pricing ?? null,
+    baseCost: props?.baseCost ?? 0,
+    showTimestamps: props?.showTimestamps ?? true,
+    inclusions: props?.inclusions ?? "",
+    exclusions: props?.exclusions ?? "",
+    termsAndConditions: props?.termsAndConditions ?? "",
+    cancellationPolicy: props?.cancellationPolicy ?? "",
+    paymentMethods: props?.paymentMethods ?? "",
+    agencySettings: props?.agencySettings ?? null,
+    userProfile: props?.userProfile ?? null,
     forcedBreaksBefore: overrides?.forcedBreaksBefore ?? [],
     spacingOverrides: overrides?.spacingOverrides ?? {},
   };
@@ -186,9 +188,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
     const themeSectionsCache = useRef<Partial<Record<PdfTheme, SectionMeta[]>>>({});
 
     const lastRenderedTheme = useRef<PdfTheme | null>(null);
-    const lastRenderedItineraryHash = useRef<string | null>(null);
-    const lastRenderedHotelsHash = useRef<string | null>(null);
-    const lastRenderedOverridesHash = useRef<string | null>(null);
+    const lastRenderedPropsHash = useRef<string | null>(null);
 
     // Stable refs for useImperativeHandle (avoids stale closure issues)
     const themeRef = useRef(theme);
@@ -383,9 +383,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
           setCurrentPage(0);
 
           lastRenderedTheme.current = targetTheme;
-          lastRenderedItineraryHash.current = getItineraryHash(templateProps.itinerary);
-          lastRenderedHotelsHash.current = getHotelsHash(templateProps.hotels ?? []);
-          lastRenderedOverridesHash.current = getOverridesHash(renderOverrides);
+          lastRenderedPropsHash.current = getTemplatePropsHash(templateProps, renderOverrides);
         }
 
         // 7. Unmount container — clean up DOM
@@ -414,16 +412,12 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
 
     const hasValidCache = useCallback(() => {
       const t = themeRef.current;
-      const currentItineraryHash = getItineraryHash(templatePropsRef.current.itinerary);
-      const currentHotelsHash = getHotelsHash(templatePropsRef.current.hotels ?? []);
-      const currentOverridesHash = getOverridesHash(pdfOverridesRef.current);
+      const currentPropsHash = getTemplatePropsHash(templatePropsRef.current, pdfOverridesRef.current);
 
       return (
         !!themePagesCache.current[t] &&
         t === lastRenderedTheme.current &&
-        currentItineraryHash === lastRenderedItineraryHash.current &&
-        currentHotelsHash === lastRenderedHotelsHash.current &&
-        currentOverridesHash === lastRenderedOverridesHash.current
+        currentPropsHash === lastRenderedPropsHash.current
       );
     }, []);
 
@@ -432,6 +426,11 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
         if (hasValidCache()) {
           onProgress?.(100, "Ready (cached)");
           return;
+        }
+        const currentPropsHash = getTemplatePropsHash(templatePropsRef.current, pdfOverridesRef.current);
+        if (currentPropsHash !== lastRenderedPropsHash.current) {
+          themePagesCache.current = {};
+          themeSectionsCache.current = {};
         }
         await runPipelineRef.current(themeRef.current, onProgress);
       },
@@ -502,9 +501,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
       delete themePagesCache.current[theme];
       delete themeSectionsCache.current[theme];
       lastRenderedTheme.current = null;
-      lastRenderedItineraryHash.current = null;
-      lastRenderedHotelsHash.current = null;
-      lastRenderedOverridesHash.current = null;
+      lastRenderedPropsHash.current = null;
 
       setIsRendering(true);
       setLoadingStage("Re-rendering\u2026");
@@ -524,9 +521,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
         setCurrentPage(0);
 
         lastRenderedTheme.current = theme;
-        lastRenderedItineraryHash.current = getItineraryHash(templateProps.itinerary);
-        lastRenderedHotelsHash.current = getHotelsHash(templateProps.hotels ?? []);
-        lastRenderedOverridesHash.current = getOverridesHash(overrides);
+        lastRenderedPropsHash.current = getTemplatePropsHash(templateProps, overrides);
       }
 
       setIsContainerMounted(false);
@@ -554,8 +549,14 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
       if (isRendering) return;
       setTheme(newTheme);
 
+      const currentPropsHash = getTemplatePropsHash(templateProps, buildOverrides());
+      if (currentPropsHash !== lastRenderedPropsHash.current) {
+        themePagesCache.current = {};
+        themeSectionsCache.current = {};
+      }
+
       // Cache hit — instant swap
-      if (themePagesCache.current[newTheme]?.length) {
+      if (themePagesCache.current[newTheme]?.length && currentPropsHash === lastRenderedPropsHash.current) {
         setPages(themePagesCache.current[newTheme]!);
         setSections(themeSectionsCache.current[newTheme] ?? []);
         setCurrentPage(0);
@@ -586,9 +587,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
         setCurrentPage(0);
 
         lastRenderedTheme.current = newTheme;
-        lastRenderedItineraryHash.current = getItineraryHash(templateProps.itinerary);
-        lastRenderedHotelsHash.current = getHotelsHash(templateProps.hotels ?? []);
-        lastRenderedOverridesHash.current = getOverridesHash(buildOverrides());
+        lastRenderedPropsHash.current = currentPropsHash;
       }
 
       setIsContainerMounted(false);
@@ -607,9 +606,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
       themePagesCache.current = {};
       themeSectionsCache.current = {};
       lastRenderedTheme.current = null;
-      lastRenderedItineraryHash.current = null;
-      lastRenderedHotelsHash.current = null;
-      lastRenderedOverridesHash.current = null;
+      lastRenderedPropsHash.current = null;
       setPages([]);
       setSections([]);
       setIsRendering(true);

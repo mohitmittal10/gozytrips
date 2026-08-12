@@ -90,38 +90,18 @@ export function useItineraryGeneration() {
       });
       console.log("[useItineraryGeneration] generateTravelItinerary response received:", result);
 
-      // Fetch dynamic images
+      // Fetch dynamic images — exactly ONE image per day from Unsplash
       try {
         const daySearchTerms = result.itinerary.map(day => day.imageSearchTerm || day.areaFocus);
         const dayAreaNames = result.itinerary.map(day => day.areaFocus);
         const dayImageUrls = await fetchItineraryImages(daySearchTerms, dayAreaNames);
 
-        const activitySteps = result.itinerary.flatMap((day, dIdx) =>
-          day.timeline.map((step, sIdx) => ({
-            dayIndex: dIdx,
-            stepIndex: sIdx,
-            searchTerm: step.imageSearchTerm || step.details.split('.')[0] || day.areaFocus,
-            fallbackArea: day.areaFocus
-          }))
-        );
-
-        const activitySearchTerms = activitySteps.map(s => s.searchTerm);
-        const activityFallbacks = activitySteps.map(s => s.fallbackArea);
-        const activityImageUrls = await fetchItineraryImages(activitySearchTerms, activityFallbacks);
-
         result.itinerary = result.itinerary.map((day, dIdx) => ({
           ...day,
           imageUrl: dayImageUrls[dIdx] || undefined,
-          timeline: day.timeline.map((step, sIdx) => {
-            const flatIdx = activitySteps.findIndex(as => as.dayIndex === dIdx && as.stepIndex === sIdx);
-            return {
-              ...step,
-              imageUrl: activityImageUrls[flatIdx] || undefined
-            };
-          })
         }));
       } catch (imgError) {
-        console.warn('Failed to fetch dynamic images, continuing with fallbacks:', imgError);
+        console.warn('Failed to fetch dynamic day images, continuing with fallbacks:', imgError);
       }
 
       setItinerary(result);
