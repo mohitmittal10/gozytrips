@@ -10,6 +10,7 @@ import Logo from "./logo";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/contexts/auth-context";
+import { useLabStore } from "@/store/the-lab/labStore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
   const { user, loading, signOut } = useAuth();
+  const isEditingInLab = useLabStore((state) => state.isEditing);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,12 +41,14 @@ const Header = () => {
     { name: "Why Us?", url: "/#about", icon: Info },
   ];
 
-  const isTheLabPage = pathname === '/the-lab';
+  const isTheLabPage = pathname === '/the-lab' || (pathname ? pathname.startsWith('/the-lab') : false);
+  const shouldBlurNavbar = isTheLabPage && isEditingInLab;
 
   return (
     <nav className={cn(
       "fixed top-0 w-full z-50 bg-[#020305]/80 backdrop-blur-2xl border-b border-white/5 transition-all duration-500 ease-in-out",
-      scrolled ? "-translate-y-full opacity-0 pointer-events-none" : "translate-y-0 opacity-100"
+      scrolled ? "-translate-y-full opacity-0 pointer-events-none" : "translate-y-0 opacity-100",
+      shouldBlurNavbar && "blur-[1px] opacity-40 pointer-events-none"
     )}>
       <div className="flex justify-between items-center px-4 sm:px-8 py-3 sm:py-4 max-w-7xl mx-auto">
         <Logo />

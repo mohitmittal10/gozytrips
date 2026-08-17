@@ -225,19 +225,15 @@ export const DesertTheme = ({
                 <div style={{ position: "relative", height: "620px", overflow: "hidden" }}>
                     <img src={getCoverImage(itinerary)} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} crossOrigin="anonymous" />
                     <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.6), transparent 55%)" }} />
-                    {/* Agency logo stamp — top right */}
-                    <div style={{ position: "absolute", top: "32px", right: "64px", zIndex: 10, display: "flex", alignItems: "center", gap: "14px", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)", borderRadius: "12px", padding: "12px 20px", boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
+                    {/* Agency logo stamp — top right (logo only) */}
+                    <div style={{ position: "absolute", top: "32px", right: "64px", zIndex: 10, display: "flex", alignItems: "center", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)", borderRadius: "12px", padding: "10px 16px", boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
                         {agent.logoUrl ? (
-                            <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "36px", maxWidth: "100px", objectFit: "contain", display: "block" }} />
+                            <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "44px", maxWidth: "140px", objectFit: "contain", display: "block" }} />
                         ) : (
-                            <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#fff7ed", display: "flex", alignItems: "center", justifyContent: "center", color: "#ea580c", fontWeight: 800, fontSize: "16px" }}>
-                                {(agent.companyName || "T").substring(0, 1).toUpperCase()}
+                            <div style={{ padding: "4px 8px", color: "#111827", fontWeight: 800, fontSize: "14px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", textTransform: "uppercase" }}>
+                                {agent.companyName}
                             </div>
                         )}
-                        <div style={{ borderLeft: "1px solid #e5e7eb", paddingLeft: "14px" }}>
-                            <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "#111827", letterSpacing: "0.06em", textTransform: "uppercase", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.companyName}</p>
-                            <p style={{ margin: 0, fontSize: "9px", color: "#9ca3af", letterSpacing: "0.04em", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", fontWeight: 500, marginTop: "2px", textTransform: "uppercase" }}>{agent.tagline || "Travel Collection"}</p>
-                        </div>
                     </div>
                     <div style={{ position: "absolute", left: "64px", right: "64px", bottom: "72px", color: "#ffffff" }}>
                         <h1 style={{ margin: "0 0 24px 0", fontSize: "64px", lineHeight: "0.98", fontWeight: 500, letterSpacing: "-0.8px" }}>

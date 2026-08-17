@@ -74,14 +74,15 @@ export default function TheLab() {
   const [enquiryBanner, setEnquiryBanner] = useState<{ clientName: string; responseId: string } | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const isEditing = useLabStore((state) => state.isEditing);
+  const setStoreIsEditing = useLabStore((state) => state.setIsEditing);
 
   const handleSetIsEditing = useCallback((editing: boolean) => {
-    setIsEditing(editing);
+    setStoreIsEditing(editing);
     if (editing) {
       setActiveLabTab('itinerary');
     }
-  }, [setActiveLabTab]);
+  }, [setActiveLabTab, setStoreIsEditing]);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // PDF pre-render state (overlay shown before dialog opens)
@@ -97,6 +98,55 @@ export default function TheLab() {
   const [currentTripId, setCurrentTripId] = useState<string | null>(itineraryIdFromUrl);
   const { loadedData, isLoading, saveAll, saveNow, resetForNewTrip } = useItineraryPersistence({ currentTripId, setCurrentTripId });
   const { isGenerating, itinerary, setItinerary, generate } = useItineraryGeneration();
+
+  // ── Itinerary History (undo / redo) ──────────────────────────────────────────
+  // Stores previous itinerary snapshots so the user can revert one change at a time.
+  const MAX_HISTORY = 20;
+  const itineraryHistoryRef = useRef<any[]>([]);
+  const itineraryRedoRef = useRef<any[]>([]);
+
+  const setItineraryWithHistory = useCallback((next: any) => {
+    // Push current itinerary to undo stack before overwriting
+    if (itinerary !== null) {
+      itineraryHistoryRef.current = [
+        ...itineraryHistoryRef.current.slice(-(MAX_HISTORY - 1)),
+        JSON.parse(JSON.stringify(itinerary)),
+      ];
+    }
+    // Any new edit clears the redo stack
+    itineraryRedoRef.current = [];
+    setItinerary(next);
+  }, [itinerary, setItinerary]);
+
+  const canUndoPrevious = itineraryHistoryRef.current.length > 0;
+  const canRedoNext = itineraryRedoRef.current.length > 0;
+
+  const handleUndoPrevious = useCallback(() => {
+    const prev = itineraryHistoryRef.current.pop();
+    if (!prev) return;
+    // Push current to redo stack before reverting
+    if (itinerary !== null) {
+      itineraryRedoRef.current = [
+        ...itineraryRedoRef.current.slice(-(MAX_HISTORY - 1)),
+        JSON.parse(JSON.stringify(itinerary)),
+      ];
+    }
+    setItinerary(prev);
+  }, [itinerary, setItinerary]);
+
+  const handleRedoNext = useCallback(() => {
+    const next = itineraryRedoRef.current.pop();
+    if (!next) return;
+    // Push current to undo stack before re-applying
+    if (itinerary !== null) {
+      itineraryHistoryRef.current = [
+        ...itineraryHistoryRef.current.slice(-(MAX_HISTORY - 1)),
+        JSON.parse(JSON.stringify(itinerary)),
+      ];
+    }
+    setItinerary(next);
+  }, [itinerary, setItinerary]);
+
 
   // Tracks which trip ID was last synced into the form so we only call
   // form.reset() when the user switches to a genuinely different trip.
@@ -329,7 +379,7 @@ export default function TheLab() {
     formSyncedForIdRef.current = null; // allow next history trip to reset the form
     setItinerary(null);
     resetStore();
-    setCurrentTripId(null); setIsEditing(false); setCurrentStep(0);
+    setCurrentTripId(null); setStoreIsEditing(false); setCurrentStep(0);
     // Reset persistence WITHOUT writing to DB. This cancels pending auto-save
     // timers and nulls the ref so no phantom records get created.
     resetForNewTrip();
@@ -579,6 +629,10 @@ export default function TheLab() {
               isSaving={isSaving} 
               isPreRendering={isPreRendering}
               activeLabTab={activeLabTab}
+              canUndoPrevious={canUndoPrevious}
+              onUndoPrevious={handleUndoPrevious}
+              canRedoNext={canRedoNext}
+              onRedoNext={handleRedoNext}
             />
           </div>
         </div>
@@ -588,7 +642,9 @@ export default function TheLab() {
         "w-full max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8 pb-20 sm:pb-10",
         isDesigningNew ? "mt-4 lg:mt-0 lg:pt-4" : "mt-4 lg:mt-8"
       )}>
-        <TheLabMobileTabs activeLabTab={activeLabTab} setActiveLabTab={setActiveLabTab} clients={clients} selectedClientId={selectedClientId} setSelectedClientId={setSelectedClientId} selectedStatus={selectedStatus} setSelectedStatus={handleStatusChangeAction} handleCreateNew={handleCreateNew} />
+        <div className={cn("transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
+          <TheLabMobileTabs activeLabTab={activeLabTab} setActiveLabTab={setActiveLabTab} clients={clients} selectedClientId={selectedClientId} setSelectedClientId={setSelectedClientId} selectedStatus={selectedStatus} setSelectedStatus={handleStatusChangeAction} handleCreateNew={handleCreateNew} />
+        </div>
         
         <div className="flex flex-row items-start gap-4 lg:gap-6 w-full">
           <div className={cn("transition-all duration-500 shrink-0 sticky top-24 self-start z-40", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
@@ -618,12 +674,16 @@ export default function TheLab() {
                 </div>
               ) : (
                 <>
-                  {isViewingItinerary && (itinerary?.itinerary?.length ?? 0) > 0 && <TheLabHero itinerary={itinerary} />}
+                  {isViewingItinerary && (itinerary?.itinerary?.length ?? 0) > 0 && (
+                    <div className={cn("transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
+                      <TheLabHero itinerary={itinerary} />
+                    </div>
+                  )}
                   <TheLabTabContent 
                     activeLabTab={activeLabTab} 
                     isGenerating={isGenerating} 
                     itinerary={itinerary} 
-                    setItinerary={setItinerary} 
+                    setItinerary={setItineraryWithHistory} 
                     isEditing={isEditing} 
                     setIsEditing={handleSetIsEditing} 
                     hotels={hotels} 

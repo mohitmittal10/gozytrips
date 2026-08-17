@@ -338,16 +338,30 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
   const update = (field: keyof HotelInfo, value: any) =>
     onChange({ ...hotel, [field]: value } as any);
 
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const currentUrls = hotel.imageUrls || [];
       if (currentUrls.length >= 2) return;
+      setIsUploadingPhoto(true);
       const reader = new FileReader();
       reader.onloadend = () => {
-        update("imageUrls", [...currentUrls, reader.result as string]);
+        const resultUrl = reader.result as string;
+        const img = new Image();
+        img.onload = () => {
+          update("imageUrls", [...currentUrls, resultUrl]);
+          setIsUploadingPhoto(false);
+        };
+        img.onerror = () => {
+          update("imageUrls", [...currentUrls, resultUrl]);
+          setIsUploadingPhoto(false);
+        };
+        img.src = resultUrl;
       };
       reader.readAsDataURL(file);
+      e.target.value = '';
     }
   };
 
@@ -462,7 +476,15 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
                 </button>
               </div>
             ))}
-            {(!hotel.imageUrls || hotel.imageUrls.length < 2) && (
+            {isUploadingPhoto && (
+              <div className="relative flex items-center justify-center w-24 h-24 flex-shrink-0 rounded-lg border border-primary/40 bg-black/60 shadow-inner">
+                <div className="flex flex-col items-center gap-1.5 text-primary">
+                  <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                  <span className="text-[9px] font-semibold text-white/90">Loading…</span>
+                </div>
+              </div>
+            )}
+            {(!hotel.imageUrls || hotel.imageUrls.length < 2) && !isUploadingPhoto && (
               <div className="relative flex items-center justify-center w-24 h-24 flex-shrink-0 rounded-lg border-2 border-dashed border-white/20 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group/upload">
                 <div className="flex flex-col items-center gap-1 text-gray-400 group-hover/upload:text-white transition-colors">
                   <Camera className="w-5 h-5" />
@@ -975,54 +997,62 @@ export default function HotelFlightEditor({
       >
         <div className="p-6 lg:p-8">
           <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar min-h-[200px]">
-            {selectedEditorTab === "hotels" && hotels.map((hotel) => (
-              <HotelCard
-                key={hotel.id}
-                hotel={hotel}
-                totalDays={totalDays}
-                onChange={(updated) => updateHotel(hotel.id, updated)}
-                onDelete={() => deleteHotel(hotel.id)}
-                isCollapsed={isCollapsed}
-                allHotels={hotels}
-                onClaimDay={(dayIdx) => claimDayForHotel(hotel.id, dayIdx)}
-              />
-            ))}
+            {selectedEditorTab === "hotels"
+              ? hotels.map((hotel) => (
+                  <HotelCard
+                    key={hotel.id}
+                    hotel={hotel}
+                    totalDays={totalDays}
+                    onChange={(updated) => updateHotel(hotel.id, updated)}
+                    onDelete={() => deleteHotel(hotel.id)}
+                    isCollapsed={isCollapsed}
+                    allHotels={hotels}
+                    onClaimDay={(dayIdx) => claimDayForHotel(hotel.id, dayIdx)}
+                  />
+                ))
+              : null}
 
-            {selectedEditorTab === "flights" && flights.map((flight) => (
-              <FlightCard
-                key={flight.id}
-                flight={flight}
-                totalDays={totalDays}
-                onChange={(updated) => updateFlight(flight.id, updated)}
-                onDelete={() => deleteFlight(flight.id)}
-                isCollapsed={isCollapsed}
-                allFlights={flights}
-              />
-            ))}
+            {selectedEditorTab === "flights"
+              ? flights.map((flight) => (
+                  <FlightCard
+                    key={flight.id}
+                    flight={flight}
+                    totalDays={totalDays}
+                    onChange={(updated) => updateFlight(flight.id, updated)}
+                    onDelete={() => deleteFlight(flight.id)}
+                    isCollapsed={isCollapsed}
+                    allFlights={flights}
+                  />
+                ))
+              : null}
 
-            {selectedEditorTab === "cabs" && cabs.map((cab) => (
-              <CabCard
-                key={cab.id}
-                cab={cab}
-                totalDays={totalDays}
-                onChange={(updated) => updateCab(cab.id, updated)}
-                onDelete={() => deleteCab(cab.id)}
-                isCollapsed={isCollapsed}
-                allCabs={cabs}
-              />
-            ))}
+            {selectedEditorTab === "cabs"
+              ? cabs.map((cab) => (
+                  <CabCard
+                    key={cab.id}
+                    cab={cab}
+                    totalDays={totalDays}
+                    onChange={(updated) => updateCab(cab.id, updated)}
+                    onDelete={() => deleteCab(cab.id)}
+                    isCollapsed={isCollapsed}
+                    allCabs={cabs}
+                  />
+                ))
+              : null}
 
-            {selectedEditorTab === "buses" && buses.map((bus) => (
-              <BusCard
-                key={bus.id}
-                bus={bus}
-                totalDays={totalDays}
-                onChange={(updated) => updateBus(bus.id, updated)}
-                onDelete={() => deleteBus(bus.id)}
-                isCollapsed={isCollapsed}
-                allBuses={buses}
-              />
-            ))}
+            {selectedEditorTab === "buses"
+              ? buses.map((bus) => (
+                  <BusCard
+                    key={bus.id}
+                    bus={bus}
+                    totalDays={totalDays}
+                    onChange={(updated) => updateBus(bus.id, updated)}
+                    onDelete={() => deleteBus(bus.id)}
+                    isCollapsed={isCollapsed}
+                    allBuses={buses}
+                  />
+                ))
+              : null}
 
             {((selectedEditorTab === "hotels" && hotels.length === 0) ||
               (selectedEditorTab === "flights" && flights.length === 0) ||

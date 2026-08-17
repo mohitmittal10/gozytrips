@@ -1,6 +1,6 @@
 // Sticky top bar including selections, toggles, back/edit buttons.
 import React from 'react';
-import { Pencil, Eye, Check } from 'lucide-react';
+import { Eye, Undo2, Redo2 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,10 @@ interface TheLabHeaderProps {
   isSaving?: boolean;
   isPreRendering?: boolean;
   activeLabTab: string;
+  canUndoPrevious?: boolean;
+  onUndoPrevious?: () => void;
+  canRedoNext?: boolean;
+  onRedoNext?: () => void;
 }
 
 const TheLabHeader = React.memo(function TheLabHeader({
@@ -36,7 +40,11 @@ const TheLabHeader = React.memo(function TheLabHeader({
   isEditing, setIsEditing,
   handleDownloadPdf, handleSaveItinerary, isSaving = false,
   isPreRendering = false,
-  activeLabTab
+  activeLabTab,
+  canUndoPrevious = false,
+  onUndoPrevious,
+  canRedoNext = false,
+  onRedoNext,
 }: TheLabHeaderProps) {
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
   const storeIsSaving = useLabStore((state) => state.isSaving);
@@ -49,7 +57,7 @@ const TheLabHeader = React.memo(function TheLabHeader({
       <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
         {/* Controls Group */}
         <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-6">
-          <div className="hidden sm:flex items-center gap-3">
+          <div className={cn("hidden sm:flex items-center gap-3 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Client</label>
             <Select value={selectedClientId} onValueChange={setSelectedClientId}>
               <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-zinc-700 h-9 min-w-[140px] sm:min-w-[180px]">
@@ -64,7 +72,7 @@ const TheLabHeader = React.memo(function TheLabHeader({
             </Select>
           </div>
           
-          <div className="hidden sm:flex items-center gap-3">
+          <div className={cn("hidden sm:flex items-center gap-3 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Status</label>
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
               <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-zinc-700 h-9">
@@ -87,7 +95,7 @@ const TheLabHeader = React.memo(function TheLabHeader({
             </Select>
           </div>
           
-          <div className="flex items-center gap-4 bg-black/20 rounded-xl p-1 border border-white/5">
+          <div className={cn("flex items-center gap-4 bg-black/20 rounded-xl p-1 border border-white/5 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
             <div className="flex items-center space-x-2 px-2 py-1">
               <Switch
                 id="show-timestamps-header"
@@ -101,8 +109,17 @@ const TheLabHeader = React.memo(function TheLabHeader({
             </div>
           </div>
 
-          <div className="flex items-center gap-3 bg-black/20 rounded-xl p-1 border border-white/5 h-10 px-3 transition-all duration-300">
-            <label htmlFor="edit-mode-toggle" className="text-[10px] font-bold uppercase text-zinc-500 select-none cursor-pointer">
+          {/* Edit Mode Toggle — Never blurred */}
+          <div className={cn(
+            "flex items-center gap-3 bg-black/20 rounded-xl p-1 border h-10 px-3 transition-all duration-300 relative z-10",
+            isEditing 
+              ? "border-primary/50 bg-primary/10 shadow-[0_0_15px_rgba(255,92,51,0.15)] ring-1 ring-primary/30" 
+              : "border-white/5 hover:border-white/10"
+          )}>
+            <label htmlFor="edit-mode-toggle" className={cn(
+              "text-[10px] font-bold uppercase select-none cursor-pointer transition-colors",
+              isEditing ? "text-primary font-extrabold" : "text-zinc-500"
+            )}>
               Edit Mode
             </label>
             <Switch
@@ -112,10 +129,43 @@ const TheLabHeader = React.memo(function TheLabHeader({
               className="scale-75 data-[state=checked]:bg-primary"
             />
           </div>
+
+          {/* Undo / Redo — icon-only, always unblurred when edit mode is on */}
+          {isEditing && onUndoPrevious && (
+            <div className="flex items-center gap-1.5 relative z-10">
+              <button
+                onClick={onUndoPrevious}
+                disabled={!canUndoPrevious}
+                title="Undo last change"
+                className={cn(
+                  "flex items-center justify-center w-9 h-9 rounded-xl border transition-all duration-200",
+                  canUndoPrevious
+                    ? "border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:border-amber-400/60 cursor-pointer active:scale-95"
+                    : "border-white/5 bg-black/20 text-zinc-700 cursor-not-allowed opacity-40"
+                )}
+              >
+                <Undo2 className="w-3.5 h-3.5" />
+              </button>
+
+              <button
+                onClick={onRedoNext}
+                disabled={!canRedoNext}
+                title="Redo last change"
+                className={cn(
+                  "flex items-center justify-center w-9 h-9 rounded-xl border transition-all duration-200",
+                  canRedoNext
+                    ? "border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:border-amber-400/60 cursor-pointer active:scale-95"
+                    : "border-white/5 bg-black/20 text-zinc-700 cursor-not-allowed opacity-40"
+                )}
+              >
+                <Redo2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Actions Group */}
-        <div className="flex items-center gap-3">
+        <div className={cn("flex items-center gap-3 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
           <AutosaveIndicator className="inline-flex" />
           <Button
             variant="outline"

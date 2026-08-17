@@ -124,7 +124,7 @@ export const DarkTheme = ({
                     )}
                     <div style={{ position: "absolute", bottom: "40px", left: "45px", right: "45px", zIndex: 1 }}>
                         <h1 style={{ fontSize: "40px", fontWeight: 900, margin: "0 0 8px 0", color: "#ffffff", lineHeight: "1.1", letterSpacing: "-1px", fontFamily: "'Outfit', sans-serif", textShadow: `0 0 20px rgba(${rgbAccent}, 0.3)` }}>{title}</h1>
-                        <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0, fontWeight: 500 }}>{agent.tagline || `Bespoke Journey designed by ${agent.agentName}`}</p>
+                        <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0, fontWeight: 500 }}>Prepared By: {agent.agentName}</p>
                     </div>
                 </div>
 
@@ -137,7 +137,6 @@ export const DarkTheme = ({
                     {/* Stat cards */}
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginBottom: "40px" }}>
                         {[
-                            { label: "Guest / Client", value: clientName || "Valued Guest", sub: `${adultPax} Adults${childPax > 0 ? `, ${childPax} Children` : ''}` },
                             { label: "Duration", value: `${itinerary.itinerary?.length || 0} Days`, sub: `${Math.max((itinerary.itinerary?.length || 0) - 1, 0)} Nights` },
                             { label: "Est. Budget", value: formatCurrency(finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY), sub: "Total Price" },
                             { label: "Activities", value: `${totalActivities}+ Items`, sub: "Scheduled" },

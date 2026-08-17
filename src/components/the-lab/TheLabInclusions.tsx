@@ -203,8 +203,8 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
             {(() => {
               const getLines = (text: string) => {
                 return text
-                  .split(/[\n,•]+/)
-                  .map(line => line.trim())
+                  .split(/\n+/)
+                  .map(line => line.trim().replace(/^[-•*]\s*/, ''))
                   .filter(line => line.length > 0);
               };
               const lines = getLines(content.value);

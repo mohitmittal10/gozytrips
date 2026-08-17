@@ -212,6 +212,14 @@ export function UnifiedSettings() {
 
       if (updateError) throw updateError;
 
+      // Preload image in browser before clearing loading state so the image is fully ready to display
+      await new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+        img.src = publicUrl;
+      });
+
       setLogoPreview(publicUrl);
       await refreshProfile();
       toast({ title: 'Logo uploaded', description: 'Your agency logo has been saved.' });

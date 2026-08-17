@@ -287,6 +287,15 @@ const ItineraryTimeline = ({
     setUploadingDayIndex(dayIndex);
     try {
       const publicUrl = await uploadItineraryPhoto(file);
+      
+      // Wait for image to preload in browser before dismissing the loading state
+      await new Promise<void>((resolve) => {
+        const img = new Image();
+        img.onload = () => resolve();
+        img.onerror = () => resolve();
+        img.src = publicUrl;
+      });
+
       if (onEditingChange) onEditingChange(true);
       updateItinerary((days) => {
         days[dayIndex] = {
@@ -391,6 +400,11 @@ const ItineraryTimeline = ({
     [itinerary, onItineraryChange]
   );
 
+  // Stable ref so toast action closures always call the *latest* updateItinerary
+  // (avoids stale-closure double-add bug when undoing delete from a toast)
+  const updateItineraryRef = useRef(updateItinerary);
+  useEffect(() => { updateItineraryRef.current = updateItinerary; }, [updateItinerary]);
+
   const {
     activeStepId,
     findStepByDragId,
@@ -430,7 +444,8 @@ const ItineraryTimeline = ({
           variant="outline"
           size="sm"
           onClick={() => {
-            updateItinerary((days) => {
+            // Use stable ref to avoid stale closure using pre-deletion itinerary
+            updateItineraryRef.current((days) => {
               days[dayIndex].timeline.splice(stepIndex, 0, deleted);
               return days;
             });
@@ -495,7 +510,8 @@ const ItineraryTimeline = ({
           variant="outline"
           size="sm"
           onClick={() => {
-            updateItinerary((days) => {
+            // Use stable ref to avoid stale closure using pre-deletion itinerary
+            updateItineraryRef.current((days) => {
               days.splice(dayIndex, 0, deleted);
               days.forEach((d, i) => { d.day = i + 1; });
               return days;
@@ -628,10 +644,18 @@ const ItineraryTimeline = ({
                                   onClick={(e) => { e.stopPropagation(); dayFileInputRefs.current[dayIndex]?.click(); }}
                                   disabled={uploadingDayIndex === dayIndex}
                                   title="Upload custom photo for this day"
-                                  className="absolute inset-0 flex flex-col items-center justify-center bg-black/60 opacity-0 group-hover/dayphoto:opacity-100 transition-opacity duration-200 cursor-pointer"
+                                  className={cn(
+                                    "absolute inset-0 flex flex-col items-center justify-center transition-all duration-200 cursor-pointer",
+                                    uploadingDayIndex === dayIndex
+                                      ? "bg-black/75 opacity-100 pointer-events-none"
+                                      : "bg-black/60 opacity-0 group-hover/dayphoto:opacity-100"
+                                  )}
                                 >
                                   {uploadingDayIndex === dayIndex ? (
-                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <div className="flex flex-col items-center gap-1.5">
+                                      <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                                      <span className="text-[9px] text-white/90 font-medium tracking-wide">Updating…</span>
+                                    </div>
                                   ) : (
                                     <>
                                       <Camera className="w-5 h-5 text-white drop-shadow" />
