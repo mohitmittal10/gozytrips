@@ -38,7 +38,7 @@ const Header = () => {
     { name: "The Lab", url: "/the-lab", icon: Sparkles },
     { name: "Pricing", url: "/pricing", icon: CreditCard },
     { name: "CRM", url: "/crm", icon: Users },
-    { name: "Why Us?", url: "/#about", icon: Info },
+    { name: "Why Us?", url: "/why-us", icon: Info },
   ];
 
   const isTheLabPage = pathname === '/the-lab' || (pathname ? pathname.startsWith('/the-lab') : false);

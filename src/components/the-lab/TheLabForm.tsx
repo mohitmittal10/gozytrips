@@ -1,7 +1,7 @@
 // Multi-step wizard UI wrapping the input form
 import React from 'react';
 import { UseFormReturn, useFieldArray } from "react-hook-form";
-import { format } from "date-fns";
+import { format, addDays } from "date-fns";
 import { Calendar as CalendarIcon, Check, ArrowRight, Star, Eye, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
 import { Switch } from "@/components/ui/switch";
 import {
   Form,
@@ -300,56 +299,87 @@ StepStayOptions.displayName = 'StepStayOptions';
 
 import { GlassCalendar } from "@/components/ui/glass-calendar";
 
-const StepDates = React.memo(({ form, sidebarMode }: { form: UseFormReturn<TheLabFormValues>, sidebarMode?: boolean }) => (
-  <div className={cn("grid gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700", sidebarMode ? "grid-cols-1" : "grid-cols-2")}>
-    <FormField control={form.control} name="startDate" render={({ field }) => (
-      <FormItem className="space-y-1">
-        <FormLabel className={LabelClass}>Start Date</FormLabel>
-        <Popover>
-          <PopoverTrigger asChild>
-            <FormControl>
-              <Button type="button" variant="outline" className={cn("w-full justify-start text-left font-normal px-3 py-2 h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl", !field.value && "text-muted-foreground/50")}>
-                <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-foreground/40" />
-                {field.value ? <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span> : <span>Select date</span>}
-              </Button>
-            </FormControl>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 border-none bg-transparent shadow-2xl rounded-3xl" align="start">
-            <GlassCalendar
-              selectedDate={field.value}
-              onDateSelect={field.onChange}
-              minDate={new Date()}
-            />
-          </PopoverContent>
-        </Popover>
-        <FormMessage className="text-[10px]" />
-      </FormItem>
-    )} />
-    <FormField control={form.control} name="endDate" render={({ field }) => (
-      <FormItem className="space-y-1">
-        <FormLabel className={LabelClass}>End Date</FormLabel>
-        <Popover>
-          <PopoverTrigger asChild>
-            <FormControl>
-              <Button type="button" variant="outline" className={cn("w-full justify-start text-left font-normal px-3 py-2 h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl", !field.value && "text-muted-foreground/50")}>
-                <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-foreground/40" />
-                {field.value ? <span className="font-medium">{format(field.value, "MMM dd, yyyy")}</span> : <span>Select date</span>}
-              </Button>
-            </FormControl>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 border-none bg-transparent shadow-2xl rounded-3xl" align="start">
-            <GlassCalendar
-              selectedDate={field.value}
-              onDateSelect={field.onChange}
-              minDate={form.getValues("startDate") || new Date()}
-            />
-          </PopoverContent>
-        </Popover>
-        <FormMessage className="text-[10px]" />
-      </FormItem>
-    )} />
-  </div>
-));
+const StepDates = React.memo(({ form, sidebarMode }: { form: UseFormReturn<TheLabFormValues>, sidebarMode?: boolean }) => {
+  const [startOpen, setStartOpen] = React.useState(false);
+  const [endOpen, setEndOpen] = React.useState(false);
+
+  const startDate = form.watch("startDate");
+
+  const handleStartDateSelect = (date: Date) => {
+    form.setValue("startDate", date, { shouldValidate: true, shouldDirty: true });
+    setStartOpen(false);
+
+    // Automatically set end date to the next date/month if not set or if current endDate <= new startDate
+    const currentEndDate = form.getValues("endDate");
+    if (!currentEndDate || new Date(currentEndDate).getTime() <= new Date(date).getTime()) {
+      const nextDay = addDays(date, 1);
+      form.setValue("endDate", nextDay, { shouldValidate: true, shouldDirty: true });
+    }
+  };
+
+  const handleEndDateSelect = (date: Date) => {
+    form.setValue("endDate", date, { shouldValidate: true, shouldDirty: true });
+    setEndOpen(false);
+  };
+
+  const effectiveMinEndDate = React.useMemo(() => {
+    if (startDate) {
+      return addDays(new Date(startDate), 1);
+    }
+    return addDays(new Date(), 1);
+  }, [startDate]);
+
+  return (
+    <div className={cn("grid gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700", sidebarMode ? "grid-cols-1" : "grid-cols-2")}>
+      <FormField control={form.control} name="startDate" render={({ field }) => (
+        <FormItem className="space-y-1">
+          <FormLabel className={LabelClass}>Start Date</FormLabel>
+          <Popover open={startOpen} onOpenChange={setStartOpen}>
+            <PopoverTrigger asChild>
+              <FormControl>
+                <Button type="button" variant="outline" className={cn("w-full justify-start text-left font-normal px-3 py-2 h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl", !field.value && "text-muted-foreground/50")}>
+                  <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-foreground/40" />
+                  {field.value ? <span className="font-medium">{format(new Date(field.value), "MMM dd, yyyy")}</span> : <span>Select date</span>}
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 border-none bg-transparent shadow-2xl rounded-3xl" align="start">
+              <GlassCalendar
+                selectedDate={field.value ? new Date(field.value) : undefined}
+                onDateSelect={handleStartDateSelect}
+                minDate={new Date()}
+              />
+            </PopoverContent>
+          </Popover>
+          <FormMessage className="text-[10px]" />
+        </FormItem>
+      )} />
+      <FormField control={form.control} name="endDate" render={({ field }) => (
+        <FormItem className="space-y-1">
+          <FormLabel className={LabelClass}>End Date</FormLabel>
+          <Popover open={endOpen} onOpenChange={setEndOpen}>
+            <PopoverTrigger asChild>
+              <FormControl>
+                <Button type="button" variant="outline" className={cn("w-full justify-start text-left font-normal px-3 py-2 h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl", !field.value && "text-muted-foreground/50")}>
+                  <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0 text-foreground/40" />
+                  {field.value ? <span className="font-medium">{format(new Date(field.value), "MMM dd, yyyy")}</span> : <span>Select date</span>}
+                </Button>
+              </FormControl>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0 border-none bg-transparent shadow-2xl rounded-3xl" align="start">
+              <GlassCalendar
+                selectedDate={field.value ? new Date(field.value) : undefined}
+                onDateSelect={handleEndDateSelect}
+                minDate={effectiveMinEndDate}
+              />
+            </PopoverContent>
+          </Popover>
+          <FormMessage className="text-[10px]" />
+        </FormItem>
+      )} />
+    </div>
+  );
+});
 StepDates.displayName = 'StepDates';
 
 const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn<TheLabFormValues>, sidebarMode?: boolean }) => {

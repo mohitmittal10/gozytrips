@@ -24,7 +24,7 @@ const Footer = () => {
   const featureLinks = [
     { name: "PDF Formats", href: "/#curated" },
     { name: "How It Works", href: "/#how-it-works" },
-    { name: "Why Us?", href: "/#about" },
+    { name: "Why Us?", href: "/why-us" },
   ];
 
   const companyLinks = [

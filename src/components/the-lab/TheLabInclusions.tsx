@@ -83,6 +83,24 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
   const firstRender = useRef(true);
   const [isCollapsed, setIsCollapsed] = useState(false);
 
+  // ── Local draft state to avoid per-keystroke store writes ────────────────────
+  // We buffer text in local React state and only flush to the Zustand store
+  // (which triggers hash recompute + autosave) on blur or after a 500 ms debounce.
+  // This keeps rapid typing off the store's hot path entirely.
+  const [localDraft, setLocalDraft] = useState("");
+  const flushTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const activeFlushRef = useRef<((val: string) => void) | null>(null);
+
+  // When the active tab changes, sync the draft to the current committed value.
+  useEffect(() => {
+    const { value } = getContent(activeTab);
+    setLocalDraft(value);
+    activeFlushRef.current = getFlushFn(activeTab);
+    // Cancel any pending flush from the previous tab
+    if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods]);
+
   useEffect(() => {
     const idx = TAB_CONFIG.findIndex(t => t.value === activeTab);
     const el = tabRefs.current[idx];
@@ -90,13 +108,7 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
     firstRender.current = false;
   }, [activeTab]);
 
-  const handleTabSelect = (value: TabValue) => {
-    const oldIdx = TAB_CONFIG.findIndex(t => t.value === activeTab);
-    const newIdx = TAB_CONFIG.findIndex(t => t.value === value);
-    setSlideDir(newIdx > oldIdx ? "right" : "left");
-    setActiveTab(value);
-  };
-
+  // Returns the committed store value (used for collapsed read-only view)
   const getContent = (tab: TabValue) => {
     switch (tab) {
       case "inclusions":    return { value: inclusions,          onChange: setInclusions };
@@ -105,6 +117,32 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
       case "cancellation":  return { value: cancellationPolicy,  onChange: setCancellationPolicy };
       case "payment":       return { value: paymentMethods,      onChange: setPaymentMethods };
     }
+  };
+
+  // Returns just the flush function for a tab (used by the debounce logic)
+  const getFlushFn = (tab: TabValue): ((val: string) => void) => {
+    switch (tab) {
+      case "inclusions":    return setInclusions;
+      case "exclusions":    return setExclusions;
+      case "terms":         return setTermsAndConditions;
+      case "cancellation":  return setCancellationPolicy;
+      case "payment":       return setPaymentMethods;
+    }
+  };
+
+  // Flush the current local draft to the store immediately (called on blur / tab switch)
+  const flushDraftNow = () => {
+    if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
+    activeFlushRef.current?.(localDraft);
+  };
+
+  const handleTabSelect = (value: TabValue) => {
+    // Flush any pending draft for the current tab before switching
+    flushDraftNow();
+    const oldIdx = TAB_CONFIG.findIndex(t => t.value === activeTab);
+    const newIdx = TAB_CONFIG.findIndex(t => t.value === value);
+    setSlideDir(newIdx > oldIdx ? "right" : "left");
+    setActiveTab(value);
   };
 
   const active = TAB_CONFIG.find(t => t.value === activeTab)!;
@@ -228,16 +266,25 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
             })()}
           </div>
         ) : (
-          /* Textarea */
+          /* Textarea — local draft buffering to avoid per-keystroke store writes */
           <div className="p-6 lg:p-8">
             <Textarea
-              value={content.value}
-              onChange={(e) => content.onChange(e.target.value)}
+              value={localDraft}
+              onChange={(e) => {
+                const val = e.target.value;
+                setLocalDraft(val);
+                // Debounce flush to store: cancel previous timer, schedule new one
+                if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
+                flushTimerRef.current = setTimeout(() => {
+                  activeFlushRef.current?.(val);
+                }, 500);
+              }}
+              onBlur={() => flushDraftNow()}
               placeholder={active.placeholder}
               className="min-h-[320px] bg-black/30 border-white/[0.08] text-white placeholder:text-foreground/20 rounded-xl resize-y text-sm p-4 focus-visible:ring-primary/30 focus-visible:border-primary/40 transition-colors"
             />
             <p className="mt-3 text-[11px] text-foreground/25 text-right">
-              {content.value.length} characters
+              {localDraft.length} characters
             </p>
           </div>
         )}

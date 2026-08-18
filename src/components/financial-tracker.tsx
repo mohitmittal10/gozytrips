@@ -8,6 +8,11 @@ import { ExpensesTab } from "@/components/financial/ExpensesTab";
 import { CommissionsTab } from "@/components/financial/CommissionsTab";
 import { InvoicesTab } from "@/components/financial/InvoicesTab";
 import { ReportsTab } from "@/components/financial/ReportsTab";
+import {
+    CreditCard, Receipt, Percent, FileText, BarChart3,
+    Sparkles, RefreshCw, DollarSign, Wallet
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface EnrichedClient {
     id: string;
@@ -27,14 +32,14 @@ interface FinancialTrackerProps {
     onOpenFinances?: (tripId: string) => void;
 }
 
-type FinanceTab = "payments" | "commissions" | "invoices" | "expenses" | "reports";
+type FinanceTab = "payments" | "expenses" | "commissions" | "invoices" | "reports";
 
-const TABS: { key: FinanceTab; label: string }[] = [
-    { key: "payments", label: "Payments" },
-    { key: "expenses", label: "Expenses" },
-    { key: "commissions", label: "Commissions" },
-    { key: "invoices", label: "Invoices" },
-    { key: "reports", label: "Reports" },
+const TABS: { key: FinanceTab; label: string; icon: React.ElementType }[] = [
+    { key: "payments", label: "Payments", icon: CreditCard },
+    { key: "expenses", label: "Vendor Expenses", icon: Receipt },
+    { key: "commissions", label: "Commissions", icon: Percent },
+    { key: "invoices", label: "Invoices", icon: FileText },
+    { key: "reports", label: "P&L Reports", icon: BarChart3 },
 ];
 
 export default function FinancialTracker({
@@ -49,62 +54,83 @@ export default function FinancialTracker({
 
     return (
         <div className="space-y-6">
-            {/* Summary Cards — all values from DB via useFinancials */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {/* Top Stat Cards — all live computed from DB */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
                 {[
                     {
-                        label: "Total Revenue",
+                        label: "Total Gross Revenue",
                         value: fin.fm(fin.stats.totalRevenue),
-                        color: "text-green-400",
-                        bg: "bg-green-500/10 border-green-500/20",
+                        subtext: `${fin.financials.length} itineraries tracked`,
+                        color: "text-white",
+                        badge: "bg-white/10 text-gray-300",
+                        bg: "from-white/[0.06] to-white/[0.01] border-white/10",
                     },
                     {
-                        label: "Payments Received",
+                        label: "Collected Cash",
                         value: fin.fm(fin.stats.totalPaid),
-                        color: "text-blue-400",
-                        bg: "bg-blue-500/10 border-blue-500/20",
+                        subtext: `${fin.stats.totalRevenue > 0 ? ((fin.stats.totalPaid / fin.stats.totalRevenue) * 100).toFixed(0) : 0}% realization`,
+                        color: "text-emerald-400",
+                        badge: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
+                        bg: "from-emerald-950/20 to-emerald-900/5 border-emerald-500/20",
                     },
                     {
-                        label: "Pending Amount",
+                        label: "Outstanding Due",
                         value: fin.fm(fin.stats.totalPending),
+                        subtext: "Pending client collections",
                         color: "text-amber-400",
-                        bg: "bg-amber-500/10 border-amber-500/20",
+                        badge: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
+                        bg: "from-amber-950/20 to-amber-900/5 border-amber-500/20",
                     },
                     {
-                        label: "Profit Margin",
+                        label: "Net Profit Margin",
                         value: `${fin.stats.profitMargin.toFixed(1)}%`,
-                        color: "text-purple-400",
-                        bg: "bg-purple-500/10 border-purple-500/20",
+                        subtext: `${fin.fm(fin.stats.netProfit)} net profit`,
+                        color: "text-purple-300",
+                        badge: "bg-purple-500/10 text-purple-300 border border-purple-500/20",
+                        bg: "from-purple-950/25 to-purple-900/5 border-purple-500/25",
                     },
-                ].map((card) => (
-                    <div key={card.label} className={`p-4 rounded-xl border ${card.bg}`}>
-                        <p className="text-[10px] text-gray-500 uppercase tracking-wider">
-                            {card.label}
-                        </p>
-                        <p className={`text-xl font-bold mt-1 ${card.color}`}>{card.value}</p>
+                ].map((card, idx) => (
+                    <div
+                        key={idx}
+                        className={`p-4 rounded-2xl border bg-gradient-to-b ${card.bg} shadow-xl flex flex-col justify-between space-y-2`}
+                    >
+                        <div className="flex items-center justify-between">
+                            <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
+                                {card.label}
+                            </p>
+                        </div>
+                        <div>
+                            <p className={`text-2xl font-black tracking-tight ${card.color}`}>{card.value}</p>
+                            <p className="text-[11px] text-gray-500 font-medium mt-0.5">{card.subtext}</p>
+                        </div>
                     </div>
                 ))}
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-1 bg-white/5 p-1 rounded-lg">
-                {TABS.map((tab) => (
-                    <button
-                        key={tab.key}
-                        onClick={() => setActiveFinTab(tab.key)}
-                        className={cn(
-                            "flex-1 text-xs font-medium py-2 px-3 rounded-md transition-all",
-                            activeFinTab === tab.key
-                                ? "bg-purple-500/20 text-purple-400"
-                                : "text-gray-500 hover:text-gray-300 hover:bg-white/5",
-                        )}
-                    >
-                        {tab.label}
-                    </button>
-                ))}
+            <div className="flex gap-1.5 bg-black/40 border border-white/[0.08] p-1.5 rounded-2xl backdrop-blur-xl shadow-lg overflow-x-auto">
+                {TABS.map((tab) => {
+                    const Icon = tab.icon;
+                    const isActive = activeFinTab === tab.key;
+                    return (
+                        <button
+                            key={tab.key}
+                            onClick={() => setActiveFinTab(tab.key)}
+                            className={cn(
+                                "flex items-center justify-center gap-2 text-xs font-semibold py-2.5 px-4 rounded-xl transition-all whitespace-nowrap flex-1 shrink-0",
+                                isActive
+                                    ? "bg-purple-600 text-white shadow-md shadow-purple-600/30"
+                                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                            )}
+                        >
+                            <Icon className="w-3.5 h-3.5" />
+                            <span>{tab.label}</span>
+                        </button>
+                    );
+                })}
             </div>
 
-            {/* Active Tab */}
+            {/* Active Tab Content */}
             {activeFinTab === "payments" && (
                 <PaymentsTab
                     financials={fin.financials}
@@ -133,6 +159,7 @@ export default function FinancialTracker({
                     showAddExpense={fin.showAddExpense}
                     setShowAddExpense={fin.setShowAddExpense}
                     addExpense={fin.addExpense}
+                    addExpensesBatch={fin.addExpensesBatch}
                     deleteExpense={fin.deleteExpense}
                 />
             )}
@@ -146,12 +173,11 @@ export default function FinancialTracker({
                     fm={fin.fm}
                     onRateChange={(rate) => {
                         fin.setCommissionRate(rate);
-                        // Propagate new default rate to all trips locally
                         fin.financials.forEach((f) =>
                             fin.updateFinancial(f.itineraryId, {
                                 commissionRate: rate,
                                 commissionAmount: f.clientPrice * (rate / 100),
-                            }),
+                            })
                         );
                     }}
                     updateFinancial={fin.updateFinancial}
@@ -179,4 +205,3 @@ export default function FinancialTracker({
         </div>
     );
 }
-

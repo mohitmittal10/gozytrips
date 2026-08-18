@@ -33,9 +33,14 @@ const initialData = {
 
 const initialHash = computePdfDataHash(initialData);
 
+// Module-level timer for debounced hash updates (text fields).
+// Using a module-level ref avoids needing it inside Zustand's closure.
+let _hashDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
 export const useLabStore = create<LabState>((set, get) => {
   /**
-   * Helper function to evaluate new hash and update dirty flag after any state mutation.
+   * Helper: immediately update state + recompute hash + dirty flag.
+   * Use for structural changes (itinerary, hotels, pricing, etc.)
    */
   const updateHashAndDirty = (stateUpdate: Partial<LabState>) => {
     const currentState = get();
@@ -49,6 +54,28 @@ export const useLabStore = create<LabState>((set, get) => {
       currentHash: newHash,
       isDirty,
     };
+  };
+
+  /**
+   * Helper: update state immediately (for fast UI feedback) but defer the
+   * expensive hash recompute by 300 ms. Use ONLY for pure text/string fields
+   * (inclusions, exclusions, terms, cancellation, payment) where the user
+   * types continuously and we must not block the main thread per keystroke.
+   */
+  const updateTextFieldDebounced = (stateUpdate: Partial<LabState>) => {
+    // Apply the text change immediately so the UI stays responsive
+    set(stateUpdate);
+    // Debounce the hash recompute — cancel any in-flight timer
+    if (_hashDebounceTimer) clearTimeout(_hashDebounceTimer);
+    _hashDebounceTimer = setTimeout(() => {
+      const currentState = get();
+      const newHash = computePdfDataHash(currentState);
+      const lastHash = currentState.lastCommittedHash;
+      set({
+        currentHash: newHash,
+        isDirty: isStateDirty(newHash, lastHash),
+      });
+    }, 300);
   };
 
   return {
@@ -70,12 +97,13 @@ export const useLabStore = create<LabState>((set, get) => {
     setLogistics: (logisticsSlice) => set((state) => updateHashAndDirty(logisticsSlice)),
 
     // ─── Inclusions Actions ─────────────────────────────────────────────────
-    setInclusionsText: (inclusions) => set((state) => updateHashAndDirty({ inclusions })),
-    setExclusionsText: (exclusions) => set((state) => updateHashAndDirty({ exclusions })),
-    setTermsAndConditionsText: (termsAndConditions) => set((state) => updateHashAndDirty({ termsAndConditions })),
-    setCancellationPolicyText: (cancellationPolicy) => set((state) => updateHashAndDirty({ cancellationPolicy })),
-    setPaymentMethodsText: (paymentMethods) => set((state) => updateHashAndDirty({ paymentMethods })),
-    setInclusionsSlice: (inclusionsSlice) => set((state) => updateHashAndDirty(inclusionsSlice)),
+    // Text fields use debounced hash so rapid typing doesn't block the main thread
+    setInclusionsText: (inclusions) => updateTextFieldDebounced({ inclusions }),
+    setExclusionsText: (exclusions) => updateTextFieldDebounced({ exclusions }),
+    setTermsAndConditionsText: (termsAndConditions) => updateTextFieldDebounced({ termsAndConditions }),
+    setCancellationPolicyText: (cancellationPolicy) => updateTextFieldDebounced({ cancellationPolicy }),
+    setPaymentMethodsText: (paymentMethods) => updateTextFieldDebounced({ paymentMethods }),
+    setInclusionsSlice: (inclusionsSlice) => updateTextFieldDebounced(inclusionsSlice),
 
     // ─── Finance Actions ───────────────────────────────────────────────────
     setPricing: (pricing) => set((state) => updateHashAndDirty({ pricing })),
@@ -83,7 +111,8 @@ export const useLabStore = create<LabState>((set, get) => {
     // ─── Meta & Autosave Actions ──────────────────────────────────────────────
     setAutosaveStatus: (status) => set({ autosaveStatus: status, isSaving: status === "saving" }),
     setCurrentTripId: (currentTripId) => set({ currentTripId }),
-    setTripMetadata: (tripMetadata) => set((state) => updateHashAndDirty({ tripMetadata })),
+    // tripMetadata is written from form.watch on every keystroke — use debounced hash
+    setTripMetadata: (tripMetadata) => updateTextFieldDebounced({ tripMetadata }),
     setSelectedClientId: (selectedClientId) => set((state) => updateHashAndDirty({ selectedClientId })),
     setSelectedStatus: (selectedStatus) => set((state) => updateHashAndDirty({ selectedStatus })),
     setSelectedTheme: (selectedTheme) => set((state) => updateHashAndDirty({ selectedTheme })),

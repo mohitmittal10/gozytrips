@@ -329,14 +329,50 @@ export default function TheLab() {
     legacyKeys.forEach(k => localStorage.removeItem(k));
   }, []);
 
+  // ─── Autosave: subscribe to currentHash changes instead of 15+ individual deps ────
+  // The Zustand store recomputes currentHash whenever any meaningful data changes.
+  // We subscribe directly to that hash so saveAll fires exactly once per real change,
+  // not once per re-render or per individual React state update.
+  const currentHash = useLabStore((state) => state.currentHash);
   useEffect(() => {
-    saveAll({ itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, selectedTheme, pdfOverrides, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods });
-  }, [itinerary, hotels, flights, cabs, buses, pricing, optimizationCount, selectedClientId, selectedStatus, tripMetadata, showTimestamps, selectedTheme, pdfOverrides, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, saveAll]);
+    // Read latest state at subscription time (not from stale closure)
+    const s = useLabStore.getState();
+    saveAll({
+      itinerary: s.itinerary,
+      hotels: s.hotels,
+      flights: s.flights,
+      cabs: s.cabs,
+      buses: s.buses,
+      pricing: s.pricing,
+      optimizationCount: s.optimizationCount,
+      selectedClientId: s.selectedClientId,
+      selectedStatus: s.selectedStatus,
+      tripMetadata: s.tripMetadata,
+      showTimestamps: s.showTimestamps,
+      selectedTheme: s.selectedTheme,
+      pdfOverrides: s.pdfOverrides,
+      inclusions: s.inclusions,
+      exclusions: s.exclusions,
+      termsAndConditions: s.termsAndConditions,
+      cancellationPolicy: s.cancellationPolicy,
+      paymentMethods: s.paymentMethods,
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentHash, saveAll]);
 
   // Auto-sync form changes to persistence
+  // Debounce setTripMetadata so continuous typing in the form wizard
+  // doesn't fire a store write (and hash recompute) on every character.
+  const formWatchDebounceRef = useRef<NodeJS.Timeout | null>(null);
   useEffect(() => {
     const subscription = form.watch((values) => {
-      setTripMetadata(values as any);
+      // Debounce metadata sync — 200 ms is imperceptible but eliminates
+      // per-keystroke store writes when filling destination / dates etc.
+      if (formWatchDebounceRef.current) clearTimeout(formWatchDebounceRef.current);
+      formWatchDebounceRef.current = setTimeout(() => {
+        setTripMetadata(values as any);
+      }, 200);
+
       if (values.hotels) {
         // Only update if they are different to prevent loop
         const formHotelsJson = JSON.stringify(values.hotels);

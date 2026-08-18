@@ -10,6 +10,8 @@ import {
     type Payment,
     type Expense,
     type InvoiceData,
+    type PaymentMilestone,
+    type SuggestedExpense,
 } from "@/types/financial";
 import type { Currency } from "@/types/pricing";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
@@ -91,6 +93,7 @@ export interface UseFinancialsReturn {
     addPayment: (itineraryId: string, payment: Omit<Payment, "id">) => Promise<void>;
     deletePayment: (itineraryId: string, paymentId: string) => Promise<void>;
     addExpense: (itineraryId: string, expense: Omit<Expense, "id">) => Promise<void>;
+    addExpensesBatch: (itineraryId: string, expenses: Omit<Expense, "id">[]) => Promise<void>;
     deleteExpense: (itineraryId: string, expenseId: string) => Promise<void>;
     generateInvoice: (fin: TripFinancial) => InvoiceData;
 
@@ -234,16 +237,116 @@ export function useFinancials(
                         isPaid: e.is_paid,
                     }));
 
+                const itClient = enrichedClients.find((c) => c.id === it.client_id);
+                const itData = it.itinerary_data || {};
+                const pricingData = itData.pricing || {};
+
+                // ── Parse milestones from The Lab's pricing config ───────────
+                const milestones: PaymentMilestone[] = [];
+                if (Array.isArray(pricingData.milestones)) {
+                    for (const m of pricingData.milestones) {
+                        if (m && typeof m === 'object') {
+                            milestones.push({
+                                label: m.label || m.name || 'Payment',
+                                percentage: Number(m.percentage ?? m.percent ?? 0),
+                                dueDate: m.dueDate || m.due_date || undefined,
+                                daysBeforeTrip: m.daysBeforeTrip || m.days_before_trip || undefined,
+                            });
+                        }
+                    }
+                }
+
+                // ── Build suggested expenses from itinerary line items ───────
+                const suggestedExpenses: SuggestedExpense[] = [];
+                const existingKeys = new Set(
+                    itExpenses.map((e) => `${e.category}|${e.vendor}|${e.amount}`)
+                );
+
+                const adultPaxCount = it.adult_pax ?? 2;
+                const childPaxCount = it.child_pax ?? 0;
+
+                // Hotels
+                for (const h of (itData.hotels || [])) {
+                    const perAdult = Number(h.costAdult) || 0;
+                    const perChild = Number(h.costChild) || 0;
+                    const total = (perAdult * adultPaxCount) + (perChild * childPaxCount);
+                    if (total > 0) {
+                        const key = `hotel|${h.name || 'Hotel'}|${total}`;
+                        suggestedExpenses.push({
+                            category: 'hotel',
+                            vendor: h.name || 'Hotel',
+                            description: `${h.name || 'Hotel'} (${h.nights || 1}N)`,
+                            amount: total,
+                            currency: it.currency,
+                            alreadySeeded: existingKeys.has(key),
+                        });
+                    }
+                }
+
+                // Flights
+                for (const f of (itData.flights || [])) {
+                    const amt = Number(f.costAdult ?? f.cost ?? f.price ?? f.amount) || 0;
+                    if (amt > 0) {
+                        const label = f.airline || f.name || 'Flight';
+                        const desc = `${f.from || ''} → ${f.to || ''} (${f.airline || 'Flight'})`.trim();
+                        const key = `flight|${label}|${amt}`;
+                        suggestedExpenses.push({
+                            category: 'flight',
+                            vendor: label,
+                            description: desc || label,
+                            amount: amt,
+                            currency: it.currency,
+                            alreadySeeded: existingKeys.has(key),
+                        });
+                    }
+                }
+
+                // Cabs
+                for (const c of (itData.cabs || [])) {
+                    const amt = Number(c.cost ?? c.amount ?? c.price) || 0;
+                    if (amt > 0) {
+                        const label = c.vendor || c.type || 'Cab/Transfer';
+                        const key = `transport|${label}|${amt}`;
+                        suggestedExpenses.push({
+                            category: 'transport',
+                            vendor: label,
+                            description: c.description || label,
+                            amount: amt,
+                            currency: it.currency,
+                            alreadySeeded: existingKeys.has(key),
+                        });
+                    }
+                }
+
+                // Buses
+                for (const b of (itData.buses || [])) {
+                    const amt = Number(b.cost ?? b.amount ?? b.price) || 0;
+                    if (amt > 0) {
+                        const label = b.vendor || b.operator || 'Bus';
+                        const key = `transport|${label}|${amt}`;
+                        suggestedExpenses.push({
+                            category: 'transport',
+                            vendor: label,
+                            description: b.description || label,
+                            amount: amt,
+                            currency: it.currency,
+                            alreadySeeded: existingKeys.has(key),
+                        });
+                    }
+                }
+
                 return {
                     id: it.id,
                     itineraryId: it.id,
                     tripId: it.trip_id ?? "GT-PENDING",
                     clientId: it.client_id ?? "",
-                    clientName:
-                        enrichedClients.find((c) => c.id === it.client_id)?.name ??
-                        "Unknown Client",
+                    clientName: itClient?.name ?? "Unknown Client",
+                    clientEmail: itClient?.email ?? "",
                     tripTitle: it.title,
                     destination: it.destinations ?? "",
+                    status: it.status ?? "draft",
+                    startDate: it.start_date ?? undefined,
+                    endDate: it.end_date ?? undefined,
                     // clientPrice from DB column — no hardcoded fallback
                     clientPrice: it.client_price ?? 0,
                     // currency from DB column → fall back to agency default → system default
@@ -267,7 +370,8 @@ export function useFinancials(
                     adultPax: it.adult_pax ?? 2,
                     childPax: it.child_pax ?? 0,
                     infantPax: it.infant_pax ?? 0,
-
+                    milestones,
+                    suggestedExpenses,
                     createdAt: it.created_at ?? new Date().toISOString(),
                     updatedAt: it.updated_at ?? new Date().toISOString(),
                 };
@@ -420,6 +524,39 @@ export function useFinancials(
         }
     };
 
+    const addExpensesBatch = async (
+        itineraryId: string,
+        expensesToAdd: Omit<Expense, "id">[],
+    ) => {
+        if (expensesToAdd.length === 0) return;
+        try {
+            const rows = expensesToAdd.map((expense) => ({
+                itinerary_id: itineraryId,
+                category: expense.category,
+                vendor: expense.vendor,
+                description: expense.description,
+                amount: expense.amount,
+                date: expense.date,
+                is_paid: expense.isPaid,
+            }));
+            const { error } = await supabase.from("trip_expenses").insert(rows);
+            if (error) throw error;
+
+            toast({
+                title: "Expenses Imported",
+                description: `Imported ${expensesToAdd.length} expense item(s) from itinerary.`,
+            });
+            await fetchFinancials();
+        } catch (error) {
+            console.error("Error batch adding expenses:", error);
+            toast({
+                title: "Error",
+                description: "Failed to import expenses.",
+                variant: "destructive",
+            });
+        }
+    };
+
     const deleteExpense = async (itineraryId: string, expenseId: string) => {
         try {
             const { error } = await supabase
@@ -452,7 +589,7 @@ export function useFinancials(
         return {
             invoiceNumber: `INV-${Date.now().toString(36).toUpperCase()}`,
             clientName: fin.clientName,
-            clientEmail: "",
+            clientEmail: fin.clientEmail || "",
             tripTitle: fin.tripTitle,
             destination: fin.destination,
             items: [
@@ -565,6 +702,7 @@ export function useFinancials(
         addPayment,
         deletePayment,
         addExpense,
+        addExpensesBatch,
         deleteExpense,
         generateInvoice,
         selectedTripFin,

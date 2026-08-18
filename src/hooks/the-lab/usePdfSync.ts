@@ -50,6 +50,11 @@ export function usePdfSync({
 
     // Schedule debounced PDF background pre-render
     debounceTimerRef.current = setTimeout(async () => {
+      // Skip expensive html2canvas render while the preview dialog is closed.
+      // Dirty state is already tracked — preRender() will fire on-demand when
+      // the user opens the preview or clicks Download.
+      if (!isPreviewOpen) return;
+
       // Avoid overlapping render passes
       if (isRenderingRef.current) return;
 

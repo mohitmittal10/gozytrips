@@ -1,5 +1,23 @@
 import { Currency } from './pricing';
 
+// A single milestone from The Lab's pricing config
+export interface PaymentMilestone {
+    label: string;        // e.g. "Advance Payment"
+    percentage: number;   // e.g. 30
+    dueDate?: string;     // ISO date string, optional
+    daysBeforeTrip?: number; // alternative to absolute date
+}
+
+// A line item seeded from itinerary_data (hotel, flight, cab, bus)
+export interface SuggestedExpense {
+    category: 'hotel' | 'flight' | 'transport' | 'activity' | 'other';
+    vendor: string;
+    description: string;
+    amount: number;
+    currency?: string;
+    alreadySeeded?: boolean; // true if already exists in trip_expenses
+}
+
 // Financial record for a single trip
 export interface TripFinancial {
     id?: string;                 // Database primary key (UUID)
@@ -7,8 +25,12 @@ export interface TripFinancial {
     tripId: string;              // Human readable ID (e.g. GT-1001)
     clientId: string;
     clientName: string;
+    clientEmail: string;         // Auto-filled from clients table
     tripTitle: string;
     destination: string;
+    status: string;              // draft | sent | proposed | booked | cancelled
+    startDate?: string;          // yyyy-MM-dd
+    endDate?: string;            // yyyy-MM-dd
 
     // Revenue
     clientPrice: number;         // What the client pays (budget or quoted price)
@@ -32,6 +54,11 @@ export interface TripFinancial {
     childPax: number;
     infantPax: number;
 
+    // Payment milestones from The Lab pricing config
+    milestones: PaymentMilestone[];
+
+    // Suggested expenses from itinerary line items (hotels, flights, etc.)
+    suggestedExpenses: SuggestedExpense[];
 
     // Dates
     createdAt: string;

@@ -122,6 +122,22 @@ export function useItineraryPersistence({
   const initialized = useRef(false);
   const lastFetchedIdRef = useRef<string | null>(null);
 
+  // Cached session ref — avoids async getSession() on every auto-save.
+  // Refreshed when null or when the session has expired.
+  const sessionRef = useRef<{ user: { id: string }; expires_at?: number } | null>(null);
+
+  /** Returns a valid session, refreshing from Supabase only when necessary. */
+  const getValidSession = useCallback(async () => {
+    const now = Math.floor(Date.now() / 1000);
+    // Use cached session if it exists and has at least 60 s of life remaining
+    if (sessionRef.current && (sessionRef.current.expires_at === undefined || sessionRef.current.expires_at > now + 60)) {
+      return sessionRef.current;
+    }
+    const { data: { session } } = await supabase.auth.getSession();
+    sessionRef.current = session ?? null;
+    return session ?? null;
+  }, [supabase]);
+
   // Always-up-to-date ref so callbacks never capture stale closures.
   // This is the key fix: saveAll/saveNow read from this ref at call-time,
   // not from the closure-captured value at creation-time.
@@ -158,7 +174,7 @@ export function useItineraryPersistence({
 
       try {
         setIsLoading(true);
-        const { data: { session } } = await supabase.auth.getSession();
+        const session = await getValidSession();
 
         // If not authenticated, we can't load from Supabase - default to empty state
         if (!session?.user) {
@@ -254,7 +270,7 @@ export function useItineraryPersistence({
 
   const executeSave = useCallback(async (data: Partial<LoadedPersistenceData>, id: string | null, allowInsert = true) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const session = await getValidSession();
       if (!session?.user) return null;
 
       const comparisonPayload = buildComparisonPayload(data);
@@ -311,7 +327,7 @@ export function useItineraryPersistence({
       console.error("[Persistence] Supabase draft save failed", err);
     }
     return id;
-  }, [supabase, setCurrentTripId]);
+  }, [supabase, getValidSession, setCurrentTripId]);
 
   // saveAll reads currentTripIdRef at *fire-time*, not at creation-time,
   // so it always uses the correct record ID even after an async INSERT.
