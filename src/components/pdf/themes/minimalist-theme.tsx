@@ -8,9 +8,13 @@ import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 
-const parseList = (text?: string) => {
+const parseList = (text?: any): string[] => {
     if (!text) return [];
-    return text.split('\n').map(s => s.trim()).filter(s => s.length > 0 && s !== '-');
+    if (Array.isArray(text)) {
+        return text.map(s => String(s).trim().replace(/^[-•◆✓✕]\s*/, '')).filter(s => s.length > 0 && s !== '-');
+    }
+    if (typeof text !== 'string') return [String(text)];
+    return text.split('\n').map(s => s.trim().replace(/^[-•◆✓✕]\s*/, '')).filter(s => s.length > 0 && s !== '-');
 };
 
 export const MinimalistTheme = ({
@@ -127,7 +131,7 @@ export const MinimalistTheme = ({
                     {/* Stat cards row */}
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginBottom: "40px", pageBreakInside: "avoid" }}>
                         {[
-                            { label: "Guest / Client", value: clientName || "Valued Guest" },
+                            { label: "Guest / Client", value: clientName || "" },
                             { label: "Travelers", value: `${adultPax} Adults${childPax > 0 ? `, ${childPax} Children` : ''}${infantPax > 0 ? `, ${infantPax} Infants` : ''}` },
                             { label: "Duration", value: `${itinerary.itinerary?.length || 0} Days` },
                             { label: "Est. Budget", value: formatCurrency(calculatedFinalTotal || finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY) },
@@ -137,7 +141,7 @@ export const MinimalistTheme = ({
                                 <p style={{ fontSize: "16px", fontWeight: 900, margin: 0, color: "#0f172a", fontFamily: "'Outfit', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{stat.value}</p>
                             </div>
                         ))}
-                    </div>                    {/* Client & Agency details section */}
+                    </div>                    {/* Client & Agency details section */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", paddingTop: "30px", borderTop: "1px solid #e2e8f0", pageBreakInside: "avoid" }}>
                         {/* Client Details Box */}
                         <div style={{ padding: "24px", background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.24)", borderTop: `3px solid ${accent}`, borderRadius: "8px", boxShadow: "0 8px 24px rgba(15,23,42,0.04)" }}>
@@ -145,7 +149,7 @@ export const MinimalistTheme = ({
                             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                                 <div>
                                     <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#64748b", fontWeight: 700 }}>Client Name</p>
-                                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#0f172a", fontFamily: "'Outfit', sans-serif" }}>{clientName || "Valued Guest"}</p>
+                                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#0f172a", fontFamily: "'Outfit', sans-serif" }}>{clientName || ""}</p>
                                 </div>
                                 <div style={{ display: "flex", gap: "24px" }}>
                                     <div>

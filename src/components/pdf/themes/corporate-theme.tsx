@@ -8,9 +8,13 @@ import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 
-const parseList = (text?: string) => {
+const parseList = (text?: any): string[] => {
     if (!text) return [];
-    return text.split('\n').map(s => s.trim()).filter(s => s.length > 0 && s !== '-');
+    if (Array.isArray(text)) {
+        return text.map(s => String(s).trim().replace(/^[-•◆✓✕]\s*/, '')).filter(s => s.length > 0 && s !== '-');
+    }
+    if (typeof text !== 'string') return [String(text)];
+    return text.split('\n').map(s => s.trim().replace(/^[-•◆✓✕]\s*/, '')).filter(s => s.length > 0 && s !== '-');
 };
 
 export const CorporateTheme = ({
@@ -132,7 +136,7 @@ export const CorporateTheme = ({
                         </div>
                         <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.56)" }}>
                             <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Client / Traveler</div>
-                            <div style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{clientName || "Valued Guest"}</div>
+                            <div style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{clientName || ""}</div>
                         </div>
                         <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.5)" }}>
                             <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Travelers</div>

@@ -94,7 +94,8 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
   // When the active tab changes, sync the draft to the current committed value.
   useEffect(() => {
     const { value } = getContent(activeTab);
-    setLocalDraft(value);
+    const strVal = typeof value === "string" ? value : Array.isArray(value) ? (value as string[]).join("\n") : value ? String(value) : "";
+    setLocalDraft(strVal);
     activeFlushRef.current = getFlushFn(activeTab);
     // Cancel any pending flush from the previous tab
     if (flushTimerRef.current) clearTimeout(flushTimerRef.current);
@@ -239,8 +240,15 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
         {isCollapsed ? (
           <div className="p-6 lg:p-8">
             {(() => {
-              const getLines = (text: string) => {
-                return text
+              const getLines = (text: any): string[] => {
+                if (!text) return [];
+                if (Array.isArray(text)) {
+                  return text
+                    .map(line => String(line).trim().replace(/^[-•*]\s*/, ''))
+                    .filter(line => line.length > 0);
+                }
+                const str = typeof text === "string" ? text : String(text);
+                return str
                   .split(/\n+/)
                   .map(line => line.trim().replace(/^[-•*]\s*/, ''))
                   .filter(line => line.length > 0);

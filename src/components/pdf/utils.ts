@@ -9,7 +9,8 @@ export const getAgentInfo = (userProfile: any, agencySettings?: any) => ({
     agentWebsite: userProfile?.website || "",
     agentBio: userProfile?.bio || "",
     tagline: agencySettings?.tagline || agencySettings?.brand_tagline || userProfile?.tagline || "Your custom travel blueprint, prepared by experts.",
-    bankDetails: agencySettings?.bank_details || "",
+    bankDetails: agencySettings?.bank_details || userProfile?.bank_details || "",
+    upi: agencySettings?.upi || agencySettings?.upi_id || userProfile?.upi || userProfile?.upi_id || "",
     logoUrl: userProfile?.logo_url || "",
 });
 

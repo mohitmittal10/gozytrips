@@ -7,9 +7,13 @@ import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 
-const parseList = (text?: string) => {
+const parseList = (text?: any): string[] => {
     if (!text) return [];
-    return text.split('\n').map(s => s.trim()).filter(s => s.length > 0 && s !== '-');
+    if (Array.isArray(text)) {
+        return text.map(s => String(s).trim().replace(/^[-•◆✓✕]\s*/, '')).filter(s => s.length > 0 && s !== '-');
+    }
+    if (typeof text !== 'string') return [String(text)];
+    return text.split('\n').map(s => s.trim().replace(/^[-•◆✓✕]\s*/, '')).filter(s => s.length > 0 && s !== '-');
 };
 function hexToRgb(hex: string): string {
     const s = hex.replace('#', '');
@@ -157,7 +161,7 @@ export const DarkTheme = ({
                             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                 <div>
                                     <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Client Name</p>
-                                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#ffffff", fontFamily: "'Outfit', sans-serif" }}>{clientName || "Valued Guest"}</p>
+                                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#ffffff", fontFamily: "'Outfit', sans-serif" }}>{clientName || ""}</p>
                                 </div>
                                 <div style={{ display: "flex", gap: "20px" }}>
                                     <div>

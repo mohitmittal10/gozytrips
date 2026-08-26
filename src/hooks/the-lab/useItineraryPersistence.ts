@@ -263,8 +263,16 @@ export function useItineraryPersistence({
 
     loadDraft();
 
+    const handleFocus = () => {
+      if (currentTripId) {
+        loadDraft();
+      }
+    };
+    window.addEventListener("focus", handleFocus);
+
     return () => {
       active = false;
+      window.removeEventListener("focus", handleFocus);
     };
   }, [currentTripId, supabase, setCurrentTripId]);
 

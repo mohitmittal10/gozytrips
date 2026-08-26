@@ -7,9 +7,13 @@ import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 
-const parseList = (text?: string) => {
+const parseList = (text?: any): string[] => {
     if (!text) return [];
-    return text.split('\n').map(s => s.trim()).filter(s => s.length > 0 && s !== '-');
+    if (Array.isArray(text)) {
+        return text.map(s => String(s).trim().replace(/^[-•◆✓✕]\s*/, '')).filter(s => s.length > 0 && s !== '-');
+    }
+    if (typeof text !== 'string') return [String(text)];
+    return text.split('\n').map(s => s.trim().replace(/^[-•◆✓✕]\s*/, '')).filter(s => s.length > 0 && s !== '-');
 };
 
 const PAGE_STYLE: React.CSSProperties = {
@@ -248,7 +252,7 @@ export const DesertTheme = ({
                 <div data-pdf-section="quick-stats" style={{ background: "#ffffff", borderBottom: "1px solid #f3f4f6", padding: "42px 64px" }}>
                     <div style={{ display: "flex", gap: "20px" }}>
                         {[
-                            { label: "Guest / Client", value: clientName || "Valued Guest", icon: "👤" },
+                            { label: "Guest / Client", value: clientName || "", icon: "👤" },
                             { label: "Duration", value: `${days} Days / ${nights}`, icon: "📅" },
                             { label: "Total Budget", value: totalBudget, icon: "💰" },
                             { label: "Location", value: destination, icon: "📍" },
@@ -321,7 +325,7 @@ export const DesertTheme = ({
                             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                                 <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
                                     <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Client Name</p>
-                                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{clientName || "Valued Guest"}</p>
+                                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{clientName || ""}</p>
                                 </div>
                                 <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
                                     <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Adults</p>

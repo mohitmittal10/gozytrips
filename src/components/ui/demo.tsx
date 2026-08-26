@@ -1,7 +1,7 @@
 "use client";
 
-import GlassCalendarDemo from "@/components/ui/glass-calendar-demo";
+import { HeroWithMarquee } from "@/components/ui/cta-with-marquee";
 
-export default function Demo() {
-  return <GlassCalendarDemo />;
+export default function DemoOne() {
+  return <HeroWithMarquee />;
 }

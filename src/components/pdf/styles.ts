@@ -30,12 +30,12 @@ export const getThematicBackground = (itinerary: TravelItineraryOutput, theme: P
     } else if (theme === 'desert') {
         patternSrc = THEME_PATTERNS.moroccan;
         color = "%23b7793e";
-    } else if (theme === 'dark') {
+    } else if (theme === 'dark' || theme === 'luxury') {
         patternSrc = THEME_PATTERNS.darkDots;
-        color = "%23ffffff";
+        color = "%23c9a84c";
     }
 
-    if (agentColor && agentColor.startsWith('#') && theme !== 'dark' && theme !== 'desert') {
+    if (agentColor && agentColor.startsWith('#') && theme !== 'dark' && theme !== 'desert' && theme !== 'luxury') {
         color = "%23" + agentColor.substring(1);
     }
 

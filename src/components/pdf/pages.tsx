@@ -110,6 +110,27 @@ const getPricingThemeStyles = (theme: PdfTheme, accentColor: string) => {
                 tableHeaderBorder: "1px solid rgba(184,134,11,0.14)",
                 tableRowBorder: "1px solid rgba(184,134,11,0.08)",
             };
+        case 'luxury':
+            return {
+                ...shared,
+                pageBackground: "#0a0a09",
+                pageTextColor: "#f5f0e8",
+                headingColor: "#c9a84c",
+                sectionHeadingColor: "#f5f0e8",
+                mutedTextColor: "#7a756a",
+                bodyTextColor: "rgba(245,240,232,0.61)",
+                totalTextColor: "#f5f0e8",
+                headerBorder: "1px solid rgba(201,168,76,0.2)",
+                quoteCardBackground: "#14120f",
+                quoteCardBorder: "1px solid rgba(245,240,232,0.06)",
+                quoteCardRadius: "0px",
+                totalBorder: "1px solid rgba(201,168,76,0.2)",
+                tableBackground: "#14120f",
+                tableBorder: "1px solid rgba(245,240,232,0.06)",
+                tableHeaderBackground: "rgba(201,168,76,0.05)",
+                tableHeaderBorder: "1px solid rgba(201,168,76,0.2)",
+                tableRowBorder: "1px solid rgba(245,240,232,0.03)",
+            };
         case 'classic':
         default:
             return {
@@ -375,6 +396,24 @@ const getLogisticsThemeStyles = (theme: PdfTheme, accentColor: string) => {
                     borderRadius: "16px",
                     accentBadgeBackground: `${accentColor}12`,
                     titleColor: "#2c2c2c",
+                } satisfies PdfLogisticsBlockStyle,
+            };
+        case 'luxury':
+            return {
+                ...shared,
+                headingColor: "#c9a84c",
+                sectionHeadingColor: "#f5f0e8",
+                textColor: "rgba(245,240,232,0.61)",
+                pageBackground: "#0a0a09",
+                pageTextColor: "#f5f0e8",
+                headerBorder: "1px solid rgba(201,168,76,0.2)",
+                blockStyle: {
+                    cardBackground: "#14120f",
+                    border: "1px solid rgba(245,240,232,0.06)",
+                    borderRadius: "0px",
+                    accentBadgeBackground: "rgba(201,168,76,0.15)",
+                    accentBadgeColor: "#c9a84c",
+                    titleColor: "#c9a84c",
                 } satisfies PdfLogisticsBlockStyle,
             };
         case 'classic':

@@ -8,9 +8,13 @@ import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 
-const parseList = (text?: string) => {
+const parseList = (text?: any): string[] => {
     if (!text) return [];
-    return text.split('\n').map(s => s.trim()).filter(s => s.length > 0 && s !== '-');
+    if (Array.isArray(text)) {
+        return text.map(s => String(s).trim().replace(/^[-•◆✓✕]\s*/, '')).filter(s => s.length > 0 && s !== '-');
+    }
+    if (typeof text !== 'string') return [String(text)];
+    return text.split('\n').map(s => s.trim().replace(/^[-•◆✓✕]\s*/, '')).filter(s => s.length > 0 && s !== '-');
 };
 
 export const EditorialTheme = ({
@@ -127,7 +131,7 @@ export const EditorialTheme = ({
                         </div>
                         <div style={{ flex: 1, fontSize: "13px", color: "#64748b", fontFamily: "'Plus Jakarta Sans', sans-serif", lineHeight: "2.1", alignSelf: "center", borderLeft: "1px solid #e2e8f0", paddingLeft: "30px" }}>
                             <p style={{ fontWeight: 800, color: "#0f172a", fontSize: "15px", margin: "0 0 8px 0", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>Prepared For</p>
-                            <p style={{ margin: "1px 0", fontWeight: 700, color: "#0f172a" }}>{clientName || "Valued Guest"}</p>
+                            <p style={{ margin: "1px 0", fontWeight: 700, color: "#0f172a" }}>{clientName || ""}</p>
                             <p style={{ margin: "1px 0", color: "#64748b" }}>{adultPax} {adultPax === 1 ? 'Adult' : 'Adults'}{childPax > 0 ? `, ${childPax} ${childPax === 1 ? 'Child' : 'Children'}` : ''}{infantPax > 0 ? `, ${infantPax} ${infantPax === 1 ? 'Infant' : 'Infants'}` : ''}</p>
                         </div>
                     </div>

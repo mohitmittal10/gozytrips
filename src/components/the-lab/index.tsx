@@ -669,6 +669,7 @@ export default function TheLab() {
               onUndoPrevious={handleUndoPrevious}
               canRedoNext={canRedoNext}
               onRedoNext={handleRedoNext}
+              currentTripId={currentTripId}
             />
           </div>
         </div>

@@ -15,6 +15,7 @@ import { DarkTheme } from './pdf/themes/dark-theme';
 import { CorporateTheme } from './pdf/themes/corporate-theme';
 import { DesertTheme, DesertFooter } from './pdf/themes/desert-theme';
 import { TropicalTheme } from './pdf/themes/tropical-theme';
+import { LuxuryTheme } from './pdf/themes/luxury-theme';
 import { defaultPricingConfig } from '@/types/pricing';
 import { filterCompleteEntriesForExport } from '@/lib/validation/logistics-validation';
 
@@ -98,6 +99,9 @@ export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencyS
             break;
         case 'tropical':
             ThemeComponent = <TropicalTheme {...themeProps} />;
+            break;
+        case 'luxury':
+            ThemeComponent = <LuxuryTheme {...themeProps} />;
             break;
         case 'classic':
         default:

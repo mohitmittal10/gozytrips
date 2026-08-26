@@ -32,9 +32,13 @@ export type ThemeProps = {
     aboutPlace?: any;
 };
 
-const parseList = (text?: string) => {
+const parseList = (text?: any): string[] => {
     if (!text) return [];
-    return text.split('\n').map(s => s.trim()).filter(s => s.length > 0 && s !== '-');
+    if (Array.isArray(text)) {
+        return text.map(s => String(s).trim().replace(/^[-•◆✓✕]\s*/, '')).filter(s => s.length > 0 && s !== '-');
+    }
+    if (typeof text !== 'string') return [String(text)];
+    return text.split('\n').map(s => s.trim().replace(/^[-•◆✓✕]\s*/, '')).filter(s => s.length > 0 && s !== '-');
 };
 
 function hexToRgb(hex: string): string {
@@ -181,7 +185,7 @@ export const ClassicTheme = ({
                     <div style={{ display: "flex", flexWrap: "wrap", alignItems: "stretch", gap: "20px", marginBottom: "40px" }}>
                         <div style={{ ...glassStyles, flex: "1 1 180px", borderRadius: "16px", padding: "20px 24px", borderLeft: `4px solid ${agent.primaryColor}`, boxShadow: "0 4px 20px -2px rgba(0,0,0,0.05)" }}>
                             <h3 style={{ margin: "0 0 6px 0", fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800 }}>Client Details</h3>
-                            <p style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: 900, color: "#0f172a", fontFamily: "'Outfit', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{clientName || "Valued Guest"}</p>
+                            <p style={{ margin: "0 0 4px 0", fontSize: "18px", fontWeight: 900, color: "#0f172a", fontFamily: "'Outfit', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{clientName || ""}</p>
                             <p style={{ margin: 0, fontSize: "12px", color: "#64748b", fontWeight: 600 }}>
                                 {adultPax} {adultPax === 1 ? 'Adult' : 'Adults'}{childPax > 0 ? `, ${childPax} ${childPax === 1 ? 'Child' : 'Children'}` : ''}{infantPax > 0 ? `, ${infantPax} ${infantPax === 1 ? 'Infant' : 'Infants'}` : ''}
                             </p>

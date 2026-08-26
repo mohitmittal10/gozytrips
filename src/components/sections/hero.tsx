@@ -15,15 +15,17 @@ import {
   Cpu,
   CheckCircle2,
   Mail,
-  CreditCard
+  CreditCard,
+  Sparkles
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { RippleButton } from "@/components/ui/multi-type-ripple-buttons";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import AnimatedGlassySearchBar from "@/components/ui/animated-glassy-search-bar";
+import { useAuth } from "@/contexts/auth-context";
 import AnimatedLogo from "@/components/ui/animated-logo";
+import MotionButton from "@/components/ui/motion-button";
 
 const ITINERARIES = [
     { id: 1, name: "Amalfi Coast Drift", type: "4 Guests • 12 Days", price: "$42,500", status: "In Progress" },
@@ -288,12 +290,7 @@ const HeroShaderCanvas = () => {
 
 const Hero = () => {
     const router = useRouter();
-
-    const handleSearch = (value: string) => {
-        if (!value.trim()) return;
-        // Navigate to the lab with the query
-        router.push(`/the-lab?q=${encodeURIComponent(value)}`);
-    };
+    const { user } = useAuth();
 
     return (
         <section id="home" className="relative min-h-screen w-full flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden bg-[#020205] pt-20 pb-12">
@@ -336,12 +333,19 @@ const Hero = () => {
                     </motion.p>
 
                     <motion.div 
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className="w-full flex justify-center"
+                        className="flex flex-col sm:flex-row gap-4 justify-center items-center w-full max-w-md mx-auto"
                     >
-                        <AnimatedGlassySearchBar onSearch={handleSearch} />
+                        <Link href={user ? "/the-lab" : "/auth/signup"} className="w-full sm:w-auto flex justify-center">
+                            <MotionButton label="Try Free" classes="w-full sm:w-auto" />
+                        </Link>
+                        <Link href="/why-us" className="w-full sm:w-auto">
+                            <button className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 px-8 py-4 rounded-full text-sm font-extrabold hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 flex items-center justify-center gap-2">
+                                Why Us? <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
+                            </button>
+                        </Link>
                     </motion.div>
 
                     <motion.div 

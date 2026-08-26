@@ -29,6 +29,9 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import MotionButton from "@/components/ui/motion-button";
+import { ProblemsBento } from "@/components/ui/problems-bento";
+import { Skiper31 } from "@/components/ui/text-scroll-animation";
+import { HeroWithMarquee } from "@/components/ui/cta-with-marquee";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -158,46 +161,46 @@ const PainStats = [
 const WITHOUT_ITEMS = [
   {
     text: "15 open browser tabs searching routes & hotels",
-    icon: <Layers className="size-3.5 text-red-400" />,
+    icon: <Layers className="size-3.5 text-zinc-400" />,
   },
   {
     text: "Typing day-by-day schedules manually in Word or Canva",
-    icon: <FileX2 className="size-3.5 text-red-400" />,
+    icon: <FileX2 className="size-3.5 text-zinc-400" />,
   },
   {
     text: "Stressed over Excel math for adult vs. kid markups",
-    icon: <Percent className="size-3.5 text-red-400" />,
+    icon: <Percent className="size-3.5 text-zinc-400" />,
   },
   {
     text: "Unformatted PDFs that make clients bargain over prices",
-    icon: <FileSpreadsheet className="size-3.5 text-red-400" />,
+    icon: <FileSpreadsheet className="size-3.5 text-zinc-400" />,
   },
   {
     text: "2 hours lost every time a client asks to change a single day",
-    icon: <History className="size-3.5 text-red-400" />,
+    icon: <History className="size-3.5 text-zinc-400" />,
   },
 ];
 
 const WITH_ITEMS = [
   {
     text: "Type cities & dates — full route appears in 1 click",
-    icon: <Sparkles className="size-3.5 text-emerald-400" />,
+    icon: <Sparkles className="size-3.5 text-zinc-400" />,
   },
   {
     text: "Live drag-and-drop: swap any day or hotel in 5 seconds",
-    icon: <Move className="size-3.5 text-emerald-400" />,
+    icon: <Move className="size-3.5 text-zinc-400" />,
   },
   {
     text: "Set markup once — costs auto-split for adult, child, infant",
-    icon: <Calculator className="size-3.5 text-emerald-400" />,
+    icon: <Calculator className="size-3.5 text-zinc-400" />,
   },
   {
     text: "Clean magazine-style proposal with your logo, ready to send",
-    icon: <FileCheck className="size-3.5 text-emerald-400" />,
+    icon: <FileCheck className="size-3.5 text-zinc-400" />,
   },
   {
     text: "Send updated quote while the client is still on the phone",
-    icon: <Send className="size-3.5 text-emerald-400" />,
+    icon: <Send className="size-3.5 text-zinc-400" />,
   },
 ];
 
@@ -796,11 +799,11 @@ export default function WhyUsPage() {
             className="text-center mb-14"
           >
             <p className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-3">The Reality Check</p>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tight">
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
               Your day{" "}
               <span className="text-red-400 line-through decoration-red-400/60">without</span>{" "}
               vs.{" "}
-              <span className="bg-gradient-to-r from-emerald-400 to-green-400 bg-clip-text text-transparent">with</span>{" "}
+              <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">with</span>{" "}
               WanderLabs
             </h2>
           </motion.div>
@@ -813,22 +816,20 @@ export default function WhyUsPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <Card className="rounded-3xl border border-red-900/30 bg-red-950/10 backdrop-blur-xl shadow-none overflow-hidden relative h-full flex flex-col justify-between">
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-red-500/40 to-transparent" />
-                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-40 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
+              <Card className="rounded-3xl border-0 bg-zinc-900/40 backdrop-blur-xl shadow-none overflow-hidden relative h-full flex flex-col justify-between">
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-zinc-700/40 to-transparent" />
+                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-40 bg-zinc-800/10 rounded-full blur-3xl pointer-events-none" />
                 
                 <div>
                   <CardHeader className="p-8 pb-5">
                     <div className="flex items-center justify-between gap-2">
                       <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
-                        <span className="flex size-8 items-center justify-center rounded-xl bg-red-500/15 border border-red-500/30 text-red-400">
-                          <X className="size-4" />
-                        </span>
+                        
                         Without WanderLabs
                       </CardTitle>
-                      <Badge variant="outline" className="border-red-500/30 bg-red-500/10 text-red-400 text-xs font-semibold px-2.5 py-1">
-                        A stressful day
-                      </Badge>
+                      <span className="text-red-500 text-xs font-bold uppercase tracking-wider">
+                        STRESSFUL DAY
+                      </span>
                     </div>
                     <CardDescription className="text-zinc-400 text-xs mt-2.5">
                       Common friction points travel agents encounter with manual Word, Canva & Excel.
@@ -836,7 +837,7 @@ export default function WhyUsPage() {
                   </CardHeader>
 
                   <div className="px-8">
-                    <Separator className="bg-red-500/10" />
+                    <Separator className="bg-zinc-800" />
                   </div>
 
                   <CardContent className="p-8 pt-5 pb-6">
@@ -850,7 +851,7 @@ export default function WhyUsPage() {
                           transition={{ delay: i * 0.07 }}
                           className="flex items-start gap-3 text-sm text-zinc-400 leading-snug"
                         >
-                          <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-400 border border-red-500/20">
+                          <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg bg-zinc-800/80 text-zinc-400 border border-zinc-700/50">
                             {item.icon}
                           </span>
                           <span className="text-zinc-300 pt-0.5">{item.text}</span>
@@ -860,13 +861,13 @@ export default function WhyUsPage() {
                   </CardContent>
                 </div>
 
-                <CardFooter className="p-8 pt-0 border-t border-red-500/10 flex flex-col items-start bg-red-500/[0.03]">
+                <CardFooter className="p-8 pt-0 border-t border-zinc-800 flex flex-col items-start bg-zinc-900/20">
                   <div className="pt-4 w-full">
-                    <p className="text-red-300 text-sm font-semibold flex items-center gap-2">
-                      <Timer className="size-4 text-red-400 shrink-0" />
+                    <p className="text-zinc-300 text-sm font-semibold flex items-center gap-2">
+                      <Timer className="size-4 text-zinc-400 shrink-0" />
                       Time wasted: ~4 hours per quote
                     </p>
-                    <p className="text-red-400/70 text-xs mt-1">
+                    <p className="text-zinc-400 text-xs mt-1">
                       If you handle 5 clients a week, that&apos;s 20 hours gone — every single week.
                     </p>
                   </div>
@@ -881,30 +882,29 @@ export default function WhyUsPage() {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <Card className="rounded-3xl border border-emerald-500/30 bg-emerald-950/15 backdrop-blur-xl ring-1 ring-emerald-500/20 shadow-none overflow-hidden relative h-full flex flex-col justify-between">
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
-                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-40 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
+              <Card className="rounded-3xl border-0 bg-zinc-900/40 backdrop-blur-xl shadow-none overflow-hidden relative h-full flex flex-col justify-between">
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-zinc-700/40 to-transparent" />
+                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-40 bg-zinc-800/10 rounded-full blur-3xl pointer-events-none" />
                 
                 <div>
                   <CardHeader className="p-8 pb-5">
                     <div className="flex items-center justify-between gap-2">
                       <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
-                        <span className="flex size-8 items-center justify-center rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-400">
-                          <Check className="size-4" />
+                        <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
+                          With WanderLabs
                         </span>
-                        With WanderLabs
                       </CardTitle>
-                      <Badge className="border-transparent bg-emerald-500 text-slate-950 text-xs font-bold hover:bg-emerald-400 px-2.5 py-1">
-                        Recommended
-                      </Badge>
+                      <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent text-xs font-black uppercase tracking-wider">
+                        RECOMMENDED
+                      </span>
                     </div>
-                    <CardDescription className="text-zinc-300 text-xs mt-2.5">
+                    <CardDescription className="text-zinc-400 text-xs mt-2.5">
                       Everything your agency needs to create and close quotes in seconds.
                     </CardDescription>
                   </CardHeader>
 
                   <div className="px-8">
-                    <Separator className="bg-emerald-500/20" />
+                    <Separator className="bg-zinc-800" />
                   </div>
 
                   <CardContent className="p-8 pt-5 pb-6">
@@ -916,25 +916,25 @@ export default function WhyUsPage() {
                           whileInView={{ opacity: 1, x: 0 }}
                           viewport={{ once: true }}
                           transition={{ delay: i * 0.07 }}
-                          className="flex items-start gap-3 text-sm text-zinc-300 leading-snug"
+                          className="flex items-start gap-3 text-sm text-zinc-400 leading-snug"
                         >
-                          <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+                          <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-lg bg-zinc-800/80 text-zinc-400 border border-zinc-700/50">
                             {item.icon}
                           </span>
-                          <span className="text-zinc-100 pt-0.5">{item.text}</span>
+                          <span className="text-zinc-300 pt-0.5">{item.text}</span>
                         </motion.li>
                       ))}
                     </ul>
                   </CardContent>
                 </div>
 
-                <CardFooter className="p-8 pt-0 border-t border-emerald-500/20 flex flex-col items-start bg-emerald-500/[0.04]">
+                <CardFooter className="p-8 pt-0 border-t border-zinc-800 flex flex-col items-start bg-zinc-900/20">
                   <div className="pt-4 w-full">
-                    <p className="text-emerald-300 text-sm font-semibold flex items-center gap-2">
-                      <Sparkles className="size-4 text-emerald-400 shrink-0" />
+                    <p className="text-zinc-300 text-sm font-semibold flex items-center gap-2">
+                      <Sparkles className="size-4 text-zinc-400 shrink-0" />
                       Time saved: 18 hours per week
                     </p>
-                    <p className="text-emerald-400/70 text-xs mt-1">
+                    <p className="text-zinc-400 text-xs mt-1">
                       Use that time to call more clients, close more trips, and grow your agency.
                     </p>
                   </div>
@@ -946,65 +946,7 @@ export default function WhyUsPage() {
       </section>
 
       {/* ── 4 PROBLEM CARDS ── */}
-      <section className="py-24 px-4 md:px-8 relative">
-        <div className="max-w-6xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-14"
-          >
-            <p className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-3">
-              4 Problems WanderLabs Kills
-            </p>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tight">
-              The things every travel agent{" "}
-              <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
-                loses sleep over
-              </span>
-            </h2>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {PROBLEMS.map((p, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 24 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className={cn(
-                  "group relative p-8 rounded-3xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl overflow-hidden transition-all duration-500 hover:-translate-y-1",
-                  p.border
-                )}
-              >
-                <div
-                  className={cn(
-                    "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-500",
-                    p.glow
-                  )}
-                />
-                <div className="relative z-10">
-                  <div className="flex items-center gap-3 mb-5">
-                    <div className="p-2.5 rounded-2xl bg-white/[0.04] border border-white/[0.07]">
-                      {p.icon}
-                    </div>
-                    <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">
-                      {p.tag}
-                    </span>
-                  </div>
-                  <h3 className="text-xl md:text-2xl font-bold text-white mb-3 leading-snug">
-                    {p.headline}
-                  </h3>
-                  <p className="text-zinc-400 text-sm md:text-base leading-relaxed font-light">
-                    {p.detail}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <ProblemsBento />
 
       {/* ── ROI MATH ── */}
       <section className="py-24 px-4 md:px-8 relative">
@@ -1049,185 +991,21 @@ export default function WhyUsPage() {
             ))}
           </div>
 
-          {/* Big callout */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="relative rounded-3xl overflow-hidden border border-white/[0.08] bg-gradient-to-br from-white/[0.03] to-transparent backdrop-blur-xl p-8 md:p-12 text-center"
-          >
-            <div className="absolute inset-0 bg-gradient-to-b from-orange-500/[0.05] to-indigo-500/[0.05]" />
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-400/40 to-transparent" />
-            <div className="relative z-10 space-y-4">
-              <p className="text-zinc-400 text-base md:text-lg">
-                If you quote just 5 clients a week, you waste{" "}
-                <span className="text-red-400 font-bold">15–20 hours</span>{" "}
-                typing itineraries.
-              </p>
-              <p className="text-zinc-400 text-base md:text-lg">
-                With WanderLabs, you get{" "}
-                <span className="text-emerald-400 font-bold">18 hours back every week</span>{" "}
-                to talk to new clients and close more trips.
-              </p>
-              <div className="pt-4 border-t border-white/[0.06]">
-                <p className="text-2xl md:text-3xl font-black text-white leading-snug">
-                  Closing just{" "}
-                  <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
-                    ONE extra booking
-                  </span>{" "}
-                  with faster quotes
-                  <br className="hidden md:block" />
-                  pays for an entire year of WanderLabs.
-                </p>
-              </div>
-            </div>
-          </motion.div>
+          
+        
         </div>
+        
+        {/* ── SEAMLESS TEXT SCROLL ANIMATION ── */}
+        <Skiper31
+          customText={"JUST ONE CLOSED CLIENT REPAYS\nWANDERLABS"}
+        />
       </section>
 
-      {/* ── TESTIMONIALS ── */}
-      <section className="py-24 px-4 md:px-8 relative">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-14"
-          >
-            <p className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-3">Real Agents. Real Results.</p>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tight">
-              What agents say after{" "}
-              <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
-                their first week
-              </span>
-            </h2>
-          </motion.div>
+    
+    
 
-          <div className="relative min-h-[240px]">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={activeTestimonial}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -16 }}
-                transition={{ duration: 0.4 }}
-                className="relative p-8 md:p-12 rounded-3xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-xl text-center"
-              >
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-500/30 to-transparent" />
-                <div className="flex items-center justify-center gap-1 mb-6">
-                  {Array.from({ length: TESTIMONIALS[activeTestimonial].rating }).map((_, i) => (
-                    <Star key={i} className="w-4 h-4 text-yellow-400 fill-yellow-400" />
-                  ))}
-                </div>
-                <blockquote className="text-xl md:text-2xl text-white font-medium leading-relaxed mb-8">
-                  &ldquo;{TESTIMONIALS[activeTestimonial].quote}&rdquo;
-                </blockquote>
-                <p className="text-white font-bold">{TESTIMONIALS[activeTestimonial].name}</p>
-                <p className="text-zinc-500 text-sm">{TESTIMONIALS[activeTestimonial].role}</p>
-              </motion.div>
-            </AnimatePresence>
-            <div className="flex items-center justify-center gap-2 mt-6">
-              {TESTIMONIALS.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveTestimonial(i)}
-                  className={cn(
-                    "h-1.5 rounded-full transition-all duration-300",
-                    i === activeTestimonial ? "w-8 bg-indigo-400" : "w-1.5 bg-white/20 hover:bg-white/40"
-                  )}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-10">
-            {TESTIMONIALS.map((t, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                onClick={() => setActiveTestimonial(i)}
-                className={cn(
-                  "p-5 rounded-2xl border cursor-pointer transition-all duration-300",
-                  i === activeTestimonial
-                    ? "border-indigo-500/40 bg-indigo-500/[0.06]"
-                    : "border-white/[0.06] bg-white/[0.02] hover:border-white/20"
-                )}
-              >
-                <div className="flex items-center gap-1 mb-3">
-                  {Array.from({ length: t.rating }).map((_, j) => (
-                    <Star key={j} className="w-3 h-3 text-yellow-400 fill-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-zinc-400 text-xs leading-relaxed mb-4 line-clamp-3">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <p className="text-white text-xs font-bold">{t.name}</p>
-                <p className="text-zinc-600 text-xs">{t.role}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── CLOSING CTA ── */}
-      <section className="py-24 px-4 md:px-8 relative">
-        <div className="max-w-4xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="relative rounded-[2rem] overflow-hidden border border-white/[0.08] p-10 md:p-16 text-center"
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-600/10 via-transparent to-indigo-600/10" />
-            <div className="absolute inset-0 bg-[#020205]/60 backdrop-blur-xl" />
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-orange-400/40 to-transparent" />
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-indigo-400/30 to-transparent" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-orange-500/10 rounded-full blur-[80px] pointer-events-none" />
-
-            <div className="relative z-10 space-y-6">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-orange-500/30 bg-orange-500/10">
-                <TrendingUp className="w-3.5 h-3.5 text-orange-400" />
-                <span className="text-[11px] font-black uppercase tracking-widest text-orange-400">
-                  Your competitors are already replying faster
-                </span>
-              </div>
-
-              <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
-                Time to upgrade your agency.
-              </h2>
-
-              <p className="text-zinc-400 text-base md:text-lg max-w-xl mx-auto">
-                Try WanderLabs for your very next client enquiry. It takes 60 seconds to set up
-                and needs zero training. Just type, generate, and send.
-              </p>
-
-              <div className="pt-2">
-                <Link href="/auth/register">
-                  <MotionButton label="Create Your First Free Itinerary" />
-                </Link>
-              </div>
-
-              <div className="flex flex-wrap items-center justify-center gap-6 pt-2 text-xs text-zinc-500">
-                <span className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                  No credit card required
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                  Your client data is 100% private
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                  Cancel anytime
-                </span>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      {/* ── CLOSING CTA WITH MARQUEE ITINERARY FORMATS ── */}
+      <HeroWithMarquee />
     </div>
   );
 }

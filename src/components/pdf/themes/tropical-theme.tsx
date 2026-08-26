@@ -63,20 +63,27 @@ export const TropicalTheme = ({
     const totalDays = Array.isArray(itinerary.itinerary) ? itinerary.itinerary.length : 0;
     const totalNights = Math.max(0, totalDays - 1);
 
-    // Format inclusions/exclusions string into arrays
-    const parseList = (text: string) => text ? text.split('\n').map(s => s.trim().replace(/^- /, '')).filter(l => l.length > 0 && l !== '-') : [];
-    const inclusionsList = parseList(inclusions || '');
-    const exclusionsList = parseList(exclusions || '');
-    const paymentMethodsList = parseList(paymentMethods || '');
-    const cancellationPolicyList = parseList(cancellationPolicy || '');
-    const termsAndConditionsList = parseList(termsAndConditions || '');
+    // Format inclusions/exclusions string or array into arrays
+    const parseList = (text?: any): string[] => {
+        if (!text) return [];
+        if (Array.isArray(text)) {
+            return text.map(s => String(s).trim().replace(/^[-•◆✓✕]\s*/, '')).filter(l => l.length > 0 && l !== '-');
+        }
+        if (typeof text !== 'string') return [String(text)];
+        return text.split('\n').map(s => s.trim().replace(/^[-•◆✓✕]\s*/, '')).filter(l => l.length > 0 && l !== '-');
+    };
+    const inclusionsList = parseList(inclusions);
+    const exclusionsList = parseList(exclusions);
+    const paymentMethodsList = parseList(paymentMethods);
+    const cancellationPolicyList = parseList(cancellationPolicy);
+    const termsAndConditionsList = parseList(termsAndConditions);
 
     const resolvedBase = baseCost || 0;
     const { baseCost: resolvedBaseCost, markupAmount, costWithMarkup, taxAmount, finalTotal: calculatedFinalTotal } = calcPricingFromBaseCost(resolvedBase, pricing);
     const currency = pricing?.currency || DEFAULT_CURRENCY;
     
-    // Parse list for cancellation policy which was added below earlier
-    const parseListPolicy = (str: string) => str.split('\n').filter(s => s.trim().length > 0).map(s => s.replace(/^- /, ''));
+    // Parse list for cancellation policy
+    const parseListPolicy = parseList;
 
     return (
         <div style={{ width: "100%", backgroundColor: "var(--bg)" }}>
@@ -797,7 +804,7 @@ export const TropicalTheme = ({
                         <div className="header-card">
                             <div className="stars">★★★★★</div>
                             <h1>{title}</h1>
-                            <p>{agent.tagline || "An exquisite escape perfectly designed for you."}</p>
+                            {agent.tagline && <p>{agent.tagline}</p>}
                             <div className="pills">
                                 <span className="pill">{totalDays} Days • {totalNights} Nights</span>
                                 {(
@@ -837,10 +844,12 @@ export const TropicalTheme = ({
                                 <span className="meta-label">Client Information</span>
                                 <h3>Client Details</h3>
                                 <ul className="meta-list">
-                                    <li>
-                                        <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                        Client Name: <strong>{clientName || "Valued Guest"}</strong>
-                                    </li>
+                                    {clientName && (
+                                        <li>
+                                            <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                            Client Name: <strong>{clientName}</strong>
+                                        </li>
+                                    )}
                                     <li>
                                         <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                                         Adults: <strong>{adultPax}</strong>
@@ -866,8 +875,8 @@ export const TropicalTheme = ({
                         ) : null}
                         <div className="about-content">
                             <span className="capsule-badge">About The Destination</span>
-                            <h2>{aboutPlace?.title || `Discover ${itinerary.itinerary?.[0]?.areaFocus?.split(',')[0] || "Your Destination"}`}</h2>
-                            <p>{aboutPlace?.description || "Immerse yourself in the breathtaking landscapes, vibrant culture, and unforgettable experiences that await you. Every corner of this beautiful destination offers a new adventure and lasting memories."}</p>
+                            <h2>{aboutPlace?.title || (itinerary.itinerary?.[0]?.areaFocus ? `Discover ${itinerary.itinerary[0].areaFocus.split(',')[0]}` : "")}</h2>
+                            {aboutPlace?.description && <p>{aboutPlace.description}</p>}
                             <ul className="highlights">
                                 {aboutPlace?.highlights ? (
                                     aboutPlace.highlights.map((highlight: string, idx: number) => (

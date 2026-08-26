@@ -31,6 +31,7 @@ import {
   Plus,
 } from "lucide-react";
 import { PdfTemplate, type PdfTheme, type PdfTemplateProps } from "@/components/pdf-template";
+import { getMergedPdfThemeOptions } from "@/components/pdf/theme-config";
 import { useToast } from "@/hooks/use-toast";
 import { useReferenceOptions } from "@/hooks/use-reference-options";
 import { useAuth } from "@/contexts/auth-context";
@@ -47,6 +48,7 @@ const ALL_THEMES: PdfTheme[] = [
   "corporate",
   "desert",
   "tropical",
+  "luxury",
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -137,6 +139,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
     const { toast } = useToast();
     const { userPreferences, agencySettings } = useAuth();
     const { options: themeOptions } = useReferenceOptions("pdf_theme");
+    const pdfThemeOptions = getMergedPdfThemeOptions(themeOptions);
     const supabase = createClient();
 
     // ─── Theme ──────────────────────────────────────────────────────────────
@@ -707,29 +710,18 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
                       <SelectValue placeholder="Theme" />
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
-                      {themeOptions.length > 0 ? (
-                        themeOptions.map((opt) => (
-                          <SelectItem
-                            key={opt.value}
-                            value={opt.value}
-                            className="hover:bg-zinc-800 focus:bg-zinc-800 text-xs cursor-pointer"
-                          >
-                            {opt.label}
-                            {themePagesCache.current[opt.value as PdfTheme] && (
-                              <span className="ml-1.5 text-[8px] text-emerald-400 font-bold">●</span>
-                            )}
-                          </SelectItem>
-                        ))
-                      ) : (
-                        ALL_THEMES.map((t) => (
-                          <SelectItem key={t} value={t} className="text-xs">
-                            {t.charAt(0).toUpperCase() + t.slice(1)}
-                            {themePagesCache.current[t] && (
-                              <span className="ml-1.5 text-[8px] text-emerald-400 font-bold">●</span>
-                            )}
-                          </SelectItem>
-                        ))
-                      )}
+                      {pdfThemeOptions.map((opt) => (
+                        <SelectItem
+                          key={opt.value}
+                          value={opt.value}
+                          className="hover:bg-zinc-800 focus:bg-zinc-800 text-xs cursor-pointer"
+                        >
+                          {opt.label}
+                          {themePagesCache.current[opt.value as PdfTheme] && (
+                            <span className="ml-1.5 text-[8px] text-emerald-400 font-bold">●</span>
+                          )}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
 

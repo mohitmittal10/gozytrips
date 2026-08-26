@@ -1,6 +1,6 @@
 import type { ReferenceOption } from '@/hooks/use-reference-options';
 
-export type PdfTheme = 'classic' | 'editorial' | 'minimalist' | 'dark' | 'corporate' | 'desert' | 'tropical';
+export type PdfTheme = 'classic' | 'editorial' | 'minimalist' | 'dark' | 'corporate' | 'desert' | 'tropical' | 'luxury';
 
 export const DEFAULT_PDF_THEME_OPTIONS: Array<{ value: PdfTheme; label: string }> = [
     { value: 'classic', label: 'Classic' },
@@ -10,6 +10,7 @@ export const DEFAULT_PDF_THEME_OPTIONS: Array<{ value: PdfTheme; label: string }
     { value: 'corporate', label: 'Corporate' },
     { value: 'desert', label: 'Desert' },
     { value: 'tropical', label: 'Tropical' },
+    { value: 'luxury', label: 'Luxury' },
 ];
 
 export const getMergedPdfThemeOptions = (
