@@ -39,6 +39,7 @@ import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
+import { getStatusBadgeClasses, CRM_AVATAR_CLASS } from "../utils/crm-colors";
 
 interface Client {
     id: string;
@@ -86,12 +87,7 @@ export const BookingDetailSheet = ({
     };
 
     const getStatusClasses = (status: string) => {
-        const s = (status || "").toLowerCase();
-        if (s === "confirmed") return "bg-green-500/10 text-green-400 border-green-500/20";
-        if (s === "draft") return "bg-gray-500/10 text-gray-400 border-gray-500/20";
-        if (s === "cancelled") return "bg-red-500/10 text-red-400 border-red-500/20";
-        if (s === "quoted") return "bg-blue-500/10 text-blue-400 border-blue-500/20";
-        return "bg-purple-500/10 text-purple-400 border-purple-500/20";
+        return getStatusBadgeClasses(status);
     };
 
     const formatDate = (dateStr: string) => {
@@ -184,7 +180,7 @@ export const BookingDetailSheet = ({
         <Sheet open={!!booking} onOpenChange={(open) => !open && onClose()}>
             <SheetContent className="bg-[#0A0A0A] border-l border-white/10 text-white w-full sm:max-w-md overflow-y-auto">
                 <SheetHeader className="mb-6">
-                    <SheetTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
+                    <SheetTitle className="text-xl font-bold text-white tracking-tight">
                         Booking Details
                     </SheetTitle>
                     <SheetDescription className="text-gray-400">
@@ -221,7 +217,7 @@ export const BookingDetailSheet = ({
                             {client ? (
                                 <div className="space-y-2.5">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-sm font-bold text-white shrink-0">
+                                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs shrink-0", CRM_AVATAR_CLASS)}>
                                             {client.name.charAt(0).toUpperCase()}
                                         </div>
                                         <p className="font-semibold text-white">{client.name}</p>
@@ -365,7 +361,7 @@ export const BookingDetailSheet = ({
                                 <>
                                     <p className="text-xs text-gray-500">Generate a secure invoice link to share with your client.</p>
                                     <Button
-                                        className="w-full aurora-gradient text-white border-none hover:brightness-110 h-10"
+                                        className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700/80 font-semibold h-10 rounded-lg"
                                         onClick={handleGenerateInvoice}
                                         disabled={isGenerating}
                                     >

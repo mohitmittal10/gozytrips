@@ -243,14 +243,14 @@ export default function Step4Animation() {
                                                 className="bg-white/5 border border-orange-500/40 rounded-md p-2 relative overflow-hidden"
                                             >
                                                 <motion.div 
-                                                    className="absolute inset-0 bg-gradient-to-r from-orange-500/10 to-transparent"
+                                                    className="absolute inset-0 bg-orange-500/10"
                                                     initial={{ x: '-100%' }}
                                                     animate={{ x: '100%' }}
                                                     transition={{ duration: 2, repeat: Infinity }}
                                                 />
                                                 <div className="flex items-center justify-between relative z-10">
                                                     <div className="flex items-center gap-2">
-                                                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-rose-400 flex items-center justify-center text-[10px] font-bold text-white shadow-inner">
+                                                        <div className="w-6 h-6 rounded-full bg-orange-500 flex items-center justify-center text-[10px] font-bold text-white shadow-inner">
                                                             ER
                                                         </div>
                                                         <div>

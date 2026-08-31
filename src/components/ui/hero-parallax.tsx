@@ -107,7 +107,7 @@ export const Header = () => {
     return (
         <div className="max-w-7xl absolute top-20 md:top-32 left-0 right-0 mx-auto px-4 md:px-8 w-full z-20 pointer-events-none">
             <h1 className="text-2xl md:text-7xl font-bold text-white pointer-events-auto">
-                Curated journeys <br /> that <span className="bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 bg-clip-text text-transparent">inspire.</span>
+                Curated journeys <br /> that <span className="text-[#71717A]">inspire.</span>
             </h1>
             <p className="max-w-2xl text-base md:text-xl mt-4 text-zinc-400">
                 We craft breathtaking itineraries with the most exquisite destinations and tailored experiences.

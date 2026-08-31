@@ -145,7 +145,7 @@
   }
 
   .the-lab-page {
-    @apply bg-transparent;
+    @apply bg-black;
   }
 }
 
@@ -239,9 +239,7 @@
 
   /* Midnight Edition Utilities */
   .aurora-gradient {
-    background: linear-gradient(135deg, #ff5c33 0%, #ec4899 50%, #7c3aed 100%);
-    background-size: 200% 200%;
-    animation: gradient-shift 10s ease infinite;
+    background-color: #ff5c33;
   }
   @keyframes gradient-shift {
       0% { background-position: 0% 50%; }
@@ -255,7 +253,7 @@
       content: '';
       position: absolute;
       inset: -4px;
-      background: linear-gradient(135deg, #ff5c33, #7c3aed);
+      background-color: #ff5c33;
       filter: blur(15px);
       opacity: 0;
       transition: opacity 0.3s ease;
@@ -266,10 +264,7 @@
       opacity: 0.4;
   }
   .text-gradient {
-      background: linear-gradient(to right, #ff5c33, #ec4899, #7c3aed);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #ff5c33;
   }
 
   /* Logistics Banner Colors */
@@ -428,7 +423,7 @@
       inset: 0;
       padding: 1px;
       border-radius: inherit;
-      background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent, rgba(255,255,255,0.05));
+      background: rgba(255, 255, 255, 0.08);
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       -webkit-mask-composite: xor;
@@ -438,7 +433,7 @@
 
   /* Glossy Highlights */
   .glossy-surface {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.2) 100%) !important;
+    background: rgba(255, 255, 255, 0.02) !important;
   }
 
   /* Tubelight Glow Effect - White/Silver */
@@ -501,7 +496,7 @@
     top: 0;
     bottom: 0;
     width: 2px;
-    background: linear-gradient(to bottom, transparent, #ff5c33 15%, #ec4899 50%, #7c3aed 85%, transparent);
+    background-color: rgba(255, 92, 51, 0.4);
     opacity: 0.3;
   }
 
@@ -572,7 +567,7 @@
   top: 0;
   height: 100%;
   width: 80px;
-  background: linear-gradient(90deg, transparent, #ff5c33, #ec4899, #7c3aed, transparent);
+  background-color: #ff5c33;
   animation: generating-loader-bar-anim 2.5s infinite linear;
 }
 

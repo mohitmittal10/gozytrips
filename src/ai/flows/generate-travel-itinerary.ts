@@ -84,13 +84,6 @@ const TravelItineraryOutputSchema = z.object({
       ),
     })
   ),
-  optimizations: z.array(
-    z.object({
-      type: z.string().describe('The category of optimization (e.g., "Timing", "Cost", "Experience", "Leisure").'),
-      message: z.string().describe('A concise, actionable optimization tip (max 60 chars).'),
-      impact: z.string().describe('A short description of the benefit (e.g., "+15% Leisure", "Save 2,000", "Avoid Crowds").'),
-    })
-  ).describe('A list of 3-4 smart AI optimization insights for the trip.'),
 });
 
 export type TravelItineraryOutput = z.infer<typeof TravelItineraryOutputSchema>;

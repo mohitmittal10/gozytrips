@@ -8,7 +8,6 @@ export const theLabSteps = [
   { id: 5, label: "Stay Options", fields: ["hotels"] as const },
 ];
 
-export const MAX_AI_OPTIMIZATIONS = 3;
 
 export const loadingTexts = [
   "Analyzing your preferences...",

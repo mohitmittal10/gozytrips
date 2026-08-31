@@ -113,7 +113,7 @@ export const DarkTheme = ({
                             crossOrigin="anonymous"
                         />
                     ) : null}
-                    <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to right, #070a13 40%, rgba(7,10,19,0.3))` }} />
+                    <div style={{ position: "absolute", inset: 0, background: "rgba(7,10,19,0.7)" }} />
                     {/* Agency logo badge — top right (logo only) */}
                     {(agent.logoUrl || agent.companyName) && (
                         <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.4)", backdropFilter: "blur(10px)", border: `1px solid rgba(${rgbAccent}, 0.5)`, borderRadius: "10px", padding: "9px 14px", boxShadow: `0 0 18px rgba(${rgbAccent},0.2), inset 0 1px 0 rgba(255,255,255,0.05)` }}>

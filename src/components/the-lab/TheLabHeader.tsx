@@ -1,6 +1,6 @@
 // Sticky top bar including selections, toggles, back/edit buttons.
 import React from 'react';
-import { Eye, Undo2, Redo2, LayoutTemplate } from 'lucide-react';
+import { Eye, Undo2, Redo2, Edit } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -185,11 +185,11 @@ const TheLabHeader = React.memo(function TheLabHeader({
               variant="outline"
               size="sm"
               onClick={() => router.push(`/itinerary/${currentTripId}/editor`)}
-              title="Open HTML editor for this itinerary"
-              className="flex-1 sm:flex-none px-4 sm:px-5 py-2.5 bg-amber-500/10 border border-amber-500/25 text-amber-400 rounded-xl text-xs sm:text-sm font-semibold hover:bg-amber-500/20 hover:border-amber-400/50 transition-all flex items-center justify-center gap-2 h-11 sm:h-10"
+              title="Edit itinerary"
+              className="flex-1 sm:flex-none px-4 sm:px-5 py-2.5 bg-white/5 border border-white/10 text-zinc-300 rounded-xl text-xs sm:text-sm font-semibold hover:bg-white/10 transition-all flex items-center justify-center gap-2 h-11 sm:h-10"
             >
-              <LayoutTemplate className="w-4 h-4" />
-              <span className="xs:inline">HTML Editor</span>
+              <Edit className="w-4 h-4 text-zinc-400" />
+              <span className="xs:inline">Edit</span>
             </Button>
           )}
         </div>

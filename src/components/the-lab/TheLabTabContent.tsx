@@ -108,7 +108,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
       {/* Tab Content - Timeline */}
       {activeLabTab === 'itinerary' && itinerary?.itinerary?.length > 0 && (
         <ItineraryErrorBoundary onReset={() => setItinerary(null)} fallbackMessage="Timeline failed to render.">
-          <div className="relative rounded-xl sm:rounded-2xl border border-white/[0.06] p-2 sm:p-4 md:p-6 backdrop-blur-sm overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(10,10,11,0.9) 0%, rgba(18,18,20,0.95) 50%, rgba(10,10,11,0.9) 100%)' }}>
+          <div className="relative rounded-xl sm:rounded-2xl border border-white/[0.06] p-2 sm:p-4 md:p-6 backdrop-blur-sm overflow-hidden bg-[#0A0A0B]/95">
             <MemoizedItineraryTimeline
               itinerary={itinerary?.itinerary || []}
               isLoading={isGenerating}

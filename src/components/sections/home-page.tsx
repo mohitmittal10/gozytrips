@@ -42,6 +42,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import CuratedItineraries from "@/components/sections/curated-itineraries";
+import { CleanTestimonialDemo } from "@/components/sections/clean-testimonial-demo";
+import Contact from "@/components/sections/contact";
+
 
 // ── Animated Counter ──────────────────────────────────────────────────────────
 function Counter({
@@ -142,17 +146,17 @@ function Barcode({ seed = 10 }: { seed: number }) {
 
 const PainStats = [
   {
-    icon: <Clock className="w-4 h-4 text-orange-400" />,
+    icon: <Clock className="w-4 h-4 text-[#71717A]" />,
     stat: "From 4 hours",
     label: "down to 90 seconds per quote",
   },
   {
-    icon: <Calculator className="w-4 h-4 text-emerald-400" />,
+    icon: <Calculator className="w-4 h-4 text-[#71717A]" />,
     stat: "Zero",
     label: "calculation mistakes on markups",
   },
   {
-    icon: <Zap className="w-4 h-4 text-indigo-400" />,
+    icon: <Zap className="w-4 h-4 text-[#71717A]" />,
     stat: "Clients",
     label: "can view & approve on their phones",
   },
@@ -206,40 +210,40 @@ const WITH_ITEMS = [
 
 const PROBLEMS = [
   {
-    icon: <Zap className="w-6 h-6 text-orange-400" />,
+    icon: <Zap className="w-6 h-6 text-[#71717A]" />,
     tag: "Quote Speed Problem",
     headline: "Be the first agency to reply, every single time.",
     detail:
       "Clients book with whoever sends a solid plan first. While other agents are still typing Day 1, you've already sent a complete trip — hotels, timings, costs, everything.",
-    glow: "from-orange-500/10 to-transparent",
-    border: "hover:border-orange-500/30",
+    glow: "from-zinc-800/10 to-transparent",
+    border: "hover:border-zinc-700/30",
   },
   {
-    icon: <Calculator className="w-6 h-6 text-emerald-400" />,
+    icon: <Calculator className="w-6 h-6 text-[#71717A]" />,
     tag: "Markup Math Headache",
     headline: "Never lose money from a wrong calculation again.",
     detail:
       "Add your cab, hotel, and flight costs. Set a margin like 15%. WanderLabs splits the exact price for adults, kids, and infants — taxes included — in under a second.",
-    glow: "from-emerald-500/10 to-transparent",
-    border: "hover:border-emerald-500/30",
+    glow: "from-zinc-800/10 to-transparent",
+    border: "hover:border-zinc-700/30",
   },
   {
-    icon: <RefreshCw className="w-6 h-6 text-indigo-400" />,
+    icon: <RefreshCw className="w-6 h-6 text-[#71717A]" />,
     tag: "10 Client Changes Problem",
     headline: "Edit the itinerary live without starting from scratch.",
     detail:
       "Client wants an extra day in Bali or a different hotel? Swap it in 2 clicks. The pricing and schedule update instantly — no recalculating, no retyping.",
-    glow: "from-indigo-500/10 to-transparent",
-    border: "hover:border-indigo-500/30",
+    glow: "from-zinc-800/10 to-transparent",
+    border: "hover:border-zinc-700/30",
   },
   {
-    icon: <Award className="w-6 h-6 text-violet-400" />,
+    icon: <Award className="w-6 h-6 text-[#71717A]" />,
     tag: "Amateur Look Problem",
     headline: "Look like a 50-person agency, even if you work alone.",
     detail:
       "Send clean, professional trip proposals that build trust on sight. When your quote looks premium, clients stop asking for discounts and start asking when to pay.",
-    glow: "from-violet-500/10 to-transparent",
-    border: "hover:border-violet-500/30",
+    glow: "from-zinc-800/10 to-transparent",
+    border: "hover:border-zinc-700/30",
   },
 ];
 
@@ -446,15 +450,15 @@ function BoardingPassCalculatorSection({
             {/* Manual Bar */}
             <div className="mb-4">
               <div className="flex justify-between text-xs mb-1.5 font-medium">
-                <span className="text-red-300/90 flex items-center gap-2">
-                  <Clock className="size-3.5 text-red-400 shrink-0" />
+                <span className="text-zinc-400 flex items-center gap-2">
+                  <Clock className="size-3.5 text-[#71717A] shrink-0" />
                   Manual / Word / Excel ({oldHours}h per quote)
                 </span>
-                <span className="font-mono text-red-300 font-bold">{manualHoursMonth} hrs/mo</span>
+                <span className="font-mono text-zinc-300 font-bold">{manualHoursMonth} hrs/mo</span>
               </div>
               <div className="w-full bg-white/5 h-3.5 rounded-full overflow-hidden p-0.5 border border-white/5">
                 <div 
-                  className="bg-gradient-to-r from-red-500/80 to-red-400 h-full rounded-full transition-all duration-500"
+                  className="bg-zinc-600 h-full rounded-full transition-all duration-500"
                   style={{ width: "100%" }}
                 />
               </div>
@@ -463,15 +467,15 @@ function BoardingPassCalculatorSection({
             {/* WanderLabs Bar */}
             <div>
               <div className="flex justify-between text-xs mb-1.5 font-medium">
-                <span className="text-emerald-300/90 flex items-center gap-2">
-                  <Zap className="size-3.5 text-emerald-400 shrink-0" />
+                <span className="text-zinc-400 flex items-center gap-2">
+                  <Zap className="size-3.5 text-[#71717A] shrink-0" />
                   With WanderLabs (15 mins per quote)
                 </span>
-                <span className="font-mono text-emerald-300 font-bold">{wanderlabsHoursMonth} hrs/mo</span>
+                <span className="font-mono text-zinc-300 font-bold">{wanderlabsHoursMonth} hrs/mo</span>
               </div>
               <div className="w-full bg-white/5 h-3.5 rounded-full overflow-hidden p-0.5 border border-white/5">
                 <div 
-                  className="bg-gradient-to-r from-emerald-500 to-green-400 h-full rounded-full transition-all duration-500"
+                  className="bg-zinc-400 h-full rounded-full transition-all duration-500"
                   style={{ width: `${Math.max(4, (wanderlabsHoursMonth / manualHoursMonth) * 100)}%` }}
                 />
               </div>
@@ -480,14 +484,14 @@ function BoardingPassCalculatorSection({
 
           {/* Key Metrics Grid */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-            <div className="p-5 rounded-2xl bg-amber-500/[0.04] border border-amber-500/15">
+            <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800">
               <div
                 style={{
                   fontFamily: "'Space Mono', monospace",
                   fontSize: 38,
                   fontWeight: 700,
                   lineHeight: 1,
-                  color: "#E8A33D",
+                  color: "#71717A",
                   marginBottom: 6,
                 }}
               >
@@ -501,14 +505,14 @@ function BoardingPassCalculatorSection({
               </div>
             </div>
 
-            <div className="p-5 rounded-2xl bg-emerald-500/[0.04] border border-emerald-500/15">
+            <div className="p-5 rounded-2xl bg-zinc-900 border border-zinc-800">
               <div
                 style={{
                   fontFamily: "'Space Mono', monospace",
                   fontSize: 38,
                   fontWeight: 700,
                   lineHeight: 1,
-                  color: "#34D399",
+                  color: "#71717A",
                   marginBottom: 6,
                 }}
               >
@@ -573,16 +577,16 @@ function BoardingPassCalculatorSection({
               <div className="h-px bg-white/5 w-full" />
               <div>
                 <span style={{ fontSize: 11, color: "#6C7693", textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>Destination</span>
-                <span style={{ fontSize: 13, fontWeight: 600, color: "#34D399" }} className="flex items-center gap-1.5 mt-0.5">
-                  <Sparkles className="size-3.5 text-emerald-400 shrink-0" />
+                <span style={{ fontSize: 13, fontWeight: 600, color: "#F0EFE9" }} className="flex items-center gap-1.5 mt-0.5">
+                  <Sparkles className="size-3.5 text-zinc-400 shrink-0" />
                   Smart Proposals
                 </span>
               </div>
               <div className="h-px bg-white/5 w-full" />
               <div>
                 <span style={{ fontSize: 11, color: "#6C7693", textTransform: "uppercase", letterSpacing: "0.05em", display: "block" }}>Status</span>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-400 mt-1">
-                  <ShieldCheck className="size-3 text-emerald-400" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-zinc-800 text-zinc-300 mt-1">
+                  <ShieldCheck className="size-3 text-zinc-400" />
                   100% Automated
                 </span>
               </div>
@@ -622,7 +626,7 @@ function BoardingPassCalculatorSection({
   );
 }
 
-export default function WhyUsPage() {
+export default function HomePage() {
   const [activeTestimonial, setActiveTestimonial] = useState(0);
 
   useEffect(() => {
@@ -652,7 +656,7 @@ export default function WhyUsPage() {
           className="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight leading-tight mb-6"
         >
           Stop Losing{" "}
-          <span className="bg-gradient-to-r from-orange-400 to-red-400 bg-clip-text text-transparent">
+          <span className="text-[#71717A]">
             4 Hours
           </span>{" "}
           on a Quote <br className="hidden md:block" />
@@ -769,7 +773,7 @@ export default function WhyUsPage() {
             </p>
             <h2 className="text-3xl md:text-5xl font-black tracking-tight">
               See how many hours{" "}
-              <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
+              <span className="text-[#71717A]">
                 you get back
               </span>
             </h2>
@@ -801,9 +805,9 @@ export default function WhyUsPage() {
             <p className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-3">The Reality Check</p>
             <h2 className="text-3xl md:text-5xl font-black tracking-tight text-white">
               Your day{" "}
-              <span className="text-red-400 line-through decoration-red-400/60">without</span>{" "}
+              <span className="text-zinc-500 line-through">without</span>{" "}
               vs.{" "}
-              <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">with</span>{" "}
+              <span className="text-[#71717A]">with</span>{" "}
               WanderLabs
             </h2>
           </motion.div>
@@ -827,7 +831,7 @@ export default function WhyUsPage() {
                         
                         Without WanderLabs
                       </CardTitle>
-                      <span className="text-red-500 text-xs font-bold uppercase tracking-wider">
+                      <span className="text-zinc-500 text-xs font-bold uppercase tracking-wider">
                         STRESSFUL DAY
                       </span>
                     </div>
@@ -890,11 +894,11 @@ export default function WhyUsPage() {
                   <CardHeader className="p-8 pb-5">
                     <div className="flex items-center justify-between gap-2">
                       <CardTitle className="text-xl font-bold text-white flex items-center gap-3">
-                        <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
+                        <span className="text-white">
                           With WanderLabs
                         </span>
                       </CardTitle>
-                      <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent text-xs font-black uppercase tracking-wider">
+                      <span className="text-[#71717A] text-xs font-black uppercase tracking-wider">
                         RECOMMENDED
                       </span>
                     </div>
@@ -962,7 +966,7 @@ export default function WhyUsPage() {
             </p>
             <h2 className="text-3xl md:text-5xl font-black tracking-tight">
               What agents actually see{" "}
-              <span className="bg-gradient-to-r from-orange-400 to-yellow-400 bg-clip-text text-transparent">
+              <span className="text-[#71717A]">
                 after switching
               </span>
             </h2>
@@ -970,10 +974,10 @@ export default function WhyUsPage() {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
             {[
-              { value: 85, suffix: "%", label: "Less time spent building a single quote", color: "text-orange-400" },
-              { value: 3, suffix: "x", label: "More proposals sent per week", color: "text-indigo-400" },
-              { value: 4, suffix: ".9 / 5", label: "Client satisfaction with proposals", color: "text-emerald-400" },
-              { value: 0, suffix: " mistakes", label: "Pricing errors since switching", color: "text-violet-400" },
+              { value: 85, suffix: "%", label: "Less time spent building a single quote", color: "text-[#71717A]" },
+              { value: 3, suffix: "x", label: "More proposals sent per week", color: "text-[#71717A]" },
+              { value: 4, suffix: ".9 / 5", label: "Client satisfaction with proposals", color: "text-[#71717A]" },
+              { value: 0, suffix: " mistakes", label: "Pricing errors since switching", color: "text-[#71717A]" },
             ].map((item, i) => (
               <motion.div
                 key={i}
@@ -1001,11 +1005,18 @@ export default function WhyUsPage() {
         />
       </section>
 
-    
-    
+      {/* ── ITINERARY FORMATS ── */}
+      <CuratedItineraries />
+
+      {/* ── TESTIMONIALS ── */}
+      <CleanTestimonialDemo />
+
+      {/* ── SUPPORT & FEEDBACK ── */}
+      <Contact />
 
       {/* ── CLOSING CTA WITH MARQUEE ITINERARY FORMATS ── */}
       <HeroWithMarquee />
     </div>
+
   );
 }

@@ -23,9 +23,10 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn, getAvatarColor } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useReferenceOptions } from "@/hooks/use-reference-options";
+import { CRM_AVATAR_CLASS } from "../utils/crm-colors";
 
 interface ClientsViewProps {
     // Data
@@ -296,8 +297,8 @@ export const ClientsView = (props: ClientsViewProps) => {
                                     <tr 
                                         key={client.id} 
                                         className={cn(
-                                            "hover:bg-white/[0.04] transition-colors group cursor-pointer", 
-                                            selectedIds.has(client.id) && "bg-purple-500/5"
+                                            "border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer group",
+                                            selectedIds.has(client.id) && "bg-white/5"
                                         )}
                                         onClick={() => setSelectedClient(client)}
                                     >
@@ -305,23 +306,23 @@ export const ClientsView = (props: ClientsViewProps) => {
                                             <Checkbox
                                                 checked={selectedIds.has(client.id)}
                                                 onCheckedChange={() => toggleSelectOne(client.id)}
-                                                className="border-white/20 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"
+                                                className="border-white/20 data-[state=checked]:bg-zinc-700 data-[state=checked]:text-white data-[state=checked]:border-zinc-600"
                                             />
                                         </td>
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
-                                                <div className={cn("inline-flex w-8 h-8 rounded-full items-center justify-center text-xs font-bold text-white bg-gradient-to-br shrink-0", getAvatarColor(client.name))}>
+                                                <div className={cn("inline-flex w-8 h-8 rounded-full items-center justify-center text-xs shrink-0", CRM_AVATAR_CLASS)}>
                                                     {client.name.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-white text-sm group-hover:text-purple-300 transition-colors">
+                                                    <p className="font-medium text-white text-sm group-hover:text-white transition-colors">
                                                         {client.name}
                                                     </p>
                                                     <p className="text-xs text-gray-500">{client.email || 'No email provided'}</p>
                                                     {client.tags && client.tags.length > 0 && (
                                                         <div className="flex flex-wrap gap-1 mt-1">
                                                             {client.tags.map((tag: string, idx: number) => (
-                                                                <Badge key={idx} variant="secondary" className="bg-purple-500/10 text-purple-400 border border-purple-500/20 font-normal px-1.5 py-0 text-[10px] leading-4">
+                                                                <Badge key={idx} variant="secondary" className="bg-zinc-900 text-zinc-300 border border-zinc-800 font-normal px-1.5 py-0 text-[10px] leading-4">
                                                                     {tag}
                                                                 </Badge>
                                                             ))}
@@ -336,7 +337,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                                                     {client.bookedDestinations && client.bookedDestinations.length > 0 ? (
                                                         client.bookedDestinations.map((dest: any, idx: number) => (
                                                             <div key={idx} className="flex items-center gap-2 group/dest">
-                                                                <Compass className="w-3.5 h-3.5 text-purple-400 group-hover/dest:text-purple-300 transition-colors shrink-0" />
+                                                                <Compass className="w-3.5 h-3.5 text-zinc-400 group-hover/dest:text-white transition-colors shrink-0" />
                                                                 <span className="truncate max-w-[180px] text-xs font-medium text-gray-200 group-hover/dest:text-white transition-colors">{dest.label}</span>
                                                             </div>
                                                         ))
@@ -355,7 +356,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                                             </td>
                                         )}
                                         <td className="p-4">
-                                            <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-purple-400 transition-colors ml-auto" />
+                                            <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors ml-auto" />
                                         </td>
                                     </tr>
                                 ))

@@ -119,7 +119,7 @@ export function ScrambleButton({
     <Link href={href}>
       <button
         onMouseEnter={scramble}
-        className="px-8 py-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-full font-bold text-base shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
+        className="px-8 py-4 bg-orange-500 text-white rounded-full font-bold text-base shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all"
       >
         {displayText}
       </button>
@@ -134,12 +134,12 @@ export function HeroWithMarquee() {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div className="space-y-6">
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-orange-400">
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-[#71717A]">
               Upgrade Your Travel Agency
             </p>
             <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
               Time to upgrade your agency.{" "}
-              <span className="bg-gradient-to-r from-orange-400 via-amber-300 to-yellow-400 bg-clip-text text-transparent">
+              <span className="text-[#71717A]">
                 Create quotes 10x faster.
               </span>
             </h2>
@@ -199,9 +199,6 @@ export function HeroWithMarquee() {
               ))}
             </Marquee>
 
-            {/* Gradient edge vignettes */}
-            <div className="pointer-events-none absolute inset-y-0 left-0 w-16 sm:w-24 bg-gradient-to-r from-[#020205] to-transparent z-10" />
-            <div className="pointer-events-none absolute inset-y-0 right-0 w-16 sm:w-24 bg-gradient-to-l from-[#020205] to-transparent z-10" />
           </div>
         </div>
       </div>

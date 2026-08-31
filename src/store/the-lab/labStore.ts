@@ -26,7 +26,6 @@ const initialData = {
   selectedStatus: "draft",
   selectedTheme: "classic" as const,
   pdfOverrides: {},
-  optimizationCount: 0,
   autosaveStatus: "saved" as const,
   isSaving: false,
 };
@@ -117,7 +116,6 @@ export const useLabStore = create<LabState>((set, get) => {
     setSelectedStatus: (selectedStatus) => set((state) => updateHashAndDirty({ selectedStatus })),
     setSelectedTheme: (selectedTheme) => set((state) => updateHashAndDirty({ selectedTheme })),
     setPdfOverrides: (pdfOverrides) => set((state) => updateHashAndDirty({ pdfOverrides })),
-    setOptimizationCount: (optimizationCount) => set((state) => updateHashAndDirty({ optimizationCount })),
 
     // ─── Lifecycle & Sync Actions ──────────────────────────────────────────
     loadStateFromPersistence: (data) =>

@@ -40,7 +40,7 @@ const TheLabCta = () => {
                             data-ai-hint="Santorini greece"
                         />
                     )}
-                    <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-background via-background/50 to-transparent" />
+                    <div className="absolute inset-0 bg-background/30" />
                 </div>
             </Card>
         </section>

@@ -106,11 +106,11 @@ function AgentMessagesPanel({ response }: { response: ResponseDetailSheetProps["
         )}
         {!loading && messages.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-3">
-              <MessageSquare className="w-5 h-5 text-purple-400/60" />
+            <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-3">
+              <MessageSquare className="w-5 h-5 text-white/60" />
             </div>
-            <p className="text-sm text-gray-500 font-medium">No messages yet</p>
-            <p className="text-xs text-gray-700 mt-1">Start a conversation with {response.client_name || "the client"}.</p>
+            <p className="text-sm text-gray-400 font-medium">No messages yet</p>
+            <p className="text-xs text-gray-500 mt-1">Start a conversation with {response.client_name || "the client"}.</p>
           </div>
         )}
         {messages.map((msg) => {
@@ -118,18 +118,18 @@ function AgentMessagesPanel({ response }: { response: ResponseDetailSheetProps["
           return (
             <div key={msg.id} className={cn("flex", isAgent ? "justify-end" : "justify-start")}>
               {!isAgent && (
-                <div className="w-7 h-7 rounded-full bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-300 text-xs font-bold shrink-0 mr-2 mt-0.5">
+                <div className="w-7 h-7 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white text-xs font-bold shrink-0 mr-2 mt-0.5">
                   {clientInitial}
                 </div>
               )}
               <div className={cn(
                 "max-w-[78%] rounded-2xl px-3.5 py-2.5",
                 isAgent
-                  ? "bg-gradient-to-br from-purple-600/80 to-indigo-600/80 text-white rounded-br-sm"
+                  ? "bg-zinc-800 text-zinc-100 border border-zinc-700/60 font-medium rounded-br-sm"
                   : "bg-white/[0.06] border border-white/[0.08] text-gray-200 rounded-bl-sm"
               )}>
                 <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">{msg.body}</p>
-                <p className={cn("text-[10px] mt-1 opacity-60", isAgent ? "text-white/80 text-right" : "text-gray-500")}>
+                <p className={cn("text-[10px] mt-1 opacity-60", isAgent ? "text-zinc-300 text-right" : "text-gray-500")}>
                   {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   {isAgent ? (
                     <span className="ml-1.5 font-medium">
@@ -155,7 +155,7 @@ function AgentMessagesPanel({ response }: { response: ResponseDetailSheetProps["
 
       {/* Input */}
       <div className="shrink-0 border-t border-white/[0.06] p-3">
-        <div className="flex items-end gap-2 bg-white/[0.04] border border-white/[0.08] rounded-2xl p-1 pl-3 focus-within:border-purple-500/30 transition-colors">
+        <div className="flex items-end gap-2 bg-white/[0.04] border border-white/[0.08] rounded-2xl p-1 pl-3 focus-within:border-zinc-600 transition-colors">
           <textarea
             id="agent-message-input"
             value={input}
@@ -170,12 +170,12 @@ function AgentMessagesPanel({ response }: { response: ResponseDetailSheetProps["
             onClick={handleSend}
             disabled={!input.trim() || sending}
             id="send-agent-message-btn"
-            className="shrink-0 w-9 h-9 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 text-white flex items-center justify-center hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
+            className="shrink-0 w-9 h-9 rounded-xl bg-zinc-800 text-zinc-100 hover:bg-zinc-700 border border-zinc-700 flex items-center justify-center transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm font-bold"
           >
             {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </button>
         </div>
-        <p className="text-[10px] text-gray-700 mt-1 ml-1">Shift+Enter for new line</p>
+        <p className="text-[10px] text-gray-500 mt-1 ml-1">Shift+Enter for new line</p>
       </div>
     </div>
   );
@@ -483,7 +483,7 @@ function AgentControlsPanel({ response, formId, onUpdated }: { response: Respons
             pushSuccess
               ? "bg-green-500/20 border border-green-500/30 text-green-300"
               : selectedItineraryId
-              ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:brightness-110 shadow-purple-500/20"
+              ? "bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
               : "bg-white/5 border border-white/10 text-gray-600 cursor-not-allowed"
           )}
         >
@@ -495,7 +495,7 @@ function AgentControlsPanel({ response, formId, onUpdated }: { response: Respons
             <><Upload className="w-4 h-4" /> Update Client Dashboard</>
           )}
         </button>
-        <p className="text-[10px] text-gray-700 mt-1.5 text-center">
+        <p className="text-[10px] text-gray-500 mt-1.5 text-center">
           Client sees the itinerary only after you click this
         </p>
 
@@ -656,10 +656,10 @@ export function ResponseDetailSheet({ response, formId, onClose, onConverted, on
 
               {/* Linked Client Profile Link (if present) */}
               {response.client_id && (
-                <div className="bg-gradient-to-r from-purple-500/5 to-indigo-500/5 border border-purple-500/25 rounded-xl p-4 flex items-center justify-between">
+                <div className="bg-[#121215] border border-white/10 rounded-xl p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
-                      <Users className="w-4 h-4 text-purple-400" />
+                    <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                      <Users className="w-4 h-4 text-white" />
                     </div>
                     <div>
                       <p className="text-[10px] text-gray-500 uppercase tracking-wider font-semibold">Linked CRM Client</p>
@@ -743,11 +743,11 @@ export function ResponseDetailSheet({ response, formId, onClose, onConverted, on
                     { label: "Converted",  ts: response.converted_at,  done: !!response.converted_at,  desc: "Converted to itinerary in The Lab" },
                   ].map((e, idx) => (
                     <div key={idx} className="flex items-start gap-4 relative">
-                      <div className={cn("w-2 h-2 rounded-full mt-1.5 shrink-0 z-10", e.done ? "bg-purple-500 ring-4 ring-purple-500/10" : "bg-white/10 ring-4 ring-white/[0.02]")} />
+                      <div className={cn("w-2 h-2 rounded-full mt-1.5 shrink-0 z-10", e.done ? "bg-white ring-4 ring-white/10" : "bg-white/10 ring-4 ring-white/[0.02]")} />
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className={cn("text-xs font-semibold", e.done ? "text-white" : "text-gray-600")}>
-                            {e.label} <span className={cn("text-[10px] font-normal italic ml-1", e.done ? "text-gray-400" : "text-gray-700")}>— {e.desc}</span>
+                          <p className={cn("text-xs font-semibold", e.done ? "text-white" : "text-gray-500")}>
+                            {e.label} <span className={cn("text-[10px] font-normal italic ml-1", e.done ? "text-gray-400" : "text-gray-500")}>— {e.desc}</span>
                           </p>
                           {e.done && e.ts && (
                             <span className="text-[10px] text-gray-500 bg-white/5 px-1.5 py-0.5 rounded italic whitespace-nowrap">
@@ -791,7 +791,7 @@ export function ResponseDetailSheet({ response, formId, onClose, onConverted, on
                   onClick={handleConvert}
                   disabled={converting}
                   id="convert-to-itinerary-btn"
-                  className="w-full h-12 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-lg shadow-purple-500/20"
+                  className="w-full h-12 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 font-semibold text-sm transition-all disabled:opacity-60 flex items-center justify-center gap-2 shadow-sm"
                 >
                   {converting ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Loading The Lab…</>

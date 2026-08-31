@@ -46,3 +46,6 @@ firestore-debug.log
 
 # token tracking
 .token-usage.json
+
+# archived home page
+src/app/(site)/(marketing)/archived-home.tsx

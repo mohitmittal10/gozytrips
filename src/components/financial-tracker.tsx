@@ -85,9 +85,9 @@ export default function FinancialTracker({
                         label: "Net Profit Margin",
                         value: `${fin.stats.profitMargin.toFixed(1)}%`,
                         subtext: `${fin.fm(fin.stats.netProfit)} net profit`,
-                        color: "text-purple-300",
-                        badge: "bg-purple-500/10 text-purple-300 border border-purple-500/20",
-                        bg: "from-purple-950/25 to-purple-900/5 border-purple-500/25",
+                        color: "text-zinc-200",
+                        badge: "bg-zinc-800 text-zinc-300 border border-zinc-700",
+                        bg: "from-zinc-900 to-zinc-950 border-zinc-800",
                     },
                 ].map((card, idx) => (
                     <div
@@ -117,10 +117,10 @@ export default function FinancialTracker({
                             key={tab.key}
                             onClick={() => setActiveFinTab(tab.key)}
                             className={cn(
-                                "flex items-center justify-center gap-2 text-xs font-semibold py-2.5 px-4 rounded-xl transition-all whitespace-nowrap flex-1 shrink-0",
+                                "flex items-center justify-center gap-2 text-xs font-semibold py-2.5 px-4 rounded-xl transition-all whitespace-nowrap flex-1 shrink-0 border",
                                 isActive
-                                    ? "bg-purple-600 text-white shadow-md shadow-purple-600/30"
-                                    : "text-gray-400 hover:text-white hover:bg-white/5"
+                                    ? "bg-zinc-800 text-zinc-100 border-zinc-700 font-semibold shadow-sm"
+                                    : "border-transparent text-gray-400 hover:text-white hover:bg-white/5"
                             )}
                         >
                             <Icon className="w-3.5 h-3.5" />

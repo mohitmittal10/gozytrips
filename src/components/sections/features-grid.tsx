@@ -17,43 +17,43 @@ const features = [
   {
     title: "AI Generation",
     description: "Stop spending hours on research. Describe the dream trip — we'll build the full itinerary, day by day, optimized to minimize travel fatigue.",
-    icon: <Cpu className="w-6 h-6 text-indigo-400" />,
+    icon: <Cpu className="w-6 h-6 text-[#71717A]" />,
     className: "col-span-12 md:col-span-6 lg:col-span-4",
   },
   {
     title: "Preference-Driven",
     description: "Every traveler is different. Budget backpacker or luxury seeker — your itinerary adapts to them, not the other way around.",
-    icon: <Fingerprint className="w-6 h-6 text-indigo-400" />,
+    icon: <Fingerprint className="w-6 h-6 text-[#71717A]" />,
     className: "col-span-12 md:col-span-6 lg:col-span-4",
   },
   {
     title: "Editing Tools",
     description: "AI writes the first draft. You make it perfect. Drag, reorder, delete — full creative control, zero friction.",
-    icon: <BoxSelect className="w-6 h-6 text-indigo-400" />,
+    icon: <BoxSelect className="w-6 h-6 text-[#71717A]" />,
     className: "col-span-12 md:col-span-6 lg:col-span-4",
   },
   {
     title: "Pricing & Markup Engine",
     description: "Quote adults, kids, and infants instantly. Set your markup, add your service fee, and send a professional quote in seconds.",
-    icon: <Coins className="w-6 h-6 text-indigo-400" />,
+    icon: <Coins className="w-6 h-6 text-[#71717A]" />,
     className: "col-span-12 md:col-span-6 lg:col-span-6",
   },
   {
     title: "Status Tracking",
     description: "From first idea to confirmed booking — track every quote through its lifecycle. Never lose a lead to disorganized follow-ups again.",
-    icon: <Workflow className="w-6 h-6 text-indigo-400" />,
+    icon: <Workflow className="w-6 h-6 text-[#71717A]" />,
     className: "col-span-12 md:col-span-6 lg:col-span-6",
   },
   {
     title: "PDF Export",
     description: "Send proposals so beautiful, clients say yes before reading the details. Four premium templates, your brand, one click. Professional, polished, and persuasive.",
-    icon: <FileText className="w-6 h-6 text-indigo-400" />,
+    icon: <FileText className="w-6 h-6 text-[#71717A]" />,
     className: "col-span-12 md:col-span-12 lg:col-span-8",
   },
   {
     title: "Security",
     description: "Your client data stays yours. Always. Enterprise-grade security with row-level privacy built in from day one.",
-    icon: <LockKeyhole className="w-6 h-6 text-indigo-400" />,
+    icon: <LockKeyhole className="w-6 h-6 text-[#71717A]" />,
     className: "col-span-12 md:col-span-12 lg:col-span-4",
   },
 ];
@@ -95,7 +95,7 @@ export default function FeaturesGrid() {
             viewport={{ once: true }}
             className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-4"
           >
-            Elevate Your <span className="bg-gradient-to-r from-indigo-400 via-indigo-300 to-indigo-500 bg-clip-text text-transparent">Travel Business</span>
+            Elevate Your <span className="text-[#71717A]">Travel Business</span>
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}

@@ -440,7 +440,7 @@ export const LuxuryTheme = ({
                 .luxury-wrap .cover::after {
                     content: "";
                     position: absolute; inset: 0;
-                    background: linear-gradient(to bottom, rgba(10,10,9,0.35) 0%, rgba(10,10,9,0.75) 70%, rgba(10,10,9,1) 100%);
+                    background-color: rgba(10,10,9,0.75);
                 }
                 .luxury-wrap .cover .cover-inner {
                     position: relative;

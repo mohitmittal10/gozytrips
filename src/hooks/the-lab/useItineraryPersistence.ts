@@ -97,7 +97,6 @@ export function buildComparisonPayload(data: Partial<LoadedPersistenceData>) {
     itinerary_data: itineraryData,
     generation_preferences: normalizedFormValues,
     client_id: data.selectedClientId === "none" ? null : data.selectedClientId,
-    optimization_count: Number(data.optimizationCount || 0),
     show_timestamps: data.showTimestamps ?? true,
     selected_theme: data.selectedTheme || 'classic',
     pdf_overrides: data.pdfOverrides || {},
@@ -227,7 +226,6 @@ export function useItineraryPersistence({
               // DB currency column always wins
               currency: data.currency || pricing?.currency || DEFAULT_CURRENCY,
             },
-            optimizationCount: data.optimization_count || 0,
             selectedClientId: data.client_id || "none",
             selectedStatus: data.status || "draft",
             tripMetadata: _tripMetadata,
@@ -396,7 +394,6 @@ function getEmptyData(): LoadedPersistenceData {
     cabs: [],
     buses: [],
     pricing: undefined,
-    optimizationCount: 0,
     selectedClientId: "none",
     selectedStatus: "draft",
     tripMetadata: null,

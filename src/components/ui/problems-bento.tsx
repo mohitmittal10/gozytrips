@@ -295,7 +295,7 @@ export function ProblemsBento() {
           <p className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-3">4 Problems WanderLabs Kills</p>
           <h2 className="text-3xl md:text-5xl font-black tracking-tight">
             The things every travel agent{" "}
-            <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">loses sleep over</span>
+            <span className="text-[#71717A]">loses sleep over</span>
           </h2>
           <p className="text-zinc-500 text-sm md:text-base mt-4 max-w-xl mx-auto">
             Not just promises — each card shows exactly how WanderLabs fixes it live.
@@ -314,8 +314,8 @@ export function ProblemsBento() {
                 card.colSpan, card.rowHeight, accentBorder[card.accent]
               )}
             >
-              <div className={cn("absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500", accentTopLine[card.accent])} />
-              <div className={cn("absolute inset-0 bg-gradient-to-br to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500", accentGlow[card.accent])} />
+              <div className="absolute top-0 left-0 right-0 h-px bg-indigo-500/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-indigo-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
               <div className="relative z-10 p-7 pb-3 flex flex-col gap-3">
                 <div className="flex items-center gap-3">

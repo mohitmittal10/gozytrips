@@ -36,7 +36,6 @@ export interface MetaSlice {
   selectedStatus: string;
   selectedTheme: PdfTheme;
   pdfOverrides: Record<string, any>;
-  optimizationCount: number;
 }
 
 export type AutosaveStatus = "saving" | "saved" | "error" | "idle";
@@ -71,7 +70,6 @@ export interface PdfRelevantData {
   pdfOverrides: Record<string, any>;
   selectedClientId: string;
   selectedStatus: string;
-  optimizationCount: number;
 }
 
 export interface LabState extends TimelineSlice, LogisticsSlice, InclusionsSlice, FinanceSlice, MetaSlice, DirtyTrackingSlice, AutosaveSlice {
@@ -101,7 +99,6 @@ export interface LabState extends TimelineSlice, LogisticsSlice, InclusionsSlice
   setSelectedStatus: (status: string) => void;
   setSelectedTheme: (theme: PdfTheme) => void;
   setPdfOverrides: (pdfOverrides: Record<string, any>) => void;
-  setOptimizationCount: (count: number) => void;
 
   // Batch & Lifecycle Actions
   loadStateFromPersistence: (data: Partial<LabState>) => void;

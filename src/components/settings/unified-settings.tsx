@@ -398,7 +398,7 @@ export function UnifiedSettings() {
             <Settings className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
           </div>
           <div className="min-w-0">
-            <h2 className="font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400" style={{ fontSize: 'clamp(1.125rem, 2.5vw, 1.5rem)' }}>Profile & Settings</h2>
+            <h2 className="font-bold text-white" style={{ fontSize: 'clamp(1.125rem, 2.5vw, 1.5rem)' }}>Profile & Settings</h2>
             <p className="text-xs sm:text-sm text-gray-500 truncate">Manage your account, personal profile, and agency defaults.</p>
           </div>
         </div>

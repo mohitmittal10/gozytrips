@@ -99,14 +99,6 @@ function runTests() {
   const hashStatus = computePdfDataHash(statusMutatedState);
   assertEqual(isStateDirty(hashStatus, hash1), true, "Mutated selectedStatus marks state as dirty");
 
-  // Test 8: Optimization count mutation triggers dirty state
-  const optMutatedState = {
-    ...state,
-    optimizationCount: 2,
-  };
-  const hashOpt = computePdfDataHash(optMutatedState);
-  assertEqual(isStateDirty(hashOpt, hash1), true, "Mutated optimizationCount marks state as dirty");
-
   // Test 9: Cabs and buses mutation triggers dirty state
   const cabsMutatedState = {
     ...state,

@@ -301,7 +301,7 @@ export default function Step2Animation() {
                                         transition={{ delay: 0.5 }}
                                     >
                                         <motion.div 
-                                            className="h-full bg-gradient-to-r from-emerald-400 to-cyan-400"
+                                            className="h-full bg-emerald-400"
                                             initial={{ width: "0%" }}
                                             animate={{ width: "100%" }}
                                             transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}

@@ -1,8 +1,7 @@
-// Right-side summary panel for status, AI optimization feedback, and client detail
+// Right-side summary panel for status and client details
 import React from 'react';
 import { cn } from "@/lib/utils";
 import { MorphingSquare } from "@/components/ui/morphing-square";
-import { MAX_AI_OPTIMIZATIONS } from "@/constants/the-lab";
 import { useReferenceOptions } from '@/hooks/use-reference-options';
 import { Sliders, MapPin, Calendar, Compass, Sparkles, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
@@ -12,9 +11,7 @@ interface TheLabSummaryPanelProps {
   selectedStatus: string;
   clients: any[];
   selectedClientId: string;
-  optimizationCount: number;
   isGenerating: boolean;
-  onOptimize: (feedback: string) => void;
   finalTotal?: number;
   currencySymbol?: string;
   tripMetadata?: any;
@@ -22,7 +19,7 @@ interface TheLabSummaryPanelProps {
 
 const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
   itinerary, selectedStatus, clients, selectedClientId,
-  optimizationCount, isGenerating, onOptimize,
+  isGenerating,
   finalTotal, currencySymbol, tripMetadata
 }: TheLabSummaryPanelProps) {
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
@@ -267,116 +264,6 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
           )}
         </div>
       )}
-
-      {/* AI Optimizer Section */}
-      <div className="liquid-glass p-4 rounded-2xl space-y-3">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-primary/20 border border-primary/30 flex items-center justify-center shrink-0">
-              <span className="material-symbols-outlined text-[14px] text-primary">auto_awesome</span>
-            </div>
-            <h3 className="font-extrabold text-white text-sm tracking-tight">AI Optimizer</h3>
-          </div>
-          <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest bg-white/5 border border-white/5 px-2 py-0.5 rounded-full">
-            {optimizationCount}/{MAX_AI_OPTIMIZATIONS} used
-          </span>
-        </div>
-
-        {/* Optimization Cards */}
-        <div className="space-y-2">
-          {itinerary.optimizations && itinerary.optimizations.length > 0 ? (
-            itinerary.optimizations.map((opt: any, idx: number) => {
-              const isDisabled = optimizationCount >= MAX_AI_OPTIMIZATIONS || isGenerating;
-              const impactColor =
-                /high/i.test(opt.impact) ? "text-emerald-400 bg-emerald-400/10 border-emerald-400/20" :
-                /medium/i.test(opt.impact) ? "text-amber-400 bg-amber-400/10 border-amber-400/20" :
-                "text-sky-400 bg-sky-400/10 border-sky-400/20";
-              return (
-                <div
-                  key={idx}
-                  onClick={() => {
-                    if (isDisabled) return;
-                    onOptimize(`${opt.type}: ${opt.message}`);
-                  }}
-                  title={optimizationCount >= MAX_AI_OPTIMIZATIONS ? "Optimization limit reached" : "Click to apply this optimization"}
-                  style={{ animationDelay: `${80 + (idx * 80)}ms` }}
-                  className={cn(
-                    "rounded-xl border-l-2 border border-white/5 bg-white/[0.03] p-3 transition-all duration-200 group animate-in fade-in slide-in-from-right-3 fill-mode-both",
-                    isDisabled
-                      ? "opacity-40 cursor-not-allowed border-l-white/10"
-                      : "hover:bg-white/[0.07] hover:border-white/10 cursor-pointer border-l-primary/40 hover:border-l-primary"
-                  )}
-                >
-                  {/* Card top row: type label + impact badge + bolt icon */}
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <p className="text-[9px] uppercase font-black text-primary/60 tracking-[0.18em] flex-1 min-w-0 truncate">
-                      {opt.type}
-                    </p>
-                    <span className={cn(
-                      "text-[8px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded border leading-none shrink-0",
-                      impactColor
-                    )}>
-                      {opt.impact}
-                    </span>
-                    {!isDisabled && (
-                      <span className="material-symbols-outlined text-[13px] text-primary opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                        bolt
-                      </span>
-                    )}
-                  </div>
-                  {/* Message */}
-                  <p className="text-[11px] font-semibold text-white/75 leading-snug group-hover:text-white/95 transition-colors">
-                    {opt.message}
-                  </p>
-                  {/* Apply hint on hover */}
-                  {!isDisabled && (
-                    <p className="text-[9px] text-primary/50 font-bold mt-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                      Click to apply →
-                    </p>
-                  )}
-                </div>
-              );
-            })
-          ) : (
-            <div className="py-7 text-center space-y-2">
-              <div className="w-9 h-9 rounded-full bg-white/5 mx-auto flex items-center justify-center">
-                <span className="material-symbols-outlined text-[18px] text-zinc-600">lightbulb</span>
-              </div>
-              <p className="text-[10px] font-semibold text-zinc-600">Generating smart insights…</p>
-            </div>
-          )}
-        </div>
-
-        {/* Apply All Button */}
-        <button
-          onClick={() => {
-            if (optimizationCount >= MAX_AI_OPTIMIZATIONS) return;
-            const opts = itinerary.optimizations;
-            const feedback =
-              opts && opts.length > 0
-                ? opts.map((o: any) => `${o.type}: ${o.message}`).join(". ")
-                : "Please refine and improve the itinerary flow, timing, and activity variety while keeping the same destinations and dates.";
-            onOptimize(feedback);
-          }}
-          disabled={isGenerating || !itinerary || optimizationCount >= MAX_AI_OPTIMIZATIONS}
-          className={cn(
-            "w-full py-2.5 rounded-xl aurora-gradient text-white font-bold text-xs shadow-lg transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-1.5",
-            (isGenerating || !itinerary || optimizationCount >= MAX_AI_OPTIMIZATIONS) && "opacity-40 cursor-not-allowed"
-          )}
-        >
-          {isGenerating ? (
-            <MorphingSquare className="w-3.5 h-3.5 bg-white" message="Refining itinerary…" messagePlacement="right" />
-          ) : (
-            <>
-              <span className="material-symbols-outlined text-[15px]">bolt</span>
-              {optimizationCount >= MAX_AI_OPTIMIZATIONS
-                ? "Optimization Limit Reached"
-                : "Apply All Optimizations"}
-            </>
-          )}
-        </button>
-      </div>
 
       {/* Client Details */}
       <div className="liquid-glass p-4 rounded-2xl">

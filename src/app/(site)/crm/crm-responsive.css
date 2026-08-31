@@ -13,8 +13,8 @@
 
 .crm-page {
   min-height: 100vh;
-  background-color: #0A0A0A;
-  color: #fff;
+  background-color: #000000;
+  color: #f4f4f5;
   padding-top: 5rem; /* Increased to avoid overlap with fixed navbar (61px) */
   padding-bottom: 1rem;
   overflow-x: clip; /* clip instead of hidden to allow position: sticky to work on children */
@@ -39,15 +39,13 @@
 .crm-page-title {
   font-size: clamp(1.5rem, 5vw, 2.5rem);
   font-weight: 700;
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-image: linear-gradient(to right, #a78bfa, #db2777);
+  color: #ffffff;
+  letter-spacing: -0.025em;
   line-height: 1.2;
 }
 
 .crm-page-subtitle {
-  color: #9ca3af;
+  color: #a1a1aa;
   margin-top: 0.5rem;
   font-size: clamp(0.8rem, 2vw, 0.95rem);
 }

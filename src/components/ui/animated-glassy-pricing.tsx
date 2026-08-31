@@ -284,7 +284,7 @@ export const ModernPricingPage = ({
               hidden: { opacity: 0, y: -20 },
               visible: { opacity: 1, y: 0 }
             }}
-            className="text-[48px] md:text-[64px] font-bold leading-tight tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-slate-900 via-cyan-500 to-blue-600 dark:from-white dark:via-cyan-300 dark:to-blue-400"
+            className="text-[48px] md:text-[64px] font-bold leading-tight tracking-tight text-slate-900 dark:text-white"
           >
             {title}
           </motion.h1>

@@ -28,7 +28,7 @@ const getPrimaryDestination = (itinerary: ThemeProps["itinerary"]) =>
     itinerary.itinerary?.[0]?.areaFocus?.split(',')[0]?.trim() || "Destination";
 
 const getHeroDescription = (itinerary: ThemeProps["itinerary"]) =>
-    itinerary.itinerary?.[0]?.timeline?.[0]?.details || itinerary.optimizations?.[0]?.message || "A curated luxury journey designed around your destination.";
+    itinerary.itinerary?.[0]?.timeline?.[0]?.details || "A curated luxury journey designed around your destination.";
 
 const getNightsLabel = (days: number) => `${Math.max(days - 1, 0)} Night${Math.max(days - 1, 0) === 1 ? "" : "s"}`;
 
@@ -228,7 +228,7 @@ export const DesertTheme = ({
             <section data-pdf-section="cover" style={{ ...PAGE_STYLE, background: "#fdfcfb" }}>
                 <div style={{ position: "relative", height: "620px", overflow: "hidden" }}>
                     <img src={getCoverImage(itinerary)} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} crossOrigin="anonymous" />
-                    <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(0,0,0,0.6), transparent 55%)" }} />
+                    <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)" }} />
                     {/* Agency logo stamp — top right (logo only) */}
                     <div style={{ position: "absolute", top: "32px", right: "64px", zIndex: 10, display: "flex", alignItems: "center", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)", borderRadius: "12px", padding: "10px 16px", boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
                         {agent.logoUrl ? (
@@ -240,7 +240,7 @@ export const DesertTheme = ({
                         )}
                     </div>
                     <div style={{ position: "absolute", left: "64px", right: "64px", bottom: "72px", color: "#ffffff" }}>
-                        <h1 style={{ margin: "0 0 24px 0", fontSize: "64px", lineHeight: "0.98", fontWeight: 500, letterSpacing: "-0.8px" }}>
+                        <h1 data-field="itinerary.title" style={{ margin: "0 0 24px 0", fontSize: "64px", lineHeight: "0.98", fontWeight: 500, letterSpacing: "-0.8px" }}>
                             {title}
                         </h1>
                         <p style={{ margin: 0, maxWidth: "760px", fontSize: "21px", lineHeight: "1.7", color: "rgba(255,255,255,0.92)", fontWeight: 400 }}>
@@ -280,7 +280,7 @@ export const DesertTheme = ({
                     <p style={{ margin: "0 0 16px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "3px", color: "#fb923c", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                         Your Travel Agency
                     </p>
-                    <h2 style={{ margin: "0 0 28px 0", fontSize: "52px", lineHeight: "1.08", color: "#111827", fontWeight: 500 }}>
+                    <h2 data-field="agency.companyName" style={{ margin: "0 0 28px 0", fontSize: "52px", lineHeight: "1.08", color: "#111827", fontWeight: 500 }}>
                         {agent.companyName}
                     </h2>
                     <p style={{ margin: "0 0 28px 0", fontSize: "17px", lineHeight: "1.9", color: "#6b7280", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
@@ -295,18 +295,18 @@ export const DesertTheme = ({
                             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                                 <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
                                     <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Consultant</p>
-                                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.agentName}</p>
+                                    <p data-field="agency.name" style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.agentName}</p>
                                 </div>
                                 {agent.agentPhone && (
                                     <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
                                         <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Phone</p>
-                                        <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.agentPhone}</p>
+                                        <p data-field="agency.phone" style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.agentPhone}</p>
                                     </div>
                                 )}
                                 {agent.agentEmail && (
                                     <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
                                         <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Email</p>
-                                        <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.agentEmail}</p>
+                                        <p data-field="agency.email" style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.agentEmail}</p>
                                     </div>
                                 )}
                                 {agent.agentWebsite && (
@@ -403,7 +403,7 @@ export const DesertTheme = ({
                                 <p style={{ margin: "0 0 8px 0", color: "#fb923c", fontSize: "14px", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     Day {index + 1}
                                 </p>
-                                <h3 style={{ margin: "0 0 8px 0", fontSize: "30px", color: "#1f2937", fontWeight: 500 }}>
+                                <h3 data-field={`days[${index}].location`} style={{ margin: "0 0 8px 0", fontSize: "30px", color: "#1f2937", fontWeight: 500 }}>
                                     {formatTitleCase(day.areaFocus)}
                                 </h3>
                                 <p style={{ margin: "0 0 16px 0", fontSize: "13px", color: "#9ca3af", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
@@ -415,7 +415,7 @@ export const DesertTheme = ({
                                     {day.timeline?.map((step, si) => (
                                         <li key={si} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
                                             <span style={{ flexShrink: 0, marginTop: "5px", width: "6px", height: "6px", borderRadius: "50%", background: "#fb923c", display: "inline-block" }} />
-                                            <span style={{ flex: 1, fontSize: "14px", lineHeight: "1.7", color: "#6b7280" }}>
+                                            <span data-field={`days[${index}].activities[${si}]`} style={{ flex: 1, fontSize: "14px", lineHeight: "1.7", color: "#6b7280" }}>
                                                 {showTimestamps && step.time && (
                                                     <span style={{ fontWeight: 700, color: "#fb923c", marginRight: "6px", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{step.time}</span>
                                                 )}
@@ -531,7 +531,7 @@ export const DesertTheme = ({
                                 <h3 style={{ margin: "0 0 32px 0", fontSize: "32px", color: "#111827", fontWeight: 500 }}>Inclusions</h3>
                                 <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "16px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     {inclusionsList.map((inc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "16px", fontSize: "15px", color: "#374151", lineHeight: "1.7", fontWeight: 500 }}><span style={{ color: "#fb923c", fontSize: "18px", marginTop: "-2px" }}>✓</span> <span>{inc}</span></li>
+                                        <li key={i} style={{ display: "flex", gap: "16px", fontSize: "15px", color: "#374151", lineHeight: "1.7", fontWeight: 500 }}><span style={{ color: "#fb923c", fontSize: "18px", marginTop: "-2px" }}>✓</span> <span data-field={`inclusions[${i}]`}>{inc}</span></li>
                                     ))}
                                 </ul>
                             </div>
@@ -542,7 +542,7 @@ export const DesertTheme = ({
                                 <h3 style={{ margin: "0 0 32px 0", fontSize: "32px", color: "#111827", fontWeight: 500 }}>Exclusions</h3>
                                 <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "16px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     {exclusionsList.map((exc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "16px", fontSize: "15px", color: "#6b7280", lineHeight: "1.7", fontWeight: 500 }}><span style={{ color: "#d1d5db", fontSize: "18px", marginTop: "-2px" }}>✗</span> <span>{exc}</span></li>
+                                        <li key={i} style={{ display: "flex", gap: "16px", fontSize: "15px", color: "#6b7280", lineHeight: "1.7", fontWeight: 500 }}><span style={{ color: "#d1d5db", fontSize: "18px", marginTop: "-2px" }}>✗</span> <span data-field={`exclusions[${i}]`}>{exc}</span></li>
                                     ))}
                                 </ul>
                             </div>
@@ -669,7 +669,7 @@ export const DesertTheme = ({
                                 <div style={{ flex: 1, background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
                                     <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Cancellation Policy</h3>
                                     <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
-                                        {cancellationPolicyList.map((p, i) => <div key={i}>• {p}</div>)}
+                                        {cancellationPolicyList.map((p, i) => <div data-field={`cancellationPolicy[${i}]`} key={i}>• {p}</div>)}
                                     </div>
                                 </div>
                             )}
@@ -677,7 +677,7 @@ export const DesertTheme = ({
                                 <div style={{ flex: 1, background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
                                     <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Accepted Payment Methods</h3>
                                     <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
-                                        {paymentMethodsList.map((p, i) => <div key={i}>• {p}</div>)}
+                                        {paymentMethodsList.map((p, i) => <div data-field={`conditions[${i}]`} key={i}>• {p}</div>)}
                                     </div>
                                 </div>
                             )}
@@ -687,7 +687,7 @@ export const DesertTheme = ({
                         <div style={{ marginTop: "32px", background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "16px", padding: "32px" }}>
                             <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: "#111827", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>Terms & Conditions</h3>
                             <div style={{ fontSize: "14px", color: "#6b7280", lineHeight: "1.7" }}>
-                                {termsAndConditionsList.map((p, i) => <div key={i}>• {p}</div>)}
+                                {termsAndConditionsList.map((p, i) => <div data-field={`terms[${i}]`} key={i}>• {p}</div>)}
                             </div>
                         </div>
                     )}

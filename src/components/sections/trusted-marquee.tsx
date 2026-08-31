@@ -42,9 +42,6 @@ export default function TrustedMarquee() {
           ))}
         </motion.div>
         
-        {/* Gradient Overlays */}
-        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#020205] to-transparent z-10" />
-        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#020205] to-transparent z-10" />
       </div>
     </section>
   );

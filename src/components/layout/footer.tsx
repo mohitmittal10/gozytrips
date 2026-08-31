@@ -24,7 +24,6 @@ const Footer = () => {
   const featureLinks = [
     { name: "PDF Formats", href: "/#curated" },
     { name: "How It Works", href: "/#how-it-works" },
-    { name: "Why Us?", href: "/why-us" },
   ];
 
   const companyLinks = [
@@ -121,7 +120,7 @@ const Footer = () => {
           {/* Newsletter/CTA Section */}
           <div className="col-span-12 lg:col-span-3">
             <div className="p-6 sm:p-8 rounded-[2rem] bg-white/[0.02] border border-white/[0.06] backdrop-blur-xl relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+              <div className="absolute inset-0 bg-purple-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
               <div className="relative z-10">
                 <h3 className="text-white font-bold text-xl mb-2">Start planning today</h3>
                 <p className="text-zinc-400 text-sm mb-6 font-light leading-relaxed">

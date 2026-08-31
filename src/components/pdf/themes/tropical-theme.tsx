@@ -129,7 +129,7 @@ export const TropicalTheme = ({
                 }
                 .tropical-wrap .hero-overlay {
                     position: absolute; inset: 0;
-                    background: linear-gradient(to bottom, rgba(0,0,0,0.25) 0%, transparent 50%, var(--bg) 100%);
+                    background-color: rgba(0,0,0,0.25);
                 }
 
                 .tropical-wrap .header-card-wrap {
@@ -803,8 +803,8 @@ export const TropicalTheme = ({
                     <div className="header-card-wrap">
                         <div className="header-card">
                             <div className="stars">★★★★★</div>
-                            <h1>{title}</h1>
-                            {agent.tagline && <p>{agent.tagline}</p>}
+                            <h1 data-field="itinerary.title">{title}</h1>
+                            {agent.tagline && <p data-field="agency.tagline">{agent.tagline}</p>}
                             <div className="pills">
                                 <span className="pill">{totalDays} Days • {totalNights} Nights</span>
                                 {(
@@ -818,18 +818,18 @@ export const TropicalTheme = ({
                         <div className="meta-box">
                             <div className="meta-col">
                                 <span className="meta-label">Agency Details</span>
-                                <h3>🌴 {agent.companyName}</h3>
+                                <h3 data-field="agency.companyName">🌴 {agent.companyName}</h3>
                                 <ul className="meta-list">
                                     {agent.agentEmail && (
                                         <li>
                                             <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
-                                            {agent.agentEmail}
+                                            <span data-field="agency.email">{agent.agentEmail}</span>
                                         </li>
                                     )}
                                     {agent.agentPhone && (
                                         <li>
                                             <svg className="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.64 4.38 2 2 0 0 1 3.62 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.91a16 16 0 0 0 6.07 6.07l.91-.91a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
-                                            {agent.agentPhone}
+                                            <span data-field="agency.phone">{agent.agentPhone}</span>
                                         </li>
                                     )}
                                     {agent.agentWebsite && (
@@ -941,7 +941,7 @@ export const TropicalTheme = ({
                             <div key={index} className={`day-card ${index % 2 !== 0 && dayImg ? 'reversed' : ''}`} data-pdf-section={`day-${index}`}>
                                 <div>
                                     <span className="day-badge">Day {index + 1} • {formatDate(day.date)}</span>
-                                    <h3>{formatTitleCase(day.areaFocus)}</h3>
+                                    <h3 data-field={`days[${index}].location`}>{formatTitleCase(day.areaFocus)}</h3>
                                     <ul className="day-items">
                                         {Array.isArray(day.timeline) && day.timeline.map((step, si) => (
                                             <li key={si}>
@@ -950,7 +950,7 @@ export const TropicalTheme = ({
                                                 ) : (
                                                     <span className="num" style={{width: '20px'}}>•</span>
                                                 )}
-                                                <span>{step.details}</span>
+                                                <span data-field={`days[${index}].activities[${si}]`}>{step.details}</span>
                                             </li>
                                         ))}
                                     </ul>
@@ -975,7 +975,7 @@ export const TropicalTheme = ({
                                     <h3>Inclusions</h3>
                                     <ul className="card-list">
                                         {inclusionsList.map((inc, i) => (
-                                            <li key={i}><span className="n-blue">{i + 1}.</span><span>{inc}</span></li>
+                                            <li key={i}><span className="n-blue">{i + 1}.</span><span data-field={`inclusions[${i}]`}>{inc}</span></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -985,7 +985,7 @@ export const TropicalTheme = ({
                                     <h3>Exclusions</h3>
                                     <ul className="card-list">
                                         {exclusionsList.map((exc, i) => (
-                                            <li key={i}><span className="n-grey">{i + 1}.</span><span>{exc}</span></li>
+                                            <li key={i}><span className="n-grey">{i + 1}.</span><span data-field={`exclusions[${i}]`}>{exc}</span></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -1213,7 +1213,7 @@ export const TropicalTheme = ({
                                             <span className="policy-label">Payment Methods</span>
                                             <ul className="policy-list">
                                                 {paymentMethodsList.map((pol, i) => (
-                                                    <li key={i}>{pol}</li>
+                                                    <li data-field={`conditions[${i}]`} key={i}>{pol}</li>
                                                 ))}
                                             </ul>
                                         </div>
@@ -1223,7 +1223,7 @@ export const TropicalTheme = ({
                                             <span className="policy-label">Cancellation Policy</span>
                                             <ul className="policy-list">
                                                 {cancellationPolicyList.map((pol, i) => (
-                                                    <li key={i}>{pol}</li>
+                                                    <li data-field={`cancellationPolicy[${i}]`} key={i}>{pol}</li>
                                                 ))}
                                             </ul>
                                         </div>
@@ -1235,7 +1235,7 @@ export const TropicalTheme = ({
                                     <span className="policy-label" style={{ display: "block", marginBottom: "12px" }}>Terms & Conditions</span>
                                     <ul className="policy-list">
                                         {termsAndConditionsList.map((pol, i) => (
-                                            <li key={i}>{pol}</li>
+                                            <li data-field={`terms[${i}]`} key={i}>{pol}</li>
                                         ))}
                                     </ul>
                                 </div>

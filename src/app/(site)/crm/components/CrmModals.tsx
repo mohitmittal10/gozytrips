@@ -189,7 +189,7 @@ export function CrmModals() {
                                     {pdfThemeOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
-                            <Button onClick={handleDownloadPdf} disabled={!selectedTripForModal} className="w-fit bg-white text-black hover:bg-gray-200">
+                            <Button onClick={handleDownloadPdf} disabled={!selectedTripForModal} className="w-fit bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 font-semibold">
                                 <Eye className="mr-2 h-4 w-4" /> Preview & Export
                             </Button>
                         </div>
@@ -252,16 +252,16 @@ export function CrmModals() {
             />
 
             <Sheet open={isActivitySheetOpen} onOpenChange={setIsActivitySheetOpen}>
-                <SheetContent className="w-[400px] sm:w-[540px] bg-[#0A0A0A] border-white/10 text-white p-0 flex flex-col">
-                    <SheetHeader className="p-6 border-b border-white/10">
-                        <SheetTitle className="text-xl flex items-center gap-2"><History className="w-5 h-5 text-purple-400" />Activity Center</SheetTitle>
-                        <SheetDescription className="text-gray-400">A complete history of all your CRM events.</SheetDescription>
+                <SheetContent className="w-[400px] sm:w-[540px] bg-[#0c0c0e] border-zinc-800 text-white p-0 flex flex-col">
+                    <SheetHeader className="p-6 border-b border-zinc-800">
+                        <SheetTitle className="text-xl flex items-center gap-2"><History className="w-5 h-5 text-white" />Activity Center</SheetTitle>
+                        <SheetDescription className="text-zinc-400">A complete history of all your CRM events.</SheetDescription>
                         <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-none">
                             {['all', 'client_added', 'trip_created', 'status_changed'].map(filter => (
                                 <button
                                     key={filter}
                                     onClick={() => context.filters.setActivityFilter(filter)}
-                                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${context.filters.activityFilter === filter ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10 hover:text-gray-200'}`}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${context.filters.activityFilter === filter ? 'bg-zinc-800 text-zinc-100 border border-zinc-700 font-semibold' : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10 hover:text-gray-200'}`}
                                 >
                                     {filter === 'all' && 'All Activity'}
                                     {filter === 'client_added' && 'New Clients'}

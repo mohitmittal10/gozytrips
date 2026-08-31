@@ -51,7 +51,7 @@ export const BookingsView = ({
                     <FileText className="w-12 h-12 text-gray-600 mb-4" />
                     <h3 className="text-xl font-medium text-white mb-2">No Standalone Bookings</h3>
                     <p className="mb-4">Create a quick booking for a cab, flight, or hotel independent of a full trip.</p>
-                    <Button onClick={() => setIsBookingDialogOpen(true)} className="px-6 py-2.5 aurora-gradient text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 h-10 border-none">
+                    <Button onClick={() => setIsBookingDialogOpen(true)} className="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700/80 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2 h-10">
                         Create First Booking
                     </Button>
                 </div>
@@ -61,9 +61,8 @@ export const BookingsView = ({
                         <div 
                             key={booking.id} 
                             onClick={() => setSelectedBooking(booking)}
-                            className="glass-main border border-white/10 rounded-xl p-5 hover:bg-white/[0.04] transition-all group relative overflow-hidden cursor-pointer"
+                            className="bg-[#121215] border border-white/10 rounded-xl p-5 hover:border-zinc-700 transition-all group relative overflow-hidden cursor-pointer"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                             <div className="flex items-center justify-between mb-3 relative">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-white/5 rounded-lg">

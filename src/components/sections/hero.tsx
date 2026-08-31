@@ -319,7 +319,7 @@ const Hero = () => {
                                 "Refined.",
                                 "Elevated."
                             ]} 
-                            className="bg-gradient-to-r from-indigo-400 via-indigo-300 to-indigo-500 bg-clip-text text-transparent" 
+                            className="text-[#71717A]" 
                         />
                     </motion.h1>
 
@@ -341,9 +341,9 @@ const Hero = () => {
                         <Link href={user ? "/the-lab" : "/auth/signup"} className="w-full sm:w-auto flex justify-center">
                             <MotionButton label="Try Free" classes="w-full sm:w-auto" />
                         </Link>
-                        <Link href="/why-us" className="w-full sm:w-auto">
+                        <Link href="#how-it-works" className="w-full sm:w-auto">
                             <button className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 px-8 py-4 rounded-full text-sm font-extrabold hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 flex items-center justify-center gap-2">
-                                Why Us? <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
+                                How It Works <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
                             </button>
                         </Link>
                     </motion.div>

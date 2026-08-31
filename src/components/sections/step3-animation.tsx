@@ -228,7 +228,7 @@ export default function Step3Animation() {
                                 
                                 {/* Overlay scan effect */}
                                 <motion.div 
-                                    className="absolute inset-0 bg-gradient-to-b from-transparent via-primary/20 to-transparent pointer-events-none"
+                                    className="absolute inset-0 bg-primary/20 pointer-events-none"
                                     initial={{ y: '-100%' }}
                                     animate={{ y: '100%' }}
                                     transition={{ duration: 1.5, ease: 'easeInOut' }}

@@ -38,7 +38,6 @@ const Header = () => {
     { name: "The Lab", url: "/the-lab", icon: Sparkles },
     { name: "Pricing", url: "/pricing", icon: CreditCard },
     { name: "CRM", url: "/crm", icon: Users },
-    { name: "Why Us?", url: "/why-us", icon: Info },
   ];
 
   const isTheLabPage = pathname === '/the-lab' || (pathname ? pathname.startsWith('/the-lab') : false);
@@ -153,7 +152,7 @@ const Header = () => {
                           </nav>
                           <div className="p-5 border-t border-white/5 space-y-4 bg-white/[0.01]">
                             <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/30 to-purple-500/30 border border-primary/20 flex items-center justify-center font-black text-xs text-white shadow-inner">
+                              <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/20 flex items-center justify-center font-black text-xs text-white shadow-inner">
                                 {user?.email ? user.email.slice(0, 2).toUpperCase() : "U"}
                               </div>
                               <div className="flex-1 min-w-0">

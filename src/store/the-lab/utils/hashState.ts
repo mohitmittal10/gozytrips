@@ -79,7 +79,6 @@ export function extractPdfRelevantData(state: Partial<LabState>): PdfRelevantDat
     pdfOverrides: state.pdfOverrides || {},
     selectedClientId: state.selectedClientId || "none",
     selectedStatus: state.selectedStatus || "draft",
-    optimizationCount: state.optimizationCount || 0,
   };
 }
 

@@ -54,6 +54,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { calcPricingBreakdown } from "@/services/financial";
+import { getStatusBadgeClasses } from "../utils/crm-colors";
 
 /** Flat trip shape used in the Trips view — itinerary row augmented with clientName */
 export interface FlatTrip {
@@ -93,13 +94,7 @@ interface TripDetailSheetProps {
 
 /** Returns Tailwind classes for a status badge */
 function getStatusClasses(status: string): string {
-    const s = status.toLowerCase();
-    if (s === "booked" || s === "confirmed") return "bg-green-500/10 text-green-400 border-green-500/20";
-    if (s === "sent") return "bg-blue-500/10 text-blue-400 border-blue-500/20";
-    if (s === "proposed") return "bg-cyan-500/10 text-cyan-400 border-cyan-500/20";
-    if (s === "rejected") return "bg-red-500/10 text-red-400 border-red-500/20";
-    if (s === "completed") return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-    return "bg-purple-500/10 text-purple-400 border-purple-500/20";
+    return getStatusBadgeClasses(status);
 }
 
 /** Compute trip duration string e.g. "7D/6N" */
@@ -246,7 +241,7 @@ export const TripDetailSheet = ({
         <Sheet open={!!trip} onOpenChange={(open) => !open && onClose()}>
             <SheetContent className="bg-[#0A0A0A] border-l border-white/10 text-white w-full sm:max-w-xl overflow-y-auto">
                 <SheetHeader className="mb-6">
-                    <SheetTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
+                    <SheetTitle className="text-xl font-bold text-white tracking-tight">
                         Trip Details
                     </SheetTitle>
                     <SheetDescription className="text-gray-400 line-clamp-2">
@@ -468,7 +463,7 @@ export const TripDetailSheet = ({
                                     <>
                                         <p className="text-xs text-gray-500">Generate a secure invoice link to share with your client.</p>
                                         <Button
-                                            className="w-full aurora-gradient text-white border-none hover:brightness-110 h-10"
+                                            className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700/80 font-semibold h-10 rounded-lg"
                                             onClick={handleGenerateInvoice}
                                             disabled={isGenerating}
                                         >
@@ -641,7 +636,7 @@ export const TripDetailSheet = ({
                                         {/* Cabs */}
                                         {cabs.length > 0 && (
                                             <div className="space-y-3">
-                                                <h4 className="text-xs font-bold uppercase tracking-wider text-orange-400 flex items-center gap-1.5">
+                                                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
                                                     <Car className="w-3.5 h-3.5" /> Cabs ({cabs.length})
                                                 </h4>
                                                 {cabs.map((c: any) => (
@@ -795,11 +790,11 @@ export const TripDetailSheet = ({
                                             </div>
                                         )}
                                         {cancellation && (
-                                            <div className="p-4 bg-orange-500/5 border border-orange-500/10 rounded-xl space-y-1.5">
-                                                <h4 className="text-xs font-bold uppercase tracking-wider text-orange-400 flex items-center gap-1.5">
+                                            <div className="p-4 bg-white/5 border border-white/10 rounded-xl space-y-1.5">
+                                                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
                                                     <AlertCircle className="w-3.5 h-3.5" /> Cancellation Policy
                                                 </h4>
-                                                <p className="text-xs text-orange-200/95 whitespace-pre-wrap leading-relaxed">{cancellation}</p>
+                                                <p className="text-xs text-zinc-300 whitespace-pre-wrap leading-relaxed">{cancellation}</p>
                                             </div>
                                         )}
                                         {payment && (

@@ -33,11 +33,11 @@ export default function CuratedItineraries() {
     return (
         <section id="curated" className="w-full bg-black">
             <div className="mx-auto max-w-7xl px-4 md:px-8 pt-24 pb-12 text-center">
-                <p className="text-xs font-medium uppercase tracking-[0.3em] text-emerald-400 mb-1">
+                <p className="text-xs font-medium uppercase tracking-[0.3em] text-[#71717A] mb-1">
                     Curated by Wander Labs
                 </p>
                 <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                    <span className="bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 bg-clip-text text-transparent">PDF</span> Itinerary Formats
+                    <span className="text-[#71717A]">PDF</span> Itinerary Formats
                 </h2>
                 
             </div>

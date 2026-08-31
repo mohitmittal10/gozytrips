@@ -229,7 +229,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="glass-main border-white/10 text-white sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-[#0c0c0e] border-zinc-800 text-white sm:max-w-[425px] max-h-[90vh] overflow-y-auto shadow-2xl">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit, () => setHasFailedSubmit(true))} noValidate>
             <DialogHeader>
@@ -464,14 +464,14 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="glass-button border-white/10 hover:bg-white/10 hover:text-white"
+                className="border-white/10 text-gray-300 hover:bg-white/10 hover:text-white"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={form.formState.isSubmitting || (hasFailedSubmit && !form.formState.isValid)}
-                className="glass-button border-0 bg-gradient-to-r from-pink-500 to-orange-400 text-white hover:opacity-90 transition-opacity"
+                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 font-semibold"
               >
                 {form.formState.isSubmitting ? "Saving..." : "Save Client"}
               </Button>

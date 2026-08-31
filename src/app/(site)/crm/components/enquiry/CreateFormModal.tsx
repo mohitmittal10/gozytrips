@@ -87,27 +87,27 @@ export function CreateFormModal({ onClose, onCreated, createForm }: CreateFormMo
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. European Honeymoon Enquiry"
-                  className="w-full h-10 px-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 text-sm"
+                  className="w-full h-10 px-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-zinc-600 text-sm"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">
-                  Description <span className="text-gray-700 font-normal normal-case tracking-normal">(optional)</span>
+                  Description <span className="text-gray-500 font-normal normal-case tracking-normal">(optional)</span>
                 </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Brief message shown to the client on the form page"
                   rows={2}
-                  className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/50 text-sm resize-none"
+                  className="w-full px-3 py-2 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-zinc-600 text-sm resize-none"
                 />
               </div>
 
               <div>
                 <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2">
                   <Calendar className="inline w-3 h-3 mr-1" />
-                  Expiry Date <span className="text-gray-700 font-normal normal-case tracking-normal">(optional)</span>
+                  Expiry Date <span className="text-gray-500 font-normal normal-case tracking-normal">(optional)</span>
                 </label>
                 <input
                   type="date"
@@ -144,7 +144,7 @@ export function CreateFormModal({ onClose, onCreated, createForm }: CreateFormMo
               <button
                 onClick={handleCreate}
                 disabled={loading}
-                className="w-full h-11 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold text-sm hover:brightness-110 transition-all disabled:opacity-60 flex items-center justify-center gap-2 mt-2"
+                className="w-full h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 font-semibold text-sm transition-all disabled:opacity-60 flex items-center justify-center gap-2 mt-2 shadow-sm"
               >
                 {loading ? (
                   <><Loader className="w-4 h-4 animate-spin" /> Creating…</>

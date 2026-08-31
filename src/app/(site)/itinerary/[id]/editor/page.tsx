@@ -4,7 +4,9 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from "react"
 import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
-import { LuxuryTheme } from "@/components/pdf/themes/luxury-theme";
+import { PdfTemplate } from "@/components/pdf-template";
+import type { PdfTheme } from "@/components/pdf/theme-config";
+import { DEFAULT_PDF_THEME_OPTIONS } from "@/components/pdf/theme-config";
 import { getAgentInfo } from "@/components/pdf/utils";
 import { calcPricingFromBaseCost, calcBaseCost, extractTripCost } from "@/services/financial";
 import { defaultPricingConfig } from "@/types/pricing";
@@ -22,6 +24,8 @@ function EditorToolbar({
     editMode,
     itineraryTitle,
     onBack,
+    selectedTheme,
+    onThemeChange,
 }: {
     saving: boolean;
     saved: boolean;
@@ -31,6 +35,8 @@ function EditorToolbar({
     editMode: boolean;
     itineraryTitle: string;
     onBack: () => void;
+    selectedTheme: PdfTheme;
+    onThemeChange: (theme: PdfTheme) => void;
 }) {
     return (
         <div
@@ -40,15 +46,15 @@ function EditorToolbar({
                 left: 0,
                 right: 0,
                 zIndex: 9999,
-                background: "rgba(10,10,9,0.97)",
-                borderBottom: "1px solid rgba(201,168,76,0.25)",
+                background: "rgba(9,9,11,0.97)",
+                borderBottom: "1px solid #27272a",
                 backdropFilter: "blur(12px)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
                 padding: "0 24px",
                 height: 56,
-                fontFamily: "'DM Mono', monospace",
+                fontFamily: "var(--font-sans, sans-serif)",
                 gap: 16,
             }}
         >
@@ -57,31 +63,33 @@ function EditorToolbar({
                 <button
                     onClick={onBack}
                     style={{
-                        background: "none",
-                        border: "1px solid rgba(201,168,76,0.22)",
-                        color: "#c9a84c",
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        color: "#e4e4e7",
                         cursor: "pointer",
-                        padding: "4px 12px",
+                        padding: "5px 12px",
                         fontSize: 12,
-                        letterSpacing: "1.5px",
-                        textTransform: "uppercase",
+                        borderRadius: "8px",
+                        fontWeight: 600,
+                        letterSpacing: "0.5px",
                         whiteSpace: "nowrap",
+                        transition: "all 0.2s",
                     }}
                 >
                     ← Back
                 </button>
                 <span
                     style={{
-                        color: "rgba(245,240,232,0.45)",
-                        fontSize: 11,
-                        letterSpacing: "1.5px",
-                        textTransform: "uppercase",
+                        color: "#71717A",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        letterSpacing: "0.5px",
                         overflow: "hidden",
                         textOverflow: "ellipsis",
                         whiteSpace: "nowrap",
                     }}
                 >
-                    {itineraryTitle || "Luxury Itinerary"}
+                    {itineraryTitle || "Itinerary Editor"}
                 </span>
             </div>
 
@@ -89,9 +97,10 @@ function EditorToolbar({
             <div
                 style={{
                     fontSize: 11,
-                    letterSpacing: "2px",
+                    letterSpacing: "1px",
+                    fontWeight: 700,
                     textTransform: "uppercase",
-                    color: editMode ? "#c9a84c" : "rgba(245,240,232,0.3)",
+                    color: editMode ? "#e4e4e7" : "#71717A",
                     transition: "color 0.2s",
                 }}
             >
@@ -100,17 +109,54 @@ function EditorToolbar({
 
             {/* Right: controls */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                {/* Theme selector */}
+                <label style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                    fontSize: 11,
+                    color: "#71717A",
+                    letterSpacing: "0.5px",
+                    fontWeight: 600,
+                    whiteSpace: "nowrap",
+                }}>
+                    Theme
+                    <select
+                        value={selectedTheme}
+                        onChange={(e) => onThemeChange(e.target.value as PdfTheme)}
+                        style={{
+                            background: "rgba(255,255,255,0.05)",
+                            border: "1px solid rgba(255,255,255,0.1)",
+                            color: "#e4e4e7",
+                            cursor: "pointer",
+                            padding: "5px 10px",
+                            fontSize: 11,
+                            borderRadius: "8px",
+                            fontWeight: 600,
+                            outline: "none",
+                        }}
+                    >
+                        {DEFAULT_PDF_THEME_OPTIONS.map((opt) => (
+                            <option key={opt.value} value={opt.value}
+                                style={{ background: "#18181b", color: "#e4e4e7" }}
+                            >
+                                {opt.label}
+                            </option>
+                        ))}
+                    </select>
+                </label>
+
                 <button
                     onClick={onToggleEdit}
                     style={{
-                        background: editMode ? "rgba(201,168,76,0.12)" : "transparent",
-                        border: `1px solid ${editMode ? "#c9a84c" : "rgba(245,240,232,0.2)"}`,
-                        color: editMode ? "#c9a84c" : "rgba(245,240,232,0.55)",
+                        background: editMode ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.05)",
+                        border: `1px solid ${editMode ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.1)"}`,
+                        color: "#e4e4e7",
                         cursor: "pointer",
                         padding: "5px 14px",
-                        fontSize: 11,
-                        letterSpacing: "1.5px",
-                        textTransform: "uppercase",
+                        fontSize: 12,
+                        borderRadius: "8px",
+                        fontWeight: 600,
                         transition: "all 0.2s",
                     }}
                 >
@@ -121,14 +167,13 @@ function EditorToolbar({
                         onClick={onSave}
                         disabled={saving}
                         style={{
-                            background: saving ? "rgba(201,168,76,0.3)" : "#c9a84c",
+                            background: saving ? "rgba(228,228,231,0.5)" : "#e4e4e7",
                             border: "none",
-                            color: "#0a0a09",
+                            color: "#09090b",
                             cursor: saving ? "not-allowed" : "pointer",
                             padding: "5px 18px",
-                            fontSize: 11,
-                            letterSpacing: "1.5px",
-                            textTransform: "uppercase",
+                            fontSize: 12,
+                            borderRadius: "8px",
                             fontWeight: 700,
                             transition: "all 0.2s",
                         }}
@@ -139,9 +184,9 @@ function EditorToolbar({
                 {saved && !dirty && (
                     <span
                         style={{
-                            fontSize: 11,
-                            color: "#4ade80",
-                            letterSpacing: "1.2px",
+                            fontSize: 12,
+                            color: "#71717A",
+                            fontWeight: 600,
                         }}
                     >
                         ✓ Saved
@@ -150,6 +195,89 @@ function EditorToolbar({
             </div>
         </div>
     );
+}
+
+// ─────────────────────────────────────────────────────────────
+// instrumentTheme: stamps data-field on any rendered theme's DOM
+// so the contenteditable editing system works universally.
+// ─────────────────────────────────────────────────────────────
+function instrumentTheme(container: HTMLDivElement, liveData: any) {
+    // Skip if this theme already has native data-field support (LuxuryTheme)
+    const alreadyInstrumented = container.querySelectorAll("[data-field]").length > 5;
+    if (alreadyInstrumented) return;
+
+    // Helper: stamp a data-field on an element only if not already set
+    const stamp = (el: Element | null, field: string) => {
+        if (el && !el.getAttribute("data-field")) {
+            el.setAttribute("data-field", field);
+        }
+    };
+
+    // — Cover: trip title
+    const cover = container.querySelector("[data-pdf-section='cover']");
+    if (cover) {
+        // Try h1 first, then first h2
+        const titleEl = cover.querySelector("h1") || cover.querySelector("h2");
+        stamp(titleEl, "itinerary.title");
+    }
+
+    // — Days: location header + activity lines
+    const days = liveData?.itinerary || [];
+    days.forEach((_day: any, idx: number) => {
+        const daySection = container.querySelector(`[data-pdf-section='day-${idx}']`);
+        if (!daySection) return;
+
+        // Day location/title — first h3 or h4 in the day section
+        const dayTitle = daySection.querySelector("h3") ||
+            daySection.querySelector("h4") ||
+            daySection.querySelector("h2");
+        stamp(dayTitle, `days[${idx}].location`);
+
+        // Activities — each <p> or <li> after the header is an activity
+        const activityEls = Array.from(
+            daySection.querySelectorAll("p, li")
+        ).filter(el => {
+            // Exclude timestamp/time elements (short, uppercase, time-like)
+            const text = (el as HTMLElement).innerText?.trim() || "";
+            return text.length > 4 && !text.match(/^\d{1,2}:\d{2}/) && !text.match(/^Day \d/);
+        });
+        activityEls.forEach((el, aIdx) => {
+            stamp(el, `days[${idx}].activities[${aIdx}]`);
+        });
+    });
+
+    // — Inclusions section: each <li> or <p> or <span> with text
+    const inclusionsSection = container.querySelector("[data-pdf-section='inclusions']");
+    if (inclusionsSection) {
+        // Typically two columns: inclusions first, then exclusions
+        const allItems = Array.from(inclusionsSection.querySelectorAll("li, span, p")).filter(el => {
+            const text = (el as HTMLElement).innerText?.trim() || "";
+            return text.length > 2 && !(el as HTMLElement).querySelector("li, span, p");
+        });
+
+        // Split roughly in half: first half = inclusions, second half = exclusions
+        const incCount = liveData?.inclusions
+            ? (liveData.inclusions.split("\n").filter(Boolean).length)
+            : Math.ceil(allItems.length / 2);
+
+        allItems.forEach((el, i) => {
+            if (i < incCount) {
+                stamp(el, `inclusions[${i}]`);
+            } else {
+                stamp(el, `exclusions[${i - incCount}]`);
+            }
+        });
+    }
+
+    // — Terms section (if exists separately)
+    const termsSection = container.querySelector("[data-pdf-section='terms']");
+    if (termsSection) {
+        const allItems = Array.from(termsSection.querySelectorAll("li, p, div")).filter(el => {
+            const text = (el as HTMLElement).innerText?.trim() || "";
+            return text.length > 4 && !(el as HTMLElement).querySelector("li, p");
+        });
+        allItems.forEach((el, i) => stamp(el, `terms[${i}]`));
+    }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -168,10 +296,17 @@ export default function LuxuryEditorPage() {
     const [saving, setSaving] = useState(false);
     const [saved, setSaved] = useState(false);
     const [dirty, setDirty] = useState(false);
+    const [selectedTheme, setSelectedTheme] = useState<PdfTheme>(
+        ((agencySettings as any)?.default_pdf_theme as PdfTheme) || 'luxury'
+    );
 
     // We hold mutated itinerary_data separately so we can track changes
     const [liveData, setLiveData] = useState<any>(null);
+    const liveDataRef = useRef<any>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+
+    // Keep liveDataRef in sync with liveData state
+    useEffect(() => { liveDataRef.current = liveData; }, [liveData]);
 
     const fetchedRef = useRef(false);
 
@@ -195,6 +330,9 @@ export default function LuxuryEditorPage() {
             } else {
                 setItinerary(data);
                 setLiveData((prev: any) => prev ? prev : data.itinerary_data);
+                // Restore saved theme from itinerary_data or fall back to user default
+                const savedTheme = data.itinerary_data?.selectedTheme as PdfTheme | undefined;
+                if (savedTheme) setSelectedTheme(savedTheme);
                 fetchedRef.current = true;
             }
             setLoading(false);
@@ -203,24 +341,41 @@ export default function LuxuryEditorPage() {
         return () => { isSubscribed = false; };
     }, [id, user?.id]);
 
-    // ── Toggle edit: make fields contenteditable ────────────────
+    // ── Instrument DOM with data-field after any theme renders ─────────
+    useEffect(() => {
+        if (!containerRef.current || !liveData) return;
+        // Small delay to let React flush the theme render
+        const timer = setTimeout(() => {
+            if (containerRef.current) {
+                instrumentTheme(containerRef.current, liveData);
+            }
+        }, 80);
+        return () => clearTimeout(timer);
+    }, [liveData, selectedTheme]);
+
+    // ── Toggle edit: make fields contenteditable ──────────────────────
     useEffect(() => {
         if (!containerRef.current) return;
+        // Re-instrument synchronously when entering edit mode (handles theme switches)
+        if (editMode && liveDataRef.current) instrumentTheme(containerRef.current, liveDataRef.current);
         const fields = containerRef.current.querySelectorAll("[data-field]");
         fields.forEach((el) => {
             const htmlEl = el as HTMLElement;
             if (editMode) {
                 if (htmlEl.contentEditable !== "true") {
                     htmlEl.contentEditable = "true";
-                    htmlEl.style.outline = "1px dashed rgba(201,168,76,0.45)";
-                    htmlEl.style.outlineOffset = "2px";
+                    // White outer ring + blue inner ring = visible on any theme background
+                    htmlEl.style.outline = "none";
+                    htmlEl.style.boxShadow = "0 0 0 2px #ffffff, 0 0 0 4px #3b82f6";
+                    htmlEl.style.outlineOffset = "";
                     htmlEl.style.cursor = "text";
-                    htmlEl.style.borderRadius = "2px";
+                    htmlEl.style.borderRadius = "3px";
                 }
             } else {
                 if (htmlEl.contentEditable !== "false") {
                     htmlEl.contentEditable = "false";
                     htmlEl.style.outline = "";
+                    htmlEl.style.boxShadow = "";
                     htmlEl.style.outlineOffset = "";
                     htmlEl.style.cursor = "";
                     htmlEl.style.borderRadius = "";
@@ -501,6 +656,8 @@ export default function LuxuryEditorPage() {
         try {
             // Get updated itinerary from contenteditable
             const updatedData = collectEdits();
+            // Persist selected theme inside itinerary_data
+            updatedData.selectedTheme = selectedTheme;
 
             const rawTotalText = updatedData.pricing?.customTotalAmount || updatedData.pricing?.totalAmount || "";
             const numericTotal = parseFloat(String(rawTotalText).replace(/[^0-9.]/g, ""));
@@ -533,7 +690,7 @@ export default function LuxuryEditorPage() {
         }
     }, [itinerary, user, collectEdits]);
 
-    // ── Build props for LuxuryTheme ─────────────────────────────
+    // ── Build props for PdfTemplate ─────────────────────────────
     const themeProps = useMemo(() => {
         const agent = getAgentInfo(userProfile, agencySettings);
         const pricingCfg = (liveData as any)?.pricing || itinerary?.pricing || defaultPricingConfig;
@@ -600,14 +757,14 @@ export default function LuxuryEditorPage() {
             <div
                 style={{
                     minHeight: "100vh",
-                    background: "#0a0a09",
+                    background: "#000000",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontFamily: "'DM Mono', monospace",
-                    color: "rgba(245,240,232,0.4)",
+                    color: "#71717A",
                     fontSize: 13,
-                    letterSpacing: "2px",
+                    fontWeight: 600,
+                    letterSpacing: "1px",
                     textTransform: "uppercase",
                 }}
             >
@@ -621,29 +778,29 @@ export default function LuxuryEditorPage() {
             <div
                 style={{
                     minHeight: "100vh",
-                    background: "#0a0a09",
+                    background: "#000000",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontFamily: "'DM Mono', monospace",
-                    color: "rgba(245,240,232,0.55)",
+                    color: "#e4e4e7",
                     gap: 16,
                 }}
             >
-                <div style={{ fontSize: 13, letterSpacing: "2px", color: "#f87171" }}>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#f87171" }}>
                     Error: {error || "Itinerary data missing"}
                 </div>
                 <button
                     onClick={() => router.back()}
                     style={{
-                        background: "none",
-                        border: "1px solid rgba(201,168,76,0.3)",
-                        color: "#c9a84c",
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.1)",
+                        color: "#e4e4e7",
+                        borderRadius: "8px",
                         cursor: "pointer",
                         padding: "8px 20px",
                         fontSize: 12,
-                        letterSpacing: "1.5px",
+                        fontWeight: 600,
                     }}
                 >
                     ← Go Back
@@ -664,6 +821,8 @@ export default function LuxuryEditorPage() {
                 editMode={editMode}
                 itineraryTitle={itinerary?.title || ""}
                 onBack={() => router.back()}
+                selectedTheme={selectedTheme}
+                onThemeChange={(theme) => { setSelectedTheme(theme); setDirty(true); setSaved(false); }}
             />
 
             {/* Edit mode hint banner */}
@@ -675,26 +834,26 @@ export default function LuxuryEditorPage() {
                         left: 0,
                         right: 0,
                         zIndex: 9998,
-                        background: "rgba(201,168,76,0.08)",
-                        borderBottom: "1px solid rgba(201,168,76,0.18)",
+                        background: "#18181b",
+                        borderBottom: "1px solid #27272a",
                         padding: "8px 24px",
-                        fontFamily: "'DM Mono', monospace",
-                        fontSize: 11,
-                        letterSpacing: "1.4px",
-                        color: "rgba(201,168,76,0.75)",
+                        fontSize: 12,
+                        fontWeight: 600,
+                        color: "#71717A",
                         textAlign: "center",
                     }}
                 >
-                    Click any highlighted field to edit · Changes are saved to the database
+                    Click any highlighted field to edit · Changes auto-apply to the PDF theme on export
                 </div>
             )}
 
-            {/* Itinerary render */}
+            {/* Itinerary render — PdfTemplate renders the selected theme.
+                instrumentTheme() stamps data-field on all themes after mount. */}
             <div
-                style={{ paddingTop: editMode ? 80 : 56, background: "#0a0a09", minHeight: "100vh" }}
+                style={{ paddingTop: editMode ? 88 : 56, background: "#000000", minHeight: "100vh" }}
             >
                 <div ref={containerRef}>
-                    <LuxuryTheme {...(themeProps as any)} />
+                    <PdfTemplate {...(themeProps as any)} theme={selectedTheme} />
                 </div>
             </div>
         </>

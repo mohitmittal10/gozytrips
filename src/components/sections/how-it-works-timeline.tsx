@@ -17,7 +17,7 @@ export default function HowItWorksTimeline() {
                 <div>
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2.5 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md shadow-lg shadow-indigo-500/5">
-                            <TextCursorInput className="h-5 w-5 text-indigo-400" />
+                            <TextCursorInput className="h-5 w-5 text-[#71717A]" />
                         </div>
                         <h4 className="text-xl md:text-2xl font-bold text-neutral-800 dark:text-neutral-200">
                             Tell us where you want to go
@@ -38,7 +38,7 @@ export default function HowItWorksTimeline() {
                 <div>
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2.5 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md shadow-lg shadow-indigo-500/5">
-                            <Workflow className="h-5 w-5 text-indigo-400" />
+                            <Workflow className="h-5 w-5 text-[#71717A]" />
                         </div>
                         <h4 className="text-xl md:text-2xl font-bold text-neutral-800 dark:text-neutral-200">
                             AI maps it out
@@ -59,7 +59,7 @@ export default function HowItWorksTimeline() {
                 <div>
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2.5 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md shadow-lg shadow-indigo-500/5">
-                            <FileStack className="h-5 w-5 text-indigo-400" />
+                            <FileStack className="h-5 w-5 text-[#71717A]" />
                         </div>
                         <h4 className="text-xl md:text-2xl font-bold text-neutral-800 dark:text-neutral-200">
                             We prepare your PDF
@@ -80,7 +80,7 @@ export default function HowItWorksTimeline() {
                 <div>
                     <div className="flex items-center gap-3 mb-4">
                         <div className="p-2.5 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-md shadow-lg shadow-indigo-500/5">
-                            <Database className="h-5 w-5 text-indigo-400" />
+                            <Database className="h-5 w-5 text-[#71717A]" />
                         </div>
                         <h4 className="text-xl md:text-2xl font-bold text-neutral-800 dark:text-neutral-200">
                             Manage with CRM Lite
@@ -101,7 +101,7 @@ export default function HowItWorksTimeline() {
         <section id="how-it-works" className="w-full py-10 md:py-24 bg-black">
             <Timeline
                 data={data}
-                title={<>How <span className="bg-gradient-to-r from-indigo-400 via-indigo-300 to-indigo-500 bg-clip-text text-transparent">it works</span></>}
+                title={<>How <span className="text-[#71717A]">it works</span></>}
                 description="Booking your next unforgettable journey is as easy as 1, 2, 3, and 4. Our system handles the heavy lifting while you focus on delivering exceptional experiences."
             />
         </section>

@@ -36,7 +36,7 @@ const Packages = () => {
             <div className="max-w-7xl mx-auto px-6 md:px-8 relative z-10">
                 <div className="text-center mb-16">
                     <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">
-                        Signature <span className="bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 bg-clip-text text-transparent">Journeys</span>
+                        Signature <span className="text-purple-400">Journeys</span>
                     </h2>
                     <p className="text-zinc-400 max-w-2xl mx-auto text-sm md:text-base font-light">
                         Explore our curated collection of luxury travel packages, designed to inspire and enchant.
@@ -60,7 +60,7 @@ const Packages = () => {
                                                 data-ai-hint={image.imageHint}
                                             />
                                         )}
-                                        <div className="absolute inset-0 bg-gradient-to-t from-[#020205]/80 via-transparent to-transparent opacity-60" />
+                                        <div className="absolute inset-0 bg-[#020205]/60" />
                                     </div>
                                 </CardHeader>
                                 <CardContent className="pt-6 flex-grow">

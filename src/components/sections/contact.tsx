@@ -49,11 +49,11 @@ const Contact = () => {
                     {/* Left Column: Heading & Tab Selection */}
                     <div className="lg:col-span-5 space-y-8">
                         <div className="space-y-4">
-                            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-indigo-400">
+                            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#71717A]">
                                 Support &amp; Feedback
                             </span>
                             <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
-                                Agent <span className="bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 bg-clip-text text-transparent">Feedback Hub</span>
+                                Agent <span className="text-[#71717A]">Feedback Hub</span>
                             </h2>
                             <p className="text-zinc-400 font-light leading-relaxed">
                                 Your voice shapes the future of Wander Labs. Share a glowing review of your travel planning successes, or report a bug or complaint directly to our engineering team. We read and resolve every request.

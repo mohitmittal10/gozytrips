@@ -93,7 +93,7 @@ export const EditorialTheme = ({
                     {getCoverImage(itinerary) ? (
                         <img src={getCoverImage(itinerary)} alt="" style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
                     ) : null}
-                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "65%", background: "linear-gradient(to top, rgba(15,23,42,0.9) 10%, rgba(15,23,42,0.3) 60%, transparent)" }} />
+                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "65%", background: "rgba(15,23,42,0.6)" }} />
                     {/* Agency logo badge — top right (logo only) */}
                     {(agent.logoUrl || agent.companyName) && (
                         <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.12)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: "12px", padding: "9px 14px" }}>

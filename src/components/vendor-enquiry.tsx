@@ -54,9 +54,9 @@ export default function VendorEnquiry() {
       value: opt.value,
       label: opt.label,
       icon: ICON_MAP[opt.metadata?.icon] || Sparkles,
-      color: opt.metadata?.color || "text-purple-400",
-      bg: opt.metadata?.bg || "bg-purple-500/10",
-      border: opt.metadata?.border || "border-purple-500/20"
+      color: opt.metadata?.color || "text-zinc-300",
+      bg: opt.metadata?.bg || "bg-zinc-800",
+      border: opt.metadata?.border || "border-zinc-700"
     }));
   }, [options]);
 
@@ -447,11 +447,11 @@ export default function VendorEnquiry() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Form */}
-        <Card className="border-slate-800 bg-slate-900/95 shadow-2xl backdrop-blur-xl">
+        <Card className="border-zinc-800 bg-[#0c0c0e] shadow-2xl backdrop-blur-xl">
           <CardHeader className="pb-4">
             <div className="flex items-center gap-2">
               {React.createElement(activeType.icon, { className: `w-5 h-5 ${activeType.color}` })}
-              <CardTitle className="text-lg">{activeType.label} Enquiry</CardTitle>
+              <CardTitle className="text-lg text-white">{activeType.label} Enquiry</CardTitle>
             </div>
             <CardDescription className="text-gray-500">
               Fill in the details and let AI generate a professional enquiry email.
@@ -588,7 +588,7 @@ export default function VendorEnquiry() {
                   value={specialRequests}
                   onChange={(e) => setSpecialRequests(e.target.value)}
                   placeholder="Any special requirements, preferences, or notes..."
-                  className="w-full h-20 rounded-md bg-white/5 border border-white/10 text-white text-sm p-3 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none"
+                  className="w-full h-20 rounded-md bg-white/5 border border-white/10 text-white text-sm p-3 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-zinc-600 resize-none"
                 />
               </div>
             </div>
@@ -609,7 +609,7 @@ export default function VendorEnquiry() {
               <Button
                 onClick={onGenerate}
                 disabled={isGenerating || !destination.trim() || !travelDates.trim()}
-                className="flex-[2] bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 text-white h-11 text-sm font-semibold gap-2 shadow-lg shadow-orange-500/20"
+                className="flex-[2] bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 h-11 text-sm font-semibold gap-2 shadow-sm"
               >
                 {isGenerating ? (
                   <>
@@ -630,9 +630,9 @@ export default function VendorEnquiry() {
         {/* Right: Email Preview */}
         <div className="space-y-4">
           {!hasGenerated && !isGenerating ? (
-            <div className="flex flex-col items-center justify-center h-full min-h-[400px] bg-white/[0.02] border border-white/10 rounded-xl p-8">
-              <div className="w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mb-4">
-                <Sparkles className="w-7 h-7 text-purple-400" />
+            <div className="flex flex-col items-center justify-center h-full min-h-[400px] bg-[#0c0c0e] border border-white/10 rounded-xl p-8">
+              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-white">
+                <Sparkles className="w-7 h-7 text-white" />
               </div>
               <h3 className="text-lg font-semibold text-gray-300 mb-2">AI Email Preview</h3>
               <p className="text-sm text-gray-500 text-center max-w-xs">
@@ -640,20 +640,20 @@ export default function VendorEnquiry() {
               </p>
             </div>
           ) : isGenerating ? (
-            <div className="flex flex-col items-center justify-center h-full min-h-[400px] bg-white/[0.02] border border-white/10 rounded-xl p-8">
+            <div className="flex flex-col items-center justify-center h-full min-h-[400px] bg-[#0c0c0e] border border-white/10 rounded-xl p-8">
               <div className="relative mb-6">
-                <div className="absolute -inset-4 bg-purple-500/20 rounded-full blur-xl opacity-50 animate-pulse" />
+                <div className="absolute -inset-4 bg-white/5 rounded-full blur-xl opacity-50 animate-pulse" />
                 <UniqueLoading variant="morph" size="md" className="relative z-10" />
               </div>
               <h3 className="text-lg font-semibold text-gray-300 mb-2">Generating Email...</h3>
               <p className="text-sm text-gray-500 text-center">AI is crafting a professional enquiry email for you.</p>
             </div>
           ) : (
-            <Card className="border-slate-800 bg-slate-900/95 shadow-2xl backdrop-blur-xl">
-              <CardHeader className="pb-3 border-b border-slate-800/80">
+            <Card className="border-zinc-800 bg-[#0c0c0e] shadow-2xl backdrop-blur-xl">
+              <CardHeader className="pb-3 border-b border-white/10">
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-                    <Send className="w-5 h-5 text-purple-400" />
+                    <Send className="w-5 h-5 text-white" />
                     Email Preview
                   </CardTitle>
                   <div className="flex items-center gap-1">
@@ -686,15 +686,15 @@ export default function VendorEnquiry() {
               </CardHeader>
               <CardContent className="space-y-4 pt-4">
                 {/* TO field */}
-                <div className="flex items-center gap-2 text-sm bg-slate-950/60 p-2.5 rounded-lg border border-slate-800/80">
-                  <span className="text-slate-400 font-semibold w-12">To:</span>
-                  <span className="text-purple-300 font-semibold">{vendorEmail || <span className="text-slate-500 italic">No vendor email set</span>}</span>
+                <div className="flex items-center gap-2 text-sm bg-black/60 p-2.5 rounded-lg border border-white/10">
+                  <span className="text-gray-400 font-semibold w-12">To:</span>
+                  <span className="text-zinc-200 font-semibold">{vendorEmail || <span className="text-gray-500 italic">No vendor email set</span>}</span>
                 </div>
 
                 {/* Subject */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-300 font-semibold text-sm">Subject:</span>
+                    <span className="text-gray-300 font-semibold text-sm">Subject:</span>
                     <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${generatedSubject.length > 90 ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"}`}>
                       {generatedSubject.length}/100
                     </Badge>
@@ -703,11 +703,11 @@ export default function VendorEnquiry() {
                     <input
                       value={generatedSubject}
                       onChange={(e) => setGeneratedSubject(e.target.value)}
-                      className="w-full bg-slate-950 border-slate-700 text-white text-sm h-9 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500/50"
+                      className="w-full bg-black border-white/10 text-white text-sm h-9 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-600"
                       maxLength={100}
                     />
                   ) : (
-                    <p className="text-sm font-semibold text-white bg-slate-950 rounded-lg px-3.5 py-2.5 border border-slate-800 shadow-inner leading-normal">
+                    <p className="text-sm font-semibold text-white bg-black/60 rounded-lg px-3.5 py-2.5 border border-white/10 shadow-inner leading-normal">
                       {generatedSubject}
                     </p>
                   )}
@@ -716,7 +716,7 @@ export default function VendorEnquiry() {
                 {/* Body */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-slate-300 font-semibold text-sm">Body:</span>
+                    <span className="text-gray-300 font-semibold text-sm">Body:</span>
                     <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${generatedBody.length > 1400 ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"}`}>
                       {generatedBody.length}/1500
                     </Badge>
@@ -725,11 +725,11 @@ export default function VendorEnquiry() {
                     <textarea
                       value={generatedBody}
                       onChange={(e) => setGeneratedBody(e.target.value.slice(0, 1500))}
-                      className="w-full h-64 rounded-md bg-slate-950 border border-slate-700 text-white text-sm p-3 focus:outline-none focus:ring-2 focus:ring-purple-500/50 resize-none font-mono leading-relaxed"
+                      className="w-full h-64 rounded-md bg-black border border-white/10 text-white text-sm p-3 focus:outline-none focus:ring-2 focus:ring-zinc-600 resize-none font-mono leading-relaxed"
                     />
                   ) : (
-                    <div className="bg-slate-950 rounded-lg border border-slate-800 p-4 max-h-[340px] overflow-y-auto shadow-inner">
-                      <pre className="text-sm text-slate-100 whitespace-pre-wrap font-sans leading-relaxed font-normal">
+                    <div className="bg-black/60 rounded-lg border border-white/10 p-4 max-h-[340px] overflow-y-auto shadow-inner">
+                      <pre className="text-sm text-gray-200 whitespace-pre-wrap font-sans leading-relaxed font-normal">
                         {generatedBody}
                       </pre>
                     </div>

@@ -101,7 +101,6 @@ export interface LoadedPersistenceData {
   cabs: CabInfo[];
   buses: BusInfo[];
   pricing?: PricingConfig;
-  optimizationCount: number;
   selectedClientId: string;
   selectedStatus: string;
   tripMetadata: TripMetadata | null;

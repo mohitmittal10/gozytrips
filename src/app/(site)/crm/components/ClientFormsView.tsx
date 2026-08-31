@@ -103,7 +103,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
                 {isExpired ? "Expired" : form.status}
               </span>
               {form.response_count !== undefined && form.response_count > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-zinc-300 border border-white/10">
                   {form.response_count} response{form.response_count !== 1 ? "s" : ""}
                 </span>
               )}
@@ -124,7 +124,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
                   }}
                   disabled={renaming}
                   autoFocus
-                  className="flex-1 h-8 px-2 rounded-lg bg-black/50 border border-purple-500/40 text-xs text-white focus:outline-none focus:border-purple-500"
+                  className="flex-1 h-8 px-2 rounded-lg bg-black/50 border border-zinc-700 text-xs text-white focus:outline-none focus:border-zinc-500"
                 />
                 <button
                   onClick={handleRename}
@@ -151,7 +151,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
                 <h3 className="text-sm font-semibold text-white truncate max-w-[85%]">{form.title}</h3>
                 <button
                   onClick={() => setIsEditingTitle(true)}
-                  className="opacity-0 group-hover/title:opacity-100 p-0.5 text-gray-500 hover:text-purple-400 hover:bg-white/5 rounded transition-all shrink-0"
+                  className="opacity-0 group-hover/title:opacity-100 p-0.5 text-gray-500 hover:text-white hover:bg-white/5 rounded transition-all shrink-0"
                   title="Rename Form"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
@@ -174,7 +174,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
         <div className="mt-2.5 mb-1">
           <button
             onClick={() => setShowFields(!showFields)}
-            className="flex items-center gap-1 text-[11px] font-semibold text-purple-400 hover:text-purple-300 transition-colors"
+            className="flex items-center gap-1 text-[11px] font-semibold text-zinc-300 hover:text-white transition-colors"
           >
             {showFields ? (
               <>
@@ -191,15 +191,15 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
             <div className="mt-2 p-3 bg-black/40 border border-white/5 rounded-xl space-y-1.5 text-[11px] text-gray-400 animate-in fade-in duration-200">
               <p className="font-medium text-white/80 border-b border-white/5 pb-1 mb-1.5">This form collects:</p>
               <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-                <div className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-purple-400 shrink-0" /> <span>Start/End Locations</span></div>
-                <div className="flex items-center gap-1.5"><Compass className="w-3 h-3 text-purple-400 shrink-0" /> <span>Destinations</span></div>
-                <div className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-purple-400 shrink-0" /> <span>Travel Dates</span></div>
-                <div className="flex items-center gap-1.5"><Users className="w-3 h-3 text-purple-400 shrink-0" /> <span>Passenger Counts</span></div>
-                <div className="flex items-center gap-1.5"><Heart className="w-3 h-3 text-purple-400 shrink-0" /> <span>Trip Style Preference</span></div>
-                <div className="flex items-center gap-1.5"><Plane className="w-3 h-3 text-purple-400 shrink-0" /> <span>Travel Methods</span></div>
-                <div className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-purple-400 shrink-0" /> <span>Timing Preference</span></div>
-                <div className="flex items-center gap-1.5"><DollarSign className="w-3 h-3 text-purple-400 shrink-0" /> <span>Approx. Budget</span></div>
-                <div className="flex items-center gap-1.5 col-span-2"><MessageSquare className="w-3 h-3 text-purple-400 shrink-0" /> <span>Special Requests</span></div>
+                <div className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Start/End Locations</span></div>
+                <div className="flex items-center gap-1.5"><Compass className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Destinations</span></div>
+                <div className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Travel Dates</span></div>
+                <div className="flex items-center gap-1.5"><Users className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Passenger Counts</span></div>
+                <div className="flex items-center gap-1.5"><Heart className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Trip Style Preference</span></div>
+                <div className="flex items-center gap-1.5"><Plane className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Travel Methods</span></div>
+                <div className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Timing Preference</span></div>
+                <div className="flex items-center gap-1.5"><DollarSign className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Approx. Budget</span></div>
+                <div className="flex items-center gap-1.5 col-span-2"><MessageSquare className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Special Requests</span></div>
               </div>
             </div>
           )}
@@ -212,7 +212,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
           <CopiedButton url={shareUrl} />
           <button
             onClick={() => onViewResponses(form)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-purple-500/20 bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700 transition-all"
           >
             <Inbox className="w-3 h-3" /> Responses {form.response_count ? `(${form.response_count})` : ""}
           </button>
@@ -226,7 +226,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
         </div>
 
         {form.expires_at && (
-          <p className="text-[10px] text-gray-700 mt-3 flex items-center gap-1">
+          <p className="text-[10px] text-gray-500 mt-3 flex items-center gap-1">
             <Clock className="w-3 h-3" />
             {isExpired ? "Expired" : "Expires"} {new Date(form.expires_at).toLocaleDateString()}
           </p>
@@ -282,8 +282,8 @@ function FormsList({
   if (forms.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-16 h-16 rounded-full bg-purple-500/10 border border-purple-500/20 flex items-center justify-center mx-auto mb-5">
-          <Mail className="w-7 h-7 text-purple-400" />
+        <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
+          <Mail className="w-7 h-7 text-white" />
         </div>
         <h3 className="text-white font-semibold text-lg mb-2">No enquiry forms yet</h3>
         <p className="text-gray-500 text-sm max-w-sm mb-6">
@@ -291,7 +291,7 @@ function FormsList({
         </p>
         <Button
           onClick={onCreateNew}
-          className="px-6 py-2.5 aurora-gradient text-white rounded-xl text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 h-10 border-none"
+          className="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2 h-10"
         >
           <Plus className="w-4 h-4" /> Create First Form
         </Button>
@@ -357,7 +357,7 @@ function ResponsesList({
   if (responses.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <Inbox className="w-10 h-10 text-gray-700 mb-3" />
+        <Inbox className="w-10 h-10 text-gray-500 mb-3" />
         <p className="text-gray-500 text-sm">No responses yet for this form.</p>
         <p className="text-gray-600 text-xs mt-1">Share the form link with your client to get started.</p>
       </div>
@@ -375,7 +375,7 @@ function ResponsesList({
             className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 hover:bg-white/[0.04] hover:border-white/10 transition-all cursor-pointer group"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0 text-purple-400 font-bold text-sm">
+              <div className="w-9 h-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0 text-zinc-200 font-bold text-sm">
                 {(r.client_name || r.client_email).charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -407,14 +407,14 @@ function ResponsesList({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {r.status !== "converted" && (
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] text-purple-400 font-semibold">
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] text-zinc-300 font-semibold">
                     <Zap className="w-3 h-3" /> Use
                   </span>
                 )}
-                <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-purple-400 transition-colors" />
+                <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
               </div>
             </div>
-            <p className="text-[10px] text-gray-700 mt-2 ml-12">
+            <p className="text-[10px] text-gray-500 mt-2 ml-12">
               Submitted {new Date(r.submitted_at).toLocaleString()}
             </p>
           </div>
@@ -467,10 +467,10 @@ export const ClientFormsView = () => {
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={cn(
-                "px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all",
+                "px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all border",
                 activeTab === tab
-                  ? "bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                  : "text-gray-500 hover:text-gray-300"
+                  ? "bg-zinc-800 text-zinc-100 border-zinc-700 font-semibold shadow-sm"
+                  : "border-transparent text-gray-500 hover:text-gray-300"
               )}
             >
               {tab === "forms" ? (
@@ -496,7 +496,7 @@ export const ClientFormsView = () => {
           {activeTab === "forms" && (
             <Button
               onClick={() => setShowCreateModal(true)}
-              className="h-9 px-4 aurora-gradient text-white rounded-xl text-xs font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 border-none"
+              className="h-9 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-2"
             >
               <Plus className="w-3.5 h-3.5" /> New Form
             </Button>

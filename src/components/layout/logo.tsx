@@ -12,7 +12,7 @@ const Logo = ({ className, isLoading = false, hideText = false }: { className?: 
       <AnimatedLogo isLoading={isLoading} size="md" className="flex-shrink-0" />
       {!hideText && (
         <span className="font-headline text-xl font-bold tracking-tight transition-all duration-300">
-          <span className="text-foreground group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-purple-400 group-hover:to-pink-500">Wander</span> <span className="text-primary">Labs</span>
+          <span className="text-foreground group-hover:text-purple-400">Wander</span> <span className="text-primary">Labs</span>
         </span>
       )}
     </Link>

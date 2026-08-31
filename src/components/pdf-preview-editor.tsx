@@ -37,7 +37,6 @@ import { useReferenceOptions } from "@/hooks/use-reference-options";
 import { useAuth } from "@/contexts/auth-context";
 import { createClient } from "@/lib/supabase/client";
 import type { SectionMeta } from "@/lib/pdf-page-renderer";
-import { generateDaySummaries } from "@/ai/flows/generate-day-summaries";
 
 // All themes — kept for the theme selector UI
 const ALL_THEMES: PdfTheme[] = [
@@ -295,66 +294,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
         setForcedBreaks(initForcedBreaks);
         setSpacingOverrides(initSpacing);
 
-        // 2. AI day summaries
-        const days = templateProps.itinerary?.itinerary;
-        if (days && days.length > 0) {
-          const payload = JSON.stringify(
-            days.map((d: any) => ({
-              day: d.day,
-              date: d.date,
-              areaFocus: d.areaFocus,
-              timeline: (d.timeline ?? []).map((t: any) => ({ time: t.time, details: t.details })),
-            }))
-          );
-          const payloadHash = hashCode(payload);
-
-          if (
-            payloadHash === resolvedOverrides.daySummariesHash &&
-            loadedSummaries.length === days.length
-          ) {
-            onProgress?.(45, "Loading summaries\u2026");
-          } else {
-            onProgress?.(25, "Generating AI summaries\u2026");
-            try {
-              const dest = days[0]?.areaFocus?.split(",")[0] ?? "";
-              const result = await generateDaySummaries({
-                destination: dest,
-                days: days.map((d: any) => ({
-                  day: d.day,
-                  date: d.date,
-                  areaFocus: d.areaFocus,
-                  timeline: (d.timeline ?? []).map((t: any) => ({
-                    time: t.time,
-                    details: t.details,
-                  })),
-                })),
-              });
-              loadedSummaries = result.summaries;
-              loadedPlace = result.aboutPlace ?? null;
-
-              // Persist summaries
-              const nextOverrides = {
-                ...resolvedOverrides,
-                daySummaries: loadedSummaries,
-                aboutPlace: loadedPlace,
-                daySummariesHash: payloadHash,
-              };
-              if (onPdfOverridesChange) onPdfOverridesChange(nextOverrides);
-              if (itineraryId) {
-                supabase
-                  .from("itineraries")
-                  .update({ pdf_overrides: nextOverrides })
-                  .eq("id", itineraryId)
-                  .then(() => {});
-              }
-              resolvedOverrides = nextOverrides;
-            } catch (err) {
-              console.warn("[PdfPreviewEditor] generateDaySummaries failed:", err);
-            }
-          }
-        }
-
-        // 3. Commit AI content to state so PdfTemplate renders with it
+        // 2. Load summaries and place details from saved overrides
         setDaySummaries(loadedSummaries);
         setAboutPlace(loadedPlace);
 

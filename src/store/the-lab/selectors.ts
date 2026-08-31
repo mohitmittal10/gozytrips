@@ -90,7 +90,6 @@ export function useMetaSlice() {
       setSelectedStatus: LabState["setSelectedStatus"];
       setSelectedTheme: LabState["setSelectedTheme"];
       setPdfOverrides: LabState["setPdfOverrides"];
-      setOptimizationCount: LabState["setOptimizationCount"];
     } => ({
       currentTripId: state.currentTripId,
       tripMetadata: state.tripMetadata,
@@ -98,14 +97,12 @@ export function useMetaSlice() {
       selectedStatus: state.selectedStatus,
       selectedTheme: state.selectedTheme,
       pdfOverrides: state.pdfOverrides,
-      optimizationCount: state.optimizationCount,
       setCurrentTripId: state.setCurrentTripId,
       setTripMetadata: state.setTripMetadata,
       setSelectedClientId: state.setSelectedClientId,
       setSelectedStatus: state.setSelectedStatus,
       setSelectedTheme: state.setSelectedTheme,
       setPdfOverrides: state.setPdfOverrides,
-      setOptimizationCount: state.setOptimizationCount,
     }))
   );
 }

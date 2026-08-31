@@ -17,7 +17,7 @@ import { createClient } from "@/lib/supabase/client";
 import { updateItineraryStatus } from "@/lib/services/itinerary-status";
 import { useClients } from "@/lib/hooks/use-clients";
 import { formSchema, type TheLabFormValues, type ActiveLabTab } from "@/types/the-lab";
-import { theLabSteps, loadingTexts, MAX_AI_OPTIMIZATIONS } from "@/constants/the-lab";
+import { theLabSteps, loadingTexts } from "@/constants/the-lab";
 import { useItineraryGeneration } from "@/hooks/the-lab/useItineraryGeneration";
 import { useItineraryPersistence } from "@/hooks/the-lab/useItineraryPersistence";
 import { useItinerarySave } from "@/hooks/the-lab/useItinerarySave";
@@ -187,8 +187,6 @@ export default function TheLab() {
   const pdfOverrides = useLabStore((state) => state.pdfOverrides);
   const setPdfOverrides = useLabStore((state) => state.setPdfOverrides);
 
-  const optimizationCount = useLabStore((state) => state.optimizationCount);
-  const setOptimizationCount = useLabStore((state) => state.setOptimizationCount);
   const selectedClientId = useLabStore((state) => state.selectedClientId);
   const setSelectedClientId = useLabStore((state) => state.setSelectedClientId);
   const selectedStatus = useLabStore((state) => state.selectedStatus);
@@ -244,7 +242,6 @@ export default function TheLab() {
         cabs: loadedData.cabs || [],
         buses: loadedData.buses || [],
         pricing: loadedData.pricing,
-        optimizationCount: loadedData.optimizationCount,
         selectedClientId: loadedData.selectedClientId,
         selectedStatus: loadedData.selectedStatus,
         tripMetadata: loadedData.tripMetadata,
@@ -344,7 +341,6 @@ export default function TheLab() {
       cabs: s.cabs,
       buses: s.buses,
       pricing: s.pricing,
-      optimizationCount: s.optimizationCount,
       selectedClientId: s.selectedClientId,
       selectedStatus: s.selectedStatus,
       tripMetadata: s.tripMetadata,
@@ -465,7 +461,6 @@ export default function TheLab() {
     console.log("[TheLab index.tsx] Triggering AI generation (calling generate)...");
     const res = await generate(values, feedback, tripMetadata);
     console.log("[TheLab index.tsx] AI generation result (res):", res);
-    if (!feedback) setOptimizationCount(0);
     
     if (res) {
       console.log("[TheLab index.tsx] Generation succeeded. Post-processing response...");
@@ -558,7 +553,6 @@ export default function TheLab() {
           pricing: undefined,
           tripMetadata: values,
           selectedStatus: 'draft',
-          optimizationCount: 0,
           selectedClientId: resolvedClientId,
           share_token: shareToken || null,
           share_enabled: shareToken ? true : undefined,
@@ -605,7 +599,7 @@ export default function TheLab() {
   const isViewingItinerary = ['itinerary', 'flights-hotels', 'pricing', 'inclusions'].includes(activeLabTab);
 
   return (
-    <section id="the-lab" className="w-full mx-auto pt-0 pb-10">
+    <section id="the-lab" className="w-full mx-auto pt-0 pb-10 bg-black min-h-screen">
       {/* Enquiry pre-fill banner */}
       {enquiryBanner && (
         <div className="w-full bg-gradient-to-r from-purple-600/20 to-indigo-600/20 border-b border-purple-500/30 px-4 py-2.5">
@@ -628,7 +622,7 @@ export default function TheLab() {
         </div>
       )}
       {isViewingItinerary && (itinerary?.itinerary?.length ?? 0) > 0 && (
-        <div className="w-full sticky top-0 z-40 bg-[#050505]/90 backdrop-blur-xl border-b border-white/5">
+        <div className="w-full sticky top-0 z-40 bg-black/90 backdrop-blur-xl border-b border-white/5">
           <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
             <TheLabHeader 
               itinerary={itinerary} 
@@ -661,7 +655,7 @@ export default function TheLab() {
                 }
                 setIsPreviewOpen(true);
               }} 
-              handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
+              handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, selectedTheme, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
               isSaving={isSaving} 
               isPreRendering={isPreRendering}
               activeLabTab={activeLabTab}
@@ -735,7 +729,7 @@ export default function TheLab() {
                     pricing={pricing} 
                     setPricing={setPricing} 
                     agencySettings={null} 
-                    handleSaveItinerary={(latestPricing?: any) => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing: latestPricing || pricing, showTimestamps, selectedTheme, optimizationCount, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
+                    handleSaveItinerary={(latestPricing?: any) => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing: latestPricing || pricing, showTimestamps, selectedTheme, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
                     isSaving={isSaving} 
                     setCurrentTripId={setCurrentTripId} 
                     setActiveLabTab={setActiveLabTab} 
@@ -767,9 +761,7 @@ export default function TheLab() {
                   selectedStatus={selectedStatus} 
                   clients={clients} 
                   selectedClientId={selectedClientId} 
-                  optimizationCount={optimizationCount} 
                   isGenerating={isGenerating} 
-                  onOptimize={(feedback) => { onSubmit(form.getValues(), feedback); setOptimizationCount(optimizationCount + 1); }} 
                   finalTotal={finalTotal}
                   currencySymbol={currencySymbol}
                   tripMetadata={tripMetadata}

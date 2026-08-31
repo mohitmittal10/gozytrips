@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { useAuth } from "@/contexts/auth-context";
+import { getStatusBadgeClasses } from "../utils/crm-colors";
 import type { EnrichedClient } from "../utils/metrics-utils";
 import type { FlatTrip } from "./TripDetailSheet";
 
@@ -96,13 +97,7 @@ export function flattenTrips(clients: EnrichedClient[]): FlatTrip[] {
 
 /** Status pill color resolver */
 function statusClasses(status: string): string {
-    const s = status.toLowerCase();
-    if (s === "booked" || s === "confirmed") return "bg-green-500/10 text-green-400 border-green-500/20";
-    if (s === "sent") return "bg-blue-500/10 text-blue-400 border-blue-500/20";
-    if (s === "proposed") return "bg-cyan-500/10 text-cyan-400 border-cyan-500/20";
-    if (s === "rejected") return "bg-red-500/10 text-red-400 border-red-500/20";
-    if (s === "completed") return "bg-emerald-500/10 text-emerald-400 border-emerald-500/20";
-    return "bg-purple-500/10 text-purple-400 border-purple-500/20";
+    return getStatusBadgeClasses(status);
 }
 
 function formatShortDate(dateStr: string): string {
@@ -372,28 +367,28 @@ const TripsKanbanView = ({
                                     onKeyDown={(e) => e.key === "Enter" && onTripClick(trip)}
                                 >
                                     <div className="flex items-start gap-1.5 mb-1.5">
-                                        <GripVertical className="w-3 h-3 text-gray-700 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                                        <p className="text-xs font-semibold text-white line-clamp-2 leading-snug group-hover:text-purple-300 transition-colors">
+                                        <GripVertical className="w-3 h-3 text-zinc-500 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                        <p className="text-xs font-semibold text-white line-clamp-2 leading-snug group-hover:text-zinc-200 transition-colors">
                                             {trip.title}
                                         </p>
                                     </div>
                                     {trip.destinations && (
-                                        <div className="flex items-center gap-1 text-[10px] text-gray-500 mb-1">
-                                            <Compass className="w-3 h-3 text-purple-400 shrink-0" />
+                                        <div className="flex items-center gap-1 text-[10px] text-gray-400 mb-1">
+                                            <Compass className="w-3 h-3 text-zinc-400 shrink-0" />
                                             <span className="truncate">{trip.destinations}</span>
                                         </div>
                                     )}
                                     {trip.clientName && (
-                                        <div className="flex items-center gap-1 text-[10px] text-gray-600">
+                                        <div className="flex items-center gap-1 text-[10px] text-gray-400">
                                             <Users className="w-3 h-3 shrink-0" />
                                             <span className="truncate">{trip.clientName}</span>
                                         </div>
                                     )}
-                                        <p className="text-[10px] text-purple-400 font-semibold mt-1.5">
+                                        <p className="text-[10px] text-zinc-200 font-semibold mt-1.5">
                                             {formatMoney(trip.tripCost, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}
                                         </p>
                                     {trip.start_date && (
-                                        <p className="text-[10px] text-gray-600 mt-0.5">
+                                        <p className="text-[10px] text-gray-500 mt-0.5">
                                             {formatShortDate(trip.start_date)}
                                         </p>
                                     )}
@@ -402,7 +397,7 @@ const TripsKanbanView = ({
                         })}
                         {col.trips.length === 0 && (
                             <div className="flex items-center justify-center h-20 border-2 border-dashed border-white/5 rounded-lg">
-                                <p className="text-[10px] text-gray-700">Drop here</p>
+                                <p className="text-[10px] text-zinc-500">Drop here</p>
                             </div>
                         )}
                     </div>

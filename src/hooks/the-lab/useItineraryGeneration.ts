@@ -1,8 +1,9 @@
-// Handles calling generateTravelItinerary and fetchItineraryImages
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { generateTravelItinerary, type TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary";
 import { fetchItineraryImages } from "@/ai/flows/fetch-itinerary-images";
+import { generateDaySummaries } from "@/ai/flows/generate-day-summaries";
+import { useLabStore } from "@/store/the-lab/labStore";
 import { format } from "date-fns";
 import type { TheLabFormValues, TripMetadata } from "@/types/the-lab";
 
@@ -102,6 +103,33 @@ export function useItineraryGeneration() {
         }));
       } catch (imgError) {
         console.warn('Failed to fetch dynamic day images, continuing with fallbacks:', imgError);
+      }
+
+      // Generate AI day summaries ONCE when itinerary is generated
+      try {
+        const dest = result.itinerary[0]?.areaFocus?.split(",")[0] ?? "";
+        const summaryResult = await generateDaySummaries({
+          destination: dest,
+          days: result.itinerary.map((d: any) => ({
+            day: d.day,
+            date: d.date,
+            areaFocus: d.areaFocus,
+            timeline: (d.timeline ?? []).map((t: any) => ({
+              time: t.time,
+              details: t.details,
+            })),
+          })),
+        });
+
+        const initialPdfOverrides = {
+          daySummaries: summaryResult.summaries,
+          aboutPlace: summaryResult.aboutPlace ?? null,
+        };
+
+        useLabStore.getState().setPdfOverrides(initialPdfOverrides);
+        (result as any).pdfOverrides = initialPdfOverrides;
+      } catch (sumError) {
+        console.warn('[useItineraryGeneration] Failed to generate AI day summaries:', sumError);
       }
 
       setItinerary(result);

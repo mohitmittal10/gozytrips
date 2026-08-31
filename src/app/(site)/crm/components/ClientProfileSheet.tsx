@@ -136,7 +136,7 @@ const NoteLogCard = ({ log }: { log: NoteLog }) => {
                 <span className="text-[10px] text-gray-600 flex items-center gap-1">
                   <Clock className="w-2.5 h-2.5 shrink-0" />
                   {fmtDate(log.date)}
-                  {log.time && <span className="text-gray-700">· {log.time}</span>}
+                  {log.time && <span className="text-zinc-500">· {log.time}</span>}
                 </span>
               </>
             )}
@@ -212,16 +212,18 @@ const SectionHeading = ({
   </div>
 );
 
+import { getStatusStyle, CRM_AVATAR_CLASS } from "../utils/crm-colors";
+
 // ── Trip Status Badge ──────────────────────────────────────────────────────────
 
 const statusConfig: Record<string, { color: string; bg: string; dot: string }> = {
   booked:    { color: "text-emerald-400", bg: "bg-emerald-500/10", dot: "bg-emerald-400" },
   confirmed: { color: "text-emerald-400", bg: "bg-emerald-500/10", dot: "bg-emerald-400" },
   sent:      { color: "text-blue-400",    bg: "bg-blue-500/10",    dot: "bg-blue-400" },
-  proposed:  { color: "text-sky-400",     bg: "bg-sky-500/10",     dot: "bg-sky-400" },
-  draft:     { color: "text-gray-400",    bg: "bg-gray-500/10",    dot: "bg-gray-400" },
-  rejected:  { color: "text-red-400",     bg: "bg-red-500/10",     dot: "bg-red-400" },
-  completed: { color: "text-purple-400",  bg: "bg-purple-500/10",  dot: "bg-purple-400" },
+  proposed:  { color: "text-amber-400",   bg: "bg-amber-500/10",   dot: "bg-amber-400" },
+  draft:     { color: "text-zinc-300",    bg: "bg-zinc-500/10",    dot: "bg-zinc-400" },
+  rejected:  { color: "text-rose-400",    bg: "bg-rose-500/10",    dot: "bg-rose-400" },
+  completed: { color: "text-teal-400",    bg: "bg-teal-500/10",    dot: "bg-teal-400" },
 };
 
 // ── Props ──────────────────────────────────────────────────────────────────────
@@ -277,8 +279,8 @@ export const ClientProfileSheet = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3.5">
                 <div className={cn(
-                  "w-11 h-11 rounded-xl flex items-center justify-center text-base font-bold text-white bg-gradient-to-br shadow-lg",
-                  getAvatarColor(selectedClient.name)
+                  "w-11 h-11 rounded-xl flex items-center justify-center text-base font-bold shrink-0",
+                  CRM_AVATAR_CLASS
                 )}>
                   {selectedClient.name.charAt(0).toUpperCase()}
                 </div>
@@ -482,7 +484,7 @@ export const ClientProfileSheet = ({
                             {/* Route */}
                             {trip.starting_location && (
                               <div className="flex items-center gap-1.5 mt-1">
-                                <p className="text-[11px] text-gray-500">
+                                <p className="text-[11px] text-zinc-500">
                                   {trip.starting_location}
                                   {trip.ending_location && trip.ending_location !== trip.starting_location && (
                                     <span className="inline-flex items-center gap-1">
@@ -496,14 +498,14 @@ export const ClientProfileSheet = ({
 
                             {/* Meta chips */}
                             <div className="flex items-center gap-3 mt-2">
-                              <div className="flex items-center gap-1 text-[11px] text-gray-500">
+                              <div className="flex items-center gap-1 text-[11px] text-zinc-500">
                                 <CalendarDays className="w-3 h-3 shrink-0" />
                                 <span>{start.toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</span>
-                                <span className="text-gray-700">·</span>
-                                <span className="text-gray-600">{diffDays}D/{diffDays - 1}N</span>
+                                <span className="text-zinc-700">·</span>
+                                <span className="text-zinc-600">{diffDays}D/{diffDays - 1}N</span>
                               </div>
                               {tripCost > 0 && (
-                                <div className="flex items-center gap-1 text-[11px] text-purple-400 font-semibold">
+                                <div className="flex items-center gap-1 text-[11px] text-zinc-300 font-semibold">
                                   <DollarSign className="w-3 h-3 shrink-0" />
                                   {formatMoney(tripCost, (agencySettings?.default_currency as any) || DEFAULT_CURRENCY)}
                                 </div>
@@ -514,7 +516,7 @@ export const ClientProfileSheet = ({
                                 </div>
                               )}
                               {daysLeft < 0 && (
-                                <div className="text-[10px] text-gray-600">
+                                <div className="text-[10px] text-zinc-600">
                                   completed
                                 </div>
                               )}
@@ -525,7 +527,7 @@ export const ClientProfileSheet = ({
                           <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
                             <Button
                               variant="ghost" size="icon"
-                              className="h-7 w-7 text-gray-500 hover:text-white hover:bg-white/10 rounded-lg"
+                              className="h-7 w-7 text-zinc-500 hover:text-white hover:bg-white/10 rounded-lg"
                               onClick={() => { setSelectedTripForModal(trip); setShowModal(true); }}
                               title="View itinerary"
                             >
@@ -533,7 +535,7 @@ export const ClientProfileSheet = ({
                             </Button>
                             <Button
                               variant="ghost" size="icon"
-                              className="h-7 w-7 text-gray-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg"
+                              className="h-7 w-7 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg"
                               onClick={() => handleDeleteTrip(trip.id)}
                               disabled={deleting === trip.id}
                               title="Delete"
@@ -549,8 +551,8 @@ export const ClientProfileSheet = ({
               ) : (
                 <div className="px-5 pb-5">
                   <div className="text-center py-10 border border-dashed border-white/[0.06] rounded-xl">
-                    <Plane className="w-7 h-7 text-gray-700 mx-auto mb-2 opacity-40" />
-                    <p className="text-gray-600 text-sm">No trips yet</p>
+                    <Plane className="w-7 h-7 text-zinc-700 mx-auto mb-2 opacity-40" />
+                    <p className="text-zinc-600 text-sm">No trips yet</p>
                     <Button
                       variant="ghost"
                       size="sm"

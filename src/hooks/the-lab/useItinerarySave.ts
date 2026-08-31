@@ -218,7 +218,6 @@ export function useItinerarySave({
         generation_preferences: mergedPrefs,
         selected_theme:     itineraryState.selectedTheme || "classic",
         show_timestamps:    itineraryState.showTimestamps ?? true,
-        optimization_count: itineraryState.optimizationCount || 0,
         pdf_overrides:      itineraryState.pdfOverrides || {},
         last_activity_at:   new Date().toISOString(),
         client_price:       finalTotal,
