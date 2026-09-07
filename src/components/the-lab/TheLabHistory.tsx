@@ -18,6 +18,7 @@ import type { ActiveLabTab } from '@/types/the-lab';
 import { useAuth } from '@/contexts/auth-context';
 import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
+import { formatTitleCase } from "@/components/pdf/utils";
 import UniqueLoading from '../ui/morph-loading';
 
 interface ItineraryRecord {
@@ -208,7 +209,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
         {paginatedItineraries.length > 0 ? (
           paginatedItineraries.map((item) => {
             const prefs = item.generation_preferences || {};
-            const displayTitle = item.title || item.destinations || prefs.destinations || "Untitled Project";
+            const displayTitle = formatTitleCase(item.title || item.destinations || prefs.destinations || "Untitled Project");
             const startDate = item.start_date ? new Date(`${item.start_date}T00:00:00`) : (prefs.startDate ? new Date(prefs.startDate) : null);
             const status = item.status || 'draft';
 

@@ -7,26 +7,14 @@ import { calcPricingBreakdown } from "@/services/financial";
 import { defaultPricingConfig, DEFAULT_CURRENCY } from "@/types/pricing";
 import { useLabStore } from "@/store/the-lab/labStore";
 
+import { formatTitleCase } from "@/components/pdf/utils";
+
 export function buildComparisonPayload(data: Partial<LoadedPersistenceData>) {
   const pricingCfg = {
     ...defaultPricingConfig,
     ...(data.pricing || {}),
     manualOptions: data.pricing?.manualOptions ?? [],
     milestones: data.pricing?.milestones ?? defaultPricingConfig.milestones,
-  };
-
-  const itineraryData = {
-    ...(data.itinerary || {}),
-    hotels: data.hotels || [],
-    flights: data.flights || [],
-    cabs: data.cabs || [],
-    buses: data.buses || [],
-    pricing: pricingCfg,
-    inclusions: data.inclusions !== undefined ? data.inclusions : "",
-    exclusions: data.exclusions !== undefined ? data.exclusions : "",
-    termsAndConditions: data.termsAndConditions !== undefined ? data.termsAndConditions : "",
-    cancellationPolicy: data.cancellationPolicy !== undefined ? data.cancellationPolicy : "",
-    paymentMethods: data.paymentMethods !== undefined ? data.paymentMethods : "",
   };
 
   const formValues = data.tripMetadata || {};
@@ -43,14 +31,31 @@ export function buildComparisonPayload(data: Partial<LoadedPersistenceData>) {
     }
   }
 
-  let generatedTitle = "Untitled Lab Draft";
-  if (dests) {
+  let rawTitle = (data.itinerary as any)?.title || (data.itinerary as any)?.tripTitle || "";
+  if (!rawTitle && dests) {
     if (startLoc) {
-      generatedTitle = `${startLoc} to ${dests}${nightsDaysSuffix}`;
+      rawTitle = `${startLoc} to ${dests}${nightsDaysSuffix}`;
     } else {
-      generatedTitle = `Trip to ${dests}${nightsDaysSuffix}`;
+      rawTitle = `Trip to ${dests}${nightsDaysSuffix}`;
     }
   }
+  const generatedTitle = formatTitleCase(rawTitle || "Untitled Lab Draft");
+
+  const itineraryData = {
+    ...(data.itinerary || {}),
+    title: generatedTitle,
+    tripTitle: generatedTitle,
+    hotels: data.hotels || [],
+    flights: data.flights || [],
+    cabs: data.cabs || [],
+    buses: data.buses || [],
+    pricing: pricingCfg,
+    inclusions: data.inclusions !== undefined ? data.inclusions : "",
+    exclusions: data.exclusions !== undefined ? data.exclusions : "",
+    termsAndConditions: data.termsAndConditions !== undefined ? data.termsAndConditions : "",
+    cancellationPolicy: data.cancellationPolicy !== undefined ? data.cancellationPolicy : "",
+    paymentMethods: data.paymentMethods !== undefined ? data.paymentMethods : "",
+  };
 
   let startDate = null;
   let endDate = null;

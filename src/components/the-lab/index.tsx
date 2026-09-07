@@ -22,6 +22,7 @@ import { useItineraryGeneration } from "@/hooks/the-lab/useItineraryGeneration";
 import { useItineraryPersistence } from "@/hooks/the-lab/useItineraryPersistence";
 import { useItinerarySave } from "@/hooks/the-lab/useItinerarySave";
 import { useBaseCostCalculator } from "@/hooks/the-lab/useBaseCostCalculator";
+import { formatTitleCase } from "@/components/pdf/utils";
 
 import TheLabForm from "./TheLabForm";
 import TheLabHeader from "./TheLabHeader";
@@ -206,7 +207,7 @@ export default function TheLab() {
   const { baseCost, finalTotal, currencySymbol } = useBaseCostCalculator({ itinerary, flights, hotels, cabs, buses, pricing });
 
   const tripTitle = useMemo(() => {
-    if (!tripMetadata) return `Trip to ${itinerary?.itinerary?.[0]?.areaFocus?.split(',')[0] || 'Destination'}`;
+    if (!tripMetadata) return formatTitleCase(`Trip to ${itinerary?.itinerary?.[0]?.areaFocus?.split(',')[0] || 'Destination'}`);
     const startLoc = tripMetadata.startingLocation;
     const dests = tripMetadata.destinations;
     let title = dests ? (startLoc ? `${startLoc} to ${dests}` : `Trip to ${dests}`) : "Untitled Lab Draft";
@@ -219,7 +220,7 @@ export default function TheLab() {
         title += ` ${totalDays}N ${totalDays + 1}D`;
       }
     }
-    return title;
+    return formatTitleCase(title);
   }, [tripMetadata, itinerary]);
 
   const clientName = useMemo(() => {

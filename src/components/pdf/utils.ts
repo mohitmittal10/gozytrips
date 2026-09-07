@@ -30,9 +30,29 @@ export const getCoverImage = (itinerary: TravelItineraryOutput): string => {
     return getDayImage(itinerary.itinerary[0]);
 };
 
-export const formatTitleCase = (str: string) => {
+export const formatTitleCase = (str?: string | null): string => {
     if (!str || typeof str !== 'string') return "";
-    return str.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+    const trimmed = str.trim();
+    if (!trimmed) return "";
+
+    const minorWords = new Set(['a', 'an', 'and', 'as', 'at', 'but', 'by', 'for', 'from', 'in', 'into', 'nor', 'of', 'on', 'or', 'so', 'the', 'to', 'via', 'with']);
+
+    return trimmed
+        .split(/\s+/)
+        .map((word, index) => {
+            const lower = word.toLowerCase();
+            if (/^\d+[nd]$/i.test(word) || /^\d+n\d+d$/i.test(word)) {
+                return word.toUpperCase();
+            }
+            if (index > 0 && minorWords.has(lower)) {
+                return lower;
+            }
+            if (word === word.toUpperCase() && word.length > 1 && !/^[IVXLCDM]+$/i.test(word)) {
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            }
+            return word.charAt(0).toUpperCase() + word.slice(1);
+        })
+        .join(" ");
 };
 
 export const formatDistance = (dist: string | number) => {
@@ -51,13 +71,13 @@ export const formatPlural = (count: number, singular: string, plural: string) =>
 };
 
 export const getSanitizedTitle = (title: string, itinerary: TravelItineraryOutput): string => {
-    let displayTitle = title || "Your Tailored Itinerary";
+    let displayTitle = title || (itinerary as any)?.tripTitle || (itinerary as any)?.title || "Your Tailored Itinerary";
     if (displayTitle.toLowerCase().includes("exploration") && itinerary?.itinerary?.length > 0) {
         const distinctAreas = Array.from(new Set(itinerary.itinerary.map(day => day.areaFocus?.split(',')[0] || ""))).filter(Boolean);
         if (distinctAreas.length > 1) {
             displayTitle = `Journey: ${distinctAreas[0]} to ${distinctAreas[distinctAreas.length - 1]}`;
         }
     }
-    return displayTitle;
+    return formatTitleCase(displayTitle);
 };
 

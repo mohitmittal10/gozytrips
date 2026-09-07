@@ -7,6 +7,8 @@ import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
 
+import { formatTitleCase } from "@/components/pdf/utils";
+
 export interface SavedItinerary {
     id: string;
     title: string;
@@ -67,7 +69,7 @@ export function TripCard({
             <CardHeader className="pb-3 relative">
                 <div className="flex justify-between items-start gap-2">
                     <div>
-                        <CardTitle className="line-clamp-2">{trip.title}</CardTitle>
+                        <CardTitle className="line-clamp-2">{formatTitleCase(trip.title)}</CardTitle>
                         <CardDescription className="line-clamp-1">{trip.description}</CardDescription>
                     </div>
                     {onToggleFavourite && (

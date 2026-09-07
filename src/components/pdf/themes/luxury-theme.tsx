@@ -2,7 +2,7 @@ import React from 'react';
 import type { ThemeProps } from './classic-theme';
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
-import { getAgentInfo, getCoverImage, getDayImage, formatDate } from '../utils';
+import { getAgentInfo, getCoverImage, getDayImage, formatDate, formatTitleCase } from '../utils';
 import { calcPricingFromBaseCost, calcBaseCost, extractTripCost } from '@/services/financial';
 
 const parseList = (text?: any): string[] => {
@@ -1166,7 +1166,7 @@ export const LuxuryTheme = ({
 
                     <div className="cover-inner">
                         <h1 className="display" data-field="itinerary.title">
-                            {title || (itinerary as any)?.tripTitle || (itinerary as any)?.destination || 'Your Journey'}
+                            {formatTitleCase(title || (itinerary as any)?.tripTitle || (itinerary as any)?.title || (itinerary as any)?.destination || 'Your Journey')}
                         </h1>
                         <p>
                             {(itinerary as any)?.subtitle || (clientNameResolved ? `A bespoke travel itinerary prepared for ${clientNameResolved}` : 'A bespoke luxury travel itinerary')}

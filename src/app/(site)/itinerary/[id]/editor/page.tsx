@@ -7,7 +7,7 @@ import { useAuth } from "@/contexts/auth-context";
 import { PdfTemplate } from "@/components/pdf-template";
 import type { PdfTheme } from "@/components/pdf/theme-config";
 import { DEFAULT_PDF_THEME_OPTIONS } from "@/components/pdf/theme-config";
-import { getAgentInfo } from "@/components/pdf/utils";
+import { getAgentInfo, formatTitleCase } from "@/components/pdf/utils";
 import { calcPricingFromBaseCost, calcBaseCost, extractTripCost } from "@/services/financial";
 import { defaultPricingConfig } from "@/types/pricing";
 import { filterCompleteEntriesForExport } from "@/lib/validation/logistics-validation";
@@ -427,8 +427,9 @@ export default function LuxuryEditorPage() {
 
             // Top level title & subtitle
             if (path === "itinerary.title") {
-                newData.tripTitle = text;
-                newData.title = text;
+                const formattedTitle = formatTitleCase(text);
+                newData.tripTitle = formattedTitle;
+                newData.title = formattedTitle;
             } else if (path === "itinerary.subtitle") {
                 newData.subtitle = text;
             }
@@ -662,9 +663,13 @@ export default function LuxuryEditorPage() {
             const rawTotalText = updatedData.pricing?.customTotalAmount || updatedData.pricing?.totalAmount || "";
             const numericTotal = parseFloat(String(rawTotalText).replace(/[^0-9.]/g, ""));
 
+            const formattedTitle = formatTitleCase(updatedData.tripTitle || updatedData.title || itinerary.title);
+            updatedData.tripTitle = formattedTitle;
+            updatedData.title = formattedTitle;
+
             const payload: any = {
                 itinerary_data: updatedData,
-                title: updatedData.tripTitle || updatedData.title || itinerary.title,
+                title: formattedTitle,
                 updated_at: new Date().toISOString(),
             };
 
@@ -730,7 +735,7 @@ export default function LuxuryEditorPage() {
 
         return {
             itinerary: liveData,
-            title: itinerary?.title || liveData?.tripTitle || "Luxury Itinerary",
+            title: formatTitleCase(itinerary?.title || liveData?.tripTitle || "Luxury Itinerary"),
             clientName: itinerary?.client_name || "",
             agencySettings,
             agent,
