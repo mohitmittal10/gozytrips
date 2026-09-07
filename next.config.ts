@@ -15,6 +15,7 @@ const nextConfig: NextConfig = {
     '@genkit-ai/next',
   ],
   images: {
+    qualities: [60, 75],
     remotePatterns: [
       {
         protocol: 'https',

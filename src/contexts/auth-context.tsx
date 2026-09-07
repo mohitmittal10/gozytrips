@@ -130,7 +130,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        console.warn('Error bootstrapping user data via RPC, falling back to parallel fetches:', error.message || error);
+        const isNetworkError = 
+          typeof error.message === 'string' && 
+          (error.message.includes('Failed to fetch') || 
+           error.message.includes('network') || 
+           error.message.includes('timeout'));
+        
+        console.warn('Error bootstrapping user data via RPC:', error.message || error);
+        
+        if (isNetworkError) {
+          console.warn('[Auth] Supabase endpoint is unreachable (network timeout or offline). Skipping fallback table fetches.');
+          return;
+        }
+
         // Fallback to individual fetches if RPC fails (e.g. migration not yet applied)
         await Promise.all([
           fetchUserProfile(userId),

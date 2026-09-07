@@ -378,11 +378,15 @@ export function useFinancials(
             });
 
             setFinancials(mapped);
-        } catch (error) {
-            console.error("Error fetching financials:", error);
+        } catch (error: any) {
+            const errorMessage = error?.message || error?.details || (typeof error === 'object' && Object.keys(error).length ? JSON.stringify(error) : String(error));
+            console.error("Error fetching financials:", errorMessage);
+            const isNetworkErr = typeof errorMessage === 'string' && (errorMessage.includes('Failed to fetch') || errorMessage.includes('network'));
             toast({
-                title: "Error",
-                description: "Failed to load financial records.",
+                title: isNetworkErr ? "Connection Error" : "Error",
+                description: isNetworkErr
+                    ? "Unable to connect to Supabase database. Please check your network or project status."
+                    : "Failed to load financial records.",
                 variant: "destructive",
             });
         } finally {

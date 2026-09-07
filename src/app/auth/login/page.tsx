@@ -62,9 +62,12 @@ export default function Login() {
       });
 
       if (error) {
+        const isNetworkErr = error.message?.includes('Failed to fetch') || error.message?.includes('network');
         toast({
-          title: 'Login failed',
-          description: error.message,
+          title: isNetworkErr ? 'Connection Timeout' : 'Login failed',
+          description: isNetworkErr 
+            ? 'Unable to connect to Supabase server. Please check your internet connection or verify your Supabase project status.' 
+            : error.message,
           variant: 'destructive',
         });
         return;
@@ -78,9 +81,13 @@ export default function Login() {
 
       router.push('/the-lab');
     } catch (error) {
+      const errMsg = error instanceof Error ? error.message : 'An error occurred';
+      const isNetworkErr = errMsg.includes('Failed to fetch');
       toast({
-        title: 'Error',
-        description: error instanceof Error ? error.message : 'An error occurred',
+        title: isNetworkErr ? 'Connection Error' : 'Error',
+        description: isNetworkErr 
+          ? 'Unable to connect to Supabase server. Please check your network or project status in Supabase Dashboard.'
+          : errMsg,
         variant: 'destructive',
       });
     } finally {

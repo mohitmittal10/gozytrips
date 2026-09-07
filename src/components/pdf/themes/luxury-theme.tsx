@@ -238,6 +238,7 @@ export const LuxuryTheme = ({
     const agentPhone = agencyOverrides.phone || agent.agentPhone || '';
     const agentWebsite = agencyOverrides.website || agent.agentWebsite || '';
     const agentAddress = agencyOverrides.address || agencySettings?.address || (agent as any).address || '';
+    const logoUrl = agencyOverrides.logoUrl || agent.logoUrl || agencySettings?.logo_url || agencySettings?.logoUrl || agencySettings?.logo || '';
 
     const consultantName = consultantOverrides.name || agent.agentName || agencySettings?.consultant_name || agencySettings?.consultantName || '';
     const consultantTitle = consultantOverrides.title || agencySettings?.consultantTitle || (agent as any).role || '';
@@ -457,6 +458,31 @@ export const LuxuryTheme = ({
                     color: var(--cream-soft);
                     font-style: italic;
                     font-size: 20px;
+                }
+
+                /* ---------- AGENCY LOGO BADGE (TOP RIGHT CORNER) ---------- */
+                .luxury-wrap .luxury-logo-badge {
+                    position: absolute;
+                    top: 28px;
+                    right: 32px;
+                    z-index: 10;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: rgba(10, 10, 9, 0.75);
+                    backdrop-filter: blur(12px);
+                    -webkit-backdrop-filter: blur(12px);
+                    border: 1px solid rgba(201, 168, 76, 0.35);
+                    border-radius: 8px;
+                    padding: 10px 18px;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+                }
+                @media (max-width: 768px) {
+                    .luxury-wrap .luxury-logo-badge {
+                        top: 16px;
+                        right: 16px;
+                        padding: 8px 12px;
+                    }
                 }
 
                 /* ---------- AGENCY / BOOKING DETAILS (STRICTLY SIDE BY SIDE) ---------- */
@@ -1101,6 +1127,43 @@ export const LuxuryTheme = ({
                     data-pdf-section="cover"
                     style={{ backgroundImage: `url('${coverImage}')` }}
                 >
+                    {/* Agency logo badge — top right corner */}
+                    {(logoUrl || companyName) ? (
+                        <div className="luxury-logo-badge">
+                            {logoUrl ? (
+                                <img
+                                    src={logoUrl}
+                                    alt={companyName || "Agency Logo"}
+                                    crossOrigin="anonymous"
+                                    style={{
+                                        maxHeight: "38px",
+                                        maxWidth: "120px",
+                                        objectFit: "contain",
+                                        display: "block"
+                                    }}
+                                />
+                            ) : (
+                                <div
+                                    style={{
+                                        width: "34px",
+                                        height: "34px",
+                                        borderRadius: "50%",
+                                        background: "var(--gold)",
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "center",
+                                        color: "#0a0a09",
+                                        fontWeight: 700,
+                                        fontSize: "15px",
+                                        fontFamily: "var(--font-display)"
+                                    }}
+                                >
+                                    {(companyName || 'G').charAt(0).toUpperCase()}
+                                </div>
+                            )}
+                        </div>
+                    ) : null}
+
                     <div className="cover-inner">
                         <h1 className="display" data-field="itinerary.title">
                             {title || (itinerary as any)?.tripTitle || (itinerary as any)?.destination || 'Your Journey'}
