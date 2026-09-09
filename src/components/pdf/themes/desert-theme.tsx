@@ -2,7 +2,7 @@ import React from 'react';
 import type { ThemeProps } from './classic-theme';
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { formatCurrency } from '@/lib/utils/currency';
-import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDate } from '../utils';
+import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDate, resolveAboutPlace } from '../utils';
 import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
@@ -22,6 +22,8 @@ const PAGE_STYLE: React.CSSProperties = {
     justifyContent: "flex-start",
     pageBreakAfter: "always",
     breakAfter: "page",
+    margin: 0,
+    padding: 0,
 };
 
 const getPrimaryDestination = (itinerary: ThemeProps["itinerary"]) =>
@@ -46,7 +48,7 @@ const getAgencyDetails = (agent: ThemeProps["agent"]) => {
 const getAgencyNarrative = (agent: ThemeProps["agent"]) =>
     agent.agentBio || "Available to curate, confirm, and coordinate every element of your journey.";
 
-export const DesertFooter = ({ agent, agencySettings }: { agent: ThemeProps["agent"], agencySettings?: any }) => (
+export const DesertFooter = ({ agent, agencySettings, clientName }: { agent: ThemeProps["agent"], agencySettings?: any, clientName?: string }) => (
     <section
         data-pdf-section="footer"
         style={{
@@ -71,14 +73,6 @@ export const DesertFooter = ({ agent, agencySettings }: { agent: ThemeProps["age
                 position: "relative",
                 overflow: "hidden"
             }}>
-                {/* Subtle decorative background circle */}
-                <div style={{ position: "absolute", top: "-80px", right: "-80px", width: "240px", height: "240px", borderRadius: "50%", background: "rgba(251, 146, 60, 0.08)", pointerEvents: "none" }} />
-                
-                {agent.logoUrl && (
-                    <div style={{ display: "inline-flex", padding: "12px 24px", background: "rgba(255,255,255,0.08)", backdropFilter: "blur(10px)", borderRadius: "16px", marginBottom: "24px", border: "1px solid rgba(255,255,255,0.12)" }}>
-                        <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "40px", maxWidth: "140px", objectFit: "contain", display: "block" }} />
-                    </div>
-                )}
                 <h2 style={{ margin: "0 0 12px 0", fontSize: "32px", color: "#ffffff", fontWeight: 500, letterSpacing: "-0.5px" }}>
                      {agent.companyName}
                 </h2>
@@ -139,7 +133,7 @@ export const DesertFooter = ({ agent, agencySettings }: { agent: ThemeProps["age
                 )}
                 
                 <div style={{ textAlign: "center", marginTop: "36px", paddingTop: "20px", borderTop: "1px solid rgba(255,255,255,0.1)", fontSize: "11px", color: "rgba(254, 215, 170, 0.4)", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                    Prepared for {agencySettings?.brand_name || agent.companyName} • Designed in The Lab
+                    Prepared {clientName ? `for ${clientName}` : ""} • {agent.companyName ? `Designed by ${agent.companyName}` : "Designed in The Lab"}
                 </div>
             </div>
         </div>
@@ -156,6 +150,7 @@ export const DesertTheme = ({
     const destination = getPrimaryDestination(itinerary);
     const heroDescription = getHeroDescription(itinerary);
     const agencyDetails = getAgencyDetails(agent);
+    const resolvedAbout = resolveAboutPlace(aboutPlace, itinerary);
     
     const adultPax = Number(pricing?.adultPax || 2);
     const childPax = Number(pricing?.childPax || 0);
@@ -171,9 +166,11 @@ export const DesertTheme = ({
     const termsAndConditionsList = parseList(termsAndConditions);
 
     return (
-        <div className="desert-wrap" style={{ fontFamily: "'Noto Serif', 'Georgia', serif", backgroundColor: "#fdfcfb", color: "#131314", width: "100%" }}>
+        <div className="desert-wrap" style={{ fontFamily: "'Noto Serif', 'Georgia', serif", backgroundColor: "#fdfcfb", color: "#131314", width: "100%", margin: 0, padding: 0 }}>
             <style>
                 {`
+                .desert-wrap, .desert-wrap section { margin: 0; padding: 0; }
+                .desert-wrap section[data-pdf-section="cover"] { margin-top: 0; padding-top: 0; }
                 .desert-wrap *, .desert-wrap *::before, .desert-wrap *::after { box-sizing: border-box; }
 
                 .desert-wrap .table-wrap {
@@ -225,8 +222,8 @@ export const DesertTheme = ({
                 .desert-wrap .payment-table th:nth-child(4) { width: 20%; }
                 `}
             </style>
-            <section data-pdf-section="cover" style={{ ...PAGE_STYLE, background: "#fdfcfb" }}>
-                <div style={{ position: "relative", height: "620px", overflow: "hidden" }}>
+            <section data-pdf-section="cover" style={{ ...PAGE_STYLE, background: "#fdfcfb", margin: 0, padding: 0, marginTop: 0, paddingTop: 0 }}>
+                <div style={{ position: "relative", height: "620px", overflow: "hidden", margin: 0, padding: 0, marginTop: 0, paddingTop: 0 }}>
                     <img src={getCoverImage(itinerary)} alt="" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }} crossOrigin="anonymous" />
                     <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)" }} />
                     {/* Agency logo stamp — top right (logo only) */}
@@ -295,7 +292,7 @@ export const DesertTheme = ({
                             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                                 <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
                                     <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Consultant</p>
-                                    <p data-field="agency.name" style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.agentName}</p>
+                                    <p data-field="consultant.name" style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{agent.agentName}</p>
                                 </div>
                                 {agent.agentPhone && (
                                     <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
@@ -325,7 +322,7 @@ export const DesertTheme = ({
                             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                                 <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
                                     <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Client Name</p>
-                                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{clientName || ""}</p>
+                                    <p data-field="booking.guestNames" style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{clientName || ""}</p>
                                 </div>
                                 <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
                                     <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Adults</p>
@@ -348,25 +345,25 @@ export const DesertTheme = ({
             </section>
 
             {/* About The Destination */}
-            {aboutPlace && (
+            {resolvedAbout && (
                 <section data-pdf-section="about" style={{ padding: "88px 64px", background: "#fcfaf7" }}>
                     <div style={{ display: "flex", gap: "50px", alignItems: "flex-start", maxWidth: "1000px", margin: "0 auto" }}>
-                        {Array.isArray(itinerary.itinerary) && itinerary.itinerary.length > 0 && getDayImage(itinerary.itinerary[0]) ? (
+                        {(resolvedAbout.heroImageUrl || (Array.isArray(itinerary.itinerary) && itinerary.itinerary.length > 0 && getDayImage(itinerary.itinerary[0]))) ? (
                             <div style={{ flex: "0 0 350px", position: "relative" }}>
                                 <div style={{ position: "absolute", top: "-15px", left: "-15px", width: "100%", height: "100%", border: "2px solid #e6d5c3", borderRadius: "16px" }} />
-                                <img src={getDayImage(itinerary.itinerary[0])} alt="Destination" style={{ position: "relative", width: "100%", height: "450px", objectFit: "cover", borderRadius: "16px", display: "block", zIndex: 1, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }} crossOrigin="anonymous" />
+                                <img data-field="aboutPlace.heroImageUrl" src={resolvedAbout.heroImageUrl || getDayImage(itinerary.itinerary[0])} alt="Destination" style={{ position: "relative", width: "100%", height: "450px", objectFit: "cover", borderRadius: "16px", display: "block", zIndex: 1, boxShadow: "0 20px 40px rgba(0,0,0,0.08)" }} crossOrigin="anonymous" />
                             </div>
                         ) : null}
                         <div style={{ flex: 1, paddingTop: "20px" }}>
                             <p style={{ margin: "0 0 16px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "4px", color: "#b48b63", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>About The Destination</p>
-                            <h2 style={{ margin: "0 0 24px 0", fontSize: "40px", color: "#111827", fontWeight: 500, lineHeight: "1.1" }}>{aboutPlace.title}</h2>
-                            <p style={{ margin: "0 0 32px 0", color: "#4b5563", fontSize: "16px", lineHeight: "1.9", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{aboutPlace.description}</p>
+                            <h2 data-field="aboutPlace.title" style={{ margin: "0 0 24px 0", fontSize: "40px", color: "#111827", fontWeight: 500, lineHeight: "1.1" }}>{resolvedAbout.title}</h2>
+                            <p data-field="aboutPlace.description" style={{ margin: "0 0 32px 0", color: "#4b5563", fontSize: "16px", lineHeight: "1.9", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{resolvedAbout.description}</p>
                             
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
-                                {(aboutPlace.highlights || []).map((hl: string, i: number) => (
+                                {(resolvedAbout.highlights || []).map((hl: string, i: number) => (
                                     <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "16px" }}>
                                         <div style={{ flexShrink: 0, width: "32px", height: "32px", borderRadius: "50%", background: "#f3e8d8", display: "flex", alignItems: "center", justifyContent: "center", color: "#b48b63", fontSize: "12px", marginTop: "4px" }}>✦</div>
-                                        <span style={{ fontSize: "15px", color: "#1f2937", fontWeight: 500, lineHeight: "1.6", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{hl}</span>
+                                        <span data-field={`aboutPlace.highlights[${i}]`} style={{ fontSize: "15px", color: "#1f2937", fontWeight: 500, lineHeight: "1.6", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{hl}</span>
                                     </div>
                                 ))}
                             </div>
@@ -494,10 +491,10 @@ export const DesertTheme = ({
                                 <div style={{ width: "100px", height: "100px", background: "#fcfaf7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", borderRadius: "8px" }}>🚕</div>
                                 <div style={{ flex: 1, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     <div style={{ color: "#fb923c", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "8px" }}>Transfer • Day {c.dayIndex + 1}</div>
-                                    <h4 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1f2937", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>{c.vehicleType || "Private Transfer"}</h4>
+                                    {c.vehicleType && <h4 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1f2937", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>{c.vehicleType}</h4>}
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px", fontSize: "13px", color: "#6b7280" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Route</span><span style={{ fontWeight: 600, color: "#374151" }}>{c.route || "Local"}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Pickup</span><span style={{ fontWeight: 600, color: "#374151" }}>{c.pickupTime}</span></div>
+                                        {c.route && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Route</span><span style={{ fontWeight: 600, color: "#374151" }}>{c.route}</span></div>}
+                                        {c.pickupTime && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Pickup</span><span style={{ fontWeight: 600, color: "#374151" }}>{c.pickupTime}</span></div>}
                                         {c.driverName && <div style={{ display: "flex", justifyContent: "space-between" }}><span>Driver</span><span style={{ fontWeight: 600, color: "#b48b63" }}>{c.driverName}</span></div>}
                                     </div>
                                 </div>
@@ -508,10 +505,10 @@ export const DesertTheme = ({
                                 <div style={{ width: "100px", height: "100px", background: "#fcfaf7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", borderRadius: "8px" }}>🚌</div>
                                 <div style={{ flex: 1, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     <div style={{ color: "#fb923c", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "8px" }}>Bus • Day {b.dayIndex + 1}</div>
-                                    <h4 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1f2937", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>{b.busType || "Tourist Bus"}</h4>
+                                    {b.busType && <h4 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1f2937", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>{b.busType}</h4>}
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "8px", fontSize: "13px", color: "#6b7280" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Route</span><span style={{ fontWeight: 600, color: "#374151" }}>{b.route}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Departure</span><span style={{ fontWeight: 600, color: "#374151" }}>{b.departureTime}</span></div>
+                                        {b.route && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Route</span><span style={{ fontWeight: 600, color: "#374151" }}>{b.route}</span></div>}
+                                        {b.departureTime && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed #e5e7eb", paddingBottom: "4px" }}><span>Departure</span><span style={{ fontWeight: 600, color: "#374151" }}>{b.departureTime}</span></div>}
                                         {b.pnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span>PNR</span><span style={{ fontWeight: 600, color: "#b48b63" }}>{b.pnr}</span></div>}
                                     </div>
                                 </div>
@@ -593,7 +590,7 @@ export const DesertTheme = ({
                                         })
                                     ) : (
                                         <tr>
-                                            <td>{"Package Cost"} (for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''})</td>
+                                            <td>{title || (itinerary as any)?.tripTitle || (itinerary as any)?.title || 'Package'}{adultPax > 0 ? ` (for ${adultPax} Adults${childPax ? `, ${childPax} Children` : ''})` : ''}</td>
                                             <td>1</td>
                                             <td>{formatCurrency(costWithMarkup, currency)}</td>
                                             <td>{formatCurrency(costWithMarkup, currency)}</td>
@@ -693,7 +690,7 @@ export const DesertTheme = ({
                     )}
                 </div>
             </section>
-            <DesertFooter agent={agent} agencySettings={agencySettings} />
+            <DesertFooter agent={agent} agencySettings={agencySettings} clientName={clientName} />
         </div>
     );
 };

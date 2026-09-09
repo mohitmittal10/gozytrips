@@ -139,7 +139,7 @@ export function extractTripCost(trip: any): number {
   if (typeof trip === 'number') return trip;
   if (typeof trip.client_price === 'number' && trip.client_price > 0) return trip.client_price;
 
-  const data = trip.itinerary_data || {};
+  const data = trip.itinerary_data || trip;
 
   // Tier 2: pricing engine (only meaningful when hotels/flights/activities have been filled in)
   try {
@@ -169,7 +169,7 @@ export function extractTripCost(trip: any): number {
   }
 
   // Tier 4: user-entered total trip budget
-  return trip.budget ?? 0;
+  return trip.budget ?? data.budget ?? 0;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

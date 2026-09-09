@@ -300,6 +300,10 @@ export default function LuxuryEditorPage() {
         ((agencySettings as any)?.default_pdf_theme as PdfTheme) || 'luxury'
     );
 
+    const [localAgencySettings, setLocalAgencySettings] = useState<any>(null);
+    const [localUserProfile, setLocalUserProfile] = useState<any>(null);
+    const [localClient, setLocalClient] = useState<any>(null);
+
     // We hold mutated itinerary_data separately so we can track changes
     const [liveData, setLiveData] = useState<any>(null);
     const liveDataRef = useRef<any>(null);
@@ -310,7 +314,7 @@ export default function LuxuryEditorPage() {
 
     const fetchedRef = useRef(false);
 
-    // ── Fetch itinerary from Supabase ──────────────────────────
+    // ── Fetch itinerary & user/agency profile from Supabase ────
     useEffect(() => {
         if (!id || !user?.id) return;
         if (fetchedRef.current && itinerary?.id === id) return;
@@ -318,13 +322,30 @@ export default function LuxuryEditorPage() {
         let isSubscribed = true;
         const fetchItinerary = async () => {
             if (!itinerary) setLoading(true);
-            const { data, error } = await supabase
-                .from("itineraries")
-                .select("*")
-                .eq("id", id)
-                .eq("user_id", user.id)
-                .single();
+
+            const [{ data, error }, { data: profileData }, { data: agencyData }] = await Promise.all([
+                supabase
+                    .from("itineraries")
+                    .select("*, clients(*)")
+                    .eq("id", id)
+                    .eq("user_id", user.id)
+                    .single(),
+                supabase
+                    .from("user_profiles")
+                    .select("*")
+                    .eq("user_id", user.id)
+                    .maybeSingle(),
+                supabase
+                    .from("agency_settings")
+                    .select("*")
+                    .eq("user_id", user.id)
+                    .maybeSingle(),
+            ]);
+
             if (!isSubscribed) return;
+            if (profileData) setLocalUserProfile(profileData);
+            if (agencyData) setLocalAgencySettings(agencyData);
+
             if (error || !data) {
                 if (!itinerary) setError(error?.message || "Itinerary not found");
             } else {
@@ -334,6 +355,20 @@ export default function LuxuryEditorPage() {
                 const savedTheme = data.itinerary_data?.selectedTheme as PdfTheme | undefined;
                 if (savedTheme) setSelectedTheme(savedTheme);
                 fetchedRef.current = true;
+
+                // Fetch linked client record if client_id exists or join returns client
+                let clientRecord = (data as any)?.clients || null;
+                if (!clientRecord && data.client_id) {
+                    const { data: clientData } = await supabase
+                        .from("clients")
+                        .select("*")
+                        .eq("id", data.client_id)
+                        .maybeSingle();
+                    clientRecord = clientData;
+                }
+                if (clientRecord && isSubscribed) {
+                    setLocalClient(clientRecord);
+                }
             }
             setLoading(false);
         };
@@ -434,9 +469,12 @@ export default function LuxuryEditorPage() {
                 newData.subtitle = text;
             }
 
-            // Agency Overrides
-            else if (path === "agency.companyName" || path === "agency.name") {
+            // Agency Overrides vs Consultant Name
+            else if (path === "agency.companyName") {
                 newData.agencyOverrides.companyName = text;
+            } else if (path === "agency.agentName" || path === "agency.name" || path === "consultant.name") {
+                newData.consultant.name = text;
+                newData.agencyOverrides.agentName = text;
             } else if (path === "agency.tagline") {
                 newData.agencyOverrides.tagline = text;
             } else if (path === "agency.email") {
@@ -450,15 +488,15 @@ export default function LuxuryEditorPage() {
             }
 
             // Consultant
-            else if (path === "consultant.name") {
-                newData.consultant.name = text;
-            } else if (path === "consultant.title") {
+            else if (path === "consultant.title") {
                 newData.consultant.title = text;
             }
 
-            // Booking details
-            else if (path === "booking.guestNames") {
+            // Booking details & Client Name
+            else if (path === "booking.guestNames" || path === "client.name" || path === "booking.clientName") {
                 newData.guestNames = text;
+                newData.clientName = text;
+                if (!newData.bookingDetails) newData.bookingDetails = {};
                 newData.bookingDetails.guestNames = text;
             } else if (path === "booking.travellerSummary") {
                 newData.travellerSummary = text;
@@ -697,7 +735,32 @@ export default function LuxuryEditorPage() {
 
     // ── Build props for PdfTemplate ─────────────────────────────
     const themeProps = useMemo(() => {
-        const agent = getAgentInfo(userProfile, agencySettings);
+        const effectiveUserProfile = userProfile || localUserProfile;
+        const effectiveAgencySettings = agencySettings || localAgencySettings;
+        const agent = getAgentInfo(effectiveUserProfile, effectiveAgencySettings, liveData);
+
+        const resolvedClientName =
+            liveData?.guestNames ||
+            liveData?.clientName ||
+            liveData?.client_name ||
+            liveData?.guest_names ||
+            liveData?.bookingDetails?.guestNames ||
+            liveData?.bookingDetails?.clientName ||
+            liveData?.bookingDetails?.customerName ||
+            liveData?.clientDetails?.name ||
+            liveData?.clientDetails?.clientName ||
+            liveData?.guestName ||
+            localClient?.name ||
+            localClient?.client_name ||
+            localClient?.full_name ||
+            (itinerary as any)?.clients?.name ||
+            (itinerary as any)?.clients?.client_name ||
+            (itinerary as any)?.client?.name ||
+            itinerary?.client_name ||
+            itinerary?.client_names ||
+            itinerary?.guest_names ||
+            "Valued Guest";
+
         const pricingCfg = (liveData as any)?.pricing || itinerary?.pricing || defaultPricingConfig;
         const validHotels = filterCompleteEntriesForExport(
             (liveData as any)?.hotels || [],
@@ -736,8 +799,8 @@ export default function LuxuryEditorPage() {
         return {
             itinerary: liveData,
             title: formatTitleCase(itinerary?.title || liveData?.tripTitle || "Luxury Itinerary"),
-            clientName: itinerary?.client_name || "",
-            agencySettings,
+            clientName: resolvedClientName,
+            agencySettings: effectiveAgencySettings,
             agent,
             hotels: validHotels,
             flights: validFlights,
@@ -754,7 +817,7 @@ export default function LuxuryEditorPage() {
             paymentMethods: itinerary?.payment_methods || liveData?.paymentMethods,
             aboutPlace: itinerary?.about_place || liveData?.aboutPlace,
         };
-    }, [liveData, itinerary, userProfile, agencySettings]);
+    }, [liveData, itinerary, userProfile, agencySettings, localUserProfile, localAgencySettings, localClient]);
 
     // ── Loading / error states ──────────────────────────────────
     if (loading) {

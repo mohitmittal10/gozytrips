@@ -109,7 +109,7 @@ export const CorporateTheme = ({
                         </div>
                     </div>
                     <div style={{ textAlign: "right", fontSize: "12px", lineHeight: "1.8", opacity: 0.9, fontWeight: 500 }}>
-                        <p data-field="agency.name" style={{ margin: "2px 0", fontWeight: 700, color: "#ffffff" }}>{agent.agentName}</p>
+                        <p data-field="consultant.name" style={{ margin: "2px 0", fontWeight: 700, color: "#ffffff" }}>{agent.agentName}</p>
                         {agent.agentPhone && <p data-field="agency.phone" style={{ margin: "2px 0", color: "#e2e8f0" }}>{agent.agentPhone}</p>}
                         {agent.agentEmail && <p data-field="agency.email" style={{ margin: "2px 0", color: "#e2e8f0" }}>{agent.agentEmail}</p>}
                     </div>
@@ -136,7 +136,7 @@ export const CorporateTheme = ({
                         </div>
                         <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.56)" }}>
                             <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Client / Traveler</div>
-                            <div style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{clientName || ""}</div>
+                            <div data-field="booking.guestNames" style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{clientName || ""}</div>
                         </div>
                         <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.5)" }}>
                             <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Travelers</div>
@@ -298,10 +298,10 @@ export const CorporateTheme = ({
                                 <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.04)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", borderRadius: "4px" }}>🚕</div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: brandColor, fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Transfer • Day {c.dayIndex + 1}</div>
-                                    <h4 style={{ margin: "0 0 10px 0", fontSize: "15px", color: "#0f172a", fontWeight: 700 }}>{c.vehicleType || "Private Transfer"}</h4>
+                                    {c.vehicleType && <h4 style={{ margin: "0 0 10px 0", fontSize: "15px", color: "#0f172a", fontWeight: 700 }}>{c.vehicleType}</h4>}
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "6px", fontSize: "11px", color: "#475569" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Route</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{c.route || "Local"}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Pickup</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{c.pickupTime}</span></div>
+                                        {c.route && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Route</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{c.route}</span></div>}
+                                        {c.pickupTime && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Pickup</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{c.pickupTime}</span></div>}
                                         {c.driverName && <div style={{ display: "flex", justifyContent: "space-between" }}><span>Driver</span><span style={{ fontWeight: 600, color: brandColor }}>{c.driverName}</span></div>}
                                     </div>
                                 </div>
@@ -312,10 +312,10 @@ export const CorporateTheme = ({
                                 <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.04)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", borderRadius: "4px" }}>🚌</div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: brandColor, fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Bus • Day {b.dayIndex + 1}</div>
-                                    <h4 style={{ margin: "0 0 10px 0", fontSize: "15px", color: "#0f172a", fontWeight: 700 }}>{b.busType || "Tourist Bus"}</h4>
+                                    {b.busType && <h4 style={{ margin: "0 0 10px 0", fontSize: "15px", color: "#0f172a", fontWeight: 700 }}>{b.busType}</h4>}
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "6px", fontSize: "11px", color: "#475569" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Route</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{b.route}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Departure</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{b.departureTime}</span></div>
+                                        {b.route && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Route</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{b.route}</span></div>}
+                                        {b.departureTime && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(148,163,184,0.1)", paddingBottom: "2px" }}><span>Departure</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{b.departureTime}</span></div>}
                                         {b.pnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span>PNR</span><span style={{ fontWeight: 600, color: brandColor }}>{b.pnr}</span></div>}
                                     </div>
                                 </div>
@@ -395,7 +395,7 @@ export const CorporateTheme = ({
                                         })
                                     ) : (
                                         <tr>
-                                            <td>{"Package Cost"} (for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''})</td>
+                                            <td>{title || (itinerary as any)?.tripTitle || (itinerary as any)?.title || 'Package'}{adultPax > 0 ? ` (for ${adultPax} Adults${childPax ? `, ${childPax} Children` : ''})` : ''}</td>
                                             <td>1</td>
                                             <td>{formatCurrency(costWithMarkup, currency)}</td>
                                             <td>{formatCurrency(costWithMarkup, currency)}</td>

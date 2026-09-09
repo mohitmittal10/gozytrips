@@ -212,6 +212,10 @@ export function UnifiedSettings() {
 
       if (updateError) throw updateError;
 
+      await supabase
+        .from('agency_settings')
+        .upsert({ user_id: user.id, logo_url: publicUrl, updated_at: new Date().toISOString() }, { onConflict: 'user_id' });
+
       // Preload image in browser before clearing loading state so the image is fully ready to display
       await new Promise<void>((resolve) => {
         const img = new Image();
@@ -221,7 +225,7 @@ export function UnifiedSettings() {
       });
 
       setLogoPreview(publicUrl);
-      await refreshProfile();
+      await Promise.all([refreshProfile(), refreshSettings()]);
       toast({ title: 'Logo uploaded', description: 'Your agency logo has been saved.' });
     } catch (err: any) {
       console.error(err);
@@ -240,8 +244,11 @@ export function UnifiedSettings() {
       await supabase.from('user_profiles')
         .update({ logo_url: null, updated_at: new Date().toISOString() })
         .eq('id', user.id);
+      await supabase.from('agency_settings')
+        .update({ logo_url: null, updated_at: new Date().toISOString() })
+        .eq('user_id', user.id);
       setLogoPreview(null);
-      await refreshProfile();
+      await Promise.all([refreshProfile(), refreshSettings()]);
       toast({ title: 'Logo removed', description: 'Your agency logo has been cleared.' });
     } catch (err: any) {
       toast({ variant: 'destructive', title: 'Error', description: err.message });

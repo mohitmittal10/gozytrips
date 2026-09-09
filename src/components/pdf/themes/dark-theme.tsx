@@ -128,7 +128,7 @@ export const DarkTheme = ({
                     )}
                     <div style={{ position: "absolute", bottom: "40px", left: "45px", right: "45px", zIndex: 1 }}>
                         <h1 style={{ fontSize: "40px", fontWeight: 900, margin: "0 0 8px 0", color: "#ffffff", lineHeight: "1.1", letterSpacing: "-1px", fontFamily: "'Outfit', sans-serif", textShadow: `0 0 20px rgba(${rgbAccent}, 0.3)` }}>{title}</h1>
-                        <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0, fontWeight: 500 }}>Prepared By: {agent.agentName}</p>
+                        {agent.agentName && <p style={{ fontSize: "13px", color: "#94a3b8", margin: 0, fontWeight: 500 }}>Prepared By: {agent.agentName}</p>}
                     </div>
                 </div>
 
@@ -138,58 +138,52 @@ export const DarkTheme = ({
                 {/* Cover body */}
                 <div style={{ padding: "45px" }}>
 
-                    {/* Stat cards */}
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginBottom: "40px" }}>
-                        {[
-                            { label: "Duration", value: `${itinerary.itinerary?.length || 0} Days`, sub: `${Math.max((itinerary.itinerary?.length || 0) - 1, 0)} Nights` },
-                            { label: "Est. Budget", value: formatCurrency(finalTotal || getTotalBudget(itinerary), (itinerary as any).pricing?.currency || DEFAULT_CURRENCY), sub: "Total Price" },
-                            { label: "Activities", value: `${totalActivities}+ Items`, sub: "Scheduled" },
-                        ].map((stat, i) => (
-                            <div key={i} style={{ flex: "1 1 180px", padding: "18px 20px", border: "1px solid rgba(255,255,255,0.06)", borderTop: `3px solid ${accent}`, background: "rgba(255,255,255,0.02)", borderRadius: "8px", boxShadow: `0 4px 20px rgba(0,0,0,0.15)` }}>
-                                <p style={{ fontSize: "9px", textTransform: "uppercase", letterSpacing: "2.5px", color: "#64748b", margin: "0 0 4px 0", fontWeight: 800 }}>{stat.label}</p>
-                                <p style={{ fontSize: "18px", fontWeight: 900, margin: "0 0 2px 0", color: accent, fontFamily: "'Outfit', sans-serif", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{stat.value}</p>
-                                <p style={{ fontSize: "11px", color: "#94a3b8", margin: 0, fontWeight: 500 }}>{stat.sub}</p>
-                            </div>
-                        ))}
-                    </div>
+                   
 
                     {/* Client & Consultant Details grid */}
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginTop: "30px", paddingTop: "25px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: clientName && (agent.agentName || agent.companyName) ? "1fr 1fr" : "1fr", gap: "20px", marginTop: "30px", paddingTop: "25px", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
                         {/* Client Info Card */}
-                        <div style={{ padding: "20px 24px", background: "rgba(255,255,255,0.025)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", borderLeft: `3px solid ${accent}` }}>
-                            <p style={{ margin: "0 0 12px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: accent, fontWeight: 800 }}>👤 Client Details</p>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                                <div>
-                                    <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Client Name</p>
-                                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#ffffff", fontFamily: "'Outfit', sans-serif" }}>{clientName || ""}</p>
-                                </div>
-                                <div style={{ display: "flex", gap: "20px" }}>
+                        {clientName ? (
+                            <div style={{ padding: "20px 24px", background: "rgba(255,255,255,0.025)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", borderLeft: `3px solid ${accent}` }}>
+                                <p style={{ margin: "0 0 12px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: accent, fontWeight: 800 }}>👤 Client Details</p>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                     <div>
-                                        <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Adults</p>
-                                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#cbd5e1" }}>{adultPax} {adultPax === 1 ? 'Adult' : 'Adults'}</p>
+                                        <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Client Name</p>
+                                        <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#ffffff", fontFamily: "'Outfit', sans-serif" }}>{clientName}</p>
                                     </div>
-                                    <div>
-                                        <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Children</p>
-                                        <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#cbd5e1" }}>{childPax} {childPax === 1 ? 'Child' : 'Children'}</p>
-                                    </div>
-                                    {infantPax > 0 && (
+                                    <div style={{ display: "flex", gap: "20px" }}>
                                         <div>
-                                            <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Infants</p>
-                                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#cbd5e1" }}>{infantPax} {infantPax === 1 ? 'Infant' : 'Infants'}</p>
+                                            <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Adults</p>
+                                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#cbd5e1" }}>{adultPax} {adultPax === 1 ? 'Adult' : 'Adults'}</p>
                                         </div>
-                                    )}
+                                        {childPax > 0 && (
+                                            <div>
+                                                <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Children</p>
+                                                <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#cbd5e1" }}>{childPax} {childPax === 1 ? 'Child' : 'Children'}</p>
+                                            </div>
+                                        )}
+                                        {infantPax > 0 && (
+                                            <div>
+                                                <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Infants</p>
+                                                <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#cbd5e1" }}>{infantPax} {infantPax === 1 ? 'Infant' : 'Infants'}</p>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
+                        ) : null}
 
                         {/* Consultant Info Card */}
-                        <div style={{ padding: "20px 24px", background: "rgba(255,255,255,0.025)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", borderLeft: "3px solid #ec4899" }}>
-                            <p style={{ margin: "0 0 12px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "#ec4899", fontWeight: 800 }}>✨ Agency Consultant</p>
-                            <p style={{ fontWeight: 800, color: "#ffffff", fontSize: "15px", margin: "0 0 6px 0", fontFamily: "'Outfit', sans-serif" }}>{agent.agentName}</p>
-                            {agent.agentPhone && <p style={{ margin: "2px 0", fontSize: "12px", color: "#94a3b8" }}>📞 {agent.agentPhone}</p>}
-                            {agent.agentEmail && <p style={{ margin: "2px 0", fontSize: "12px", color: "#94a3b8" }}>✉️ {agent.agentEmail}</p>}
-                            {agent.agentWebsite && <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: accent, fontWeight: 700, textDecoration: "underline" }}>🌐 {agent.agentWebsite}</p>}
-                        </div>
+                        {(agent.agentName || agent.companyName || agent.agentPhone || agent.agentEmail || agent.agentWebsite) ? (
+                            <div style={{ padding: "20px 24px", background: "rgba(255,255,255,0.025)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", borderLeft: "3px solid #ec4899" }}>
+                                <p style={{ margin: "0 0 12px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "#ec4899", fontWeight: 800 }}>✨ Agency Consultant</p>
+                                {agent.companyName && <p style={{ fontWeight: 800, color: "#ffffff", fontSize: "16px", margin: "0 0 4px 0", fontFamily: "'Outfit', sans-serif" }}>{agent.companyName}</p>}
+                                {agent.agentName && <p style={{ fontWeight: 700, color: "#cbd5e1", fontSize: "14px", margin: "0 0 6px 0", fontFamily: "'Outfit', sans-serif" }}>{agent.agentName}</p>}
+                                {agent.agentPhone && <p style={{ margin: "2px 0", fontSize: "12px", color: "#94a3b8" }}>📞 {agent.agentPhone}</p>}
+                                {agent.agentEmail && <p style={{ margin: "2px 0", fontSize: "12px", color: "#94a3b8" }}>✉️ {agent.agentEmail}</p>}
+                                {agent.agentWebsite && <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: accent, fontWeight: 700, textDecoration: "underline" }}>🌐 {agent.agentWebsite}</p>}
+                            </div>
+                        ) : null}
                     </div>
                 </div>
             </div>
@@ -333,10 +327,10 @@ export const DarkTheme = ({
                                 <div style={{ width: "90px", height: "90px", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", borderRadius: "4px" }}>🚕</div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "6px" }}>Transfer • Day {c.dayIndex + 1}</div>
-                                    <h4 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#ffffff", fontWeight: 700 }}>{c.vehicleType || "Private Transfer"}</h4>
+                                    {c.vehicleType && <h4 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#ffffff", fontWeight: 700 }}>{c.vehicleType}</h4>}
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "6px", fontSize: "11px", color: "#94a3b8" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>RTE</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{c.route || "Local"}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>PICK</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{c.pickupTime}</span></div>
+                                        {c.route && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>RTE</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{c.route}</span></div>}
+                                        {c.pickupTime && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>PICK</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{c.pickupTime}</span></div>}
                                         {c.driverName && <div style={{ display: "flex", justifyContent: "space-between" }}><span>DRV</span><span style={{ fontWeight: 600, color: accent }}>{c.driverName}</span></div>}
                                     </div>
                                 </div>
@@ -347,10 +341,10 @@ export const DarkTheme = ({
                                 <div style={{ width: "90px", height: "90px", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", borderRadius: "4px" }}>🚌</div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "6px" }}>Bus • Day {b.dayIndex + 1}</div>
-                                    <h4 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#ffffff", fontWeight: 700 }}>{b.busType || "Tourist Bus"}</h4>
+                                    {b.busType && <h4 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#ffffff", fontWeight: 700 }}>{b.busType}</h4>}
                                     <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "6px", fontSize: "11px", color: "#94a3b8" }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>RTE</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{b.route}</span></div>
-                                        <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>DEP</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{b.departureTime}</span></div>
+                                        {b.route && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>RTE</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{b.route}</span></div>}
+                                        {b.departureTime && <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.05)", paddingBottom: "4px" }}><span>DEP</span><span style={{ fontWeight: 600, color: "#cbd5e1" }}>{b.departureTime}</span></div>}
                                         {b.pnr && <div style={{ display: "flex", justifyContent: "space-between" }}><span>PNR</span><span style={{ fontWeight: 600, color: accent }}>{b.pnr}</span></div>}
                                     </div>
                                 </div>
@@ -435,7 +429,7 @@ export const DarkTheme = ({
                                     })
                                 ) : (
                                     <tr>
-                                        <td>{"Package Cost"} (for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''})</td>
+                                        <td>{title || (itinerary as any)?.tripTitle || (itinerary as any)?.title || 'Package'}{adultPax > 0 ? ` (for ${adultPax} Adults${childPax ? `, ${childPax} Children` : ''})` : ''}</td>
                                         <td>1</td>
                                         <td>{formatCurrency(costWithMarkup, currency)}</td>
                                         <td>{formatCurrency(costWithMarkup, currency)}</td>

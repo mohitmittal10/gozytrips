@@ -15,12 +15,7 @@ const parseList = (text?: any): string[] => {
 };
 
 const parseCancellationPoints = (text?: any): string[] => {
-    if (!text) return [
-        '60+ days pre-departure: 10% cancellation fee',
-        '30–59 days pre-departure: 40% cancellation fee',
-        '15–29 days pre-departure: 70% cancellation fee',
-        'Less than 15 days pre-departure: 100% cancellation fee'
-    ];
+    if (!text) return [];
     if (Array.isArray(text)) {
         const cleanArr = text.map(s => String(s).trim().replace(/^[-•◆✓✕]\s*/, '')).filter(Boolean);
         if (cleanArr.length > 0) return cleanArr;
@@ -57,6 +52,7 @@ interface ParsedBankDetails {
     sortCode?: string;
     branch?: string;
     extraRows: { k: string; v: string }[];
+    hasBankData: boolean;
 }
 
 const parseBankDetails = (
@@ -140,19 +136,37 @@ const parseBankDetails = (
         });
     }
 
-    // 3. Fallbacks from agencySettings or agent company name
-    if (!bankName) bankName = String(agencySettings?.bank_name || agencySettings?.bankName || agencySettings?.brand_name || agentCompanyName || '').trim();
-    if (!accountName) accountName = String(agencySettings?.account_name || agencySettings?.accountName || agentCompanyName || agencySettings?.brand_name || '').trim();
+    // 3. Direct fields from agencySettings
+    if (!bankName) bankName = String(agencySettings?.bank_name || agencySettings?.bankName || '').trim();
+    if (!accountName) accountName = String(agencySettings?.account_name || agencySettings?.accountName || '').trim();
     if (!accountNumber) {
-        const raw = String(agencySettings?.account_number || agencySettings?.accountNumber || '').trim();
+        const raw = String(agencySettings?.account_number || agencySettings?.accountNumber || agencySettings?.bankAccountNumber || '').trim();
         if (raw) accountNumber = formatAccountNumber(raw);
     }
     if (!ifscCode) {
-        const raw = String(agencySettings?.ifsc_code || agencySettings?.ifscCode || '').trim();
+        const raw = String(agencySettings?.ifsc_code || agencySettings?.ifscCode || agencySettings?.bankIfscCode || '').trim();
         if (raw) ifscCode = formatIfscCode(raw);
     }
     if (!iban) iban = String(agencySettings?.iban || '').trim().toUpperCase();
     if (!swiftCode) swiftCode = String(agencySettings?.swift_code || agencySettings?.swiftCode || '').trim().toUpperCase();
+
+    const hasBankData = Boolean(
+        accountNumber ||
+        ifscCode ||
+        upiId ||
+        iban ||
+        swiftCode ||
+        sortCode ||
+        branch ||
+        bankName ||
+        accountName ||
+        extraRows.length > 0
+    );
+
+    if (hasBankData) {
+        if (!accountName) accountName = String(agencySettings?.brand_name || agentCompanyName || '').trim();
+        if (!bankName) bankName = String(agencySettings?.bankName || 'Bank Account').trim();
+    }
 
     return {
         bankName,
@@ -164,7 +178,8 @@ const parseBankDetails = (
         swiftCode,
         sortCode,
         branch,
-        extraRows
+        extraRows,
+        hasBankData,
     };
 };
 
@@ -1166,11 +1181,13 @@ export const LuxuryTheme = ({
 
                     <div className="cover-inner">
                         <h1 className="display" data-field="itinerary.title">
-                            {formatTitleCase(title || (itinerary as any)?.tripTitle || (itinerary as any)?.title || (itinerary as any)?.destination || 'Your Journey')}
+                            {formatTitleCase(title || (itinerary as any)?.tripTitle || (itinerary as any)?.title || (itinerary as any)?.destination || '')}
                         </h1>
-                        <p>
-                            {(itinerary as any)?.subtitle || (clientNameResolved ? `A bespoke travel itinerary prepared for ${clientNameResolved}` : 'A bespoke luxury travel itinerary')}
-                        </p>
+                        {((itinerary as any)?.subtitle || clientNameResolved) && (
+                            <p>
+                                {(itinerary as any)?.subtitle || `A bespoke travel itinerary prepared for ${clientNameResolved}`}
+                            </p>
+                        )}
                     </div>
                 </section>
 
@@ -1178,13 +1195,10 @@ export const LuxuryTheme = ({
                 <section className="sec-bg-panel" data-pdf-section="overview">
                     <div className="section-inner two-col">
                         <div className="agency">
-                            <h2 className="display" data-field="agency.name">
+                            <h2 className="display" data-field="agency.companyName">
                                 {companyName}
                             </h2>
                             <hr className="rule" />
-                            <p className="co-name" data-field="agency.companyName">
-                                {companyName}
-                            </p>
                             <p className="co-tagline" data-field="agency.tagline">
                                 {brandTagline}
                             </p>
@@ -1198,7 +1212,7 @@ export const LuxuryTheme = ({
                                 )}
                                 {agentPhone && (
                                     <div className="contact-row">
-                                        <span className="icon">☎</span>
+                                        <span className="icon">📱</span>
                                         <span data-field="agency.phone">{agentPhone}</span>
                                     </div>
                                 )}
@@ -1216,15 +1230,12 @@ export const LuxuryTheme = ({
                                 )}
                             </div>
 
-                            <div className="consultant-block">
-                                <div className="label">Consultant</div>
-                                <div className="name" data-field="consultant.name">
-                                    {consultantName}
+                            {consultantName && (
+                                <div className="consultant">
+                                    <div className="name" data-field="consultant.name">{consultantName}</div>
+                                    <div className="title" data-field="consultant.title">{consultantTitle}</div>
                                 </div>
-                                <div className="title" data-field="consultant.title">
-                                    {consultantTitle}
-                                </div>
-                            </div>
+                            )}
                         </div>
 
                         <div className="client-details">
@@ -1233,7 +1244,7 @@ export const LuxuryTheme = ({
                             {clientNameResolved && (
                                 <div className="booking-row">
                                     <span className="k">Client Name</span>
-                                    <span className="v">{clientNameResolved}</span>
+                                    <span className="v" data-field="booking.guestNames">{clientNameResolved}</span>
                                 </div>
                             )}
                             {clientEmail && (
@@ -1529,8 +1540,8 @@ export const LuxuryTheme = ({
                         <span className="eyebrow">Financial</span>
                         <h2 className="display pay-heading">Costing &amp; Payment</h2>
 
-                        <div className="pay-grid">
-                            <div className="pay-col">
+                        <div className="pay-grid" style={!bankDetailsObj.hasBankData ? { justifyContent: "center" } : undefined}>
+                            <div className="pay-col" style={!bankDetailsObj.hasBankData ? { maxWidth: "600px", margin: "0 auto", width: "100%" } : undefined}>
                                 <div className="cost-line">
                                     <span>
                                         {pricing?.packageCostLabel || `Package Cost (${totalPax} Pax)`}
@@ -1581,116 +1592,113 @@ export const LuxuryTheme = ({
                                 )}
                             </div>
 
-                            <div className="pay-col">
-                                <div className="bank-title">Bank &amp; Payment Details</div>
+                            {bankDetailsObj.hasBankData && (
+                                <div className="pay-col">
+                                    <div className="bank-title">Bank &amp; Payment Details</div>
 
-                                <div className="luxury-bank-container">
-                                    <div className="luxury-bank-header">
-                                        <span className="bank-title-text">Official Remittance Details</span>
-                                        <span className="bank-badge">Direct Transfer / UPI</span>
-                                    </div>
-
-                                    <div className="luxury-bank-table">
-                                        <div className="bank-table-row">
-                                            <div className="bank-cell cell-half">
-                                                <span className="cell-label">Account Name</span>
-                                                <span className="cell-val primary">{bankDetailsObj.accountName}</span>
-                                            </div>
-                                            <div className="bank-cell cell-half">
-                                                <span className="cell-label">Bank Name</span>
-                                                <span className="cell-val primary">{bankDetailsObj.bankName}</span>
-                                            </div>
+                                    <div className="luxury-bank-container">
+                                        <div className="luxury-bank-header">
+                                            <span className="bank-title-text">Official Remittance Details</span>
+                                            <span className="bank-badge">Direct Transfer / UPI</span>
                                         </div>
 
-                                        <div className="bank-table-row key-fields-row">
-                                            {bankDetailsObj.accountNumber && (
-                                                <div className="bank-cell cell-third highlight">
-                                                    <span className="cell-label">Bank A/C No.</span>
-                                                    <span className="cell-val mono-accent">{bankDetailsObj.accountNumber}</span>
+                                        <div className="luxury-bank-table">
+                                            {(bankDetailsObj.accountName || bankDetailsObj.bankName) && (
+                                                <div className="bank-table-row">
+                                                    {bankDetailsObj.accountName && (
+                                                        <div className={`bank-cell ${bankDetailsObj.bankName ? 'cell-half' : 'cell-full'}`}>
+                                                            <span className="cell-label">Account Name</span>
+                                                            <span className="cell-val primary">{bankDetailsObj.accountName}</span>
+                                                        </div>
+                                                    )}
+                                                    {bankDetailsObj.bankName && (
+                                                        <div className={`bank-cell ${bankDetailsObj.accountName ? 'cell-half' : 'cell-full'}`}>
+                                                            <span className="cell-label">Bank Name</span>
+                                                            <span className="cell-val primary">{bankDetailsObj.bankName}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
-                                            {bankDetailsObj.ifscCode && (
-                                                <div className="bank-cell cell-third highlight">
-                                                    <span className="cell-label">IFSC Code</span>
-                                                    <span className="cell-val mono-accent">{bankDetailsObj.ifscCode}</span>
+
+                                            {(() => {
+                                                const keyFields = [
+                                                    bankDetailsObj.accountNumber && { label: "Bank A/C No.", val: bankDetailsObj.accountNumber, class: "mono-accent", cellClass: "highlight" },
+                                                    bankDetailsObj.ifscCode && { label: "IFSC Code", val: bankDetailsObj.ifscCode, class: "mono-accent", cellClass: "highlight" },
+                                                    bankDetailsObj.upiId && { label: "UPI ID", val: bankDetailsObj.upiId, class: "upi-val", cellClass: "highlight upi-highlight" },
+                                                ].filter(Boolean);
+
+                                                if (keyFields.length === 0) return null;
+                                                const widthClass = keyFields.length === 1 ? 'cell-full' : keyFields.length === 2 ? 'cell-half' : 'cell-third';
+
+                                                return (
+                                                    <div className="bank-table-row key-fields-row">
+                                                        {keyFields.map((f: any, idx: number) => (
+                                                            <div key={idx} className={`bank-cell ${widthClass} ${f.cellClass}`}>
+                                                                <span className="cell-label">{f.label}</span>
+                                                                <span className={`cell-val ${f.class}`}>{f.val}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                );
+                                            })()}
+
+                                            {(bankDetailsObj.iban || bankDetailsObj.swiftCode) && (
+                                                <div className="bank-table-row">
+                                                    {bankDetailsObj.iban && (
+                                                        <div className={`bank-cell ${bankDetailsObj.swiftCode ? 'cell-half' : 'cell-full'}`}>
+                                                            <span className="cell-label">IBAN</span>
+                                                            <span className="cell-val mono-accent">{bankDetailsObj.iban}</span>
+                                                        </div>
+                                                    )}
+                                                    {bankDetailsObj.swiftCode && (
+                                                        <div className={`bank-cell ${bankDetailsObj.iban ? 'cell-half' : 'cell-full'}`}>
+                                                            <span className="cell-label">SWIFT / BIC Code</span>
+                                                            <span className="cell-val mono-accent">{bankDetailsObj.swiftCode}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
-                                            {bankDetailsObj.upiId && (
-                                                <div className="bank-cell cell-third highlight upi-highlight">
-                                                    <span className="cell-label">UPI ID</span>
-                                                    <span className="cell-val upi-val">{bankDetailsObj.upiId}</span>
+
+                                            {(bankDetailsObj.sortCode || bankDetailsObj.branch) && (
+                                                <div className="bank-table-row">
+                                                    {bankDetailsObj.sortCode && (
+                                                        <div className={`bank-cell ${bankDetailsObj.branch ? 'cell-half' : 'cell-full'}`}>
+                                                            <span className="cell-label">Sort Code</span>
+                                                            <span className="cell-val mono-accent">{bankDetailsObj.sortCode}</span>
+                                                        </div>
+                                                    )}
+                                                    {bankDetailsObj.branch && (
+                                                        <div className={`bank-cell ${bankDetailsObj.sortCode ? 'cell-half' : 'cell-full'}`}>
+                                                            <span className="cell-label">Branch</span>
+                                                            <span className="cell-val primary">{bankDetailsObj.branch}</span>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
+
+                                            {bankDetailsObj.extraRows.map((extra, eIdx) => (
+                                                <div className="bank-table-row" key={eIdx}>
+                                                    <div className="bank-cell cell-full">
+                                                        <span className="cell-label">{extra.k}</span>
+                                                        <span className="cell-val mono-accent">{extra.v}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
-
-                                        {(bankDetailsObj.iban || bankDetailsObj.swiftCode) && (
-                                            <div className="bank-table-row">
-                                                {bankDetailsObj.iban && (
-                                                    <div className="bank-cell cell-half">
-                                                        <span className="cell-label">IBAN</span>
-                                                        <span className="cell-val mono-accent">{bankDetailsObj.iban}</span>
-                                                    </div>
-                                                )}
-                                                {bankDetailsObj.swiftCode && (
-                                                    <div className="bank-cell cell-half">
-                                                        <span className="cell-label">SWIFT / BIC Code</span>
-                                                        <span className="cell-val mono-accent">{bankDetailsObj.swiftCode}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {(bankDetailsObj.sortCode || bankDetailsObj.branch) && (
-                                            <div className="bank-table-row">
-                                                {bankDetailsObj.sortCode && (
-                                                    <div className="bank-cell cell-half">
-                                                        <span className="cell-label">Sort Code</span>
-                                                        <span className="cell-val mono-accent">{bankDetailsObj.sortCode}</span>
-                                                    </div>
-                                                )}
-                                                {bankDetailsObj.branch && (
-                                                    <div className="bank-cell cell-half">
-                                                        <span className="cell-label">Branch</span>
-                                                        <span className="cell-val primary">{bankDetailsObj.branch}</span>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        )}
-
-                                        {bankDetailsObj.extraRows.map((extra, eIdx) => (
-                                            <div className="bank-table-row" key={eIdx}>
-                                                <div className="bank-cell cell-full">
-                                                    <span className="cell-label">{extra.k}</span>
-                                                    <span className="cell-val mono-accent">{extra.v}</span>
-                                                </div>
-                                            </div>
-                                        ))}
                                     </div>
                                 </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </section>
 
                 {/* FOOTER (CENTER ALIGNED & DYNAMIC LOGO) */}
                 <footer>
-                    <div className="badge-container">
-                        {agent.logoUrl ? (
-                            <img
-                                src={agent.logoUrl}
-                                alt={agent.companyName}
-                                className="agent-logo-img"
-                                crossOrigin="anonymous"
-                            />
-                        ) : (
-                            <div className="badge">
-                                {(agent.companyName || 'G').substring(0, 1).toUpperCase()}
-                            </div>
-                        )}
-                    </div>
-                    <div className="brand" data-field="footer.brandName">
-                        {agent.companyName || agencySettings?.brand_name || 'GozyTrips'}
-                    </div>
+                    {(agent.companyName || agencySettings?.brand_name) && (
+                        <div className="brand" data-field="footer.brandName">
+                            {agent.companyName || agencySettings?.brand_name}
+                        </div>
+                    )}
                     {agent.agentEmail && (
                         <div className="contact" data-field="footer.email">{agent.agentEmail}</div>
                     )}

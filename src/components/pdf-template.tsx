@@ -4,7 +4,7 @@ import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from '@/components/hotel
 import type { PricingConfig } from '@/types/pricing';
 import type { PdfTheme } from './pdf/theme-config';
 
-import { getAgentInfo, getSanitizedTitle } from './pdf/utils';
+import { getAgentInfo, getSanitizedTitle, resolveAboutPlace } from './pdf/utils';
 import { PdfPricingPage, PdfFlightAndHotelSummary, PdfInclusionsPage } from './pdf/pages';
 import { calcPricingFromBaseCost, calcBaseCost } from '@/services/financial';
 
@@ -27,6 +27,7 @@ export interface PdfTemplateProps {
     clientName?: string;
     userProfile?: any;
     agencySettings?: any;
+    agent?: any;
     theme?: PdfTheme;
     hotels?: HotelInfo[];
     flights?: FlightInfo[];
@@ -46,10 +47,10 @@ export interface PdfTemplateProps {
 }
 
 /* ═════════ MAIN EXPORTED COMPONENT ═════════ */
-export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencySettings, theme = 'classic', hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace }: PdfTemplateProps) => {
+export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencySettings, agent: passedAgent, theme = 'classic', hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace }: PdfTemplateProps) => {
     if (!itinerary || !itinerary.itinerary) return null;
 
-    const agent = getAgentInfo(userProfile, agencySettings);
+    const agent = passedAgent || getAgentInfo(userProfile, agencySettings, itinerary);
     const displayTitle = getSanitizedTitle(title || "", itinerary);
 
     // Filter out incomplete entries so only fully-completed items appear in the exported PDF
@@ -75,9 +76,10 @@ export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencyS
     const resolvedTerms = termsAndConditions ?? (itinerary as any).termsAndConditions;
     const resolvedCancellation = cancellationPolicy ?? (itinerary as any).cancellationPolicy;
     const resolvedPaymentMethods = paymentMethods ?? (itinerary as any).paymentMethods;
+    const resolvedAboutPlace = resolveAboutPlace(aboutPlace, itinerary);
 
     const themeProps = {
-        itinerary, title: displayTitle, clientName, agencySettings, agent, hotels: validHotels, flights: validFlights, cabs: validCabs, buses: validBuses, finalTotal, showTimestamps, inclusions: resolvedInclusions, exclusions: resolvedExclusions, termsAndConditions: resolvedTerms, cancellationPolicy: resolvedCancellation, paymentMethods: resolvedPaymentMethods, pricing: pricingCfg, baseCost: resolvedBaseCost, daySummaries, aboutPlace
+        itinerary, title: displayTitle, clientName, agencySettings, agent, hotels: validHotels, flights: validFlights, cabs: validCabs, buses: validBuses, finalTotal, showTimestamps, inclusions: resolvedInclusions, exclusions: resolvedExclusions, termsAndConditions: resolvedTerms, cancellationPolicy: resolvedCancellation, paymentMethods: resolvedPaymentMethods, pricing: pricingCfg, baseCost: resolvedBaseCost, daySummaries, aboutPlace: resolvedAboutPlace
     };
 
     let ThemeComponent;

@@ -1062,11 +1062,11 @@ export const TropicalTheme = ({
                                         </svg>
                                     </div>
                                     <div className="acc-card-body">
-                                        <h4>{cab.vehicleType || 'Private Transfer'}</h4>
+                                        {cab.vehicleType && <h4>{cab.vehicleType}</h4>}
                                         <span className="acc-subtitle">🚕 Cab/Transfer • Day {cab.dayIndex + 1}</span>
                                         <div className="logistics-details">
-                                            <div className="logistics-row"><span className="label">Route</span><span className="value">{cab.route || 'Local'}</span></div>
-                                            <div className="logistics-row"><span className="label">Pickup</span><span className="value">{cab.pickupTime}</span></div>
+                                            {cab.route && <div className="logistics-row"><span className="label">Route</span><span className="value">{cab.route}</span></div>}
+                                            {cab.pickupTime && <div className="logistics-row"><span className="label">Pickup</span><span className="value">{cab.pickupTime}</span></div>}
                                             {cab.driverName && <div className="logistics-row"><span className="label">Driver</span><span className="value">{cab.driverName}</span></div>}
                                         </div>
                                     </div>
@@ -1081,11 +1081,11 @@ export const TropicalTheme = ({
                                         </svg>
                                     </div>
                                     <div className="acc-card-body">
-                                        <h4>{bus.busType || 'Tourist Bus'}</h4>
+                                        {bus.busType && <h4>{bus.busType}</h4>}
                                         <span className="acc-subtitle">🚌 Bus • Day {bus.dayIndex + 1}</span>
                                         <div className="logistics-details">
-                                            <div className="logistics-row"><span className="label">Route</span><span className="value">{bus.route}</span></div>
-                                            <div className="logistics-row"><span className="label">Departure</span><span className="value">{bus.departureTime}</span></div>
+                                            {bus.route && <div className="logistics-row"><span className="label">Route</span><span className="value">{bus.route}</span></div>}
+                                            {bus.departureTime && <div className="logistics-row"><span className="label">Departure</span><span className="value">{bus.departureTime}</span></div>}
                                             {bus.pnr && <div className="logistics-row"><span className="label">PNR</span><span className="value">{bus.pnr}</span></div>}
                                         </div>
                                     </div>
@@ -1134,7 +1134,7 @@ export const TropicalTheme = ({
                                             })
                                         ) : (
                                             <tr>
-                                                <td>{"Consolidated Package Cost"} for {adultPax} Adults{childPax ? `, ${childPax} Children` : ''}</td>
+                                                <td>{title || (itinerary as any)?.tripTitle || (itinerary as any)?.title || 'Package'}{adultPax > 0 ? ` (for ${adultPax} Adults${childPax ? `, ${childPax} Children` : ''})` : ''}</td>
                                                 <td>1</td>
                                                 <td>{formatCurrency(costWithMarkup, currency)}</td>
                                                 <td>{formatCurrency(costWithMarkup, currency)}</td>

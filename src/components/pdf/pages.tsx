@@ -150,7 +150,7 @@ const getPricingThemeStyles = (theme: PdfTheme, accentColor: string) => {
     }
 };
 
-export const PdfPricingPage = ({ pricing, baseCost = 0, agent, theme }: { pricing: PricingConfig; baseCost?: number; agent: ReturnType<typeof getAgentInfo>; theme: PdfTheme }) => {
+export const PdfPricingPage = ({ pricing, baseCost = 0, agent, theme, title }: { pricing: PricingConfig; baseCost?: number; agent: ReturnType<typeof getAgentInfo>; theme: PdfTheme; title?: string }) => {
     const { costWithMarkup, taxAmount, finalTotal, milestoneAmounts } = calcPricingFromBaseCost(baseCost, pricing);
     const currency = pricing.currency;
     const isManual = true;
@@ -172,7 +172,7 @@ export const PdfPricingPage = ({ pricing, baseCost = 0, agent, theme }: { pricin
                     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: "24px" }}>
                             <p style={{ margin: 0, fontSize: "20px", lineHeight: "1.6", color: "rgba(255,255,255,0.9)" }}>
-                                {isManual ? "Consolidated Package Cost" : "Package Cost (Incl. Accommodations, Flights, Activities)"}
+                                {title || 'Package'}
                             </p>
                             <p style={{ margin: 0, fontSize: "20px", color: "rgba(255,255,255,0.9)" }}>
                                 {formatMoneyWithDecimals(costWithMarkup, currency)}
@@ -212,7 +212,7 @@ export const PdfPricingPage = ({ pricing, baseCost = 0, agent, theme }: { pricin
                     </div>
 
                     <div style={{ display: "flex", flexDirection: "column" }}>
-                        {(pricing.milestones && pricing.milestones.length > 0 ? pricing.milestones : [{ id: 'fallback', name: isManual ? 'Package Cost' : 'Advance', percentage: 100, dueDate: 'At booking' }]).map((m, i, arr) => {
+                        {(pricing.milestones && pricing.milestones.length > 0 ? pricing.milestones : [{ id: 'fallback', name: title || 'Package', percentage: 100, dueDate: 'At booking' }]).map((m, i, arr) => {
                             const amount = m.id === 'fallback' ? finalTotal : (finalTotal * m.percentage) / 100;
                             return (
                                 <div key={m.id || i} style={{ display: "flex", padding: "32px 0", textAlign: "center", alignItems: "center", borderBottom: i === arr.length - 1 ? "none" : "1px solid rgba(255,255,255,0.05)" }}>
@@ -245,7 +245,7 @@ export const PdfPricingPage = ({ pricing, baseCost = 0, agent, theme }: { pricin
                     <h3 style={{ margin: "0 0 20px 0", fontSize: "16px", color: styles.mutedTextColor, textTransform: "uppercase", letterSpacing: "1px" }}>Client Quote</h3>
 
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "12px", fontSize: "15px", color: styles.bodyTextColor }}>
-                        <span>{isManual ? "Consolidated Package Cost" : "Package Cost (Incl. Accommodations, Flights, Activities)"}</span>
+                        <span>{title || 'Package'}</span>
                         <span>{formatMoneyWithDecimals(costWithMarkup, currency)}</span>
                     </div>
 
