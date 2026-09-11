@@ -30,6 +30,7 @@ export type ThemeProps = {
     paymentMethods?: string;
     daySummaries?: string[];
     aboutPlace?: any;
+    isHtmlEditor?: boolean;
 };
 
 const parseList = (text?: any): string[] => {
@@ -57,7 +58,7 @@ const TIMELINE_COL_WIDTH = 82;
 const TIMELINE_GAP = 24;
 
 export const ClassicTheme = ({
-    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace
+    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace, isHtmlEditor = false
 }: ThemeProps) => {
     const rgbAccent = hexToRgb(agent.primaryColor || "#a855f7");
     const currency = pricing?.currency || DEFAULT_CURRENCY;
@@ -74,7 +75,7 @@ export const ClassicTheme = ({
     const cancellationPolicyList = parseList(cancellationPolicy);
     const termsAndConditionsList = parseList(termsAndConditions);
 
-    const tagline = agent.tagline || agencySettings?.tagline || agencySettings?.brand_tagline || "Your custom travel blueprint, prepared by experts.";
+    const tagline = agent.tagline || agencySettings?.tagline || agencySettings?.brand_tagline || (isHtmlEditor ? '' : "Your custom travel blueprint, prepared by experts.");
 
     return (
         <div className="classic-wrap" style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", backgroundColor: "#f8fafc", backgroundImage: `url("${getThematicBackground(itinerary, 'classic', agent.primaryColor)}")`, backgroundRepeat: "repeat", color: "#1e293b", width: "100%" }}>
@@ -140,11 +141,11 @@ export const ClassicTheme = ({
                     <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: `linear-gradient(135deg, rgba(${rgbAccent}, 0.85), rgba(15, 23, 42, 0.8))` }} />
                     {/* Agency logo badge — top right (logo only) */}
                     {(agent.logoUrl || agent.companyName) && (
-                        <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.14)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.28)", borderRadius: "12px", padding: "9px 14px" }}>
+                        <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.4)", borderRadius: "12px", padding: "8px 14px", boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}>
                             {agent.logoUrl ? (
-                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "90px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1)" }} />
+                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "90px", objectFit: "contain", display: "block" }} />
                             ) : (
-                                <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: "rgba(255,255,255,0.22)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "13px" }}>
+                                <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: `linear-gradient(135deg, ${agent.primaryColor || "#a855f7"}, #ec4899)`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "13px" }}>
                                     {(agent.companyName || "T").substring(0, 1).toUpperCase()}
                                 </div>
                             )}

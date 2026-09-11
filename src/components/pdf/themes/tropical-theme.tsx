@@ -28,6 +28,7 @@ export type TropicalThemeProps = {
     paymentMethods?: string;
     daySummaries?: string[];
     aboutPlace?: any;
+    isHtmlEditor?: boolean;
 };
 
 export const TropicalTheme = ({
@@ -50,7 +51,8 @@ export const TropicalTheme = ({
     cancellationPolicy,
     paymentMethods,
     daySummaries,
-    aboutPlace
+    aboutPlace,
+    isHtmlEditor = false,
 }: TropicalThemeProps) => {
     
     // Parse pax from pricing
@@ -787,11 +789,11 @@ export const TropicalTheme = ({
                     <div className="hero-overlay"></div>
                     {/* Agency logo badge — top right of hero (logo only, no name) */}
                     {(agent.logoUrl || agent.companyName) && (
-                        <div style={{ position: "absolute", top: "24px", right: "28px", zIndex: 20, background: "rgba(255,255,255,0.18)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.35)", borderRadius: "12px", padding: "9px 14px", boxShadow: "0 4px 20px rgba(0,0,0,0.18)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ position: "absolute", top: "24px", right: "28px", zIndex: 20, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(14px)", WebkitBackdropFilter: "blur(14px)", border: "1px solid rgba(255,255,255,0.4)", borderRadius: "12px", padding: "8px 14px", boxShadow: "0 4px 20px rgba(0,0,0,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                             {agent.logoUrl ? (
-                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "34px", maxWidth: "100px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1)" }} />
+                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "34px", maxWidth: "100px", objectFit: "contain", display: "block" }} />
                             ) : (
-                                <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "14px", fontFamily: "var(--font-sans)" }}>
+                                <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "rgba(15,23,42,0.8)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "14px", fontFamily: "var(--font-sans)" }}>
                                     {(agent.companyName || "T").substring(0, 1).toUpperCase()}
                                 </div>
                             )}

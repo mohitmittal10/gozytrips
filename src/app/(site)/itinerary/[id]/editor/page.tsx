@@ -21,6 +21,7 @@ function EditorToolbar({
     dirty,
     onSave,
     onToggleEdit,
+    onAddDay,
     editMode,
     itineraryTitle,
     onBack,
@@ -32,6 +33,7 @@ function EditorToolbar({
     dirty: boolean;
     onSave: () => void;
     onToggleEdit: () => void;
+    onAddDay: () => void;
     editMode: boolean;
     itineraryTitle: string;
     onBack: () => void;
@@ -146,6 +148,25 @@ function EditorToolbar({
                     </select>
                 </label>
 
+                {editMode && (
+                    <button
+                        onClick={onAddDay}
+                        style={{
+                            background: "rgba(59,130,246,0.15)",
+                            border: "1px solid rgba(59,130,246,0.3)",
+                            color: "#60a5fa",
+                            cursor: "pointer",
+                            padding: "5px 12px",
+                            fontSize: 12,
+                            borderRadius: "8px",
+                            fontWeight: 600,
+                            transition: "all 0.2s",
+                        }}
+                    >
+                        + Add Day
+                    </button>
+                )}
+
                 <button
                     onClick={onToggleEdit}
                     style={{
@@ -162,34 +183,35 @@ function EditorToolbar({
                 >
                     {editMode ? "Done Editing" : "Edit Content"}
                 </button>
-                {dirty && (
-                    <button
-                        onClick={onSave}
-                        disabled={saving}
-                        style={{
-                            background: saving ? "rgba(228,228,231,0.5)" : "#e4e4e7",
-                            border: "none",
-                            color: "#09090b",
-                            cursor: saving ? "not-allowed" : "pointer",
-                            padding: "5px 18px",
-                            fontSize: 12,
-                            borderRadius: "8px",
-                            fontWeight: 700,
-                            transition: "all 0.2s",
-                        }}
-                    >
-                        {saving ? "Saving…" : "Save Changes"}
-                    </button>
-                )}
-                {saved && !dirty && (
-                    <span
-                        style={{
-                            fontSize: 12,
-                            color: "#71717A",
-                            fontWeight: 600,
-                        }}
-                    >
-                        ✓ Saved
+                {saving ? (
+                    <span style={{ fontSize: 12, color: "#38bdf8", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
+                        Saving changes…
+                    </span>
+                ) : dirty ? (
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <span style={{ fontSize: 11, color: "#fbbf24", fontWeight: 600 }}>
+                            Unsaved changes
+                        </span>
+                        <button
+                            onClick={onSave}
+                            style={{
+                                background: "#e4e4e7",
+                                border: "none",
+                                color: "#09090b",
+                                cursor: "pointer",
+                                padding: "5px 16px",
+                                fontSize: 12,
+                                borderRadius: "8px",
+                                fontWeight: 700,
+                                transition: "all 0.2s",
+                            }}
+                        >
+                            Save Changes
+                        </button>
+                    </div>
+                ) : (
+                    <span style={{ fontSize: 12, color: "#34d399", fontWeight: 600 }}>
+                        ✓ All changes saved
                     </span>
                 )}
             </div>
@@ -202,10 +224,6 @@ function EditorToolbar({
 // so the contenteditable editing system works universally.
 // ─────────────────────────────────────────────────────────────
 function instrumentTheme(container: HTMLDivElement, liveData: any) {
-    // Skip if this theme already has native data-field support (LuxuryTheme)
-    const alreadyInstrumented = container.querySelectorAll("[data-field]").length > 5;
-    if (alreadyInstrumented) return;
-
     // Helper: stamp a data-field on an element only if not already set
     const stamp = (el: Element | null, field: string) => {
         if (el && !el.getAttribute("data-field")) {
@@ -255,10 +273,14 @@ function instrumentTheme(container: HTMLDivElement, liveData: any) {
             return text.length > 2 && !(el as HTMLElement).querySelector("li, span, p");
         });
 
-        // Split roughly in half: first half = inclusions, second half = exclusions
-        const incCount = liveData?.inclusions
-            ? (liveData.inclusions.split("\n").filter(Boolean).length)
-            : Math.ceil(allItems.length / 2);
+        const getListLength = (val: any) => {
+            if (!val) return 0;
+            if (Array.isArray(val)) return val.filter(Boolean).length;
+            if (typeof val === "string") return val.split("\n").map((s: string) => s.trim()).filter(Boolean).length;
+            return 0;
+        };
+
+        const incCount = getListLength(liveData?.inclusions) || Math.ceil(allItems.length / 2);
 
         allItems.forEach((el, i) => {
             if (i < incCount) {
@@ -308,73 +330,109 @@ export default function LuxuryEditorPage() {
     const [liveData, setLiveData] = useState<any>(null);
     const liveDataRef = useRef<any>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    const editModeRef = useRef(false);
+    const dirtyRef = useRef(false);
 
-    // Keep liveDataRef in sync with liveData state
+    // Keep refs in sync with state
     useEffect(() => { liveDataRef.current = liveData; }, [liveData]);
-
-    const fetchedRef = useRef(false);
+    useEffect(() => { editModeRef.current = editMode; }, [editMode]);
+    useEffect(() => { dirtyRef.current = dirty; }, [dirty]);
 
     // ── Fetch itinerary & user/agency profile from Supabase ────
+    const fetchItineraryFromDb = useCallback(async (forceUpdateLiveData = false) => {
+        if (!id || !user?.id) return;
+
+        const [{ data, error }, { data: profileData }, { data: agencyData }] = await Promise.all([
+            supabase
+                .from("itineraries")
+                .select("*, clients(*)")
+                .eq("id", id)
+                .eq("user_id", user.id)
+                .single(),
+            supabase
+                .from("user_profiles")
+                .select("*")
+                .eq("user_id", user.id)
+                .maybeSingle(),
+            supabase
+                .from("agency_settings")
+                .select("*")
+                .eq("user_id", user.id)
+                .maybeSingle(),
+        ]);
+
+        if (profileData) setLocalUserProfile(profileData);
+        if (agencyData) setLocalAgencySettings(agencyData);
+
+        if (error || !data) {
+            if (!liveDataRef.current) setError(error?.message || "Itinerary not found");
+        } else {
+            setItinerary(data);
+            // Only overwrite liveData when: (a) first load, (b) forced (external DB change), OR (c) no unsaved edits
+            const shouldUpdate = forceUpdateLiveData || !liveDataRef.current || !dirtyRef.current;
+            if (shouldUpdate && !editModeRef.current) {
+                setLiveData(data.itinerary_data);
+            } else if (!liveDataRef.current) {
+                // First load always sets liveData
+                setLiveData(data.itinerary_data);
+            }
+            // Restore saved theme from itinerary_data or fall back to user default
+            const savedTheme = data.itinerary_data?.selectedTheme as PdfTheme | undefined;
+            if (savedTheme && !dirtyRef.current) setSelectedTheme(savedTheme);
+
+            // Fetch linked client record if client_id exists or join returns client
+            let clientRecord = (data as any)?.clients || null;
+            if (!clientRecord && data.client_id) {
+                const { data: clientData } = await supabase
+                    .from("clients")
+                    .select("*")
+                    .eq("id", data.client_id)
+                    .maybeSingle();
+                clientRecord = clientData;
+            }
+            if (clientRecord) {
+                setLocalClient(clientRecord);
+            }
+        }
+        setLoading(false);
+    }, [id, user?.id, supabase]);
+
     useEffect(() => {
         if (!id || !user?.id) return;
-        if (fetchedRef.current && itinerary?.id === id) return;
-
-        let isSubscribed = true;
-        const fetchItinerary = async () => {
-            if (!itinerary) setLoading(true);
-
-            const [{ data, error }, { data: profileData }, { data: agencyData }] = await Promise.all([
-                supabase
-                    .from("itineraries")
-                    .select("*, clients(*)")
-                    .eq("id", id)
-                    .eq("user_id", user.id)
-                    .single(),
-                supabase
-                    .from("user_profiles")
-                    .select("*")
-                    .eq("user_id", user.id)
-                    .maybeSingle(),
-                supabase
-                    .from("agency_settings")
-                    .select("*")
-                    .eq("user_id", user.id)
-                    .maybeSingle(),
-            ]);
-
-            if (!isSubscribed) return;
-            if (profileData) setLocalUserProfile(profileData);
-            if (agencyData) setLocalAgencySettings(agencyData);
-
-            if (error || !data) {
-                if (!itinerary) setError(error?.message || "Itinerary not found");
-            } else {
-                setItinerary(data);
-                setLiveData((prev: any) => prev ? prev : data.itinerary_data);
-                // Restore saved theme from itinerary_data or fall back to user default
-                const savedTheme = data.itinerary_data?.selectedTheme as PdfTheme | undefined;
-                if (savedTheme) setSelectedTheme(savedTheme);
-                fetchedRef.current = true;
-
-                // Fetch linked client record if client_id exists or join returns client
-                let clientRecord = (data as any)?.clients || null;
-                if (!clientRecord && data.client_id) {
-                    const { data: clientData } = await supabase
-                        .from("clients")
-                        .select("*")
-                        .eq("id", data.client_id)
-                        .maybeSingle();
-                    clientRecord = clientData;
-                }
-                if (clientRecord && isSubscribed) {
-                    setLocalClient(clientRecord);
-                }
-            }
-            setLoading(false);
-        };
-        fetchItinerary();
-        return () => { isSubscribed = false; };
+        setLoading(true);
+        fetchItineraryFromDb(false);
     }, [id, user?.id]);
+
+    // ── Re-fetch on window focus (to catch Lab changes saved while editor is open) ──
+    useEffect(() => {
+        const handleFocus = () => {
+            // Only re-fetch if not currently editing with unsaved changes
+            if (!editModeRef.current || !dirtyRef.current) {
+                fetchItineraryFromDb(true);
+            }
+        };
+        window.addEventListener("focus", handleFocus);
+        return () => window.removeEventListener("focus", handleFocus);
+    }, [fetchItineraryFromDb]);
+
+    // ── Supabase Realtime subscription: catch DB changes from other tabs/sessions ──
+    useEffect(() => {
+        if (!id || !user?.id) return;
+        const channel = supabase
+            .channel(`itinerary-editor-${id}`)
+            .on(
+                "postgres_changes",
+                { event: "UPDATE", schema: "public", table: "itineraries", filter: `id=eq.${id}` },
+                () => {
+                    // Only auto-apply if user isn't actively editing
+                    if (!editModeRef.current || !dirtyRef.current) {
+                        fetchItineraryFromDb(true);
+                    }
+                }
+            )
+            .subscribe();
+        return () => { supabase.removeChannel(channel); };
+    }, [id, user?.id, supabase, fetchItineraryFromDb]);
 
     // ── Instrument DOM with data-field after any theme renders ─────────
     useEffect(() => {
@@ -391,7 +449,7 @@ export default function LuxuryEditorPage() {
     // ── Toggle edit: make fields contenteditable ──────────────────────
     useEffect(() => {
         if (!containerRef.current) return;
-        // Re-instrument synchronously when entering edit mode (handles theme switches)
+        // Re-instrument synchronously when entering edit mode (handles theme switches & new days)
         if (editMode && liveDataRef.current) instrumentTheme(containerRef.current, liveDataRef.current);
         const fields = containerRef.current.querySelectorAll("[data-field]");
         fields.forEach((el) => {
@@ -417,21 +475,37 @@ export default function LuxuryEditorPage() {
                 }
             }
         });
-    }, [editMode]);
+    }, [editMode, liveData?.itinerary?.length, selectedTheme]);
 
-    // ── Track changes from contenteditable ─────────────────────
-    const handleContentChange = useCallback(() => {
-        if (!editMode) return;
+    // ── Add Day action ────────────────────────────────────────────────
+    const handleAddDay = useCallback(() => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const currentDays = Array.isArray(prev.itinerary) ? prev.itinerary : [];
+            const newDayNum = currentDays.length + 1;
+            const newDay = {
+                day: newDayNum,
+                title: `Day ${newDayNum}`,
+                themeTitle: `Day ${newDayNum}`,
+                areaFocus: `Destination Day ${newDayNum}`,
+                location: `Destination Day ${newDayNum}`,
+                timeline: [
+                    {
+                        time: "09:00 AM",
+                        activityTitle: `Day ${newDayNum} Morning Activity`,
+                        details: `Explore top sights, culture, and highlights for Day ${newDayNum}.`
+                    }
+                ],
+                activities: [`Explore top sights, culture, and highlights for Day ${newDayNum}.`]
+            };
+            return {
+                ...prev,
+                itinerary: [...currentDays, newDay]
+            };
+        });
         setDirty(true);
         setSaved(false);
-    }, [editMode]);
-
-    useEffect(() => {
-        const container = containerRef.current;
-        if (!container) return;
-        container.addEventListener("input", handleContentChange);
-        return () => container.removeEventListener("input", handleContentChange);
-    }, [handleContentChange]);
+    }, []);
 
     // ── Collect all edited content from DOM and merge into data ─
     const collectEdits = useCallback((): any => {
@@ -650,7 +724,9 @@ export default function LuxuryEditorPage() {
                                 const aIdx = parseInt(actMatch[1], 10);
                                 if (Array.isArray(day.timeline) && day.timeline[aIdx]) {
                                     if (typeof day.timeline[aIdx] === "object") {
+                                        // Write to both fields: activityTitle (PDF theme) AND details (The Lab timeline)
                                         day.timeline[aIdx].activityTitle = text;
+                                        day.timeline[aIdx].details = text;
                                     } else {
                                         day.timeline[aIdx] = text;
                                     }
@@ -688,6 +764,46 @@ export default function LuxuryEditorPage() {
         return newData;
     }, [liveData]);
 
+    // ── Track changes & sync liveData from contenteditable ────────
+    useEffect(() => {
+        const container = containerRef.current;
+        if (!container) return;
+
+        const handleInput = () => {
+            if (!editMode) return;
+            // Only mark dirty during typing — do NOT call setLiveData here.
+            // Calling setLiveData triggers a React re-render of PdfTemplate which
+            // destroys and recreates the contenteditable DOM, resetting the cursor
+            // to position 0. The DOM is the live source of truth while editing;
+            // collectEdits() reads from it at blur-time and at explicit save.
+            setDirty(true);
+            setSaved(false);
+        };
+
+        const handleBlur = () => {
+            if (!editMode) return;
+            // Safe to sync liveData on blur: the user has already moved away,
+            // so there is no active cursor to displace.
+            if (containerRef.current) {
+                const updated = collectEdits();
+                if (updated) {
+                    setLiveData(updated);
+                    setDirty(true);
+                    setSaved(false);
+                }
+            }
+        };
+
+        container.addEventListener("input", handleInput);
+        container.addEventListener("focusout", handleBlur);
+
+        return () => {
+            container.removeEventListener("input", handleInput);
+            container.removeEventListener("focusout", handleBlur);
+        };
+    }, [editMode, collectEdits]);
+
+
     // ── Save back to Supabase ───────────────────────────────────
     const handleSave = useCallback(async () => {
         if (!itinerary || !user) return;
@@ -709,6 +825,7 @@ export default function LuxuryEditorPage() {
                 itinerary_data: updatedData,
                 title: formattedTitle,
                 updated_at: new Date().toISOString(),
+                last_activity_at: new Date().toISOString(),
             };
 
             if (!isNaN(numericTotal) && numericTotal > 0) {
@@ -727,11 +844,30 @@ export default function LuxuryEditorPage() {
             setSaved(true);
             setDirty(false);
         } catch (err: any) {
+            console.error("Save failed:", err);
             alert("Save failed: " + (err?.message || "Unknown error"));
         } finally {
             setSaving(false);
         }
-    }, [itinerary, user, collectEdits]);
+    }, [itinerary, user, collectEdits, liveData, selectedTheme, supabase]);
+
+    const handleToggleEdit = useCallback(() => {
+        if (editMode && containerRef.current) {
+            const updated = collectEdits();
+            if (updated) setLiveData(updated);
+        }
+        setEditMode((m) => !m);
+    }, [editMode, collectEdits]);
+
+    const handleThemeChange = useCallback((theme: PdfTheme) => {
+        if (editMode && containerRef.current) {
+            const updated = collectEdits();
+            if (updated) setLiveData(updated);
+        }
+        setSelectedTheme(theme);
+        setDirty(true);
+        setSaved(false);
+    }, [editMode, collectEdits]);
 
     // ── Build props for PdfTemplate ─────────────────────────────
     const themeProps = useMemo(() => {
@@ -739,7 +875,9 @@ export default function LuxuryEditorPage() {
         const effectiveAgencySettings = agencySettings || localAgencySettings;
         const agent = getAgentInfo(effectiveUserProfile, effectiveAgencySettings, liveData);
 
-        const resolvedClientName =
+        const hasAssignedClient = Boolean(
+            localClient ||
+            itinerary?.client_id ||
             liveData?.guestNames ||
             liveData?.clientName ||
             liveData?.client_name ||
@@ -750,16 +888,38 @@ export default function LuxuryEditorPage() {
             liveData?.clientDetails?.name ||
             liveData?.clientDetails?.clientName ||
             liveData?.guestName ||
-            localClient?.name ||
-            localClient?.client_name ||
-            localClient?.full_name ||
             (itinerary as any)?.clients?.name ||
             (itinerary as any)?.clients?.client_name ||
             (itinerary as any)?.client?.name ||
             itinerary?.client_name ||
             itinerary?.client_names ||
-            itinerary?.guest_names ||
-            "Valued Guest";
+            itinerary?.guest_names
+        );
+
+        const resolvedClientName = hasAssignedClient
+            ? (
+                liveData?.guestNames ||
+                liveData?.clientName ||
+                liveData?.client_name ||
+                liveData?.guest_names ||
+                liveData?.bookingDetails?.guestNames ||
+                liveData?.bookingDetails?.clientName ||
+                liveData?.bookingDetails?.customerName ||
+                liveData?.clientDetails?.name ||
+                liveData?.clientDetails?.clientName ||
+                liveData?.guestName ||
+                localClient?.name ||
+                localClient?.client_name ||
+                localClient?.full_name ||
+                (itinerary as any)?.clients?.name ||
+                (itinerary as any)?.clients?.client_name ||
+                (itinerary as any)?.client?.name ||
+                itinerary?.client_name ||
+                itinerary?.client_names ||
+                itinerary?.guest_names ||
+                "Valued Guest"
+            )
+            : undefined;
 
         const pricingCfg = (liveData as any)?.pricing || itinerary?.pricing || defaultPricingConfig;
         const validHotels = filterCompleteEntriesForExport(
@@ -798,9 +958,10 @@ export default function LuxuryEditorPage() {
 
         return {
             itinerary: liveData,
-            title: formatTitleCase(itinerary?.title || liveData?.tripTitle || "Luxury Itinerary"),
+            title: liveData?.tripTitle || liveData?.title || itinerary?.title,
             clientName: resolvedClientName,
             agencySettings: effectiveAgencySettings,
+            userProfile: effectiveUserProfile,
             agent,
             hotels: validHotels,
             flights: validFlights,
@@ -809,13 +970,17 @@ export default function LuxuryEditorPage() {
             finalTotal: resolvedFinalTotal,
             pricing: pricingCfg,
             baseCost: calculatedBase,
-            showTimestamps: itinerary?.show_timestamps ?? true,
-            inclusions: itinerary?.inclusions || liveData?.inclusions,
-            exclusions: itinerary?.exclusions || liveData?.exclusions,
-            termsAndConditions: itinerary?.terms_and_conditions || liveData?.termsAndConditions,
-            cancellationPolicy: itinerary?.cancellation_policy || liveData?.cancellationPolicy,
-            paymentMethods: itinerary?.payment_methods || liveData?.paymentMethods,
-            aboutPlace: itinerary?.about_place || liveData?.aboutPlace,
+            // liveData (itinerary_data) is the single source of truth for all content fields.
+            // itinerary is the DB row shell (used for IDs, client_id etc), not for content.
+            showTimestamps: liveData?.showTimestamps ?? itinerary?.show_timestamps ?? true,
+            inclusions: liveData?.inclusions,
+            exclusions: liveData?.exclusions,
+            termsAndConditions: liveData?.termsAndConditions,
+            cancellationPolicy: liveData?.cancellationPolicy,
+            paymentMethods: liveData?.paymentMethods,
+            aboutPlace: liveData?.aboutPlace,
+            isHtmlEditor: true,
+            daySummaries: liveData?.daySummaries || [],
         };
     }, [liveData, itinerary, userProfile, agencySettings, localUserProfile, localAgencySettings, localClient]);
 
@@ -885,12 +1050,13 @@ export default function LuxuryEditorPage() {
                 saved={saved}
                 dirty={dirty}
                 onSave={handleSave}
-                onToggleEdit={() => setEditMode((m) => !m)}
+                onToggleEdit={handleToggleEdit}
+                onAddDay={handleAddDay}
                 editMode={editMode}
                 itineraryTitle={itinerary?.title || ""}
                 onBack={() => router.back()}
                 selectedTheme={selectedTheme}
-                onThemeChange={(theme) => { setSelectedTheme(theme); setDirty(true); setSaved(false); }}
+                onThemeChange={handleThemeChange}
             />
 
             {/* Edit mode hint banner */}

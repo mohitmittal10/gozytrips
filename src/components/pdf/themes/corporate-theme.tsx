@@ -18,7 +18,7 @@ const parseList = (text?: any): string[] => {
 };
 
 export const CorporateTheme = ({
-    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace
+    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace, isHtmlEditor = false
 }: ThemeProps) => {
     const brandColor = agent.primaryColor || "#0f172a";
     const totalActivities = Array.isArray(itinerary.itinerary) ? itinerary.itinerary.reduce((s, d) => s + (d.timeline?.length || 0), 0) : 0;
@@ -97,15 +97,17 @@ export const CorporateTheme = ({
                     <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                         {agent.logoUrl && (
                             <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                                <div style={{ padding: "8px 12px", background: "rgba(255,255,255,0.1)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.15)", display: "flex", alignItems: "center" }}>
-                                    <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "44px", maxWidth: "130px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1) opacity(0.95)" }} />
+                                <div style={{ padding: "6px 12px", background: "rgba(255,255,255,0.95)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.3)", display: "flex", alignItems: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }}>
+                                    <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "44px", maxWidth: "130px", objectFit: "contain", display: "block" }} />
                                 </div>
                                 <div style={{ width: "1px", height: "40px", background: "rgba(255,255,255,0.2)" }} />
                             </div>
                         )}
                         <div>
                             <h1 data-field="agency.companyName" style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px 0", letterSpacing: "1.5px", textTransform: "uppercase" }}>{agent.companyName}</h1>
-                            <p data-field="agency.tagline" style={{ fontSize: "11px", opacity: 0.8, margin: 0, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" }}>{agent.tagline || "Travel Management Services"}</p>
+                            {agent.tagline && (
+                                <p data-field="agency.tagline" style={{ fontSize: "11px", opacity: 0.8, margin: 0, fontWeight: 500, letterSpacing: "1px", textTransform: "uppercase" }}>{agent.tagline}</p>
+                            )}
                         </div>
                     </div>
                     <div style={{ textAlign: "right", fontSize: "12px", lineHeight: "1.8", opacity: 0.9, fontWeight: 500 }}>
@@ -134,10 +136,12 @@ export const CorporateTheme = ({
                             <div style={{ padding: "12px 20px", flex: "0 0 40%", color: brandColor, textTransform: "uppercase", fontSize: "11px", letterSpacing: "1.5px", fontWeight: 800 }}>Metric</div>
                             <div style={{ padding: "12px 20px", flex: "0 0 60%", color: brandColor, textTransform: "uppercase", fontSize: "11px", letterSpacing: "1.5px", fontWeight: 800 }}>Details</div>
                         </div>
-                        <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.56)" }}>
-                            <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Client / Traveler</div>
-                            <div data-field="booking.guestNames" style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{clientName || ""}</div>
-                        </div>
+                        {clientName && (
+                            <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.56)" }}>
+                                <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Client / Traveler</div>
+                                <div data-field="booking.guestNames" style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>{clientName}</div>
+                            </div>
+                        )}
                         <div style={{ display: "flex", borderBottom: "1px solid rgba(148,163,184,0.18)", background: "rgba(255,255,255,0.5)" }}>
                             <div style={{ padding: "12px 20px", flex: "0 0 40%", fontWeight: 600 }}>Travelers</div>
                             <div style={{ padding: "12px 20px", flex: "0 0 60%", fontWeight: 700, color: brandColor }}>

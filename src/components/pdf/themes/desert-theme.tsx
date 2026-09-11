@@ -141,7 +141,7 @@ export const DesertFooter = ({ agent, agencySettings, clientName }: { agent: The
 );
 
 export const DesertTheme = ({
-    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace
+    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace, isHtmlEditor = false
 }: ThemeProps) => {
     const days = itinerary.itinerary?.length || 0;
     const nights = getNightsLabel(days);
@@ -249,11 +249,11 @@ export const DesertTheme = ({
                 <div data-pdf-section="quick-stats" style={{ background: "#ffffff", borderBottom: "1px solid #f3f4f6", padding: "42px 64px" }}>
                     <div style={{ display: "flex", gap: "20px" }}>
                         {[
-                            { label: "Guest / Client", value: clientName || "", icon: "👤" },
+                            clientName ? { label: "Guest / Client", value: clientName, icon: "👤" } : null,
                             { label: "Duration", value: `${days} Days / ${nights}`, icon: "📅" },
                             { label: "Total Budget", value: totalBudget, icon: "💰" },
                             { label: "Location", value: destination, icon: "📍" },
-                        ].map((item, index) => (
+                        ].filter(Boolean).map((item: any, index) => (
                             <div key={index} style={{ flex: 1, display: "flex", alignItems: "center", gap: "14px" }}>
                                 <div style={{ width: "44px", height: "44px", borderRadius: "999px", background: "#fff7ed", border: "1px solid #ffedd5", display: "flex", alignItems: "center", justifyContent: "center", color: "#ea580c", fontSize: "16px", fontWeight: 700, flexShrink: 0 }}>
                                     {item.icon}
@@ -284,7 +284,7 @@ export const DesertTheme = ({
                         {getAgencyNarrative(agent)}
                     </p>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
+                    <div style={{ display: "grid", gridTemplateColumns: clientName ? "1fr 1fr" : "1fr", gap: "24px" }}>
                         <div style={{ background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "22px", padding: "32px 34px" }}>
                             <p style={{ margin: "0 0 18px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "3px", color: "#b48b63", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                 🏜️ Agency Details
@@ -315,31 +315,33 @@ export const DesertTheme = ({
                             </div>
                         </div>
 
-                        <div style={{ background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "22px", padding: "32px 34px" }}>
-                            <p style={{ margin: "0 0 18px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "3px", color: "#b48b63", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                                👤 Client Details
-                            </p>
-                            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-                                <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
-                                    <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Client Name</p>
-                                    <p data-field="booking.guestNames" style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{clientName || ""}</p>
-                                </div>
-                                <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
-                                    <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Adults</p>
-                                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{adultPax} {adultPax === 1 ? 'Adult' : 'Adults'}</p>
-                                </div>
-                                <div style={{ paddingBottom: infantPax > 0 ? "10px" : "0", borderBottom: infantPax > 0 ? "1px solid #efe5d8" : "none" }}>
-                                    <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Children</p>
-                                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{childPax} {childPax === 1 ? 'Child' : 'Children'}</p>
-                                </div>
-                                {infantPax > 0 && (
-                                    <div>
-                                        <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Infants</p>
-                                        <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{infantPax} {infantPax === 1 ? 'Infant' : 'Infants'}</p>
+                        {clientName && (
+                            <div style={{ background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "22px", padding: "32px 34px" }}>
+                                <p style={{ margin: "0 0 18px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "3px", color: "#b48b63", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
+                                    👤 Client Details
+                                </p>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                                    <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
+                                        <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Client Name</p>
+                                        <p data-field="booking.guestNames" style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{clientName}</p>
                                     </div>
-                                )}
+                                    <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
+                                        <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Adults</p>
+                                        <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{adultPax} {adultPax === 1 ? 'Adult' : 'Adults'}</p>
+                                    </div>
+                                    <div style={{ paddingBottom: infantPax > 0 ? "10px" : "0", borderBottom: infantPax > 0 ? "1px solid #efe5d8" : "none" }}>
+                                        <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Children</p>
+                                        <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{childPax} {childPax === 1 ? 'Child' : 'Children'}</p>
+                                    </div>
+                                    {infantPax > 0 && (
+                                        <div>
+                                            <p style={{ margin: "0 0 4px 0", fontSize: "11px", textTransform: "uppercase", letterSpacing: "2px", color: "#9ca3af", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>Infants</p>
+                                            <p style={{ margin: 0, fontSize: "15px", fontWeight: 600, color: "#433429", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{infantPax} {infantPax === 1 ? 'Infant' : 'Infants'}</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </div>
                 </div>
             </section>

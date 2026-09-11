@@ -203,7 +203,8 @@ export const LuxuryTheme = ({
     cancellationPolicy,
     paymentMethods,
     daySummaries,
-    aboutPlace
+    aboutPlace,
+    isHtmlEditor = false,
 }: ThemeProps) => {
     const currency = pricing?.currency || DEFAULT_CURRENCY;
     const currencySymbol = getCurrencySymbol(currency);
@@ -240,10 +241,10 @@ export const LuxuryTheme = ({
         adultPax > 0 ? `${adultPax} Adult${adultPax > 1 ? 's' : ''}` : null,
         childPax > 0 ? `${childPax} Child${childPax > 1 ? 'ren' : ''}` : null,
         infantPax > 0 ? `${infantPax} Infant${infantPax > 1 ? 's' : ''}` : null,
-    ].filter(Boolean).join(', ') || '2 Adults';
+    ].filter(Boolean).join(', ');
 
     // Derived agency & consultant overrides
-    const agencyOverrides = (itinerary as any)?.agencyOverrides || {};
+    const agencyOverrides = (itinerary as any)?.agencyOverrides || (itinerary as any)?.agency || {};
     const consultantOverrides = (itinerary as any)?.consultant || {};
     const bookingOverrides = (itinerary as any)?.bookingDetails || {};
 
@@ -264,7 +265,7 @@ export const LuxuryTheme = ({
         || clientName
         || (itinerary as any)?.guestNames
         || bookingOverrides.guestNames
-        || '';
+        || undefined;
 
     const clientEmail = (itinerary as any)?.clientDetails?.email
         || (itinerary as any)?.client_email
@@ -303,7 +304,9 @@ export const LuxuryTheme = ({
     const exclusionsList = parseList((itinerary as any)?.exclusions || exclusions);
     const termsAndConditionsList = parseList((itinerary as any)?.termsAndConditions || termsAndConditions);
     const paymentMethodsList = parseList((itinerary as any)?.paymentMethods || paymentMethods);
-    const cancellationPoints = parseCancellationPoints((itinerary as any)?.cancellationPolicy || cancellationPolicy);
+    const cancellationPoints = isHtmlEditor && !((itinerary as any)?.cancellationPolicy || cancellationPolicy)
+        ? []
+        : parseCancellationPoints((itinerary as any)?.cancellationPolicy || cancellationPolicy);
 
     // Days array
     const days = Array.isArray(itinerary?.itinerary) ? itinerary.itinerary : [];
@@ -315,7 +318,7 @@ export const LuxuryTheme = ({
 
     // Hero & About details
     const coverImage = aboutPlace?.heroImageUrl || getCoverImage(itinerary) || 'https://images.unsplash.com/photo-1519681393784-d120267933ba?w=1600';
-    const aboutText = (itinerary as any)?.aboutPlace?.aboutText || aboutPlace?.aboutText || (itinerary as any)?.summary || (itinerary as any)?.overview || 'A land of staggering extremes — ancient glaciers, wind-carved peaks, and skies that never quite go dark.';
+    const aboutText = (itinerary as any)?.aboutPlace?.aboutText || aboutPlace?.aboutText || (itinerary as any)?.summary || (itinerary as any)?.overview || (isHtmlEditor ? '' : 'A land of staggering extremes — ancient glaciers, wind-carved peaks, and skies that never quite go dark.');
 
     // Installments derived from pricing config or milestones
     const installments = pricing?.installments && pricing.installments.length > 0
@@ -326,18 +329,20 @@ export const LuxuryTheme = ({
                 dueDate: m.label || m.dueDate || 'Milestone',
                 note: `${m.percentage}% payment milestone`
             }))
-            : [
-                {
-                    amount: formatCurrency(displayFinalTotal * 0.3, currency),
-                    dueDate: 'On Confirmation',
-                    note: '30% deposit to secure booking'
-                },
-                {
-                    amount: formatCurrency(displayFinalTotal * 0.7, currency),
-                    dueDate: '14 Days Pre-Departure',
-                    note: 'Balance payment 14 days pre-departure'
-                }
-            ];
+            : isHtmlEditor
+                ? []
+                : [
+                    {
+                        amount: formatCurrency(displayFinalTotal * 0.3, currency),
+                        dueDate: 'On Confirmation',
+                        note: '30% deposit to secure booking'
+                    },
+                    {
+                        amount: formatCurrency(displayFinalTotal * 0.7, currency),
+                        dueDate: '14 Days Pre-Departure',
+                        note: 'Balance payment 14 days pre-departure'
+                    }
+                ];
 
     // Bank details
     const rawBankData = (itinerary as any)?.bankDetails || agencySettings?.bank_details || agent.bankDetails || agencySettings || null;
@@ -1238,78 +1243,84 @@ export const LuxuryTheme = ({
                             )}
                         </div>
 
-                        <div className="client-details">
-                            <div className="label">Client Details</div>
+                        {(clientNameResolved || clientEmail || clientPhone || travellerSummaryStr || departureDate || returnDate) ? (
+                            <div className="client-details">
+                                <div className="label">Client Details</div>
 
-                            {clientNameResolved && (
-                                <div className="booking-row">
-                                    <span className="k">Client Name</span>
-                                    <span className="v" data-field="booking.guestNames">{clientNameResolved}</span>
-                                </div>
-                            )}
-                            {clientEmail && (
-                                <div className="booking-row">
-                                    <span className="k">Email</span>
-                                    <span className="v">{clientEmail}</span>
-                                </div>
-                            )}
-                            {clientPhone && (
-                                <div className="booking-row">
-                                    <span className="k">Phone</span>
-                                    <span className="v">{clientPhone}</span>
-                                </div>
-                            )}
-                            {travellerSummaryStr && (
-                                <div className="booking-row">
-                                    <span className="k">Travellers</span>
-                                    <span className="v">{travellerSummaryStr}</span>
-                                </div>
-                            )}
-                            {departureDate && (
-                                <div className="booking-row">
-                                    <span className="k">Departure</span>
-                                    <span className="v">{departureDate}</span>
-                                </div>
-                            )}
-                            {returnDate && (
-                                <div className="booking-row">
-                                    <span className="k">Return</span>
-                                    <span className="v">{returnDate}</span>
-                                </div>
-                            )}
-                        </div>
+                                {clientNameResolved && (
+                                    <div className="booking-row">
+                                        <span className="k">Client Name</span>
+                                        <span className="v" data-field="booking.guestNames">{clientNameResolved}</span>
+                                    </div>
+                                )}
+                                {clientEmail && (
+                                    <div className="booking-row">
+                                        <span className="k">Email</span>
+                                        <span className="v">{clientEmail}</span>
+                                    </div>
+                                )}
+                                {clientPhone && (
+                                    <div className="booking-row">
+                                        <span className="k">Phone</span>
+                                        <span className="v">{clientPhone}</span>
+                                    </div>
+                                )}
+                                {travellerSummaryStr && (
+                                    <div className="booking-row">
+                                        <span className="k">Travellers</span>
+                                        <span className="v">{travellerSummaryStr}</span>
+                                    </div>
+                                )}
+                                {departureDate && (
+                                    <div className="booking-row">
+                                        <span className="k">Departure</span>
+                                        <span className="v">{departureDate}</span>
+                                    </div>
+                                )}
+                                {returnDate && (
+                                    <div className="booking-row">
+                                        <span className="k">Return</span>
+                                        <span className="v">{returnDate}</span>
+                                    </div>
+                                )}
+                            </div>
+                        ) : null}
                     </div>
                 </section>
 
                 {/* ABOUT THE PLACE + HIGHLIGHTS (MAIN DARK BG) */}
-                <section className="sec-bg-main" style={{ padding: 0 }} data-pdf-section="about">
-                    <div
-                        className="about-hero"
-                        data-field="destination.heroImageUrl"
-                        style={{ backgroundImage: `url('${coverImage}')` }}
-                    >
-                        <div className="about-copy">
-                            <hr className="rule" />
-                            <h2 className="display">About the place</h2>
-                            <p className="about-text" data-field="destination.aboutText">
-                                &ldquo;{aboutText}&rdquo;
-                            </p>
-                            <hr className="rule" />
-                        </div>
-                    </div>
-
-                    {highlightsList.length > 0 && (
-                        <div className="section-inner highlights">
-                            <span className="eyebrow">Highlights</span>
-                            {highlightsList.map((highlight, idx) => (
-                                <div className="highlight-item" key={idx}>
-                                    <span className="bullet">◆</span>
-                                    <span className="text" data-field={`highlights[${idx}].text`}>{highlight}</span>
+                {(aboutText || highlightsList.length > 0) && (
+                    <section className="sec-bg-main" style={{ padding: 0 }} data-pdf-section="about">
+                        {aboutText && (
+                            <div
+                                className="about-hero"
+                                data-field="destination.heroImageUrl"
+                                style={{ backgroundImage: `url('${coverImage}')` }}
+                            >
+                                <div className="about-copy">
+                                    <hr className="rule" />
+                                    <h2 className="display">About the place</h2>
+                                    <p className="about-text" data-field="destination.aboutText">
+                                        &ldquo;{aboutText}&rdquo;
+                                    </p>
+                                    <hr className="rule" />
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </section>
+                            </div>
+                        )}
+
+                        {highlightsList.length > 0 && (
+                            <div className="section-inner highlights">
+                                <span className="eyebrow">Highlights</span>
+                                {highlightsList.map((highlight, idx) => (
+                                    <div className="highlight-item" key={idx}>
+                                        <span className="bullet">◆</span>
+                                        <span className="text" data-field={`highlights[${idx}].text`}>{highlight}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </section>
+                )}
 
                 {/* DAY BY DAY -- OVERVIEW GRID (PANEL BG) */}
                 {days.length > 0 && (

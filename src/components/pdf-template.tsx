@@ -44,10 +44,11 @@ export interface PdfTemplateProps {
     /** AI-generated one-sentence summaries per day, indexed by day order. */
     daySummaries?: string[];
     aboutPlace?: any;
+    isHtmlEditor?: boolean;
 }
 
 /* ═════════ MAIN EXPORTED COMPONENT ═════════ */
-export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencySettings, agent: passedAgent, theme = 'classic', hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace }: PdfTemplateProps) => {
+export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencySettings, agent: passedAgent, theme = 'classic', hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace, isHtmlEditor = false }: PdfTemplateProps) => {
     if (!itinerary || !itinerary.itinerary) return null;
 
     const agent = passedAgent || getAgentInfo(userProfile, agencySettings, itinerary);
@@ -79,7 +80,7 @@ export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencyS
     const resolvedAboutPlace = resolveAboutPlace(aboutPlace, itinerary);
 
     const themeProps = {
-        itinerary, title: displayTitle, clientName, agencySettings, agent, hotels: validHotels, flights: validFlights, cabs: validCabs, buses: validBuses, finalTotal, showTimestamps, inclusions: resolvedInclusions, exclusions: resolvedExclusions, termsAndConditions: resolvedTerms, cancellationPolicy: resolvedCancellation, paymentMethods: resolvedPaymentMethods, pricing: pricingCfg, baseCost: resolvedBaseCost, daySummaries, aboutPlace: resolvedAboutPlace
+        itinerary, title: displayTitle, clientName, agencySettings, agent, hotels: validHotels, flights: validFlights, cabs: validCabs, buses: validBuses, finalTotal, showTimestamps, inclusions: resolvedInclusions, exclusions: resolvedExclusions, termsAndConditions: resolvedTerms, cancellationPolicy: resolvedCancellation, paymentMethods: resolvedPaymentMethods, pricing: pricingCfg, baseCost: resolvedBaseCost, daySummaries, aboutPlace: resolvedAboutPlace, isHtmlEditor
     };
 
     let ThemeComponent;

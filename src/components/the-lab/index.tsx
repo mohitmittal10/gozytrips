@@ -116,7 +116,11 @@ export default function TheLab() {
     }
     // Any new edit clears the redo stack
     itineraryRedoRef.current = [];
+    // Update local state (used by child components for rendering)
     setItinerary(next);
+    // CRITICAL: Also update the Zustand store so currentHash changes and
+    // the autosave subscription fires → writes the edit to the database.
+    useLabStore.getState().setItinerary(next);
   }, [itinerary, setItinerary]);
 
   const canUndoPrevious = itineraryHistoryRef.current.length > 0;
@@ -132,7 +136,9 @@ export default function TheLab() {
         JSON.parse(JSON.stringify(itinerary)),
       ];
     }
+    // Update both local state and Zustand store so autosave fires
     setItinerary(prev);
+    useLabStore.getState().setItinerary(prev);
   }, [itinerary, setItinerary]);
 
   const handleRedoNext = useCallback(() => {
@@ -145,7 +151,9 @@ export default function TheLab() {
         JSON.parse(JSON.stringify(itinerary)),
       ];
     }
+    // Update both local state and Zustand store so autosave fires
     setItinerary(next);
+    useLabStore.getState().setItinerary(next);
   }, [itinerary, setItinerary]);
 
 

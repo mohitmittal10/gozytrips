@@ -176,13 +176,25 @@ export function useItineraryPersistence({
         return;
       }
 
+      await _fetchAndApply(active);
+    };
+
+    // Force-refetch from DB, bypassing the lastFetchedIdRef guard.
+    // Used by the focus handler to pick up external changes (e.g. from
+    // the HTML itinerary editor) without requiring a trip ID change.
+    const refetchDraft = async () => {
+      if (!currentTripId) return;
+      await _fetchAndApply(active);
+    };
+
+    async function _fetchAndApply(isActive: boolean) {
       try {
         setIsLoading(true);
         const session = await getValidSession();
 
         // If not authenticated, we can't load from Supabase - default to empty state
         if (!session?.user) {
-          if (active) setLoadedData(getEmptyData());
+          if (isActive) setLoadedData(getEmptyData());
           return;
         }
 
@@ -198,7 +210,7 @@ export function useItineraryPersistence({
 
         const { data, error } = await query.single();
 
-        if (active && data) {
+        if (isActive && data) {
           lastFetchedIdRef.current = data.id;
 
           // Sync the ID if we just auto-loaded a draft
@@ -245,30 +257,36 @@ export function useItineraryPersistence({
             paymentMethods: itineraryData.paymentMethods || ""
           };
 
-          // Seed the payload ref with canonical comparison structure so opening a draft doesn't trigger immediate re-save
+          // Seed the payload ref with canonical comparison structure so opening a
+          // draft (or re-fetching after external edits) doesn't trigger an immediate
+          // re-save that would overwrite the freshly-loaded DB data.
           lastPayloadRef.current = JSON.stringify(buildComparisonPayload(newData));
 
           setLoadedData(newData);
-        } else if (active) {
+        } else if (isActive) {
           setLoadedData(getEmptyData());
         }
       } catch (err) {
         console.warn("Failed to load itinerary from Supabase", err);
-        if (active) {
+        if (isActive) {
           setLoadedData(getEmptyData());
           lastFetchedIdRef.current = null;
         }
       } finally {
         initialized.current = true;
-        if (active) setIsLoading(false);
+        if (isActive) setIsLoading(false);
       }
-    };
+    }
 
     loadDraft();
 
+    // On window focus: always force-refetch from DB so we pick up any external
+    // changes (e.g. edits made in the HTML itinerary editor tab) without requiring
+    // a trip ID change. The lastPayloadRef is also updated, preventing the autosave
+    // from re-writing stale in-memory data over the freshly-loaded DB state.
     const handleFocus = () => {
       if (currentTripId) {
-        loadDraft();
+        refetchDraft();
       }
     };
     window.addEventListener("focus", handleFocus);
@@ -278,6 +296,7 @@ export function useItineraryPersistence({
       window.removeEventListener("focus", handleFocus);
     };
   }, [currentTripId, supabase, setCurrentTripId]);
+
 
   const executeSave = useCallback(async (data: Partial<LoadedPersistenceData>, id: string | null, allowInsert = true) => {
     try {

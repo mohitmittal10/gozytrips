@@ -625,6 +625,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
               agencySettings={agencySettings}
               daySummaries={daySummaries}
               aboutPlace={aboutPlace}
+              isHtmlEditor={false}
             />
           </div>
         )}

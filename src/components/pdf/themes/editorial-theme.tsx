@@ -18,7 +18,7 @@ const parseList = (text?: any): string[] => {
 };
 
 export const EditorialTheme = ({
-    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace
+    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace, isHtmlEditor = false
 }: ThemeProps) => {
     const gold = agent.primaryColor || "#b8860b";
     const currency = pricing?.currency || DEFAULT_CURRENCY;
@@ -96,11 +96,11 @@ export const EditorialTheme = ({
                     <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "65%", background: "rgba(15,23,42,0.6)" }} />
                     {/* Agency logo badge — top right (logo only) */}
                     {(agent.logoUrl || agent.companyName) && (
-                        <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.12)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.22)", borderRadius: "12px", padding: "9px 14px" }}>
+                        <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: "1px solid rgba(255,255,255,0.4)", borderRadius: "12px", padding: "8px 14px", boxShadow: "0 4px 16px rgba(0,0,0,0.15)" }}>
                             {agent.logoUrl ? (
-                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "90px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1) opacity(0.95)" }} />
+                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "90px", objectFit: "contain", display: "block" }} />
                             ) : (
-                                <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "13px" }}>
+                                <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: "rgba(15,23,42,0.8)", display: "flex", alignItems: "center", justifyContent: "center", color: gold, fontWeight: 800, fontSize: "13px" }}>
                                     {(agent.companyName || "T").substring(0, 1).toUpperCase()}
                                 </div>
                             )}
@@ -515,7 +515,9 @@ export const EditorialTheme = ({
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                         <h2 style={{ fontSize: "20px", fontWeight: "normal", color: gold, margin: "0 0 8px 0", fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>{agent.companyName}</h2>
                         <p style={{ fontSize: "13px", letterSpacing: "4px", textTransform: "uppercase", color: "white", margin: 0, fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Bespoke Travel Solutions</p>
-                        <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", margin: "4px 0 0 0", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Curated by {agent.agentName}</p>
+                        {agent.agentName && (
+                            <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", margin: "4px 0 0 0", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Curated by {agent.agentName}</p>
+                        )}
                     </div>
                     
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12px", color: "rgba(255,255,255,0.7)", textAlign: "right", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>

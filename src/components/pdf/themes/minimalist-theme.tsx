@@ -18,7 +18,7 @@ const parseList = (text?: any): string[] => {
 };
 
 export const MinimalistTheme = ({
-    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace
+    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace, isHtmlEditor = false
 }: ThemeProps) => {
     const accent = agent.primaryColor || "#000000";
     const totalActivities = Array.isArray(itinerary.itinerary) ? itinerary.itinerary.reduce((s, d) => s + (d.timeline?.length || 0), 0) : 0;
@@ -104,11 +104,11 @@ export const MinimalistTheme = ({
                     <div style={{ position: "absolute", inset: 0, background: `linear-gradient(to right, rgba(0,0,0,0.6), transparent)` }} />
                     {/* Agency logo badge — top right (logo only) */}
                     {(agent.logoUrl || agent.companyName) && (
-                        <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.2)", borderRadius: "8px", padding: "9px 14px" }}>
+                        <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.4)", borderRadius: "8px", padding: "8px 14px", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}>
                             {agent.logoUrl ? (
-                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "28px", maxWidth: "80px", objectFit: "contain", display: "block", filter: "brightness(0) invert(1) opacity(0.9)" }} />
+                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "28px", maxWidth: "80px", objectFit: "contain", display: "block" }} />
                             ) : (
-                                <div style={{ width: "26px", height: "26px", borderRadius: "6px", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "12px" }}>
+                                <div style={{ width: "26px", height: "26px", borderRadius: "6px", background: "rgba(15,23,42,0.8)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "12px" }}>
                                     {(agent.companyName || "T").substring(0, 1).toUpperCase()}
                                 </div>
                             )}

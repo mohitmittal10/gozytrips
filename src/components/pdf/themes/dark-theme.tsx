@@ -27,7 +27,7 @@ function hexToRgb(hex: string): string {
 }
 
 export const DarkTheme = ({
-    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace
+    itinerary, title, clientName, agencySettings, agent, hotels = [], flights = [], cabs = [], buses = [], pricing, baseCost = 0, finalTotal = 0, showTimestamps = true, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, daySummaries, aboutPlace, isHtmlEditor = false
 }: ThemeProps) => {
     const accent = agent.primaryColor || "#a855f7";
     const rgbAccent = hexToRgb(accent);
@@ -116,11 +116,11 @@ export const DarkTheme = ({
                     <div style={{ position: "absolute", inset: 0, background: "rgba(7,10,19,0.7)" }} />
                     {/* Agency logo badge — top right (logo only) */}
                     {(agent.logoUrl || agent.companyName) && (
-                        <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.4)", backdropFilter: "blur(10px)", border: `1px solid rgba(${rgbAccent}, 0.5)`, borderRadius: "10px", padding: "9px 14px", boxShadow: `0 0 18px rgba(${rgbAccent},0.2), inset 0 1px 0 rgba(255,255,255,0.05)` }}>
+                        <div style={{ position: "absolute", top: "22px", right: "30px", zIndex: 10, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", border: `1px solid rgba(${rgbAccent}, 0.5)`, borderRadius: "10px", padding: "8px 14px", boxShadow: `0 0 18px rgba(${rgbAccent},0.2)` }}>
                             {agent.logoUrl ? (
-                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "100px", objectFit: "contain", display: "block", filter: `drop-shadow(0 0 4px rgba(${rgbAccent},0.8))` }} />
+                                <img src={agent.logoUrl} alt={agent.companyName} crossOrigin="anonymous" style={{ maxHeight: "32px", maxWidth: "100px", objectFit: "contain", display: "block" }} />
                             ) : (
-                                <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: `rgba(${rgbAccent},0.3)`, display: "flex", alignItems: "center", justifyContent: "center", color: accent, fontWeight: 800, fontSize: "13px" }}>
+                                <div style={{ width: "28px", height: "28px", borderRadius: "6px", background: `rgba(${rgbAccent},0.8)`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "13px" }}>
                                     {(agent.companyName || "T").substring(0, 1).toUpperCase()}
                                 </div>
                             )}
