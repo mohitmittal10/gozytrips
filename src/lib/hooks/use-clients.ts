@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useAuth } from "@/contexts/auth-context";
 import { clientFormSchema } from "@/lib/security/form-validation";
@@ -17,9 +17,8 @@ export interface Client {
   updated_at: string;
 }
 
-const supabase = createClient();
-
 export function useClients() {
+  const supabase = useMemo(() => createClient(), []);
   const [clients, setClients] = useState<Client[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

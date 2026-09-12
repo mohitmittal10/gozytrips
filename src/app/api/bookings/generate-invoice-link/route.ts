@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
 import { createServerComponentClient } from "@/lib/supabase/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
-
-const supabaseAdmin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(request: Request) {
     try {
         const supabase = await createServerComponentClient();
+        const supabaseAdmin = createAdminClient();
 
         const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -25,7 +21,7 @@ export async function POST(request: Request) {
         }
 
         // Verify the booking belongs to this user
-        const { data: booking, error: bookingError } = await supabase
+        const { data: booking, error: bookingError } = await (supabase as any)
             .from("standalone_bookings")
             .select("id, user_id, share_token, share_enabled")
             .eq("id", bookingId)
@@ -47,7 +43,7 @@ export async function POST(request: Request) {
         }
 
         // Generate a new UUID token via admin client (bypasses RLS for the UPDATE)
-        const { data: updated, error: updateError } = await supabaseAdmin
+        const { data: updated, error: updateError } = await (supabaseAdmin as any)
             .from("standalone_bookings")
             .update({
                 share_token: crypto.randomUUID(),

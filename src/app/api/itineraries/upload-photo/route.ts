@@ -1,17 +1,13 @@
 import { NextResponse } from "next/server";
 import { createServerComponentClient } from "@/lib/supabase/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 const BUCKET = "itinerary-photos";
 const MAX_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
 
-const supabaseAdmin = createAdminClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(request: Request) {
   try {
+    const supabaseAdmin = createAdminClient();
     // 1. Authenticate via user session cookie
     const supabase = await createServerComponentClient();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
