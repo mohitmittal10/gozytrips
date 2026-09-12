@@ -48,27 +48,27 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
         <button
           onClick={handleCreateNew}
           className={cn(
-            "group relative flex items-center transition-all duration-200 rounded-xl mb-4",
+            "group relative flex items-center transition-all duration-200 rounded-xl mb-4 cursor-pointer",
             isSidebarExpanded ? "w-full px-4 gap-3 h-12" : "justify-center w-10 h-10",
             activeLabTab === 'new'
-              ? 'bg-primary/20 text-primary shadow-lg shadow-primary/15'
-              : 'text-primary hover:text-primary/80 hover:bg-primary/10'
+              ? 'bg-primary/20 text-white border border-primary/40 font-bold hover:bg-primary/25'
+              : 'text-primary hover:text-primary/90 hover:bg-primary/10'
           )}
           title={isSidebarExpanded ? undefined : "New Itinerary"}
         >
           <div className={cn(
             "flex items-center justify-center rounded-lg transition-colors",
-            activeLabTab === 'new' ? "bg-primary/20" : "bg-primary/10",
+            activeLabTab === 'new' ? "bg-primary/30" : "bg-primary/10",
             isSidebarExpanded ? "p-1.5" : "w-8 h-8"
           )}>
-            <Plus className={cn(isSidebarExpanded ? "w-4 h-4" : "w-5 h-5")} />
+            <Plus className={cn(isSidebarExpanded ? "w-4 h-4 text-white" : "w-5 h-5")} />
           </div>
           {isSidebarExpanded && <span className="text-sm font-bold tracking-tight">New Itinerary</span>}
           
           {!isSidebarExpanded && (
-            <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+            <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0c0c0e]/95 backdrop-blur-2xl border border-white/10 rounded-xl text-xs font-semibold text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
               New Itinerary
-              <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
+              <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#0c0c0e] border-l border-b border-white/10 rotate-45" />
             </div>
           )}
         </button>
@@ -88,20 +88,20 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
               key={item.id}
               onClick={() => setActiveLabTab(item.id)}
               className={cn(
-                "relative group flex items-center rounded-xl transition-all duration-200",
+                "relative group flex items-center rounded-xl transition-all duration-200 cursor-pointer",
                 isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10",
                 activeLabTab === item.id
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-gray-500 hover:text-primary hover:bg-white/[0.06]'
+                  ? 'bg-primary/20 text-white font-bold border border-primary/40 hover:bg-primary/25'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.08]'
               )}
               title={isSidebarExpanded ? undefined : item.label}
             >
-              <item.icon className={cn(isSidebarExpanded ? "w-4 h-4" : "w-[18px] h-[18px]")} />
+              <item.icon className={cn(isSidebarExpanded ? "w-4 h-4" : "w-[18px] h-[18px]", activeLabTab === item.id ? "text-primary" : "text-zinc-400")} />
               {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>}
               {!isSidebarExpanded && (
-                <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0c0c0e]/95 backdrop-blur-2xl border border-white/10 rounded-xl text-xs font-semibold text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
                   {item.label}
-                  <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
+                  <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#0c0c0e] border-l border-b border-white/10 rotate-45" />
                 </div>
               )}
             </button>
@@ -115,7 +115,7 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
           <button
             onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
             className={cn(
-              "relative group flex items-center transition-all duration-200 text-gray-500 hover:text-white hover:bg-white/[0.06] rounded-xl mt-1",
+              "relative group flex items-center transition-all duration-200 text-zinc-400 hover:text-white hover:bg-white/[0.08] rounded-xl mt-1 cursor-pointer",
               isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10"
             )}
             title={isSidebarExpanded ? "Collapse Sidebar" : "Expand Sidebar"}
@@ -128,9 +128,9 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
             ) : (
               <>
                 <ChevronRight className="w-[18px] h-[18px]" />
-                <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#1a1a2e] border border-white/10 rounded-lg text-xs font-medium text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
+                <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0c0c0e]/95 backdrop-blur-2xl border border-white/10 rounded-xl text-xs font-semibold text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
                   Expand Sidebar
-                  <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#1a1a2e] border-l border-b border-white/10 rotate-45" />
+                  <div className="absolute top-1/2 -translate-y-1/2 -left-1 w-2 h-2 bg-[#0c0c0e] border-l border-b border-white/10 rotate-45" />
                 </div>
               </>
             )}

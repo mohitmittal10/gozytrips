@@ -234,8 +234,8 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
               >
                 <div className="flex flex-col xl:grid xl:grid-cols-12 gap-3 items-start xl:items-center">
                   
-                  {/* Status */}
-                  <div className="col-span-1 w-full xl:w-auto">
+                  {/* Status & Action Mobile Header */}
+                  <div className="col-span-1 w-full xl:w-auto flex items-center justify-between xl:justify-start">
                     <div className={cn(
                       "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider",
                       status === 'confirmed' 
@@ -244,6 +244,11 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                     )}>
                       <div className={cn("w-1 h-1 rounded-full", status === 'confirmed' ? "bg-emerald-400" : "bg-primary")} />
                       {status}
+                    </div>
+
+                    {/* Action button on Mobile (< xl) */}
+                    <div className="xl:hidden inline-flex items-center justify-center w-7 h-7 rounded-lg bg-white/5 border border-white/5 group-hover:bg-primary group-hover:border-primary transition-all">
+                      <ChevronRight className="w-3.5 h-3.5 text-primary/60 group-hover:text-white" />
                     </div>
                   </div>
 
@@ -257,20 +262,23 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                     </div>
                   </div>
 
-                  {/* Departure */}
-                  <div className="col-span-2 w-full xl:w-auto flex items-center gap-2 text-zinc-400">
-                    <Calendar className="w-3 h-3 text-primary/70 shrink-0" />
-                    <span className="text-xs font-medium">
-                      {startDate ? format(startDate, "MMM d, yyyy") : "—"}
-                    </span>
-                  </div>
+                  {/* Departure & Modified dates container on mobile */}
+                  <div className="col-span-4 w-full flex flex-wrap items-center gap-4 xl:contents">
+                    {/* Departure */}
+                    <div className="col-span-2 flex items-center gap-1.5 text-zinc-400">
+                      <Calendar className="w-3 h-3 text-primary/70 shrink-0" />
+                      <span className="text-xs font-medium">
+                        {startDate ? format(startDate, "MMM d, yyyy") : "—"}
+                      </span>
+                    </div>
 
-                  {/* Last Modified */}
-                  <div className="col-span-2 w-full xl:w-auto flex items-center gap-2 text-zinc-400">
-                    <Clock className="w-3 h-3 text-primary/70 shrink-0" />
-                    <span className="text-xs font-medium">
-                      {format(new Date(item.last_activity_at), "MMM d, HH:mm")}
-                    </span>
+                    {/* Last Modified */}
+                    <div className="col-span-2 flex items-center gap-1.5 text-zinc-400">
+                      <Clock className="w-3 h-3 text-primary/70 shrink-0" />
+                      <span className="text-xs font-medium">
+                        {format(new Date(item.last_activity_at), "MMM d, HH:mm")}
+                      </span>
+                    </div>
                   </div>
 
                   {/* ── Financials ── */}
@@ -329,8 +337,8 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                     )}
                   </div>
 
-                  {/* Action */}
-                  <div className="col-span-1 w-full xl:w-auto xl:text-right">
+                  {/* Action button on XL Desktop */}
+                  <div className="hidden xl:block col-span-1 w-full xl:w-auto xl:text-right">
                     <div className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/5 group-hover:bg-primary group-hover:border-primary transition-all">
                       <ChevronRight className="w-4 h-4 text-primary/60 group-hover:text-white" />
                     </div>

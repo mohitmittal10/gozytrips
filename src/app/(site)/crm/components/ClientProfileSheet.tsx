@@ -267,10 +267,10 @@ export const ClientProfileSheet = ({
 
   return (
     <Sheet open={!!selectedClient} onOpenChange={(open) => !open && setSelectedClient(null)}>
-      <SheetContent className="bg-[#080808] border-l border-white/[0.06] text-white w-full sm:max-w-2xl lg:max-w-3xl overflow-y-auto p-0">
+      <SheetContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-white/10 text-white w-full sm:max-w-2xl lg:max-w-3xl overflow-y-auto p-0 shadow-2xl">
 
         {/* ── Sticky Header ── */}
-        <div className="sticky top-0 z-10 bg-[#080808]/95 backdrop-blur-sm border-b border-white/[0.06] px-6 pt-6 pb-4">
+        <div className="sticky top-0 z-10 bg-[#0c0c0e]/95 backdrop-blur-xl border-b border-white/10 px-6 pt-6 pb-4">
           <SheetHeader>
             <SheetTitle className="sr-only">Client Profile</SheetTitle>
             <SheetDescription className="sr-only">Client details and trip history</SheetDescription>
@@ -286,7 +286,7 @@ export const ClientProfileSheet = ({
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-white">{selectedClient.name}</h2>
-                  <p className="text-[11px] text-gray-500 mt-0.5">
+                  <p className="text-[11px] text-zinc-400 mt-0.5">
                     Client since {new Date(selectedClient.created_at).getFullYear()}
                     {selectedClient.allTrips?.length ? ` · ${selectedClient.allTrips.length} trip${selectedClient.allTrips.length > 1 ? "s" : ""}` : ""}
                   </p>
@@ -296,14 +296,14 @@ export const ClientProfileSheet = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 text-xs text-gray-400 hover:text-white hover:bg-white/10 border border-white/10"
+                  className="h-8 text-xs text-zinc-300 hover:text-white hover:bg-white/10 border border-white/10 rounded-xl"
                   onClick={() => { setEditingClient(selectedClient); setIsEditDialogOpen(true); }}
                 >
                   Edit Info
                 </Button>
                 <Button
                   size="sm"
-                  className="h-8 text-xs bg-purple-600/80 hover:bg-purple-600 text-white border-0"
+                  className="h-8 text-xs aurora-gradient text-white border-none rounded-xl font-bold shadow-lg shadow-primary/20 hover:brightness-110"
                   onClick={() => window.open(`/the-lab?clientId=${selectedClient.id}`, "_blank")}
                 >
                   + New Itinerary
@@ -322,13 +322,13 @@ export const ClientProfileSheet = ({
                 { icon: AtSign, label: "Email", value: selectedClient.email },
                 { icon: Phone, label: "Phone", value: selectedClient.phone },
               ].map(({ icon: Icon, label, value }) => (
-                <div key={label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5 flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-white/[0.04] border border-white/[0.06] flex items-center justify-center shrink-0">
-                    <Icon className="w-3.5 h-3.5 text-gray-500" />
+                <div key={label} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl p-3.5 flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                    <Icon className="w-3.5 h-3.5 text-zinc-400" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] text-gray-600 uppercase tracking-wider font-medium">{label}</p>
-                    <p className="text-xs text-gray-200 font-medium truncate mt-0.5">{value || "—"}</p>
+                    <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">{label}</p>
+                    <p className="text-xs text-white font-medium truncate mt-0.5">{value || "—"}</p>
                   </div>
                 </div>
               ))}
@@ -337,10 +337,10 @@ export const ClientProfileSheet = ({
             {/* Tags */}
             {selectedClient.tags && selectedClient.tags.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap">
-                <Tag className="w-3 h-3 text-gray-600 shrink-0" />
+                <Tag className="w-3 h-3 text-zinc-400 shrink-0" />
                 {selectedClient.tags.map((tag: string, idx: number) => (
                   <Badge key={idx} variant="secondary"
-                    className="bg-purple-500/10 text-purple-400 border border-purple-500/15 font-normal px-2 py-0.5 text-[11px]">
+                    className="bg-primary/20 text-white border border-primary/40 font-bold px-2 py-0.5 text-[11px] rounded-full">
                     {tag}
                   </Badge>
                 ))}
@@ -352,13 +352,13 @@ export const ClientProfileSheet = ({
               const logs = parseClientNotes(selectedClient.notes);
               if (logs.length === 0) return null;
               return (
-                <div className="rounded-2xl border border-white/[0.06] bg-white/[0.01] overflow-hidden">
+                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl overflow-hidden shadow-xl">
                   <div className="px-5 pt-5 pb-3">
                     <SectionHeading
                       icon={Mail}
                       label="Communication History"
                       sub="Emails sent & notes added for this client"
-                      iconColor="text-purple-400"
+                      iconColor="text-primary"
                       badge={`${logs.length} record${logs.length > 1 ? "s" : ""}`}
                     />
                     <div className="space-y-2">
@@ -373,7 +373,7 @@ export const ClientProfileSheet = ({
 
             {/* ── Status Audit Trail ── */}
             {selectedClient.latestTripId && (statusHistory[selectedClient.latestTripId]?.length ?? 0) > 0 && (
-              <div className="rounded-2xl border border-white/[0.06] bg-white/[0.01] overflow-hidden">
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl overflow-hidden shadow-xl">
                 <div className="px-5 pt-5 pb-4">
                   <SectionHeading
                     icon={TrendingUp}
@@ -383,12 +383,12 @@ export const ClientProfileSheet = ({
                   />
                   <div className="space-y-0 relative">
                     {/* vertical line */}
-                    <div className="absolute left-[11px] top-3 bottom-3 w-px bg-white/[0.06]" />
+                    <div className="absolute left-[11px] top-3 bottom-3 w-px bg-white/10" />
                     {statusHistory[selectedClient.latestTripId!]?.map((entry, idx) => {
                       const cfg = statusConfig[entry.status?.toLowerCase()] || statusConfig.draft;
                       return (
                         <div key={idx} className="flex items-start gap-4 relative py-2.5">
-                          <div className={cn("w-5 h-5 rounded-full border-2 border-[#080808] flex items-center justify-center shrink-0 z-10 mt-0.5", cfg.bg)}>
+                          <div className={cn("w-5 h-5 rounded-full border-2 border-[#0c0c0e] flex items-center justify-center shrink-0 z-10 mt-0.5", cfg.bg)}>
                             <div className={cn("w-2 h-2 rounded-full", cfg.dot)} />
                           </div>
                           <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
@@ -397,9 +397,9 @@ export const ClientProfileSheet = ({
                                 Moved to{" "}
                                 <span className={cn("font-bold capitalize", cfg.color)}>{entry.status}</span>
                               </p>
-                              <p className="text-[10px] text-gray-600 mt-0.5">by {entry.by}</p>
+                              <p className="text-[10px] text-zinc-400 mt-0.5">by {entry.by}</p>
                             </div>
-                            <span className="text-[10px] text-gray-600 shrink-0">
+                            <span className="text-[10px] text-zinc-400 shrink-0">
                               {new Date(entry.timestamp).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" })}
                             </span>
                           </div>
@@ -412,7 +412,7 @@ export const ClientProfileSheet = ({
             )}
 
             {/* ── Trip History ── */}
-            <div className="rounded-2xl border border-white/[0.06] bg-white/[0.01] overflow-hidden">
+            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl overflow-hidden shadow-xl">
               <div className="px-5 pt-5 pb-2">
                 <SectionHeading
                   icon={Plane}
@@ -424,7 +424,7 @@ export const ClientProfileSheet = ({
               </div>
 
               {selectedClient.allTrips && selectedClient.allTrips.length > 0 ? (
-                <div className="divide-y divide-white/[0.04]">
+                <div className="divide-y divide-white/5">
                   {selectedClient.allTrips.map((trip) => {
                     const tripCost = getTripCost(trip);
                     const start = new Date(trip.start_date);
@@ -447,13 +447,13 @@ export const ClientProfileSheet = ({
                     const cfg = statusConfig[statusKey] || statusConfig.draft;
 
                     return (
-                      <div key={trip.id} className="px-5 py-4 hover:bg-white/[0.02] transition-colors group">
+                      <div key={trip.id} className="px-5 py-4 hover:bg-white/[0.04] transition-colors group">
                         <div className="flex items-start gap-3">
                           {/* Destination + status */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 flex-wrap">
                               <div className="flex items-center gap-1.5">
-                                <MapPin className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                                <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
                                 <p className="text-sm font-semibold text-white">{destLabel}</p>
                               </div>
                               {/* Status pill inline */}
@@ -468,7 +468,7 @@ export const ClientProfileSheet = ({
                                   <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", cfg.dot)} />
                                   <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="bg-[#1a1a2e] border-white/10 text-white">
+                                <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white">
                                   {itineraryStatuses.length > 0
                                     ? itineraryStatuses.map(opt => (
                                         <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
@@ -484,11 +484,11 @@ export const ClientProfileSheet = ({
                             {/* Route */}
                             {trip.starting_location && (
                               <div className="flex items-center gap-1.5 mt-1">
-                                <p className="text-[11px] text-zinc-500">
+                                <p className="text-[11px] text-zinc-400 font-medium">
                                   {trip.starting_location}
                                   {trip.ending_location && trip.ending_location !== trip.starting_location && (
                                     <span className="inline-flex items-center gap-1">
-                                      <ArrowRight className="w-2.5 h-2.5 mx-0.5 inline" />
+                                      <ArrowRight className="w-2.5 h-2.5 mx-0.5 inline text-zinc-400" />
                                       {trip.ending_location}
                                     </span>
                                   )}
@@ -498,25 +498,25 @@ export const ClientProfileSheet = ({
 
                             {/* Meta chips */}
                             <div className="flex items-center gap-3 mt-2">
-                              <div className="flex items-center gap-1 text-[11px] text-zinc-500">
-                                <CalendarDays className="w-3 h-3 shrink-0" />
+                              <div className="flex items-center gap-1 text-[11px] text-zinc-400">
+                                <CalendarDays className="w-3 h-3 shrink-0 text-zinc-400" />
                                 <span>{start.toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</span>
-                                <span className="text-zinc-700">·</span>
-                                <span className="text-zinc-600">{diffDays}D/{diffDays - 1}N</span>
+                                <span className="text-zinc-500">·</span>
+                                <span className="text-zinc-400">{diffDays}D/{diffDays - 1}N</span>
                               </div>
                               {tripCost > 0 && (
-                                <div className="flex items-center gap-1 text-[11px] text-zinc-300 font-semibold">
-                                  <DollarSign className="w-3 h-3 shrink-0" />
+                                <div className="flex items-center gap-1 text-[11px] text-white font-bold">
+                                  <DollarSign className="w-3 h-3 shrink-0 text-emerald-400" />
                                   {formatMoney(tripCost, (agencySettings?.default_currency as any) || DEFAULT_CURRENCY)}
                                 </div>
                               )}
                               {daysLeft > 0 && (
-                                <div className="text-[10px] text-amber-500/80 font-medium">
+                                <div className="text-[10px] text-amber-400 font-semibold">
                                   in {daysLeft}d
                                 </div>
                               )}
                               {daysLeft < 0 && (
-                                <div className="text-[10px] text-zinc-600">
+                                <div className="text-[10px] text-zinc-400">
                                   completed
                                 </div>
                               )}
@@ -524,10 +524,10 @@ export const ClientProfileSheet = ({
                           </div>
 
                           {/* Actions */}
-                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity shrink-0">
                             <Button
                               variant="ghost" size="icon"
-                              className="h-7 w-7 text-zinc-500 hover:text-white hover:bg-white/10 rounded-lg"
+                              className="h-7 w-7 text-zinc-300 hover:text-white hover:bg-white/10 rounded-lg"
                               onClick={() => { setSelectedTripForModal(trip); setShowModal(true); }}
                               title="View itinerary"
                             >
@@ -535,7 +535,7 @@ export const ClientProfileSheet = ({
                             </Button>
                             <Button
                               variant="ghost" size="icon"
-                              className="h-7 w-7 text-zinc-600 hover:text-red-400 hover:bg-red-400/10 rounded-lg"
+                              className="h-7 w-7 text-zinc-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg"
                               onClick={() => handleDeleteTrip(trip.id)}
                               disabled={deleting === trip.id}
                               title="Delete"
@@ -550,13 +550,13 @@ export const ClientProfileSheet = ({
                 </div>
               ) : (
                 <div className="px-5 pb-5">
-                  <div className="text-center py-10 border border-dashed border-white/[0.06] rounded-xl">
-                    <Plane className="w-7 h-7 text-zinc-700 mx-auto mb-2 opacity-40" />
-                    <p className="text-zinc-600 text-sm">No trips yet</p>
+                  <div className="text-center py-10 border border-dashed border-white/10 rounded-xl">
+                    <Plane className="w-7 h-7 text-zinc-400 mx-auto mb-2 opacity-50" />
+                    <p className="text-zinc-400 text-sm">No trips yet</p>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-purple-400 text-xs hover:bg-purple-500/5 mt-2"
+                      className="text-primary text-xs hover:bg-primary/10 mt-2 font-semibold"
                       onClick={() => window.open(`/the-lab?clientId=${selectedClient.id}`, "_blank")}
                     >
                       Create first itinerary

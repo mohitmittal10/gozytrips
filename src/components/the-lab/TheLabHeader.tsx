@@ -1,6 +1,6 @@
 // Sticky top bar including selections, toggles, back/edit buttons.
 import React from 'react';
-import { Eye, Undo2, Redo2, Edit } from 'lucide-react';
+import { Eye, Undo2, Redo2, Edit, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -33,6 +33,7 @@ interface TheLabHeaderProps {
   canRedoNext?: boolean;
   onRedoNext?: () => void;
   currentTripId?: string | null;
+  onOpenAddClient?: () => void;
 }
 
 const TheLabHeader = React.memo(function TheLabHeader({
@@ -48,6 +49,7 @@ const TheLabHeader = React.memo(function TheLabHeader({
   canRedoNext = false,
   onRedoNext,
   currentTripId,
+  onOpenAddClient,
 }: TheLabHeaderProps) {
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
   const storeIsSaving = useLabStore((state) => state.isSaving);
@@ -63,17 +65,41 @@ const TheLabHeader = React.memo(function TheLabHeader({
         <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-6">
           <div className={cn("hidden sm:flex items-center gap-3 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Client</label>
-            <Select value={selectedClientId} onValueChange={setSelectedClientId}>
-              <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-zinc-700 h-9 min-w-[140px] sm:min-w-[180px]">
-                <SelectValue placeholder="No Client Assigned" />
-              </SelectTrigger>
-              <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
-                <SelectItem value="none">No Client Assigned</SelectItem>
-                {clients.map((client) => (
-                  <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-1.5">
+              <Select value={selectedClientId} onValueChange={(val) => {
+                if (val === '__add_new__') {
+                  onOpenAddClient?.();
+                } else {
+                  setSelectedClientId(val);
+                }
+              }}>
+                <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-zinc-700 h-9 min-w-[140px] sm:min-w-[180px]">
+                  <SelectValue placeholder="No Client Assigned" />
+                </SelectTrigger>
+                <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+                  <SelectItem value="none">No Client Assigned</SelectItem>
+                  {clients.map((client) => (
+                    <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
+                  ))}
+                  {onOpenAddClient && (
+                    <SelectItem value="__add_new__" className="text-indigo-400 font-semibold cursor-pointer border-t border-white/10 mt-1 pt-1">
+                      + Add New Client
+                    </SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
+              {onOpenAddClient && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onOpenAddClient}
+                  className="h-9 w-9 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-lg transition-colors flex-shrink-0"
+                  title="Add New Client"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              )}
+            </div>
           </div>
           
           <div className={cn("hidden sm:flex items-center gap-3 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>

@@ -1,3 +1,4 @@
+import React from 'react';
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
 import { extractTripCost } from '@/services/financial/FinancialService';
 
@@ -280,4 +281,29 @@ export const getSanitizedTitle = (title: string, itinerary: TravelItineraryOutpu
     }
     return formatTitleCase(displayTitle);
 };
+
+export const renderFormattedText = (val: any): React.ReactNode => {
+    if (val === undefined || val === null || val === '') return null;
+    const str = String(val);
+    const hasHtmlTags = /<[a-z][\s\S]*>/i.test(str);
+    if (hasHtmlTags) {
+        const cleanHtml = str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        return React.createElement('span', { dangerouslySetInnerHTML: { __html: cleanHtml } });
+    }
+    return str;
+};
+
+export const cleanSummaryText = (str: any): string => {
+    if (str === undefined || str === null || str === '') return '';
+    let cleaned = String(str);
+    let prev = '';
+    while (cleaned !== prev) {
+        prev = cleaned;
+        cleaned = cleaned.replace(/^\s*(?:\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?\s*[-–—•]?\s*)+/gi, '').trim();
+        cleaned = cleaned.replace(/^\s*(?:[-•◆✓✕✦\*\+]\s*|\d+[\.\)]\s*)+/gi, '').trim();
+    }
+    return cleaned;
+};
+
+
 

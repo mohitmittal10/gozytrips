@@ -2,7 +2,7 @@ import React from 'react';
 import type { ThemeProps } from './classic-theme';
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
-import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
+import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate, renderFormattedText } from '../utils';
 import { getThematicBackground } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
@@ -115,7 +115,7 @@ export const MinimalistTheme = ({
                         </div>
                     )}
                     <div style={{ position: "absolute", bottom: "35px", left: "45px", right: "45px", color: "#fff" }}>
-                        <h1 style={{ fontSize: "40px", fontWeight: 900, margin: 0, lineHeight: "1.1", textTransform: "uppercase", letterSpacing: "-1px", fontFamily: "'Outfit', sans-serif" }}>{title}</h1>
+                        <h1 data-field="itinerary.title" style={{ fontSize: "40px", fontWeight: 900, margin: 0, lineHeight: "1.1", textTransform: "uppercase", letterSpacing: "-1px", fontFamily: "'Outfit', sans-serif" }}>{title}</h1>
                     </div>
                 </div>
 
@@ -202,8 +202,8 @@ export const MinimalistTheme = ({
                         ) : null}
                         <div style={{ flex: 1 }}>
                             <h3 style={{ margin: "0 0 10px 0", fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "3px", fontWeight: 700 }}>About Destination</h3>
-                            <h2 style={{ margin: "0 0 20px 0", fontSize: "32px", color: "#0f172a", fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-1px" }}>{aboutPlace.title}</h2>
-                            <p style={{ margin: "0 0 30px 0", color: "#334155", fontSize: "14px", lineHeight: "1.8", fontWeight: 500 }}>{aboutPlace.description}</p>
+                            <h2 data-field="aboutPlace.title" style={{ margin: "0 0 20px 0", fontSize: "32px", color: "#0f172a", fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-1px" }}>{aboutPlace.title}</h2>
+                            <p data-field="aboutPlace.description" style={{ margin: "0 0 30px 0", color: "#334155", fontSize: "14px", lineHeight: "1.8", fontWeight: 500 }}>{renderFormattedText(aboutPlace.description)}</p>
                             
                             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                                 {(aboutPlace.highlights || []).map((hl: string, i: number) => (
@@ -211,7 +211,7 @@ export const MinimalistTheme = ({
                                         <div style={{ flexShrink: 0, width: "16px", height: "16px", borderRadius: "50%", border: `1.5px solid ${accent}`, display: "flex", alignItems: "center", justifyContent: "center", marginTop: "2px" }}>
                                             <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: accent }} />
                                         </div>
-                                        <span style={{ fontSize: "13px", color: "#0f172a", fontWeight: 600 }}>{hl}</span>
+                                        <span data-field={`aboutPlace.highlights[${i}]`} style={{ fontSize: "13px", color: "#0f172a", fontWeight: 600 }}>{renderFormattedText(hl)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -242,7 +242,7 @@ export const MinimalistTheme = ({
                             <div style={{ flex: 1, padding: "10px 0", display: "flex", flexDirection: "column", justifyContent: "center" }}>
                                 <div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}>
                                     <span style={{ fontSize: "36px", fontWeight: 300, color: accent, fontFamily: "'Outfit', sans-serif", lineHeight: 1 }}>{String(index + 1).padStart(2, '0')}</span>
-                                    <h3 style={{ fontSize: "16px", fontWeight: 800, margin: 0, textTransform: "uppercase", letterSpacing: "1px", color: "#0f172a" }}>{formatTitleCase(day.areaFocus)}</h3>
+                                    <h3 data-field={`days[${index}].location`} style={{ fontSize: "16px", fontWeight: 800, margin: 0, textTransform: "uppercase", letterSpacing: "1px", color: "#0f172a" }}>{formatTitleCase(day.areaFocus)}</h3>
                                 </div>
                                 <div style={{ display: "flex", gap: "16px", marginTop: "4px", fontSize: "11px", color: "#64748b", fontWeight: 600 }}>
                                     {day.date && <span>{formatDate(day.date)}</span>}
@@ -262,7 +262,7 @@ export const MinimalistTheme = ({
                                     ) : (
                                         <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: accent, marginTop: "7px", flexShrink: 0 }} />
                                     )}
-                                    <p style={{ flex: 1, margin: 0, fontSize: "13.5px", lineHeight: "1.7", color: "#334155", fontWeight: 500 }}>{step.details}</p>
+                                    <p data-field={`days[${index}].activities[${si}]`} style={{ flex: 1, margin: 0, fontSize: "13.5px", lineHeight: "1.7", color: "#334155", fontWeight: 500 }}>{renderFormattedText(step.details)}</p>
                                 </div>
                             ))}
                         </div>
@@ -370,8 +370,8 @@ export const MinimalistTheme = ({
                                     <h3 style={{ margin: 0, fontSize: "12px", color: "#0f172a", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800 }}>Inclusions</h3>
                                 </div>
                                 <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "10px" }}>
-                                    {inclusionsList.map((inc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#334155", fontWeight: 500 }}><span style={{ color: accent }}>+</span> <span>{inc}</span></li>
+                                     {inclusionsList.map((inc, i) => (
+                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#334155", fontWeight: 500 }}><span style={{ color: accent }}>+</span> <span data-field={`inclusions[${i}]`}>{renderFormattedText(inc)}</span></li>
                                     ))}
                                 </ul>
                             </div>
@@ -383,8 +383,8 @@ export const MinimalistTheme = ({
                                     <h3 style={{ margin: 0, fontSize: "12px", color: "#0f172a", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800 }}>Exclusions</h3>
                                 </div>
                                 <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "10px" }}>
-                                    {exclusionsList.map((exc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#475569", fontWeight: 500 }}><span style={{ color: "#94a3b8" }}>-</span> <span>{exc}</span></li>
+                                     {exclusionsList.map((exc, i) => (
+                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#475569", fontWeight: 500 }}><span style={{ color: "#94a3b8" }}>-</span> <span data-field={`exclusions[${i}]`}>{renderFormattedText(exc)}</span></li>
                                     ))}
                                 </ul>
                             </div>
@@ -508,7 +508,7 @@ export const MinimalistTheme = ({
                             <div style={{ flex: 1 }}>
                                 <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Payment Methods</div>
                                 <div style={{ fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
-                                    {paymentMethodsList.map((p, i) => <div key={i}>- {p}</div>)}
+                                     {paymentMethodsList.map((p, i) => <div key={i}>- <span data-field={`conditions[${i}]`}>{renderFormattedText(p)}</span></div>)}
                                 </div>
                             </div>
                         )}
@@ -516,7 +516,7 @@ export const MinimalistTheme = ({
                             <div style={{ flex: 1 }}>
                                 <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Cancellation Policy</div>
                                 <div style={{ fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
-                                    {cancellationPolicyList.map((p, i) => <div key={i}>- {p}</div>)}
+                                     {cancellationPolicyList.map((p, i) => <div key={i}>- <span data-field={`cancellationPolicy[${i}]`}>{renderFormattedText(p)}</span></div>)}
                                 </div>
                             </div>
                         )}
@@ -526,7 +526,7 @@ export const MinimalistTheme = ({
                     <div style={{ marginTop: "24px", borderTop: "1px solid rgba(15,23,42,0.08)", paddingTop: "20px" }}>
                         <div style={{ fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800, marginBottom: "8px" }}>Terms & Conditions</div>
                         <div style={{ fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
-                            {termsAndConditionsList.map((p, i) => <div key={i}>- {p}</div>)}
+                            {termsAndConditionsList.map((p, i) => <div key={i}>- <span data-field={`terms[${i}]`}>{renderFormattedText(p)}</span></div>)}
                         </div>
                     </div>
                 )}

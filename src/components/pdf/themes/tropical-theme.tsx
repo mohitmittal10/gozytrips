@@ -3,7 +3,7 @@ import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary
 import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from '@/components/hotel-flight-editor';
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
-import { getAgentInfo, getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
+import { getAgentInfo, getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate, renderFormattedText, cleanSummaryText } from '../utils';
 import { calcPricingFromBaseCost } from '@/services/financial';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
 
@@ -878,7 +878,7 @@ export const TropicalTheme = ({
                         <div className="about-content">
                             <span className="capsule-badge">About The Destination</span>
                             <h2>{aboutPlace?.title || (itinerary.itinerary?.[0]?.areaFocus ? `Discover ${itinerary.itinerary[0].areaFocus.split(',')[0]}` : "")}</h2>
-                            {aboutPlace?.description && <p>{aboutPlace.description}</p>}
+                            {aboutPlace?.description && <p>{renderFormattedText(aboutPlace.description)}</p>}
                             <ul className="highlights">
                                 {aboutPlace?.highlights ? (
                                     aboutPlace.highlights.map((highlight: string, idx: number) => (
@@ -886,7 +886,7 @@ export const TropicalTheme = ({
                                             <div className="check-icon">
                                                 <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="2,6 5,9 10,3"/></svg>
                                             </div>
-                                            {highlight}
+                                            {renderFormattedText(highlight)}
                                         </li>
                                     ))
                                 ) : (
@@ -913,7 +913,7 @@ export const TropicalTheme = ({
                                     <span className="day-pill">Day {i + 1}</span>
                                     <div className="timeline-info">
                                         <h4>{formatTitleCase(day.areaFocus)}</h4>
-                                        <p>{daySummaries && daySummaries[i] ? daySummaries[i] : `Highlights of ${day.areaFocus}`}</p>
+                                        <p data-field={`daySummaries[${i}]`}>{renderFormattedText(cleanSummaryText(daySummaries && daySummaries[i] ? daySummaries[i] : (day.timeline?.[0]?.details || `Highlights of ${day.areaFocus}`)))}</p>
                                     </div>
                                 </li>
                             ))}
@@ -952,7 +952,7 @@ export const TropicalTheme = ({
                                                 ) : (
                                                     <span className="num" style={{width: '20px'}}>•</span>
                                                 )}
-                                                <span data-field={`days[${index}].activities[${si}]`}>{step.details}</span>
+                                                <span data-field={`days[${index}].activities[${si}]`}>{renderFormattedText(step.details)}</span>
                                             </li>
                                         ))}
                                     </ul>
@@ -977,7 +977,7 @@ export const TropicalTheme = ({
                                     <h3>Inclusions</h3>
                                     <ul className="card-list">
                                         {inclusionsList.map((inc, i) => (
-                                            <li key={i}><span className="n-blue">{i + 1}.</span><span data-field={`inclusions[${i}]`}>{inc}</span></li>
+                                            <li key={i}><span className="n-blue">{i + 1}.</span><span data-field={`inclusions[${i}]`}>{renderFormattedText(inc)}</span></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -987,7 +987,7 @@ export const TropicalTheme = ({
                                     <h3>Exclusions</h3>
                                     <ul className="card-list">
                                         {exclusionsList.map((exc, i) => (
-                                            <li key={i}><span className="n-grey">{i + 1}.</span><span data-field={`exclusions[${i}]`}>{exc}</span></li>
+                                            <li key={i}><span className="n-grey">{i + 1}.</span><span data-field={`exclusions[${i}]`}>{renderFormattedText(exc)}</span></li>
                                         ))}
                                     </ul>
                                 </div>
@@ -1215,7 +1215,7 @@ export const TropicalTheme = ({
                                             <span className="policy-label">Payment Methods</span>
                                             <ul className="policy-list">
                                                 {paymentMethodsList.map((pol, i) => (
-                                                    <li data-field={`conditions[${i}]`} key={i}>{pol}</li>
+                                                    <li data-field={`conditions[${i}]`} key={i}>{renderFormattedText(pol)}</li>
                                                 ))}
                                             </ul>
                                         </div>
@@ -1225,7 +1225,7 @@ export const TropicalTheme = ({
                                             <span className="policy-label">Cancellation Policy</span>
                                             <ul className="policy-list">
                                                 {cancellationPolicyList.map((pol, i) => (
-                                                    <li data-field={`cancellationPolicy[${i}]`} key={i}>{pol}</li>
+                                                    <li data-field={`cancellationPolicy[${i}]`} key={i}>{renderFormattedText(pol)}</li>
                                                 ))}
                                             </ul>
                                         </div>
@@ -1237,7 +1237,7 @@ export const TropicalTheme = ({
                                     <span className="policy-label" style={{ display: "block", marginBottom: "12px" }}>Terms & Conditions</span>
                                     <ul className="policy-list">
                                         {termsAndConditionsList.map((pol, i) => (
-                                            <li data-field={`terms[${i}]`} key={i}>{pol}</li>
+                                            <li data-field={`terms[${i}]`} key={i}>{renderFormattedText(pol)}</li>
                                         ))}
                                     </ul>
                                 </div>

@@ -139,17 +139,17 @@ const StepDaywisePlan = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
           const formattedDate = format(dayDate, "eee, MMM dd");
 
           return (
-            <div key={index} className="flex gap-4 items-center p-2.5 bg-white/5 border border-white/10 rounded-xl hover:border-primary/30 transition-all duration-200">
-              <div className="min-w-[80px]">
+            <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-2.5 bg-white/5 border border-white/10 rounded-xl hover:border-primary/30 transition-all duration-200">
+              <div className="min-w-[80px] shrink-0">
                 <span className="text-[10px] font-bold text-zinc-400 block">DAY {index + 1}</span>
                 <span className="text-[9px] text-zinc-500 font-medium block mt-0.5">{formattedDate}</span>
               </div>
-              <div className="flex-1">
+              <div className="flex-1 w-full min-w-0">
                 <Input
                   placeholder={`e.g., Delhi arrival, sightseeing at Red Fort`}
                   value={localDays[index] || ""}
                   onChange={(e) => handleDayChange(index, e.target.value)}
-                  className="h-9 text-xs border-white/5 focus:border-primary/50 bg-white/5 backdrop-blur rounded-lg"
+                  className="h-9 text-xs border-white/5 focus:border-primary/50 bg-white/5 backdrop-blur rounded-lg w-full"
                 />
               </div>
             </div>
@@ -260,7 +260,7 @@ const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
 
           return (
             <div key={field.id} className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-primary/30 transition-all duration-200 space-y-2">
-              <div className="flex justify-between items-center">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0">
                 <span className="text-[10px] font-bold text-zinc-400">NIGHT {index + 1} ({formattedDate})</span>
                 <div className="flex items-center gap-1">
                   <span className="text-[9px] text-zinc-500 mr-1">Rating:</span>
@@ -270,7 +270,7 @@ const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                 <div className="space-y-1">
                   <label className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold">Hotel / Stay Name</label>
                   <Input
@@ -330,7 +330,7 @@ const StepDates = React.memo(({ form, sidebarMode }: { form: UseFormReturn<TheLa
   }, [startDate]);
 
   return (
-    <div className={cn("grid gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700", sidebarMode ? "grid-cols-1" : "grid-cols-2")}>
+    <div className={cn("grid gap-4 animate-in fade-in slide-in-from-bottom-2 duration-700", sidebarMode ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2")}>
       <FormField control={form.control} name="startDate" render={({ field }) => (
         <FormItem className="space-y-1">
           <FormLabel className={LabelClass}>Start Date</FormLabel>
@@ -388,7 +388,7 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <FormField control={form.control} name="tripType" render={({ field }) => (
           <FormItem className="space-y-1">
             <FormLabel className={LabelClass}>Trip Type</FormLabel>
@@ -468,7 +468,7 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
         }} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <FormField control={form.control} name="mustInclude" render={({ field }) => (
           <FormItem className="space-y-1">
             <FormLabel className={LabelClass}>Must-Include</FormLabel>
@@ -489,7 +489,7 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
         )} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <FormField control={form.control} name="leisureTime" render={({ field }) => (
           <FormItem className="flex flex-row items-center justify-between rounded-xl border border-white/10 bg-white/5 backdrop-blur px-3 py-2">
             <FormLabel className="text-[10px] font-bold uppercase tracking-[0.1em] text-zinc-500 m-0">Leisure Time</FormLabel>

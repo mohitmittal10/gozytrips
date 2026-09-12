@@ -429,22 +429,22 @@ export function UnifiedSettings() {
 
       <Tabs defaultValue="account" className="w-full flex flex-col md:flex-row gap-6">
         <TabsList className="bg-transparent border-none w-full md:w-56 flex flex-row md:flex-col justify-start overflow-x-auto hide-scrollbar space-x-2 md:space-x-0 md:space-y-2 shrink-0 h-auto p-0">
-          <TabsTrigger value="account" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all">
+          <TabsTrigger value="account" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all whitespace-nowrap shrink-0">
             <User className="w-4 h-4 mr-2 shrink-0" /> Account
           </TabsTrigger>
-          <TabsTrigger value="profile" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all">
+          <TabsTrigger value="profile" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all whitespace-nowrap shrink-0">
             <Home className="w-4 h-4 mr-2 text-blue-400 shrink-0" /> Profile & Brand
           </TabsTrigger>
-          <TabsTrigger value="financials" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all">
+          <TabsTrigger value="financials" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all whitespace-nowrap shrink-0">
             <DollarSign className="w-4 h-4 mr-2 text-emerald-400 shrink-0" /> Costing Defaults
           </TabsTrigger>
-          <TabsTrigger value="operations" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all">
+          <TabsTrigger value="operations" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all whitespace-nowrap shrink-0">
             <Settings className="w-4 h-4 mr-2 text-orange-400 shrink-0" /> Operations
           </TabsTrigger>
-          <TabsTrigger value="legal" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all">
+          <TabsTrigger value="legal" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all whitespace-nowrap shrink-0">
             <Shield className="w-4 h-4 mr-2 text-purple-400 shrink-0" /> Legal & Compliance
           </TabsTrigger>
-          <TabsTrigger value="data" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all">
+          <TabsTrigger value="data" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all whitespace-nowrap shrink-0">
             <Cloud className="w-4 h-4 mr-2 text-cyan-400 shrink-0" /> Integrations
           </TabsTrigger>
         </TabsList>

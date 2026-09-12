@@ -71,8 +71,8 @@ export function CrmApp() {
                                     { id: 'client-forms', icon: FileText, label: 'Client Forms' },
                                     { id: 'archive', icon: Archive, label: 'Archive' }
                                 ].map((tab) => (
-                                    <Button key={tab.id} onClick={() => setActiveTab(tab.id)} variant={activeTab === tab.id ? 'secondary' : 'ghost'} className={cn("w-full justify-start h-10 px-3 transition-all group", activeTab === tab.id ? "bg-zinc-800/90 text-zinc-100 border border-zinc-700/60 font-semibold hover:bg-zinc-700" : "text-gray-400 hover:text-white hover:bg-white/5", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
-                                        <tab.icon className={cn("w-4 h-4 shrink-0", activeTab === tab.id ? "text-zinc-100" : "text-gray-500 group-hover:text-white")} />
+                                    <Button key={tab.id} onClick={() => setActiveTab(tab.id)} variant={activeTab === tab.id ? 'secondary' : 'ghost'} className={cn("w-full justify-start h-10 px-3 transition-all group cursor-pointer", activeTab === tab.id ? "bg-primary/20 text-white border border-primary/40 font-bold shadow-lg shadow-primary/20" : "text-zinc-400 hover:text-white hover:bg-white/5", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
+                                        <tab.icon className={cn("w-4 h-4 shrink-0", activeTab === tab.id ? "text-primary" : "text-zinc-400 group-hover:text-white")} />
                                         <span className={cn(
                                             "text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden",
                                             isSidebarExpanded ? "ml-3 w-32 opacity-100" : "w-0 opacity-0 ml-0"
@@ -83,7 +83,7 @@ export function CrmApp() {
                                 ))}
                             </nav>
                             <div className="pt-4 border-t border-white/[0.08] px-1 space-y-1.5 mt-auto">
-                                <Button onClick={() => setIsSidebarExpanded(!isSidebarExpanded)} variant="ghost" className={cn("w-full justify-start h-10 px-3 hover:bg-white/10 transition-all group text-gray-400 hover:text-white", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
+                                <Button onClick={() => setIsSidebarExpanded(!isSidebarExpanded)} variant="ghost" className={cn("w-full justify-start h-10 px-3 hover:bg-white/10 transition-all group text-zinc-400 hover:text-white cursor-pointer", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
                                     <ChevronRight className={cn("w-4 h-4 shrink-0 transition-transform duration-300", isSidebarExpanded ? "rotate-180" : "")} />
                                     <span className={cn(
                                         "text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden",
@@ -116,13 +116,13 @@ export function CrmApp() {
                                         key={tab.id}
                                         onClick={() => setActiveTab(tab.id)}
                                         className={cn(
-                                            "flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-medium transition-all shrink-0 border",
+                                            "flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all shrink-0 border cursor-pointer",
                                             activeTab === tab.id
-                                                ? "bg-zinc-800 text-zinc-100 border-zinc-700 font-semibold"
-                                                : "bg-white/5 text-gray-400 border-white/5 hover:bg-white/10 hover:text-gray-200"
+                                                ? "bg-primary/20 text-white border-primary/40 shadow-lg shadow-primary/20 font-bold"
+                                                : "bg-white/5 text-zinc-400 border-white/10 hover:bg-white/10 hover:text-white"
                                         )}
                                     >
-                                        <tab.icon className="w-3.5 h-3.5" />
+                                        <tab.icon className={cn("w-3.5 h-3.5", activeTab === tab.id ? "text-primary" : "text-zinc-400")} />
                                         {tab.label}
                                     </button>
                                 ))}
@@ -135,20 +135,20 @@ export function CrmApp() {
                         {/* Header */}
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                             <div>
-                                <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
-                                    {activeTab === 'dashboard' && <LayoutDashboard className="w-8 h-8 text-white" />}
-                                    {activeTab === 'clients' && <Users className="w-8 h-8 text-white" />}
-                                    {activeTab === 'trips' && <Compass className="w-8 h-8 text-white" />}
-                                    {activeTab === 'bookings' && <Ticket className="w-8 h-8 text-white" />}
-                                    {activeTab === 'archive' && <Archive className="w-8 h-8 text-white" />}
-                                    {activeTab === 'finance' && <DollarSign className="w-8 h-8 text-white" />}
-                                    {activeTab === 'enquiry' && <Info className="w-8 h-8 text-white" />}
-                                    {activeTab === 'client-forms' && <FileText className="w-8 h-8 text-white" />}
-                                    {activeTab === 'timeline' && <Calendar className="w-8 h-8 text-white" />}
-                                    {activeTab === 'itineraries' && <Compass className="w-8 h-8 text-white" />}
+                                <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+                                    {activeTab === 'dashboard' && <LayoutDashboard className="w-8 h-8 text-primary" />}
+                                    {activeTab === 'clients' && <Users className="w-8 h-8 text-primary" />}
+                                    {activeTab === 'trips' && <Compass className="w-8 h-8 text-primary" />}
+                                    {activeTab === 'bookings' && <Ticket className="w-8 h-8 text-primary" />}
+                                    {activeTab === 'archive' && <Archive className="w-8 h-8 text-primary" />}
+                                    {activeTab === 'finance' && <DollarSign className="w-8 h-8 text-primary" />}
+                                    {activeTab === 'enquiry' && <Info className="w-8 h-8 text-primary" />}
+                                    {activeTab === 'client-forms' && <FileText className="w-8 h-8 text-primary" />}
+                                    {activeTab === 'timeline' && <Calendar className="w-8 h-8 text-primary" />}
+                                    {activeTab === 'itineraries' && <Compass className="w-8 h-8 text-primary" />}
                                     {activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace('-', ' ')}
                                 </h1>
-                                <p className="text-zinc-400 text-sm mt-1">
+                                <p className="text-zinc-400 text-sm mt-1 font-medium">
                                     {activeTab === 'dashboard' ? 'Overview of your workspace performance' :
                                      activeTab === 'clients' ? 'Manage your client base and contact details' :
                                      activeTab === 'trips' ? 'Monitor your active trip pipeline' :
@@ -164,7 +164,7 @@ export function CrmApp() {
                                         if (activeTab === 'bookings') context.setIsBookingDialogOpen(true);
                                         else context.setIsAddClientOpen(true);
                                     }} 
-                                    className="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700/80 rounded-lg text-sm font-semibold transition-all shadow-sm flex items-center gap-2 h-10"
+                                    className="px-6 py-2.5 aurora-gradient text-white border-none rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary/25 hover:brightness-110 active:scale-98 flex items-center gap-2 h-11 cursor-pointer"
                                 >
                                     <Plus className="w-4 h-4" /> 
                                     {activeTab === 'bookings' ? 'New Booking' : 'Add Client'}
@@ -177,13 +177,13 @@ export function CrmApp() {
                                 <div className="space-y-6">
                                     {/* Responsive Modern Filter Block (only for clients/trips/archive) */}
                                     {(activeTab === 'clients' || activeTab === 'trips' || activeTab === 'archive') && (
-                                    <div className="bg-[#0c0c0e] border border-white/10 rounded-2xl p-4 lg:p-5 shadow-lg relative overflow-hidden">
+                                    <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 lg:p-5 shadow-xl relative overflow-hidden">
                                         <div className="flex flex-col lg:flex-row gap-4 relative z-10 w-full mb-4">
                                             <div className="relative flex-1 w-full min-w-0">
-                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-gray-400" />
+                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-[18px] h-[18px] text-zinc-400" />
                                                 <Input
                                                     placeholder={activeTab === 'clients' ? "Search clients by name, email, phone, tags..." : "Search trips, destinations, notes..."}
-                                                    className="w-full pl-11 h-12 bg-black/60 border-white/10 text-white placeholder:text-gray-500 focus-visible:ring-zinc-600 rounded-xl shadow-inner text-sm transition-all hover:bg-black/80"
+                                                    className="w-full pl-11 h-12 bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-primary/50 rounded-xl shadow-inner text-sm transition-all hover:bg-white/10"
                                                     value={filters.searchQuery}
                                                     onChange={(e) => filters.setSearchQuery(e.target.value)}
                                                 />
@@ -193,10 +193,10 @@ export function CrmApp() {
                                                 {activeTab === 'clients' && (
                                                     <Select value={filters.clientsActivityFilter} onValueChange={filters.setClientsActivityFilter}>
                                                         <SelectTrigger className="w-[150px] lg:w-[160px] bg-white/5 border-white/10 text-white h-12 rounded-xl">
-                                                            <Filter className="w-4 h-4 mr-2 text-gray-400" />
+                                                            <Filter className="w-4 h-4 mr-2 text-primary" />
                                                             <SelectValue placeholder="All Activity" />
                                                         </SelectTrigger>
-                                                        <SelectContent className="bg-[#0c0c0e] border-white/10 text-white">
+                                                        <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white">
                                                             <SelectItem value="all">All Activity</SelectItem>
                                                             <SelectItem value="has_trips">Has Trips</SelectItem>
                                                             <SelectItem value="no_trips">No Trips</SelectItem>
@@ -209,10 +209,10 @@ export function CrmApp() {
                                                     <>
                                                         <Select value={filters.tripsPipelineFilter} onValueChange={filters.setTripsPipelineFilter}>
                                                             <SelectTrigger className="w-[150px] lg:w-[170px] bg-white/5 border-white/10 text-white h-12 rounded-xl">
-                                                                <ListFilter className="w-4 h-4 mr-2 text-gray-400" />
+                                                                <ListFilter className="w-4 h-4 mr-2 text-primary" />
                                                                 <SelectValue placeholder="Pipeline Stage" />
                                                             </SelectTrigger>
-                                                            <SelectContent className="bg-[#0c0c0e] border-white/10 text-white">
+                                                            <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white">
                                                                 <SelectItem value="all">All Stages</SelectItem>
                                                                 {itineraryStatuses.length > 0 ? (
                                                                     itineraryStatuses.filter(opt => ['draft', 'proposed', 'sent', 'booked'].includes(opt.value)).map(opt => (
@@ -232,7 +232,7 @@ export function CrmApp() {
                                                         <div className="flex border border-white/10 rounded-xl overflow-hidden h-12 bg-white/5">
                                                             <button
                                                                 onClick={() => filters.setTripsViewMode('table')}
-                                                                className={cn("px-4 transition-colors flex items-center justify-center", filters.tripsViewMode === 'table' ? "bg-zinc-800 text-zinc-100 border-r border-zinc-700 font-medium" : "text-gray-500 hover:text-white hover:bg-white/5")}
+                                                                className={cn("px-4 transition-colors flex items-center justify-center cursor-pointer", filters.tripsViewMode === 'table' ? "bg-primary/20 text-white border-r border-primary/40 font-bold" : "text-zinc-400 hover:text-white hover:bg-white/5")}
                                                                 title="List View"
                                                             >
                                                                 <List className="w-[18px] h-[18px]" />
@@ -240,7 +240,7 @@ export function CrmApp() {
                                                             <div className="w-px h-full bg-white/10" />
                                                             <button
                                                                 onClick={() => filters.setTripsViewMode('kanban')}
-                                                                className={cn("px-4 transition-colors flex items-center justify-center", filters.tripsViewMode === 'kanban' ? "bg-zinc-800 text-zinc-100 border-l border-zinc-700 font-medium" : "text-gray-500 hover:text-white hover:bg-white/5")}
+                                                                className={cn("px-4 transition-colors flex items-center justify-center cursor-pointer", filters.tripsViewMode === 'kanban' ? "bg-primary/20 text-white border-l border-primary/40 font-bold" : "text-zinc-400 hover:text-white hover:bg-white/5")}
                                                                 title="Kanban Board"
                                                             >
                                                                 <LayoutGrid className="w-[18px] h-[18px]" />
@@ -253,10 +253,10 @@ export function CrmApp() {
                                                     variant="outline"
                                                     onClick={dataHook.actions.handleRefreshClients}
                                                     disabled={dataHook.loading.isRefreshing || dataHook.loading.clientsLoading}
-                                                    className="border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white h-12 px-4 rounded-xl shrink-0"
+                                                    className="border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white h-12 px-4 rounded-xl shrink-0 cursor-pointer"
                                                 >
-                                                    <RefreshCw className={cn("w-4 h-4", (dataHook.loading.isRefreshing || dataHook.loading.clientsLoading) ? "animate-spin" : "mr-2")} />
-                                                    <span className="hidden sm:inline">Refresh</span>
+                                                    <RefreshCw className={cn("w-4 h-4 text-primary", (dataHook.loading.isRefreshing || dataHook.loading.clientsLoading) ? "animate-spin" : "mr-2")} />
+                                                    <span className="hidden sm:inline font-semibold">Refresh</span>
                                                 </Button>
                                             </div>
                                         </div>

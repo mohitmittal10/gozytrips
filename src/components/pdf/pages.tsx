@@ -3,7 +3,7 @@ import type { PricingConfig } from '@/types/pricing';
 import type { HotelInfo, FlightInfo } from '@/components/hotel-flight-editor';
 import type { PdfTheme } from './theme-config';
 import { formatMoneyWithDecimals } from '@/lib/utils/currency';
-import { formatPlural, getAgentInfo, formatDate, formatTitleCase } from './utils';
+import { formatPlural, getAgentInfo, formatDate, formatTitleCase, renderFormattedText, cleanSummaryText } from './utils';
 import { PdfFlightBlock, PdfHotelBlock, type PdfLogisticsBlockStyle, groupHotelsByName } from './shared-blocks';
 import { calcPricingFromBaseCost } from '@/services/financial';
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
@@ -547,13 +547,15 @@ export const PdfDaywiseIndex = ({
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 {itinerary.itinerary.map((day, index) => {
                     // Priority: AI-generated summary → first timeline detail (truncated) → fallback label
-                    const summary = (daySummaries && daySummaries[index] && daySummaries[index].trim())
+                    const rawSummary = (daySummaries && daySummaries[index] && daySummaries[index].trim())
                         ? daySummaries[index]
                         : day.timeline?.[0]?.details
                             ? day.timeline[0].details.length > 80
                                 ? `${day.timeline[0].details.substring(0, 77)}…`
                                 : day.timeline[0].details
                             : 'Leisure & free exploration';
+
+                    const summary = cleanSummaryText(rawSummary);
 
                     return (
                         <div key={index} style={{ 
@@ -593,8 +595,8 @@ export const PdfDaywiseIndex = ({
                                         </span>
                                     )}
                                 </div>
-                                <p style={{ margin: 0, fontSize: "13px", color: styles.bodyTextColor, lineHeight: "1.6", fontStyle: "italic" }}>
-                                    {summary}
+                                <p data-field={`daySummaries[${index}]`} style={{ margin: 0, fontSize: "13px", color: styles.bodyTextColor, lineHeight: "1.6", fontStyle: "italic" }}>
+                                    {renderFormattedText(summary)}
                                 </p>
                             </div>
                         </div>

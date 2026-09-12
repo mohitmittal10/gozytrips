@@ -2,7 +2,7 @@ import React from 'react';
 import type { ThemeProps } from './classic-theme';
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
-import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
+import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate, renderFormattedText } from '../utils';
 import { getThematicBackground, glassStyles } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
@@ -172,14 +172,14 @@ export const EditorialTheme = ({
                         ) : null}
                         <div style={{ flex: 1 }}>
                             <h3 style={{ margin: "0 0 16px 0", fontSize: "11px", color: gold, textTransform: "uppercase", letterSpacing: "3px", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>About The Destination</h3>
-                            <h2 style={{ margin: "0 0 24px 0", fontSize: "32px", color: "#0f172a", fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: "normal" }}>{aboutPlace.title}</h2>
-                            <p style={{ margin: "0 0 30px 0", color: "#475569", fontSize: "14.5px", lineHeight: "1.9", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{aboutPlace.description}</p>
+                            <h2 data-field="aboutPlace.title" style={{ margin: "0 0 24px 0", fontSize: "32px", color: "#0f172a", fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: "normal" }}>{aboutPlace.title}</h2>
+                            <p data-field="aboutPlace.description" style={{ margin: "0 0 30px 0", color: "#475569", fontSize: "14.5px", lineHeight: "1.9", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{renderFormattedText(aboutPlace.description)}</p>
                             
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
                                 {(aboutPlace.highlights || []).map((hl: string, i: number) => (
                                     <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
                                         <div style={{ flexShrink: 0, width: "4px", height: "4px", borderRadius: "50%", background: gold, marginTop: "8px" }} />
-                                        <span style={{ fontSize: "13.5px", color: "#334155", lineHeight: "1.6", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{hl}</span>
+                                        <span data-field={`aboutPlace.highlights[${i}]`} style={{ fontSize: "13.5px", color: "#334155", lineHeight: "1.6", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{renderFormattedText(hl)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -203,13 +203,13 @@ export const EditorialTheme = ({
                             <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(15,23,42,0.85) 15%, transparent)" }} />
                             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "30px 35px" }}>
                                 <p style={{ color: gold, fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase", margin: "0 0 6px 0", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800 }}>Day {String(index + 1).padStart(2, '0')} • {formatDate(day.date)}</p>
-                                <h3 style={{ color: "white", fontSize: "28px", fontWeight: "normal", margin: 0, fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>{formatTitleCase(day.areaFocus)}</h3>
+                                <h3 data-field={`days[${index}].location`} style={{ color: "white", fontSize: "28px", fontWeight: "normal", margin: 0, fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>{formatTitleCase(day.areaFocus)}</h3>
                             </div>
                         </div>
                     ) : (
                         <div style={{ marginBottom: "20px", paddingBottom: "12px", borderBottom: `2px solid ${gold}` }}>
                             <p style={{ color: gold, fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase", margin: "0 0 4px 0", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800 }}>Day {String(index + 1).padStart(2, '0')} • {formatDate(day.date)}</p>
-                            <h3 style={{ color: "#0f172a", fontSize: "28px", fontWeight: "normal", margin: 0, fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>{formatTitleCase(day.areaFocus)}</h3>
+                            <h3 data-field={`days[${index}].location`} style={{ color: "#0f172a", fontSize: "28px", fontWeight: "normal", margin: 0, fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>{formatTitleCase(day.areaFocus)}</h3>
                         </div>
                     )}
 
@@ -222,7 +222,7 @@ export const EditorialTheme = ({
                                 ) : (
                                     <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: gold, marginTop: "10px", flexShrink: 0 }} />
                                 )}
-                                <p style={{ fontSize: "15px", lineHeight: "1.85", color: "#334155", margin: 0, fontWeight: 500, flex: 1 }}>{step.details}</p>
+                                <p data-field={`days[${index}].activities[${si}]`} style={{ fontSize: "15px", lineHeight: "1.85", color: "#334155", margin: 0, fontWeight: 500, flex: 1 }}>{renderFormattedText(step.details)}</p>
                             </div>
                         ))}
                     </div>
@@ -317,7 +317,7 @@ export const EditorialTheme = ({
                                 <h3 style={{ margin: "0 0 24px 0", fontSize: "24px", color: "#0f172a", fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: "normal", borderBottom: "1px solid rgba(184,134,11,0.2)", paddingBottom: "15px" }}>Inclusions</h3>
                                 <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "16px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                     {inclusionsList.map((inc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "15px", fontSize: "13.5px", color: "#334155", lineHeight: "1.6" }}><span style={{ color: gold, fontSize: "16px" }}>•</span> <span>{inc}</span></li>
+                                        <li key={i} style={{ display: "flex", gap: "15px", fontSize: "13.5px", color: "#334155", lineHeight: "1.6" }}><span style={{ color: gold, fontSize: "16px" }}>•</span> <span>{renderFormattedText(inc)}</span></li>
                                     ))}
                                 </ul>
                             </div>
@@ -327,7 +327,7 @@ export const EditorialTheme = ({
                                 <h3 style={{ margin: "0 0 24px 0", fontSize: "24px", color: "#0f172a", fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: "normal", borderBottom: "1px solid rgba(15,23,42,0.1)", paddingBottom: "15px" }}>Exclusions</h3>
                                 <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "16px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                                     {exclusionsList.map((exc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "15px", fontSize: "13.5px", color: "#475569", lineHeight: "1.6" }}><span style={{ color: "#94a3b8", fontSize: "16px" }}>•</span> <span>{exc}</span></li>
+                                        <li key={i} style={{ display: "flex", gap: "15px", fontSize: "13.5px", color: "#475569", lineHeight: "1.6" }}><span style={{ color: "#94a3b8", fontSize: "16px" }}>•</span> <span>{renderFormattedText(exc)}</span></li>
                                     ))}
                                 </ul>
                             </div>
@@ -453,7 +453,7 @@ export const EditorialTheme = ({
                                     <div style={{ flex: 1 }}>
                                         <h3 style={{ margin: "0 0 15px 0", fontSize: "11px", color: "#0f172a", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 700 }}>Payment Methods</h3>
                                         <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.7" }}>
-                                            {paymentMethodsList.map((p, i) => <div key={i}>{p}</div>)}
+                                            {paymentMethodsList.map((p, i) => <div key={i}><span data-field={`conditions[${i}]`}>{renderFormattedText(p)}</span></div>)}
                                         </div>
                                     </div>
                                 )}
@@ -461,7 +461,7 @@ export const EditorialTheme = ({
                                     <div style={{ flex: 1 }}>
                                         <h3 style={{ margin: "0 0 15px 0", fontSize: "11px", color: "#0f172a", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 700 }}>Cancellation Policy</h3>
                                         <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.7" }}>
-                                            {cancellationPolicyList.map((p, i) => <div key={i}>{p}</div>)}
+                                            {cancellationPolicyList.map((p, i) => <div key={i}><span data-field={`cancellationPolicy[${i}]`}>{renderFormattedText(p)}</span></div>)}
                                         </div>
                                     </div>
                                 )}
@@ -471,7 +471,7 @@ export const EditorialTheme = ({
                             <div style={{ marginTop: "32px", borderTop: "1px solid rgba(15,23,42,0.08)", paddingTop: "24px" }}>
                                 <h3 style={{ margin: "0 0 15px 0", fontSize: "11px", color: "#0f172a", textTransform: "uppercase", letterSpacing: "2px", fontWeight: 700 }}>Terms & Conditions</h3>
                                 <div style={{ fontSize: "13px", color: "#475569", lineHeight: "1.7" }}>
-                                    {termsAndConditionsList.map((p, i) => <div key={i}>{p}</div>)}
+                                    {termsAndConditionsList.map((p, i) => <div key={i}><span data-field={`terms[${i}]`}>{renderFormattedText(p)}</span></div>)}
                                 </div>
                             </div>
                         )}

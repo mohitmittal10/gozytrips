@@ -16,6 +16,8 @@ import { useAuth } from "@/contexts/auth-context";
 import { createClient } from "@/lib/supabase/client";
 import { updateItineraryStatus } from "@/lib/services/itinerary-status";
 import { useClients } from "@/lib/hooks/use-clients";
+import { useToast } from "@/hooks/use-toast";
+import { ClientDialog } from "@/components/client-dialog";
 import { formSchema, type TheLabFormValues, type ActiveLabTab } from "@/types/the-lab";
 import { theLabSteps, loadingTexts } from "@/constants/the-lab";
 import { useItineraryGeneration } from "@/hooks/the-lab/useItineraryGeneration";
@@ -93,12 +95,35 @@ export default function TheLab() {
   const [preRenderStage, setPreRenderStage] = useState('');
 
   // Modular Hooks
-  const { clients, fetchClients } = useClients();
+  const { toast } = useToast();
+  const [isAddClientOpen, setIsAddClientOpen] = useState(false);
+  const { clients, fetchClients, createClient: createNewClient } = useClients();
   const { user, agencySettings } = useAuth();
   const supabase = createClient();
   const [currentTripId, setCurrentTripId] = useState<string | null>(itineraryIdFromUrl);
   const { loadedData, isLoading, saveAll, saveNow, resetForNewTrip } = useItineraryPersistence({ currentTripId, setCurrentTripId });
   const { isGenerating, itinerary, setItinerary, generate } = useItineraryGeneration();
+
+  const handleCreateClient = useCallback(async (clientData: any) => {
+    try {
+      const newClient = await createNewClient(clientData);
+      if (newClient?.id) {
+        useLabStore.getState().setSelectedClientId(newClient.id);
+      }
+      toast({
+        title: "Client Created",
+        description: `Client "${clientData.name}" has been created and assigned to this trip.`,
+      });
+    } catch (err: any) {
+      console.error("Failed to create client in The Lab:", err);
+      toast({
+        variant: "destructive",
+        title: "Failed to Create Client",
+        description: err?.message || "An error occurred while creating the client.",
+      });
+      throw err;
+    }
+  }, [createNewClient, toast]);
 
   // ── Itinerary History (undo / redo) ──────────────────────────────────────────
   // Stores previous itinerary snapshots so the user can revert one change at a time.
@@ -673,6 +698,7 @@ export default function TheLab() {
               canRedoNext={canRedoNext}
               onRedoNext={handleRedoNext}
               currentTripId={currentTripId}
+              onOpenAddClient={() => setIsAddClientOpen(true)}
             />
           </div>
         </div>
@@ -683,7 +709,7 @@ export default function TheLab() {
         isDesigningNew ? "mt-4 lg:mt-0 lg:pt-4" : "mt-4 lg:mt-8"
       )}>
         <div className={cn("transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
-          <TheLabMobileTabs activeLabTab={activeLabTab} setActiveLabTab={setActiveLabTab} clients={clients} selectedClientId={selectedClientId} setSelectedClientId={setSelectedClientId} selectedStatus={selectedStatus} setSelectedStatus={handleStatusChangeAction} handleCreateNew={handleCreateNew} />
+          <TheLabMobileTabs activeLabTab={activeLabTab} setActiveLabTab={setActiveLabTab} clients={clients} selectedClientId={selectedClientId} setSelectedClientId={setSelectedClientId} selectedStatus={selectedStatus} setSelectedStatus={handleStatusChangeAction} handleCreateNew={handleCreateNew} onOpenAddClient={() => setIsAddClientOpen(true)} />
         </div>
         
         <div className="flex flex-row items-start gap-4 lg:gap-6 w-full">
@@ -774,6 +800,7 @@ export default function TheLab() {
                   finalTotal={finalTotal}
                   currencySymbol={currencySymbol}
                   tripMetadata={tripMetadata}
+                  onOpenAddClient={() => setIsAddClientOpen(true)}
                 />
               </div>
             )}
@@ -814,6 +841,13 @@ export default function TheLab() {
         progress={preRenderProgress}
         stage={preRenderStage}
         title={tripTitle}
+      />
+
+      {/* Add Client Dialog */}
+      <ClientDialog
+        isOpen={isAddClientOpen}
+        onOpenChange={setIsAddClientOpen}
+        onSave={handleCreateClient}
       />
 
     </section>

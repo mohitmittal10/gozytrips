@@ -88,64 +88,89 @@ const TravelItineraryOutputSchema = z.object({
 
 export type TravelItineraryOutput = z.infer<typeof TravelItineraryOutputSchema>;
 
-export async function generateTravelItinerary(input: TravelItineraryInput): Promise<TravelItineraryOutput> {
+export type GenerateTravelItineraryResult =
+  | { success: true; data: TravelItineraryOutput }
+  | { success: false; error: string; code?: string };
+
+export async function generateTravelItinerary(input: TravelItineraryInput): Promise<GenerateTravelItineraryResult> {
   console.log('--- SERVER ACTION: generateTravelItinerary ---');
-  
-  // Dynamic import to avoid circular dependency issues at the top level if any
-  const { createServerComponentClient } = await import('@/lib/supabase/server');
-  const { checkSubscriptionAccess } = await import('@/lib/subscription-check');
-  
-  const supabase = await createServerComponentClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    throw new Error('Unauthorized: You must be logged in to generate itineraries.');
+  try {
+    // Dynamic import to avoid circular dependency issues at the top level if any
+    const { createServerComponentClient } = await import('@/lib/supabase/server');
+    const { checkSubscriptionAccess } = await import('@/lib/subscription-check');
+    
+    const supabase = await createServerComponentClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return {
+        success: false,
+        error: 'Unauthorized: You must be logged in to generate itineraries.',
+        code: 'UNAUTHORIZED',
+      };
+    }
+
+    // ── Security: Prompt injection guard ──────────────────────────────────────
+    assertNoInjection({
+      'Destinations': input.destinations,
+      'Starting Location': input.startingLocation,
+      'Must Include': input.mustInclude,
+      'Avoid': input.avoid,
+      'Feedback': input.feedback,
+      'Daywise Destinations': input.daywiseDestinations,
+    });
+
+    // ── Security: Rate limiting ────────────────────────────────────────────────
+    await checkRateLimit(user.id, 'ai_generation');
+
+    // ── Security: Sanitize freetext fields ────────────────────────────────────
+    const formattedHotelsText = input.hotels && input.hotels.length > 0
+      ? input.hotels
+          .filter(h => h.name && h.name.trim().length > 0)
+          .map(h => `Night of Day ${h.dayIndex + 1}: ${h.name.trim()}${h.address ? ` (in ${h.address.trim()})` : ''}`)
+          .join('\n')
+      : '';
+
+    const sanitizedInput: TravelItineraryInput = {
+      ...input,
+      startingLocation: sanitizeText(input.startingLocation, 100),
+      endingLocation: input.endingLocation ? sanitizeText(input.endingLocation, 100) : undefined,
+      destinations: sanitizeText(input.destinations, 300),
+      mustInclude: sanitizeForPrompt(input.mustInclude, 500),
+      avoid: sanitizeForPrompt(input.avoid, 500),
+      feedback: sanitizeForPrompt(input.feedback, 1000),
+      daywiseDestinations: sanitizeForPrompt(input.daywiseDestinations, 1000),
+      hotelsText: formattedHotelsText,
+    };
+
+    const { canGenerateItinerary, planType } = await checkSubscriptionAccess(user.id);
+    const isAllowed = await canGenerateItinerary();
+
+    if (!isAllowed) {
+      return {
+        success: false,
+        error: `Plan limit reached: Your ${planType} plan has reached its monthly AI itinerary limit. Please upgrade to Pro for unlimited generations.`,
+        code: 'PLAN_LIMIT_REACHED',
+      };
+    }
+
+    console.log('Input keys:', Object.keys(sanitizedInput));
+    const data = await generateTravelItineraryFlow(sanitizedInput);
+    return { success: true, data };
+  } catch (err: any) {
+    const errorMsg = err?.message || String(err || 'An unexpected error occurred during generation.');
+    console.error('------- generateTravelItinerary SERVER ACTION ERROR -------');
+    console.error('Error message:', errorMsg);
+    if (err?.stack) {
+      console.error('Stack trace:', err.stack);
+    }
+    console.error('-----------------------------------------------------------');
+    return {
+      success: false,
+      error: errorMsg,
+      code: err?.code || 'SERVER_ERROR',
+    };
   }
-
-  // ── Security: Prompt injection guard ──────────────────────────────────────
-  assertNoInjection({
-    'Destinations': input.destinations,
-    'Starting Location': input.startingLocation,
-    'Must Include': input.mustInclude,
-    'Avoid': input.avoid,
-    'Feedback': input.feedback,
-    'Daywise Destinations': input.daywiseDestinations,
-  });
-
-  // ── Security: Rate limiting ────────────────────────────────────────────────
-  await checkRateLimit(user.id, 'ai_generation');
-
-  // ── Security: Sanitize freetext fields ────────────────────────────────────
-  const formattedHotelsText = input.hotels && input.hotels.length > 0
-    ? input.hotels
-        .filter(h => h.name && h.name.trim().length > 0)
-        .map(h => `Night of Day ${h.dayIndex + 1}: ${h.name.trim()}${h.address ? ` (in ${h.address.trim()})` : ''}`)
-        .join('\n')
-    : '';
-
-  const sanitizedInput: TravelItineraryInput = {
-    ...input,
-    startingLocation: sanitizeText(input.startingLocation, 100),
-    endingLocation: input.endingLocation ? sanitizeText(input.endingLocation, 100) : undefined,
-    destinations: sanitizeText(input.destinations, 300),
-    mustInclude: sanitizeForPrompt(input.mustInclude, 500),
-    avoid: sanitizeForPrompt(input.avoid, 500),
-    feedback: sanitizeForPrompt(input.feedback, 1000),
-    daywiseDestinations: sanitizeForPrompt(input.daywiseDestinations, 1000),
-    hotelsText: formattedHotelsText,
-  };
-
-  const { canGenerateItinerary, planType } = await checkSubscriptionAccess(user.id);
-  const isAllowed = await canGenerateItinerary();
-
-  if (!isAllowed) {
-    const err = new Error(`Plan limit reached: Your ${planType} plan has reached its monthly AI itinerary limit. Please upgrade to Pro for unlimited generations.`);
-    (err as any).code = 'PLAN_LIMIT_REACHED';
-    throw err;
-  }
-
-  console.log('Input keys:', Object.keys(sanitizedInput));
-  return generateTravelItineraryFlow(sanitizedInput);
 }
 
 
@@ -474,43 +499,70 @@ Use this prompt to reshape this day's activities. For example, if the prompt say
   `,
 });
 
-export async function regenerateItineraryDay(input: RegenerateDayInput): Promise<RegenerateDayOutput> {
+export type RegenerateDayResult =
+  | { success: true; data: RegenerateDayOutput }
+  | { success: false; error: string; code?: string };
+
+export async function regenerateItineraryDay(input: RegenerateDayInput): Promise<RegenerateDayResult> {
   console.log('--- SERVER ACTION: regenerateItineraryDay ---');
-  
-  const { createServerComponentClient } = await import('@/lib/supabase/server');
-  const { checkSubscriptionAccess } = await import('@/lib/subscription-check');
-  
-  const supabase = await createServerComponentClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  
-  if (!user) {
-    throw new Error('Unauthorized: You must be logged in to regenerate itineraries.');
+  try {
+    const { createServerComponentClient } = await import('@/lib/supabase/server');
+    const { checkSubscriptionAccess } = await import('@/lib/subscription-check');
+    
+    const supabase = await createServerComponentClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return {
+        success: false,
+        error: 'Unauthorized: You must be logged in to regenerate itineraries.',
+        code: 'UNAUTHORIZED',
+      };
+    }
+
+    // ── Security: Prompt injection guard ──────────────────────────────────────
+    assertNoInjection({
+      'Day Prompt': input.prompt,
+      'Destinations': input.destinations,
+    });
+
+    // ── Security: Rate limiting ────────────────────────────────────────────────
+    await checkRateLimit(user.id, 'day_regeneration');
+
+    // ── Security: Sanitize freetext ───────────────────────────────────────────
+    const sanitizedInput: RegenerateDayInput = {
+      ...input,
+      prompt: sanitizeForPrompt(input.prompt, 1000),
+      destinations: sanitizeText(input.destinations, 300),
+    };
+
+    const { canGenerateItinerary, planType } = await checkSubscriptionAccess(user.id);
+    const isAllowed = await canGenerateItinerary();
+
+    if (!isAllowed) {
+      return {
+        success: false,
+        error: `Plan limit reached: Your ${planType} plan has reached its monthly AI itinerary limit.`,
+        code: 'PLAN_LIMIT_REACHED',
+      };
+    }
+
+    const data = await regenerateItineraryDayFlow(sanitizedInput);
+    return { success: true, data };
+  } catch (err: any) {
+    const errorMsg = err?.message || String(err || 'An unexpected error occurred during day regeneration.');
+    console.error('------- regenerateItineraryDay SERVER ACTION ERROR -------');
+    console.error('Error message:', errorMsg);
+    if (err?.stack) {
+      console.error('Stack trace:', err.stack);
+    }
+    console.error('----------------------------------------------------------');
+    return {
+      success: false,
+      error: errorMsg,
+      code: err?.code || 'SERVER_ERROR',
+    };
   }
-
-  // ── Security: Prompt injection guard ──────────────────────────────────────
-  assertNoInjection({
-    'Day Prompt': input.prompt,
-    'Destinations': input.destinations,
-  });
-
-  // ── Security: Rate limiting ────────────────────────────────────────────────
-  await checkRateLimit(user.id, 'day_regeneration');
-
-  // ── Security: Sanitize freetext ───────────────────────────────────────────
-  const sanitizedInput: RegenerateDayInput = {
-    ...input,
-    prompt: sanitizeForPrompt(input.prompt, 1000),
-    destinations: sanitizeText(input.destinations, 300),
-  };
-
-  const { canGenerateItinerary, planType } = await checkSubscriptionAccess(user.id);
-  const isAllowed = await canGenerateItinerary();
-
-  if (!isAllowed) {
-    throw new Error(`Plan limit reached: Your ${planType} plan has reached its monthly AI itinerary limit.`);
-  }
-
-  return regenerateItineraryDayFlow(sanitizedInput);
 }
 
 

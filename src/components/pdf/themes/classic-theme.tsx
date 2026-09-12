@@ -3,7 +3,7 @@ import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary
 import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from '@/components/hotel-flight-editor';
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
-import { getAgentInfo, getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
+import { getAgentInfo, getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate, renderFormattedText } from '../utils';
 import { getThematicBackground, glassStyles } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
@@ -152,7 +152,7 @@ export const ClassicTheme = ({
                         </div>
                     )}
                     <div style={{ position: "absolute", bottom: "45px", left: 0, right: 0, width: "100%", padding: `0 ${CONTENT_PADDING_X}`, boxSizing: "border-box", zIndex: 1, color: "white", textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                        <h1 style={{ fontSize: "44px", fontWeight: 900, margin: "0 auto 10px auto", textShadow: "0 4px 12px rgba(0,0,0,0.35)", fontFamily: "'Outfit', sans-serif", letterSpacing: "-1.5px", lineHeight: "1.08", textAlign: "center" }}>{title}</h1>
+                        <h1 data-field="itinerary.title" style={{ fontSize: "44px", fontWeight: 900, margin: "0 auto 10px auto", textShadow: "0 4px 12px rgba(0,0,0,0.35)", fontFamily: "'Outfit', sans-serif", letterSpacing: "-1.5px", lineHeight: "1.08", textAlign: "center" }}>{title}</h1>
                         <p style={{ fontSize: "16px", opacity: 0.9, margin: "0 auto", fontWeight: 500, letterSpacing: "0.2px", textAlign: "center" }}>{tagline}</p>
                     </div>
                 </div>
@@ -177,11 +177,11 @@ export const ClassicTheme = ({
                         {(agent.companyName || agent.agentName || agent.agentPhone || agent.agentEmail || agent.agentWebsite) ? (
                             <div style={{ flex: "1 1 280px", minWidth: "200px", textAlign: clientName ? "right" : "left", display: "flex", flexDirection: "column", alignItems: clientName ? "flex-end" : "flex-start", gap: "4px" }}>
                                 <span style={{ fontSize: "11px", color: "#64748b", textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800, marginBottom: "2px" }}>Prepared By</span>
-                                {agent.companyName && <h2 style={{ fontSize: "20px", margin: 0, color: "#0f172a", fontWeight: 800, letterSpacing: "-0.5px" }}>{agent.companyName}</h2>}
-                                {agent.agentName && <p style={{ color: agent.primaryColor || "#a855f7", fontSize: "13.5px", margin: "2px 0 4px 0", fontWeight: 700 }}>{agent.agentName}</p>}
-                                {agent.agentPhone && <p style={{ color: "#64748b", fontSize: "12px", margin: "1px 0" }}>{agent.agentPhone}</p>}
-                                {agent.agentEmail && <p style={{ color: "#64748b", fontSize: "12px", margin: "1px 0" }}>{agent.agentEmail}</p>}
-                                {agent.agentWebsite && <p style={{ color: agent.primaryColor || "#a855f7", fontSize: "12.5px", margin: "4px 0 0 0", fontWeight: 600, textDecoration: "underline" }}>{agent.agentWebsite}</p>}
+                                {agent.companyName && <h2 data-field="agency.companyName" style={{ fontSize: "20px", margin: 0, color: "#0f172a", fontWeight: 800, letterSpacing: "-0.5px" }}>{agent.companyName}</h2>}
+                                {agent.agentName && <p data-field="agency.agentName" style={{ color: agent.primaryColor || "#a855f7", fontSize: "13.5px", margin: "2px 0 4px 0", fontWeight: 700 }}>{agent.agentName}</p>}
+                                {agent.agentPhone && <p data-field="agency.phone" style={{ color: "#64748b", fontSize: "12px", margin: "1px 0" }}>{agent.agentPhone}</p>}
+                                {agent.agentEmail && <p data-field="agency.email" style={{ color: "#64748b", fontSize: "12px", margin: "1px 0" }}>{agent.agentEmail}</p>}
+                                {agent.agentWebsite && <p data-field="agency.website" style={{ color: agent.primaryColor || "#a855f7", fontSize: "12.5px", margin: "4px 0 0 0", fontWeight: 600, textDecoration: "underline" }}>{agent.agentWebsite}</p>}
                             </div>
                         ) : null}
                     </div>
@@ -220,14 +220,14 @@ export const ClassicTheme = ({
                         ) : null}
                         <div style={{ flex: 1 }}>
                             <h3 style={{ margin: "0 0 16px 0", fontSize: "14px", color: agent.primaryColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>About The Destination</h3>
-                            <h2 style={{ margin: "0 0 20px 0", fontSize: "28px", color: "#0f172a", fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-0.5px" }}>{aboutPlace.title}</h2>
-                            <p style={{ margin: "0 0 24px 0", color: "#475569", fontSize: "15px", lineHeight: "1.7" }}>{aboutPlace.description}</p>
+                            <h2 data-field="aboutPlace.title" style={{ margin: "0 0 20px 0", fontSize: "28px", color: "#0f172a", fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-0.5px" }}>{aboutPlace.title}</h2>
+                            <p data-field="aboutPlace.description" style={{ margin: "0 0 24px 0", color: "#475569", fontSize: "15px", lineHeight: "1.7" }}>{renderFormattedText(aboutPlace.description)}</p>
                             
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                                 {(aboutPlace.highlights || []).map((hl: string, i: number) => (
                                     <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
                                         <div style={{ flexShrink: 0, width: "20px", height: "20px", borderRadius: "50%", background: `rgba(${rgbAccent}, 0.1)`, display: "flex", alignItems: "center", justifyContent: "center", color: agent.primaryColor, marginTop: "2px" }}>✓</div>
-                                        <span style={{ fontSize: "14px", color: "#334155", fontWeight: 500, lineHeight: "1.5" }}>{hl}</span>
+                                        <span data-field={`aboutPlace.highlights[${i}]`} style={{ fontSize: "14px", color: "#334155", fontWeight: 500, lineHeight: "1.5" }}>{renderFormattedText(hl)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -255,7 +255,7 @@ export const ClassicTheme = ({
                             ) : null}
                             <div style={{ background: `linear-gradient(135deg, ${agent.primaryColor || "#a855f7"} 0%, #ec4899 100%)`, padding: "20px 30px", color: "white" }}>
                                 <span style={{ fontSize: "12px", opacity: 0.95, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800 }}>Day {index + 1} • {formatDate(day.date)}</span>
-                                <h3 style={{ margin: "5px 0 0 0", fontSize: "24px", fontWeight: 900, letterSpacing: "-0.5px", fontFamily: "'Outfit', sans-serif" }}>{formatTitleCase(day.areaFocus)}</h3>
+                                <h3 data-field={`days[${index}].location`} style={{ margin: "5px 0 0 0", fontSize: "24px", fontWeight: 900, letterSpacing: "-0.5px", fontFamily: "'Outfit', sans-serif" }}>{formatTitleCase(day.areaFocus)}</h3>
                             </div>
                         </div>
 
@@ -316,8 +316,8 @@ export const ClassicTheme = ({
                                             }} />
                                         </div>
                                     )}
-                                    <p style={{ margin: 0, paddingTop: showTimestamps !== false ? "4px" : "0", fontSize: "14px", lineHeight: "1.75", color: "#334155", flex: 1, minWidth: 0, wordBreak: "break-word", fontWeight: 500 }}>
-                                        {step.details}
+                                    <p data-field={`days[${index}].activities[${si}]`} style={{ margin: 0, paddingTop: showTimestamps !== false ? "4px" : "0", fontSize: "14px", lineHeight: "1.75", color: "#334155", flex: 1, minWidth: 0, wordBreak: "break-word", fontWeight: 500 }}>
+                                        {renderFormattedText(step.details)}
                                     </p>
 
                                 </div>
@@ -429,8 +429,8 @@ export const ClassicTheme = ({
                             <div style={{ flex: 1, ...glassStyles, borderRadius: "20px", padding: "30px", borderTop: `4px solid ${agent.primaryColor || "#a855f7"}` }}>
                                 <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", color: "#0f172a", fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>Inclusions</h3>
                                 <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
-                                    {inclusionsList.map((inc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "14px", color: "#334155" }}><span style={{ color: agent.primaryColor || "#a855f7", fontWeight: 800 }}>+</span> <span>{inc}</span></li>
+                                     {inclusionsList.map((inc, i) => (
+                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "14px", color: "#334155" }}><span style={{ color: agent.primaryColor || "#a855f7", fontWeight: 800 }}>+</span> <span data-field={`inclusions[${i}]`}>{renderFormattedText(inc)}</span></li>
                                     ))}
                                 </ul>
                             </div>
@@ -439,8 +439,8 @@ export const ClassicTheme = ({
                             <div style={{ flex: 1, ...glassStyles, borderRadius: "20px", padding: "30px", borderTop: `4px solid #94a3b8` }}>
                                 <h3 style={{ margin: "0 0 20px 0", fontSize: "20px", color: "#0f172a", fontWeight: 800, fontFamily: "'Outfit', sans-serif" }}>Exclusions</h3>
                                 <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
-                                    {exclusionsList.map((exc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "14px", color: "#334155" }}><span style={{ color: "#94a3b8", fontWeight: 800 }}>-</span> <span>{exc}</span></li>
+                                     {exclusionsList.map((exc, i) => (
+                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "14px", color: "#334155" }}><span style={{ color: "#94a3b8", fontWeight: 800 }}>-</span> <span data-field={`exclusions[${i}]`}>{renderFormattedText(exc)}</span></li>
                                     ))}
                                 </ul>
                             </div>

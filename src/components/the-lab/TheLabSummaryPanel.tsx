@@ -3,8 +3,9 @@ import React from 'react';
 import { cn } from "@/lib/utils";
 import { MorphingSquare } from "@/components/ui/morphing-square";
 import { useReferenceOptions } from '@/hooks/use-reference-options';
-import { Sliders, MapPin, Calendar, Compass, Sparkles, ChevronDown } from "lucide-react";
+import { Sliders, MapPin, Calendar, Compass, Sparkles, ChevronDown, Plus } from "lucide-react";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button";
 
 interface TheLabSummaryPanelProps {
   itinerary: any;
@@ -15,12 +16,14 @@ interface TheLabSummaryPanelProps {
   finalTotal?: number;
   currencySymbol?: string;
   tripMetadata?: any;
+  onOpenAddClient?: () => void;
 }
 
 const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
   itinerary, selectedStatus, clients, selectedClientId,
   isGenerating,
-  finalTotal, currencySymbol, tripMetadata
+  finalTotal, currencySymbol, tripMetadata,
+  onOpenAddClient,
 }: TheLabSummaryPanelProps) {
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
   const [isInputsOpen, setIsInputsOpen] = React.useState(false);
@@ -30,7 +33,7 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
   const statusOption = itineraryStatuses.find(opt => opt.value === selectedStatus);
 
   return (
-    <div className="w-[100vw] -ml-3 sm:-ml-2 md:-ml-4 lg:ml-0 lg:w-auto lg:col-span-4 space-y-3 sm:space-y-4 lg:sticky lg:top-24 order-1 lg:order-2 self-start px-3 sm:px-2 md:px-4 lg:px-0">
+    <div className="w-full lg:col-span-4 space-y-3 sm:space-y-4 lg:sticky lg:top-24 order-1 lg:order-2 self-start">
       
       {/* Journey Summary */}
       <div className="glass-panel relative rounded-xl sm:rounded-2xl p-3 mb-3 sm:mb-4 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 bg-obsidian-dark/80 backdrop-blur-lg border border-white/5 overflow-hidden">
@@ -267,7 +270,20 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
 
       {/* Client Details */}
       <div className="liquid-glass p-4 rounded-2xl">
-        <h5 className="text-[9px] font-black text-primary uppercase tracking-[0.3em] mb-4">Client Details</h5>
+        <div className="flex items-center justify-between mb-4">
+          <h5 className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">Client Details</h5>
+          {onOpenAddClient && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onOpenAddClient}
+              className="h-6 text-[10px] text-indigo-400 hover:text-indigo-300 hover:bg-white/5 px-2 rounded-md font-semibold gap-1"
+            >
+              <Plus className="w-3 h-3" />
+              <span>Add Client</span>
+            </Button>
+          )}
+        </div>
         {(() => {
           const selectedClient = clients.find(c => c.id === selectedClientId);
           if (!selectedClient) {
@@ -277,7 +293,18 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
                   <span className="material-symbols-outlined text-[18px] text-zinc-600">person_off</span>
                 </div>
                 <p className="text-[11px] font-bold text-zinc-500">No Client Assigned</p>
-                <p className="text-[9px] text-zinc-600 mt-0.5">Assign a client from the dropdown above</p>
+                <p className="text-[9px] text-zinc-600 mt-0.5 mb-3">Assign a client from the dropdown above or create a new client.</p>
+                {onOpenAddClient && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={onOpenAddClient}
+                    className="h-7 text-[10px] bg-white/5 border-white/10 text-zinc-300 hover:text-white hover:bg-white/10 rounded-lg gap-1.5 font-medium"
+                  >
+                    <Plus className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Create New Client</span>
+                  </Button>
+                )}
               </div>
             );
           }

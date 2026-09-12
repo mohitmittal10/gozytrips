@@ -23,15 +23,15 @@ export function FormField({
 }: FormFieldProps) {
   return (
     <div className={`space-y-1.5 ${className}`}>
-      <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">
-        {label}{required && <span className="text-red-400 ml-0.5">*</span>}
+      <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">
+        {label}{required && <span className="text-rose-400 ml-0.5">*</span>}
       </Label>
       <Input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="bg-white/5 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-purple-500 h-9 text-sm"
+        className="bg-white/5 border-white/10 text-white placeholder:text-zinc-500 focus-visible:ring-primary/50 focus-visible:border-primary/50 rounded-xl h-10 text-sm transition-all"
       />
     </div>
   );

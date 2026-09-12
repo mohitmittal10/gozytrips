@@ -2,7 +2,7 @@ import React from 'react';
 import type { ThemeProps } from './classic-theme';
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
-import { getAgentInfo, getCoverImage, getDayImage, formatDate, formatTitleCase } from '../utils';
+import { getAgentInfo, getCoverImage, getDayImage, formatDate, formatTitleCase, renderFormattedText } from '../utils';
 import { calcPricingFromBaseCost, calcBaseCost, extractTripCost } from '@/services/financial';
 
 const parseList = (text?: any): string[] => {
@@ -1301,7 +1301,7 @@ export const LuxuryTheme = ({
                                     <hr className="rule" />
                                     <h2 className="display">About the place</h2>
                                     <p className="about-text" data-field="destination.aboutText">
-                                        &ldquo;{aboutText}&rdquo;
+                                        &ldquo;{renderFormattedText(aboutText)}&rdquo;
                                     </p>
                                     <hr className="rule" />
                                 </div>
@@ -1314,7 +1314,7 @@ export const LuxuryTheme = ({
                                 {highlightsList.map((highlight, idx) => (
                                     <div className="highlight-item" key={idx}>
                                         <span className="bullet">◆</span>
-                                        <span className="text" data-field={`highlights[${idx}].text`}>{highlight}</span>
+                                        <span className="text" data-field={`highlights[${idx}].text`}>{renderFormattedText(highlight)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -1398,7 +1398,7 @@ export const LuxuryTheme = ({
                                                 {activities.map((actItem: any, aIdx: number) => (
                                                     <div className="activity-row" key={aIdx}>
                                                         <span className="dash">—</span>
-                                                        <span data-field={`days[${idx}].activities[${aIdx}]`}>{String(actItem)}</span>
+                                                        <span data-field={`days[${idx}].activities[${aIdx}]`}>{renderFormattedText(actItem)}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -1477,7 +1477,7 @@ export const LuxuryTheme = ({
                                         {inclusionsList.map((inc, i) => (
                                             <div className="incl-row" key={i}>
                                                 <span className="bullet">◆</span>
-                                                <span data-field={`inclusions[${i}]`}>{inc}</span>
+                                                <span data-field={`inclusions[${i}]`}>{renderFormattedText(inc)}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -1489,7 +1489,7 @@ export const LuxuryTheme = ({
                                         {exclusionsList.map((exc, i) => (
                                             <div className="incl-row" key={i}>
                                                 <span className="bullet">◆</span>
-                                                <span data-field={`exclusions[${i}]`}>{exc}</span>
+                                                <span data-field={`exclusions[${i}]`}>{renderFormattedText(exc)}</span>
                                             </div>
                                         ))}
                                     </div>
@@ -1511,7 +1511,7 @@ export const LuxuryTheme = ({
                                     <div className="terms-col">
                                         <div className="group-title">Terms</div>
                                         {termsAndConditionsList.map((term, i) => (
-                                            <div className="term-line" data-field={`terms[${i}]`} key={i}>{term}</div>
+                                            <div className="term-line" data-field={`terms[${i}]`} key={i}>{renderFormattedText(term)}</div>
                                         ))}
                                     </div>
                                 )}
@@ -1520,7 +1520,7 @@ export const LuxuryTheme = ({
                                     <div className="terms-col">
                                         <div className="group-title">Payment Guidelines</div>
                                         {paymentMethodsList.map((pm, i) => (
-                                            <div className="term-line" data-field={`conditions[${i}]`} key={i}>{pm}</div>
+                                            <div className="term-line" data-field={`conditions[${i}]`} key={i}>{renderFormattedText(pm)}</div>
                                         ))}
                                     </div>
                                 )}
@@ -1533,7 +1533,7 @@ export const LuxuryTheme = ({
                                                 {cancellationPoints.map((point, i) => (
                                                     <div className="cancel-point-row" key={i}>
                                                         <span className="bullet">◆</span>
-                                                        <span data-field={`cancellationPolicy[${i}]`}>{point}</span>
+                                                        <span data-field={`cancellationPolicy[${i}]`}>{renderFormattedText(point)}</span>
                                                     </div>
                                                 ))}
                                             </div>

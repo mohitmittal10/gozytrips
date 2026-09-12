@@ -10,6 +10,7 @@ import { useState, useCallback, useContext, useEffect, useRef } from "react";
 import { CustomTabs } from "@/components/ui/custom-tabs";
 import { ItineraryContext } from "@/contexts/itinerary-context";
 import { getCurrencySymbol } from "@/lib/utils/currency";
+import { renderFormattedText } from "./pdf/utils";
 import { useAuth } from "@/contexts/auth-context";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -183,7 +184,7 @@ function ActivityOverlay({ step, showTimestamps }: { step: TimelineStep, showTim
   return (
     <div className="bg-primary/20 backdrop-blur-md border border-primary/40 rounded-lg px-4 py-3 shadow-2xl max-w-md">
       {showTimestamps !== false && <p className="font-bold text-primary text-lg">{step.time}</p>}
-      <p className="text-foreground/80 text-sm line-clamp-2">{step.details}</p>
+      <p className="text-foreground/80 text-sm line-clamp-2">{renderFormattedText(step.details)}</p>
     </div>
   );
 }
@@ -336,7 +337,7 @@ const ItineraryTimeline = ({
 
       const tripDestinations = destinations || itinerary[0]?.areaFocus || "Destination";
 
-      const result = await regenerateItineraryDay({
+      const res = await regenerateItineraryDay({
         day: targetDay.day,
         destinations: tripDestinations,
         currentDayData: {
@@ -352,6 +353,17 @@ const ItineraryTimeline = ({
         prompt: promptText.trim(),
         otherDaysSummary: otherDays
       });
+
+      if (!res.success) {
+        toast({
+          variant: "destructive",
+          title: "Regeneration Failed",
+          description: res.error,
+        });
+        return;
+      }
+
+      const result = res.data;
 
       // Fetch dynamic Unsplash image for newly regenerated day
       let newImageUrl: string | undefined = undefined;

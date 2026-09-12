@@ -303,13 +303,13 @@ export function PaymentsTab({
 
                                 {/* Milestone Suggestions (Autofill One-Click Action) */}
                                 {effectiveMilestones.length > 0 && !isFullyPaid && (
-                                    <div className="bg-purple-950/20 border border-purple-500/20 rounded-xl p-3 space-y-2.5">
+                                    <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 space-y-2.5">
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-1.5 text-xs font-semibold text-purple-300">
-                                                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+                                            <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                                                <Sparkles className="w-3.5 h-3.5 text-primary" />
                                                 <span>Payment Milestones (from The Lab)</span>
                                             </div>
-                                            <span className="text-[10px] text-purple-400/80">Click to record instant payment</span>
+                                            <span className="text-[10px] text-zinc-400 font-medium">Click to record instant payment</span>
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
@@ -318,18 +318,18 @@ export function PaymentsTab({
                                                 return (
                                                     <div
                                                         key={idx}
-                                                        className="bg-black/30 border border-purple-500/10 hover:border-purple-500/40 rounded-lg p-2.5 flex flex-col justify-between gap-2 transition-all group"
+                                                        className="bg-black/40 border border-primary/20 hover:border-primary/50 rounded-xl p-2.5 flex flex-col justify-between gap-2 transition-all group"
                                                     >
                                                         <div>
                                                             <div className="flex items-center justify-between text-xs">
-                                                                <span className="font-medium text-gray-200">{m.label}</span>
-                                                                <span className="text-purple-400 font-bold text-[11px]">{m.percentage}%</span>
+                                                                <span className="font-semibold text-white">{m.label}</span>
+                                                                <span className="text-primary font-bold text-[11px]">{m.percentage}%</span>
                                                             </div>
                                                             <div className="text-sm font-bold text-white mt-0.5">
                                                                 {fm(milestoneAmt, fin.currency)}
                                                             </div>
                                                             {m.dueDate && (
-                                                                <p className="text-[10px] text-gray-500 mt-0.5">
+                                                                <p className="text-[10px] text-zinc-400 mt-0.5">
                                                                     Due: {new Date(m.dueDate).toLocaleDateString()}
                                                                 </p>
                                                             )}
@@ -337,7 +337,7 @@ export function PaymentsTab({
                                                         <Button
                                                             size="sm"
                                                             variant="secondary"
-                                                            className="h-6 text-[11px] bg-purple-600/20 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/30 transition-all justify-center w-full"
+                                                            className="h-6 text-[11px] bg-primary/20 hover:bg-primary text-white border border-primary/40 font-bold transition-all justify-center w-full rounded-lg"
                                                             onClick={() => handleRecordMilestone(fin, m)}
                                                         >
                                                             <span>Record {fm(milestoneAmt, fin.currency)}</span>
@@ -353,7 +353,7 @@ export function PaymentsTab({
                                 {/* Recorded Payments List */}
                                 {fin.payments.length > 0 && (
                                     <div className="space-y-2">
-                                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                        <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
                                             Recorded Transactions ({fin.payments.length})
                                         </p>
                                         <div className="grid grid-cols-1 gap-1.5">
@@ -363,19 +363,19 @@ export function PaymentsTab({
                                                     className="flex items-center justify-between px-3.5 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-xl text-xs hover:bg-white/[0.04] transition-colors"
                                                 >
                                                     <div className="flex items-center gap-2.5 flex-wrap">
-                                                        <Badge variant="secondary" className="bg-purple-500/10 text-purple-300 border-0 text-[10px] capitalize font-medium">
+                                                        <Badge variant="secondary" className="bg-primary/20 text-white border border-primary/30 text-[10px] capitalize font-bold">
                                                             {p.type}
                                                         </Badge>
-                                                        <span className="text-gray-300 font-medium capitalize">
+                                                        <span className="text-zinc-200 font-semibold capitalize">
                                                             {p.method.replace("_", " ")}
                                                         </span>
                                                         {p.reference && (
-                                                            <span className="text-gray-500 font-mono text-[11px]">
+                                                            <span className="text-zinc-400 font-mono text-[11px]">
                                                                 Ref: #{p.reference}
                                                             </span>
                                                         )}
                                                         {p.notes && (
-                                                            <span className="text-gray-400 italic text-[11px]">
+                                                            <span className="text-zinc-400 italic text-[11px]">
                                                                 "{p.notes}"
                                                             </span>
                                                         )}
@@ -384,12 +384,12 @@ export function PaymentsTab({
                                                         <span className="text-emerald-400 font-bold">
                                                             +{fm(p.amount, fin.currency)}
                                                         </span>
-                                                        <span className="text-gray-500 text-[11px]">
+                                                        <span className="text-zinc-400 text-[11px]">
                                                             {new Date(p.date).toLocaleDateString()}
                                                         </span>
                                                         <button
                                                             onClick={() => deletePayment(fin.itineraryId, p.id)}
-                                                            className="text-gray-500 hover:text-red-400 p-1 transition-colors"
+                                                            className="text-zinc-400 hover:text-red-400 p-1 transition-colors"
                                                             title="Delete Payment"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
@@ -406,17 +406,17 @@ export function PaymentsTab({
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="h-8 text-xs border-white/10 bg-white/5 text-gray-200 hover:bg-white/10 hover:text-white flex-1"
+                                        className="h-8 text-xs border-white/20 bg-white/10 text-white hover:bg-white/20 font-bold flex-1 shadow-sm transition-all rounded-xl cursor-pointer"
                                         onClick={() => handleOpen(fin)}
                                     >
-                                        <Plus className="w-3.5 h-3.5 mr-1.5" />
+                                        <Plus className="w-3.5 h-3.5 mr-1.5 text-white" />
                                         <span>Record Payment</span>
                                     </Button>
 
                                     {!isFullyPaid && balance > 0 && (
                                         <Button
                                             size="sm"
-                                            className="h-8 text-xs bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/30 transition-all shrink-0"
+                                            className="h-8 text-xs bg-emerald-500/20 hover:bg-emerald-600 text-white font-bold border border-emerald-500/40 transition-all shrink-0 rounded-xl cursor-pointer"
                                             onClick={() => handleOpen(fin, {
                                                 prefillAmount: balance,
                                                 prefillType: "final",
@@ -443,13 +443,13 @@ export function PaymentsTab({
 
             {/* Smart Add Payment Dialog */}
             <Dialog open={showAddPayment} onOpenChange={setShowAddPayment}>
-                <DialogContent className="bg-[#0D0D10] border border-white/15 text-white sm:max-w-[460px] shadow-2xl">
+                <DialogContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border border-white/10 text-white sm:max-w-[460px] shadow-2xl rounded-2xl">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-base font-bold">
-                            <CreditCard className="w-4 h-4 text-purple-400" />
+                        <DialogTitle className="flex items-center gap-2 text-base font-bold text-white">
+                            <CreditCard className="w-4 h-4 text-primary" />
                             Record Client Payment
                         </DialogTitle>
-                        <DialogDescription className="text-gray-400 text-xs">
+                        <DialogDescription className="text-zinc-400 text-xs">
                             {selectedTripFin
                                 ? `${selectedTripFin.clientName} · ${selectedTripFin.tripTitle}`
                                 : "Autofilled from itinerary metadata"}
@@ -461,18 +461,18 @@ export function PaymentsTab({
                             {/* Summary strip */}
                             <div className="grid grid-cols-3 gap-2 bg-white/[0.03] border border-white/10 rounded-xl p-3 text-center text-xs">
                                 <div>
-                                    <p className="text-[10px] text-gray-500 uppercase">Package</p>
-                                    <p className="font-semibold text-white">{fm(selectedTripFin.clientPrice, selectedTripFin.currency)}</p>
+                                    <p className="text-[10px] text-zinc-400 uppercase font-semibold">Package</p>
+                                    <p className="font-bold text-white">{fm(selectedTripFin.clientPrice, selectedTripFin.currency)}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-gray-500 uppercase">Collected</p>
-                                    <p className="font-semibold text-emerald-400">
+                                    <p className="text-[10px] text-zinc-400 uppercase font-semibold">Collected</p>
+                                    <p className="font-bold text-emerald-400">
                                         {fm(selectedTripFin.payments.reduce((s, p) => s + p.amount, 0), selectedTripFin.currency)}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-gray-500 uppercase">Due</p>
-                                    <p className="font-semibold text-amber-400">
+                                    <p className="text-[10px] text-zinc-400 uppercase font-semibold">Due</p>
+                                    <p className="font-bold text-amber-400">
                                         {fm(
                                             Math.max(
                                                 0,
@@ -487,24 +487,24 @@ export function PaymentsTab({
                             {/* Amount & Type */}
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <Label className="text-xs text-gray-300 mb-1.5 block">
+                                    <Label className="text-xs text-zinc-300 font-semibold mb-1.5 block">
                                         Amount ({cs(selectedTripFin.currency)})
                                     </Label>
                                     <Input
                                         type="number"
                                         value={payAmt}
                                         onChange={(e) => setPayAmt(e.target.value)}
-                                        className="bg-white/5 border-white/10 text-white h-9 text-sm focus-visible:border-purple-500"
+                                        className="bg-white/5 border-white/10 text-white h-9 text-sm focus-visible:ring-primary/50 rounded-xl"
                                         placeholder="0.00"
                                     />
                                 </div>
                                 <div>
-                                    <Label className="text-xs text-gray-300 mb-1.5 block">Payment Type</Label>
+                                    <Label className="text-xs text-zinc-300 font-semibold mb-1.5 block">Payment Type</Label>
                                     <Select value={payType} onValueChange={setPayType}>
-                                        <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-xs">
+                                        <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-xs rounded-xl">
                                             <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-[#141418] border-white/10 text-white">
+                                        <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white">
                                             {paymentTypes.map((pt) => (
                                                 <SelectItem key={pt.value} value={pt.value} className="text-xs">
                                                     {pt.label}
@@ -518,12 +518,12 @@ export function PaymentsTab({
                             {/* Method & Date */}
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <Label className="text-xs text-gray-300 mb-1.5 block">Payment Method</Label>
+                                    <Label className="text-xs text-zinc-300 font-semibold mb-1.5 block">Payment Method</Label>
                                     <Select value={payMethod} onValueChange={setPayMethod}>
-                                        <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-xs">
+                                        <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-xs rounded-xl">
                                             <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-[#141418] border-white/10 text-white">
+                                        <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white">
                                             {paymentMethods.map((pm) => (
                                                 <SelectItem key={pm.value} value={pm.value} className="text-xs">
                                                     {pm.label}
@@ -533,34 +533,34 @@ export function PaymentsTab({
                                     </Select>
                                 </div>
                                 <div>
-                                    <Label className="text-xs text-gray-300 mb-1.5 block">Payment Date</Label>
+                                    <Label className="text-xs text-zinc-300 font-semibold mb-1.5 block">Payment Date</Label>
                                     <Input
                                         type="date"
                                         value={payDate}
                                         onChange={(e) => setPayDate(e.target.value)}
-                                        className="bg-white/5 border-white/10 text-white h-9 text-xs"
+                                        className="bg-white/5 border-white/10 text-white h-9 text-xs rounded-xl"
                                     />
                                 </div>
                             </div>
 
                             {/* Reference # */}
                             <div>
-                                <Label className="text-xs text-gray-300 mb-1.5 block">Reference / Transaction ID</Label>
+                                <Label className="text-xs text-zinc-300 font-semibold mb-1.5 block">Reference / Transaction ID</Label>
                                 <Input
                                     value={payRef}
                                     onChange={(e) => setPayRef(e.target.value)}
-                                    className="bg-white/5 border-white/10 text-white h-9 text-xs"
+                                    className="bg-white/5 border-white/10 text-white h-9 text-xs rounded-xl"
                                     placeholder="e.g. UPI Ref / Bank UTR / Receipt #"
                                 />
                             </div>
 
                             {/* Notes */}
                             <div>
-                                <Label className="text-xs text-gray-300 mb-1.5 block">Notes / Description</Label>
+                                <Label className="text-xs text-zinc-300 font-semibold mb-1.5 block">Notes / Description</Label>
                                 <Input
                                     value={payNotes}
                                     onChange={(e) => setPayNotes(e.target.value)}
-                                    className="bg-white/5 border-white/10 text-white h-9 text-xs"
+                                    className="bg-white/5 border-white/10 text-white h-9 text-xs rounded-xl"
                                     placeholder="Optional notes or milestone description"
                                 />
                             </div>
@@ -570,13 +570,13 @@ export function PaymentsTab({
                     <DialogFooter className="gap-2">
                         <Button
                             variant="outline"
-                            className="border-white/10 text-gray-400 hover:bg-white/10 text-xs h-9"
+                            className="border-white/10 text-zinc-300 hover:bg-white/10 text-xs h-9 rounded-xl"
                             onClick={() => setShowAddPayment(false)}
                         >
                             Cancel
                         </Button>
                         <Button
-                            className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-9 font-semibold"
+                            className="aurora-gradient text-white text-xs h-9 font-bold rounded-xl border-none shadow-md hover:brightness-110 cursor-pointer"
                             onClick={handleSubmit}
                         >
                             <Check className="w-3.5 h-3.5 mr-1" />

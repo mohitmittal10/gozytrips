@@ -15,16 +15,16 @@ export const ArchiveView = ({
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-zinc-400 font-medium">
                     {archivedClients.length} completed trip{archivedClients.length !== 1 ? 's' : ''}
                 </p>
             </div>
             
             {archivedClients.length === 0 ? (
-                <div className="bg-white/5 border border-white/10 rounded-xl p-12 text-center text-white">
-                    <Archive className="w-12 h-12 text-gray-600 mx-auto mb-3" />
-                    <p className="text-gray-500">No completed trips yet.</p>
-                    <p className="text-xs text-gray-600 mt-1">
+                <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl p-12 text-center text-white">
+                    <Archive className="w-12 h-12 text-zinc-400 mx-auto mb-3 opacity-60" />
+                    <p className="text-zinc-300 font-medium">No completed trips yet.</p>
+                    <p className="text-xs text-zinc-400 mt-1">
                         When a trip is marked as "Completed", it will appear here.
                     </p>
                 </div>
@@ -33,7 +33,7 @@ export const ArchiveView = ({
                     {archivedClients.map(client => (
                         <div
                             key={client.id}
-                            className="bg-white/5 border border-white/10 rounded-xl p-4 hover:bg-white/[0.07] transition-colors cursor-pointer group"
+                            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl p-4 hover:bg-white/[0.06] transition-all cursor-pointer group"
                             onClick={() => setSelectedClient(client)}
                         >
                             <div className="flex items-center gap-3 mb-3 text-white">
@@ -41,14 +41,14 @@ export const ArchiveView = ({
                                     {client.name.charAt(0).toUpperCase()}
                                 </div>
                                 <div className="min-w-0 flex-1">
-                                    <p className="font-medium text-white truncate">{client.name}</p>
-                                    <p className="text-xs text-gray-500">{client.email || 'No email'}</p>
+                                    <p className="font-semibold text-white truncate group-hover:text-primary transition-colors">{client.name}</p>
+                                    <p className="text-xs text-zinc-400">{client.email || 'No email'}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <div className="flex items-center gap-4 text-xs text-zinc-400">
                                 <div className="flex items-center gap-1">
-                                    <Compass className="w-3 h-3" />
-                                    <span className="truncate max-w-[120px]">{client.latestDestination}</span>
+                                    <Compass className="w-3 h-3 text-primary" />
+                                    <span className="truncate max-w-[120px] font-medium">{client.latestDestination}</span>
                                 </div>
                                 <span className="ml-auto">{client.latestContact}</span>
                             </div>

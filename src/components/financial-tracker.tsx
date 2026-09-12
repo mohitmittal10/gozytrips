@@ -62,7 +62,7 @@ export default function FinancialTracker({
                         value: fin.fm(fin.stats.totalRevenue),
                         subtext: `${fin.financials.length} itineraries tracked`,
                         color: "text-white",
-                        badge: "bg-white/10 text-gray-300",
+                        badge: "bg-white/10 text-zinc-300",
                         bg: "from-white/[0.06] to-white/[0.01] border-white/10",
                     },
                     {
@@ -70,24 +70,24 @@ export default function FinancialTracker({
                         value: fin.fm(fin.stats.totalPaid),
                         subtext: `${fin.stats.totalRevenue > 0 ? ((fin.stats.totalPaid / fin.stats.totalRevenue) * 100).toFixed(0) : 0}% realization`,
                         color: "text-emerald-400",
-                        badge: "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20",
-                        bg: "from-emerald-950/20 to-emerald-900/5 border-emerald-500/20",
+                        badge: "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30",
+                        bg: "from-emerald-950/30 to-emerald-900/10 border-emerald-500/20",
                     },
                     {
                         label: "Outstanding Due",
                         value: fin.fm(fin.stats.totalPending),
                         subtext: "Pending client collections",
                         color: "text-amber-400",
-                        badge: "bg-amber-500/10 text-amber-400 border border-amber-500/20",
-                        bg: "from-amber-950/20 to-amber-900/5 border-amber-500/20",
+                        badge: "bg-amber-500/15 text-amber-300 border border-amber-500/30",
+                        bg: "from-amber-950/30 to-amber-900/10 border-amber-500/20",
                     },
                     {
                         label: "Net Profit Margin",
                         value: `${fin.stats.profitMargin.toFixed(1)}%`,
                         subtext: `${fin.fm(fin.stats.netProfit)} net profit`,
-                        color: "text-zinc-200",
-                        badge: "bg-zinc-800 text-zinc-300 border border-zinc-700",
-                        bg: "from-zinc-900 to-zinc-950 border-zinc-800",
+                        color: "text-primary",
+                        badge: "bg-primary/20 text-primary border border-primary/30",
+                        bg: "from-primary/15 to-white/[0.01] border-primary/20",
                     },
                 ].map((card, idx) => (
                     <div
@@ -95,20 +95,20 @@ export default function FinancialTracker({
                         className={`p-4 rounded-2xl border bg-gradient-to-b ${card.bg} shadow-xl flex flex-col justify-between space-y-2`}
                     >
                         <div className="flex items-center justify-between">
-                            <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">
+                            <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">
                                 {card.label}
                             </p>
                         </div>
                         <div>
                             <p className={`text-2xl font-black tracking-tight ${card.color}`}>{card.value}</p>
-                            <p className="text-[11px] text-gray-500 font-medium mt-0.5">{card.subtext}</p>
+                            <p className="text-[11px] text-zinc-400 font-semibold mt-0.5">{card.subtext}</p>
                         </div>
                     </div>
                 ))}
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-1.5 bg-black/40 border border-white/[0.08] p-1.5 rounded-2xl backdrop-blur-xl shadow-lg overflow-x-auto">
+            <div className="flex gap-1.5 bg-white/[0.03] border border-white/[0.08] p-1.5 rounded-2xl backdrop-blur-xl shadow-lg overflow-x-auto">
                 {TABS.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeFinTab === tab.key;
@@ -117,13 +117,13 @@ export default function FinancialTracker({
                             key={tab.key}
                             onClick={() => setActiveFinTab(tab.key)}
                             className={cn(
-                                "flex items-center justify-center gap-2 text-xs font-semibold py-2.5 px-4 rounded-xl transition-all whitespace-nowrap flex-1 shrink-0 border",
+                                "flex items-center justify-center gap-2 text-xs font-semibold py-2.5 px-4 rounded-xl transition-all whitespace-nowrap flex-1 shrink-0 border cursor-pointer",
                                 isActive
-                                    ? "bg-zinc-800 text-zinc-100 border-zinc-700 font-semibold shadow-sm"
-                                    : "border-transparent text-gray-400 hover:text-white hover:bg-white/5"
+                                    ? "bg-primary/20 text-white border-primary/40 font-bold shadow-lg shadow-primary/20"
+                                    : "border-transparent text-zinc-400 hover:text-white hover:bg-white/5"
                             )}
                         >
-                            <Icon className="w-3.5 h-3.5" />
+                            <Icon className={cn("w-3.5 h-3.5", isActive ? "text-primary" : "text-zinc-400")} />
                             <span>{tab.label}</span>
                         </button>
                     );

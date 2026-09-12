@@ -2,7 +2,7 @@ import React from 'react';
 import type { ThemeProps } from './classic-theme';
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
-import { getTotalBudget, getDayImage, formatTitleCase, formatDistance, formatDate } from '../utils';
+import { getTotalBudget, getDayImage, formatTitleCase, formatDistance, formatDate, renderFormattedText } from '../utils';
 import { getThematicBackground, glassStyles } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
@@ -185,13 +185,13 @@ export const CorporateTheme = ({
                                 <h3 style={{ margin: 0, fontSize: "11px", color: brandColor, textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800 }}>Destination Overview</h3>
                             </div>
                             <h2 style={{ margin: "0 0 16px 0", fontSize: "24px", color: "#0f172a", fontWeight: 800, letterSpacing: "-0.5px" }}>{aboutPlace.title}</h2>
-                            <p style={{ margin: "0 0 20px 0", color: "#475569", fontSize: "13.5px", lineHeight: "1.7", fontWeight: 500 }}>{aboutPlace.description}</p>
+                            <p style={{ margin: "0 0 20px 0", color: "#475569", fontSize: "13.5px", lineHeight: "1.7", fontWeight: 500 }}>{renderFormattedText(aboutPlace.description)}</p>
 
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                                 {(aboutPlace.highlights || []).map((hl: string, i: number) => (
                                     <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
                                         <div style={{ flexShrink: 0, width: "6px", height: "6px", borderRadius: "1px", background: brandColor, marginTop: "6px" }} />
-                                        <span style={{ fontSize: "12px", color: "#334155", fontWeight: 600 }}>{hl}</span>
+                                        <span style={{ fontSize: "12px", color: "#334155", fontWeight: 600 }}>{renderFormattedText(hl)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -227,7 +227,7 @@ export const CorporateTheme = ({
                                     {showTimestamps !== false ? (
                                         <div style={{ padding: "0 16px 0 0", flex: "0 0 90px", fontWeight: 600, color: brandColor, lineHeight: "1.6", fontSize: "11px" }}>{step.time}</div>
                                     ) : null}
-                                    <div data-field={`days[${index}].activities[${si}]`} style={{ flex: 1, lineHeight: "1.6", color: "#334155", fontWeight: 400 }}>{step.details}</div>
+                                    <div data-field={`days[${index}].activities[${si}]`} style={{ flex: 1, lineHeight: "1.6", color: "#334155", fontWeight: 400 }}>{renderFormattedText(step.details)}</div>
                                 </div>
                             ))}
                         </div>
@@ -340,7 +340,7 @@ export const CorporateTheme = ({
                                 </div>
                                 <ul style={{ margin: 0, padding: "20px", listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
                                     {inclusionsList.map((inc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#334155", fontWeight: 500 }}><span style={{ color: brandColor }}>✓</span> <span data-field={`inclusions[${i}]`}>{inc}</span></li>
+                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#334155", fontWeight: 500 }}><span style={{ color: brandColor }}>✓</span> <span data-field={`inclusions[${i}]`}>{renderFormattedText(inc)}</span></li>
                                     ))}
                                 </ul>
                             </div>
@@ -352,7 +352,7 @@ export const CorporateTheme = ({
                                 </div>
                                 <ul style={{ margin: 0, padding: "20px", listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
                                     {exclusionsList.map((exc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#475569", fontWeight: 500 }}><span style={{ color: "#94a3b8" }}>✗</span> <span data-field={`exclusions[${i}]`}>{exc}</span></li>
+                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#475569", fontWeight: 500 }}><span style={{ color: "#94a3b8" }}>✗</span> <span data-field={`exclusions[${i}]`}>{renderFormattedText(exc)}</span></li>
                                     ))}
                                 </ul>
                             </div>
@@ -479,7 +479,7 @@ export const CorporateTheme = ({
                                             <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Cancellation Policy</h3>
                                         </div>
                                         <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
-                                            {cancellationPolicyList.map((p, i) => <div data-field={`cancellationPolicy[${i}]`} key={i}>• {p}</div>)}
+                                            {cancellationPolicyList.map((p, i) => <div key={i}>• <span data-field={`cancellationPolicy[${i}]`}>{renderFormattedText(p)}</span></div>)}
                                         </div>
                                     </div>
                                 )}
@@ -489,7 +489,7 @@ export const CorporateTheme = ({
                                             <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Accepted Methods</h3>
                                         </div>
                                         <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
-                                            {paymentMethodsList.map((p, i) => <div data-field={`conditions[${i}]`} key={i}>• {p}</div>)}
+                                            {paymentMethodsList.map((p, i) => <div key={i}>• <span data-field={`conditions[${i}]`}>{renderFormattedText(p)}</span></div>)}
                                         </div>
                                     </div>
                                 )}
@@ -501,7 +501,7 @@ export const CorporateTheme = ({
                                     <h3 style={{ margin: 0, fontSize: "12px", color: brandColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>Terms & Conditions</h3>
                                 </div>
                                 <div style={{ padding: "16px 20px", fontSize: "12px", color: "#475569", lineHeight: "1.6" }}>
-                                    {termsAndConditionsList.map((p, i) => <div data-field={`terms[${i}]`} key={i}>• {p}</div>)}
+                                    {termsAndConditionsList.map((p, i) => <div key={i}>• <span data-field={`terms[${i}]`}>{renderFormattedText(p)}</span></div>)}
                                 </div>
                             </div>
                         )}

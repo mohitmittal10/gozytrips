@@ -11,6 +11,9 @@ import { getAgentInfo, formatTitleCase } from "@/components/pdf/utils";
 import { calcPricingFromBaseCost, calcBaseCost, extractTripCost } from "@/services/financial";
 import { defaultPricingConfig } from "@/types/pricing";
 import { filterCompleteEntriesForExport } from "@/lib/validation/logistics-validation";
+import { ImagePicker } from "./ImagePicker";
+import { FloatingToolbar } from "./FloatingToolbar";
+import { StructuralControls } from "./StructuralControls";
 
 // ─────────────────────────────────────────────────────────────
 // Toolbar: save / editing state
@@ -41,177 +44,107 @@ function EditorToolbar({
     onThemeChange: (theme: PdfTheme) => void;
 }) {
     return (
-        <div
-            style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                zIndex: 9999,
-                background: "rgba(9,9,11,0.97)",
-                borderBottom: "1px solid #27272a",
-                backdropFilter: "blur(12px)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                padding: "0 24px",
-                height: 56,
-                fontFamily: "var(--font-sans, sans-serif)",
-                gap: 16,
-            }}
-        >
+        <div className="fixed top-0 left-0 right-0 z-[9999] bg-zinc-950/95 border-b border-zinc-800/80 backdrop-blur-xl flex flex-wrap lg:flex-nowrap items-center justify-between px-3 sm:px-6 py-2 lg:py-0 min-h-[56px] lg:h-14 font-sans gap-2 sm:gap-4 overflow-x-auto hide-scrollbar">
             {/* Left: back + title */}
-            <div style={{ display: "flex", alignItems: "center", gap: 14, minWidth: 0 }}>
+            <div className="flex items-center gap-2 sm:gap-3.5 min-w-0 shrink-0">
                 <button
                     onClick={onBack}
-                    style={{
-                        background: "rgba(255,255,255,0.05)",
-                        border: "1px solid rgba(255,255,255,0.1)",
-                        color: "#e4e4e7",
-                        cursor: "pointer",
-                        padding: "5px 12px",
-                        fontSize: 12,
-                        borderRadius: "8px",
-                        fontWeight: 600,
-                        letterSpacing: "0.5px",
-                        whiteSpace: "nowrap",
-                        transition: "all 0.2s",
-                    }}
+                    className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer"
                 >
                     ← Back
                 </button>
-                <span
-                    style={{
-                        color: "#71717A",
-                        fontSize: 12,
-                        fontWeight: 600,
-                        letterSpacing: "0.5px",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                    }}
-                >
+                <span className="text-xs font-medium text-zinc-400 border-l border-zinc-800 pl-2.5 sm:pl-3 truncate max-w-[110px] sm:max-w-[200px] md:max-w-xs">
                     {itineraryTitle || "Itinerary Editor"}
                 </span>
             </div>
 
-            {/* Center: mode indicator */}
-            <div
-                style={{
-                    fontSize: 11,
-                    letterSpacing: "1px",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    color: editMode ? "#e4e4e7" : "#71717A",
-                    transition: "color 0.2s",
-                }}
-            >
-                {editMode ? "✏ Edit Mode" : "Preview Mode"}
+            {/* Center: mode indicator badge */}
+            <div className="flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-0.5 sm:p-1 shadow-inner shrink-0 scale-95 sm:scale-100">
+                <button
+                    onClick={() => editMode && onToggleEdit()}
+                    className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                        !editMode
+                            ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                            : "text-zinc-400 hover:text-zinc-200"
+                    }`}
+                >
+                    Preview
+                </button>
+                <button
+                    onClick={() => !editMode && onToggleEdit()}
+                    className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
+                        editMode
+                            ? "bg-zinc-800 text-zinc-100 shadow-sm"
+                            : "text-zinc-400 hover:text-zinc-200"
+                    }`}
+                >
+                    ✏ Edit
+                </button>
             </div>
 
             {/* Right: controls */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
                 {/* Theme selector */}
-                <label style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                    fontSize: 11,
-                    color: "#71717A",
-                    letterSpacing: "0.5px",
-                    fontWeight: 600,
-                    whiteSpace: "nowrap",
-                }}>
-                    Theme
+                <div className="flex items-center gap-1 text-xs font-medium text-zinc-400 whitespace-nowrap">
+                    <span className="hidden sm:inline">Theme</span>
                     <select
+                        disabled={saving}
                         value={selectedTheme}
                         onChange={(e) => onThemeChange(e.target.value as PdfTheme)}
-                        style={{
-                            background: "rgba(255,255,255,0.05)",
-                            border: "1px solid rgba(255,255,255,0.1)",
-                            color: "#e4e4e7",
-                            cursor: "pointer",
-                            padding: "5px 10px",
-                            fontSize: 11,
-                            borderRadius: "8px",
-                            fontWeight: 600,
-                            outline: "none",
-                        }}
+                        title="Select PDF theme"
+                        className={`bg-zinc-900 border border-zinc-800 text-zinc-200 rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 text-xs font-semibold outline-none focus:border-zinc-600 transition-colors ${
+                            saving
+                                ? "opacity-50 cursor-not-allowed"
+                                : "cursor-pointer hover:border-zinc-700"
+                        }`}
                     >
                         {DEFAULT_PDF_THEME_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value}
-                                style={{ background: "#18181b", color: "#e4e4e7" }}
-                            >
+                            <option key={opt.value} value={opt.value} className="bg-zinc-950 text-zinc-200">
                                 {opt.label}
                             </option>
                         ))}
                     </select>
-                </label>
+                </div>
 
                 {editMode && (
                     <button
                         onClick={onAddDay}
-                        style={{
-                            background: "rgba(59,130,246,0.15)",
-                            border: "1px solid rgba(59,130,246,0.3)",
-                            color: "#60a5fa",
-                            cursor: "pointer",
-                            padding: "5px 12px",
-                            fontSize: 12,
-                            borderRadius: "8px",
-                            fontWeight: 600,
-                            transition: "all 0.2s",
-                        }}
+                        className="bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap"
                     >
-                        + Add Day
+                        + Day
                     </button>
                 )}
 
                 <button
                     onClick={onToggleEdit}
-                    style={{
-                        background: editMode ? "rgba(255,255,255,0.1)" : "rgba(255,255,255,0.05)",
-                        border: `1px solid ${editMode ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.1)"}`,
-                        color: "#e4e4e7",
-                        cursor: "pointer",
-                        padding: "5px 14px",
-                        fontSize: 12,
-                        borderRadius: "8px",
-                        fontWeight: 600,
-                        transition: "all 0.2s",
-                    }}
+                    className={`px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                        editMode
+                            ? "bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-100"
+                            : "bg-primary text-primary-foreground border-transparent hover:opacity-90 shadow-md"
+                    }`}
                 >
-                    {editMode ? "Done Editing" : "Edit Content"}
+                    {editMode ? "Done" : "Edit Content"}
                 </button>
+
                 {saving ? (
-                    <span style={{ fontSize: 12, color: "#38bdf8", fontWeight: 600, display: "flex", alignItems: "center", gap: 4 }}>
-                        Saving changes…
+                    <span className="text-[11px] sm:text-xs font-semibold text-sky-400 flex items-center gap-1 animate-pulse whitespace-nowrap">
+                        Saving…
                     </span>
                 ) : dirty ? (
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <span style={{ fontSize: 11, color: "#fbbf24", fontWeight: 600 }}>
-                            Unsaved changes
+                    <div className="flex items-center gap-1.5 sm:gap-2.5">
+                        <span className="hidden sm:inline-block text-xs font-medium text-amber-400 bg-amber-950/40 border border-amber-800/40 px-2 py-0.5 rounded-full">
+                            Unsaved
                         </span>
                         <button
                             onClick={onSave}
-                            style={{
-                                background: "#e4e4e7",
-                                border: "none",
-                                color: "#09090b",
-                                cursor: "pointer",
-                                padding: "5px 16px",
-                                fontSize: 12,
-                                borderRadius: "8px",
-                                fontWeight: 700,
-                                transition: "all 0.2s",
-                            }}
+                            className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold px-2.5 sm:px-3.5 py-1.5 rounded-lg shadow-md transition-all active:scale-95 cursor-pointer whitespace-nowrap"
                         >
-                            Save Changes
+                            Save
                         </button>
                     </div>
                 ) : (
-                    <span style={{ fontSize: 12, color: "#34d399", fontWeight: 600 }}>
-                        ✓ All changes saved
+                    <span className="text-[11px] sm:text-xs font-medium text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-2 sm:px-2.5 py-1 rounded-full whitespace-nowrap">
+                        ✓ Saved
                     </span>
                 )}
             </div>
@@ -220,6 +153,69 @@ function EditorToolbar({
 }
 
 // ─────────────────────────────────────────────────────────────
+// Helper functions to sanitize collected text and prevent duplicate timestamps/bullets
+function cleanActivityText(str: string): string {
+    if (!str) return "";
+    let cleaned = str;
+    let prev = "";
+    while (cleaned !== prev) {
+        prev = cleaned;
+        cleaned = cleaned.replace(/^\s*(?:\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?\s*[-–—•]?\s*)+/gi, "").trim();
+        cleaned = cleaned.replace(/^\s*(?:[-•◆✓✕✦\*\+]\s*|\d+[\.\)]\s*)+/gi, "").trim();
+    }
+    return cleaned;
+}
+
+function cleanListItemText(str: string): string {
+    if (!str) return "";
+    return str.replace(/^\s*(?:[-•◆✓✕✦\*\+]\s*|\d+[\.\)]\s*)+/gi, "").trim();
+}
+
+function sanitizeItineraryData(data: any) {
+    if (!data || typeof data !== "object") return data;
+    const cloned = JSON.parse(JSON.stringify(data));
+    if (Array.isArray(cloned.itinerary)) {
+        cloned.itinerary.forEach((day: any) => {
+            if (Array.isArray(day.timeline)) {
+                day.timeline.forEach((step: any) => {
+                    if (step && typeof step === "object") {
+                        if (typeof step.details === "string") {
+                            step.details = cleanActivityText(step.details);
+                        }
+                        if (typeof step.activityTitle === "string") {
+                            step.activityTitle = cleanActivityText(step.activityTitle);
+                        }
+                    }
+                });
+            }
+            if (Array.isArray(day.activities)) {
+                day.activities = day.activities.map((act: any) =>
+                    typeof act === "string" ? cleanActivityText(act) : act
+                );
+            }
+        });
+    }
+    if (Array.isArray(cloned.inclusions)) {
+        cloned.inclusions = cloned.inclusions.map((item: any) => typeof item === "string" ? cleanListItemText(item) : item);
+    }
+    if (Array.isArray(cloned.exclusions)) {
+        cloned.exclusions = cloned.exclusions.map((item: any) => typeof item === "string" ? cleanListItemText(item) : item);
+    }
+    if (Array.isArray(cloned.terms)) {
+        cloned.terms = cloned.terms.map((item: any) => typeof item === "string" ? cleanListItemText(item) : item);
+    }
+    if (Array.isArray(cloned.conditions)) {
+        cloned.conditions = cloned.conditions.map((item: any) => typeof item === "string" ? cleanListItemText(item) : item);
+    }
+    if (Array.isArray(cloned.cancellationPolicy)) {
+        cloned.cancellationPolicy = cloned.cancellationPolicy.map((item: any) => typeof item === "string" ? cleanListItemText(item) : item);
+    }
+    if (Array.isArray(cloned.daySummaries)) {
+        cloned.daySummaries = cloned.daySummaries.map((item: any) => typeof item === "string" ? cleanActivityText(item) : item);
+    }
+    return cloned;
+}
+
 // instrumentTheme: stamps data-field on any rendered theme's DOM
 // so the contenteditable editing system works universally.
 // ─────────────────────────────────────────────────────────────
@@ -230,32 +226,38 @@ function instrumentTheme(container: HTMLDivElement, liveData: any) {
             el.setAttribute("data-field", field);
         }
     };
+    const stampImage = (el: Element | null, field: string) => {
+        if (el && !el.getAttribute("data-image-field")) {
+            el.setAttribute("data-image-field", field);
+        }
+    };
 
-    // — Cover: trip title
+    // — Cover: trip title & cover hero image
     const cover = container.querySelector("[data-pdf-section='cover']");
     if (cover) {
-        // Try h1 first, then first h2
         const titleEl = cover.querySelector("h1") || cover.querySelector("h2");
         stamp(titleEl, "itinerary.title");
+        const coverImg = cover.querySelector("img") || cover.querySelector("[style*='background-image']");
+        stampImage(coverImg, "cover.imageUrl");
     }
 
-    // — Days: location header + activity lines
+    // — Days: location header, hero image + activity lines
     const days = liveData?.itinerary || [];
     days.forEach((_day: any, idx: number) => {
         const daySection = container.querySelector(`[data-pdf-section='day-${idx}']`);
         if (!daySection) return;
 
-        // Day location/title — first h3 or h4 in the day section
         const dayTitle = daySection.querySelector("h3") ||
             daySection.querySelector("h4") ||
             daySection.querySelector("h2");
         stamp(dayTitle, `days[${idx}].location`);
 
-        // Activities — each <p> or <li> after the header is an activity
+        const dayImg = daySection.querySelector("img") || daySection.querySelector("[style*='background-image']");
+        stampImage(dayImg, `days[${idx}].imageUrl`);
+
         const activityEls = Array.from(
             daySection.querySelectorAll("p, li")
         ).filter(el => {
-            // Exclude timestamp/time elements (short, uppercase, time-like)
             const text = (el as HTMLElement).innerText?.trim() || "";
             return text.length > 4 && !text.match(/^\d{1,2}:\d{2}/) && !text.match(/^Day \d/);
         });
@@ -267,7 +269,6 @@ function instrumentTheme(container: HTMLDivElement, liveData: any) {
     // — Inclusions section: each <li> or <p> or <span> with text
     const inclusionsSection = container.querySelector("[data-pdf-section='inclusions']");
     if (inclusionsSection) {
-        // Typically two columns: inclusions first, then exclusions
         const allItems = Array.from(inclusionsSection.querySelectorAll("li, span, p")).filter(el => {
             const text = (el as HTMLElement).innerText?.trim() || "";
             return text.length > 2 && !(el as HTMLElement).querySelector("li, span, p");
@@ -299,6 +300,32 @@ function instrumentTheme(container: HTMLDivElement, liveData: any) {
             return text.length > 4 && !(el as HTMLElement).querySelector("li, p");
         });
         allItems.forEach((el, i) => stamp(el, `terms[${i}]`));
+    }
+
+    // — About Destination section
+    const aboutSection = container.querySelector("[data-pdf-section='about']");
+    if (aboutSection) {
+        const titleEl = aboutSection.querySelector("h2") || aboutSection.querySelector("h3");
+        stamp(titleEl, "aboutPlace.title");
+        const descEl = aboutSection.querySelector("p");
+        stamp(descEl, "aboutPlace.description");
+
+        const hlSpans = Array.from(aboutSection.querySelectorAll("span")).filter(el => {
+            const text = (el as HTMLElement).innerText?.trim() || "";
+            return text.length > 1 && text !== "✓";
+        });
+        hlSpans.forEach((el, i) => {
+            stamp(el, `aboutPlace.highlights[${i}]`);
+        });
+    }
+
+    // — Daywise Index / Itinerary at a Glance section
+    const glanceSection = container.querySelector("[data-pdf-section='daywise-index'], [data-pdf-section='brief-plan']");
+    if (glanceSection) {
+        const rows = Array.from(glanceSection.querySelectorAll("p"));
+        rows.forEach((pEl, i) => {
+            stamp(pEl, `daySummaries[${i}]`);
+        });
     }
 }
 
@@ -371,10 +398,10 @@ export default function LuxuryEditorPage() {
             // Only overwrite liveData when: (a) first load, (b) forced (external DB change), OR (c) no unsaved edits
             const shouldUpdate = forceUpdateLiveData || !liveDataRef.current || !dirtyRef.current;
             if (shouldUpdate && !editModeRef.current) {
-                setLiveData(data.itinerary_data);
+                setLiveData(sanitizeItineraryData(data.itinerary_data));
             } else if (!liveDataRef.current) {
                 // First load always sets liveData
-                setLiveData(data.itinerary_data);
+                setLiveData(sanitizeItineraryData(data.itinerary_data));
             }
             // Restore saved theme from itinerary_data or fall back to user default
             const savedTheme = data.itinerary_data?.selectedTheme as PdfTheme | undefined;
@@ -457,25 +484,48 @@ export default function LuxuryEditorPage() {
             if (editMode) {
                 if (htmlEl.contentEditable !== "true") {
                     htmlEl.contentEditable = "true";
-                    // White outer ring + blue inner ring = visible on any theme background
-                    htmlEl.style.outline = "none";
-                    htmlEl.style.boxShadow = "0 0 0 2px #ffffff, 0 0 0 4px #3b82f6";
-                    htmlEl.style.outlineOffset = "";
-                    htmlEl.style.cursor = "text";
-                    htmlEl.style.borderRadius = "3px";
+                    htmlEl.classList.add("html-editor-field-active");
                 }
             } else {
                 if (htmlEl.contentEditable !== "false") {
                     htmlEl.contentEditable = "false";
-                    htmlEl.style.outline = "";
-                    htmlEl.style.boxShadow = "";
-                    htmlEl.style.outlineOffset = "";
-                    htmlEl.style.cursor = "";
-                    htmlEl.style.borderRadius = "";
+                    htmlEl.classList.remove("html-editor-field-active");
                 }
             }
         });
     }, [editMode, liveData?.itinerary?.length, selectedTheme]);
+
+    // ── Image Picker State & Handlers ──────────────────────────────
+    const [imagePickerOpen, setImagePickerOpen] = useState(false);
+    const [imagePickerQuery, setImagePickerQuery] = useState("destination photo");
+    const [imageTargetField, setImageTargetField] = useState<string>("cover.imageUrl");
+
+    const handleOpenImagePicker = useCallback((query?: string, field?: string) => {
+        setImagePickerQuery(query || "destination photo");
+        setImageTargetField(field || "cover.imageUrl");
+        setImagePickerOpen(true);
+    }, []);
+
+    const handleSelectImage = useCallback((url: string) => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const updated = JSON.parse(JSON.stringify(prev));
+            if (imageTargetField === "cover.imageUrl" || imageTargetField.startsWith("cover")) {
+                updated.coverImageUrl = url;
+            } else if (imageTargetField.startsWith("days[")) {
+                const match = imageTargetField.match(/days\[(\d+)\]/);
+                if (match && Array.isArray(updated.itinerary)) {
+                    const dIdx = parseInt(match[1], 10);
+                    if (updated.itinerary[dIdx]) {
+                        updated.itinerary[dIdx].imageUrl = url;
+                    }
+                }
+            }
+            return updated;
+        });
+        setDirty(true);
+        setSaved(false);
+    }, [imageTargetField]);
 
     // ── Add Day action ────────────────────────────────────────────────
     const handleAddDay = useCallback(() => {
@@ -507,6 +557,322 @@ export default function LuxuryEditorPage() {
         setSaved(false);
     }, []);
 
+    // ── Day Structural Handlers ─────────────────────────────────────
+    const handleDeleteDay = useCallback((dayIdx: number) => {
+        setLiveData((prev: any) => {
+            if (!prev || !Array.isArray(prev.itinerary)) return prev;
+            const newDays = prev.itinerary.filter((_: any, i: number) => i !== dayIdx);
+            newDays.forEach((d: any, i: number) => { d.day = i + 1; });
+            return { ...prev, itinerary: newDays };
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleReorderDays = useCallback((fromIdx: number, toIdx: number) => {
+        setLiveData((prev: any) => {
+            if (!prev || !Array.isArray(prev.itinerary)) return prev;
+            if (toIdx < 0 || toIdx >= prev.itinerary.length) return prev;
+            const newDays = [...prev.itinerary];
+            const [moved] = newDays.splice(fromIdx, 1);
+            newDays.splice(toIdx, 0, moved);
+            newDays.forEach((d: any, i: number) => { d.day = i + 1; });
+            return { ...prev, itinerary: newDays };
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    // ── Activity Structural Handlers ────────────────────────────────
+    const handleAddActivity = useCallback((dayIdx: number) => {
+        setLiveData((prev: any) => {
+            if (!prev || !Array.isArray(prev.itinerary)) return prev;
+            const updated = JSON.parse(JSON.stringify(prev));
+            const day = updated.itinerary[dayIdx];
+            if (day) {
+                if (!Array.isArray(day.timeline)) day.timeline = [];
+                const newAct = {
+                    time: "12:00 PM",
+                    activityTitle: `New Activity ${day.timeline.length + 1}`,
+                    details: `Description for new activity ${day.timeline.length + 1}`,
+                };
+                day.timeline.push(newAct);
+                if (Array.isArray(day.activities)) {
+                    day.activities.push(newAct.details);
+                }
+            }
+            return updated;
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleDeleteActivity = useCallback((dayIdx: number, actIdx: number) => {
+        setLiveData((prev: any) => {
+            if (!prev || !Array.isArray(prev.itinerary)) return prev;
+            const updated = JSON.parse(JSON.stringify(prev));
+            const day = updated.itinerary[dayIdx];
+            if (day) {
+                if (Array.isArray(day.timeline)) {
+                    day.timeline = day.timeline.filter((_: any, i: number) => i !== actIdx);
+                }
+                if (Array.isArray(day.activities)) {
+                    day.activities = day.activities.filter((_: any, i: number) => i !== actIdx);
+                }
+            }
+            return updated;
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleMoveActivity = useCallback((dayIdx: number, actIdx: number, dir: "up" | "down") => {
+        setLiveData((prev: any) => {
+            if (!prev || !Array.isArray(prev.itinerary)) return prev;
+            const updated = JSON.parse(JSON.stringify(prev));
+            const day = updated.itinerary[dayIdx];
+            if (!day || !Array.isArray(day.timeline)) return prev;
+            const targetIdx = dir === "up" ? actIdx - 1 : actIdx + 1;
+            if (targetIdx < 0 || targetIdx >= day.timeline.length) return prev;
+            const [moved] = day.timeline.splice(actIdx, 1);
+            day.timeline.splice(targetIdx, 0, moved);
+            if (Array.isArray(day.activities)) {
+                const [movedAct] = day.activities.splice(actIdx, 1);
+                day.activities.splice(targetIdx, 0, movedAct);
+            }
+            return updated;
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleUpdateTime = useCallback((dayIdx: number, actIdx: number, newTime: string) => {
+        setLiveData((prev: any) => {
+            if (!prev || !Array.isArray(prev.itinerary)) return prev;
+            const updated = JSON.parse(JSON.stringify(prev));
+            const day = updated.itinerary[dayIdx];
+            if (day && Array.isArray(day.timeline) && day.timeline[actIdx]) {
+                if (typeof day.timeline[actIdx] === "object") {
+                    day.timeline[actIdx].time = newTime;
+                }
+            }
+            return updated;
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    // ── Inclusions & Policies Handlers ─────────────────────────────
+    const handleAddInclusion = useCallback(() => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const current = Array.isArray(prev.inclusions)
+                ? [...prev.inclusions]
+                : typeof prev.inclusions === "string"
+                    ? prev.inclusions.split("\n").filter(Boolean)
+                    : [];
+            return { ...prev, inclusions: [...current, "New Inclusion Item"] };
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleDeleteInclusion = useCallback((idx: number) => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const current = Array.isArray(prev.inclusions)
+                ? [...prev.inclusions]
+                : typeof prev.inclusions === "string"
+                    ? prev.inclusions.split("\n").filter(Boolean)
+                    : [];
+            return { ...prev, inclusions: current.filter((_: any, i: number) => i !== idx) };
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleAddExclusion = useCallback(() => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const current = Array.isArray(prev.exclusions)
+                ? [...prev.exclusions]
+                : typeof prev.exclusions === "string"
+                    ? prev.exclusions.split("\n").filter(Boolean)
+                    : [];
+            return { ...prev, exclusions: [...current, "New Exclusion Item"] };
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleDeleteExclusion = useCallback((idx: number) => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const current = Array.isArray(prev.exclusions)
+                ? [...prev.exclusions]
+                : typeof prev.exclusions === "string"
+                    ? prev.exclusions.split("\n").filter(Boolean)
+                    : [];
+            return { ...prev, exclusions: current.filter((_: any, i: number) => i !== idx) };
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleAddTerm = useCallback(() => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const current = Array.isArray(prev.termsAndConditions) ? [...prev.termsAndConditions] : [];
+            return { ...prev, termsAndConditions: [...current, "Standard terms and conditions apply."] };
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleDeleteTerm = useCallback((idx: number) => {
+        setLiveData((prev: any) => {
+            if (!prev || !Array.isArray(prev.termsAndConditions)) return prev;
+            return { ...prev, termsAndConditions: prev.termsAndConditions.filter((_: any, i: number) => i !== idx) };
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleAddCancellation = useCallback(() => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const current = Array.isArray(prev.cancellationPolicy) ? [...prev.cancellationPolicy] : [];
+            return { ...prev, cancellationPolicy: [...current, "Cancellation within 30 days incurs 50% charge."] };
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleDeleteCancellation = useCallback((idx: number) => {
+        setLiveData((prev: any) => {
+            if (!prev || !Array.isArray(prev.cancellationPolicy)) return prev;
+            return { ...prev, cancellationPolicy: prev.cancellationPolicy.filter((_: any, i: number) => i !== idx) };
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleAddPayment = useCallback(() => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const current = Array.isArray(prev.paymentMethods) ? [...prev.paymentMethods] : [];
+            return { ...prev, paymentMethods: [...current, "Bank Transfer / UPI / Credit Card accepted."] };
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleDeletePayment = useCallback((idx: number) => {
+        setLiveData((prev: any) => {
+            if (!prev || !Array.isArray(prev.paymentMethods)) return prev;
+            return { ...prev, paymentMethods: prev.paymentMethods.filter((_: any, i: number) => i !== idx) };
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    // ── Day Summaries (Itinerary at a Glance) Handler ──────────────
+    const handleUpdateDaySummary = useCallback((dayIdx: number, text: string) => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const updated = JSON.parse(JSON.stringify(prev));
+            if (!Array.isArray(updated.daySummaries)) {
+                updated.daySummaries = [];
+            }
+            updated.daySummaries[dayIdx] = cleanActivityText(text);
+            return updated;
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    // ── About Place (Destination Description) Handlers ────────────
+    const handleUpdateAboutTitle = useCallback((title: string) => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const updated = JSON.parse(JSON.stringify(prev));
+            if (!updated.aboutPlace) updated.aboutPlace = {};
+            updated.aboutPlace.title = title;
+            return updated;
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleUpdateAboutDescription = useCallback((desc: string) => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const updated = JSON.parse(JSON.stringify(prev));
+            if (!updated.aboutPlace) updated.aboutPlace = {};
+            updated.aboutPlace.description = desc;
+            updated.aboutPlace.aboutText = desc;
+            updated.overview = desc;
+            updated.summary = desc;
+            return updated;
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleAddHighlight = useCallback(() => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const updated = JSON.parse(JSON.stringify(prev));
+            if (!updated.aboutPlace) updated.aboutPlace = {};
+            const current = Array.isArray(updated.aboutPlace.highlights)
+                ? [...updated.aboutPlace.highlights]
+                : Array.isArray(updated.highlights)
+                    ? [...updated.highlights]
+                    : [];
+            const newHl = "New Destination Highlight";
+            updated.aboutPlace.highlights = [...current, newHl];
+            updated.highlights = [...current, newHl];
+            return updated;
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleDeleteHighlight = useCallback((idx: number) => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const updated = JSON.parse(JSON.stringify(prev));
+            if (!updated.aboutPlace) updated.aboutPlace = {};
+            const current = Array.isArray(updated.aboutPlace.highlights)
+                ? [...updated.aboutPlace.highlights]
+                : Array.isArray(updated.highlights)
+                    ? [...updated.highlights]
+                    : [];
+            const next = current.filter((_: any, i: number) => i !== idx);
+            updated.aboutPlace.highlights = next;
+            updated.highlights = next;
+            return updated;
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
+    const handleUpdateHighlight = useCallback((idx: number, text: string) => {
+        setLiveData((prev: any) => {
+            if (!prev) return prev;
+            const updated = JSON.parse(JSON.stringify(prev));
+            if (!updated.aboutPlace) updated.aboutPlace = {};
+            if (!Array.isArray(updated.aboutPlace.highlights)) {
+                updated.aboutPlace.highlights = [];
+            }
+            updated.aboutPlace.highlights[idx] = text;
+            updated.highlights = [...updated.aboutPlace.highlights];
+            return updated;
+        });
+        setDirty(true);
+        setSaved(false);
+    }, []);
+
     // ── Collect all edited content from DOM and merge into data ─
     const collectEdits = useCallback((): any => {
         if (!containerRef.current || !liveData) return liveData;
@@ -531,7 +897,12 @@ export default function LuxuryEditorPage() {
 
         fields.forEach((el) => {
             const path = (el as HTMLElement).dataset.field || "";
-            const text = ((el as HTMLElement).innerText || "").trim();
+            const htmlContent = ((el as HTMLElement).innerHTML || "").trim();
+            const textContent = ((el as HTMLElement).innerText || "").trim();
+            // Preserve rich HTML formatting like <b>, <i>, <strong> if present
+            const text = /<[a-z][\s\S]*>/i.test(htmlContent)
+                ? htmlContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+                : textContent;
             if (!path) return;
 
             // Top level title & subtitle
@@ -589,10 +960,28 @@ export default function LuxuryEditorPage() {
             }
 
             // Destination & About
-            else if (path === "destination.aboutText") {
+            else if (path === "aboutPlace.title" || path === "destination.title") {
+                if (!newData.aboutPlace) newData.aboutPlace = {};
+                newData.aboutPlace.title = text;
+            } else if (path === "aboutPlace.description" || path === "destination.aboutText" || path === "destination.description") {
+                if (!newData.aboutPlace) newData.aboutPlace = {};
+                newData.aboutPlace.description = text;
+                newData.aboutPlace.aboutText = text;
                 newData.overview = text;
                 newData.summary = text;
-                newData.aboutPlace.aboutText = text;
+            } else if (path.startsWith("aboutPlace.highlights[")) {
+                const match = path.match(/aboutPlace\.highlights\[(\d+)\]/);
+                if (match) {
+                    const idx = parseInt(match[1], 10);
+                    highlightsArr[idx] = text;
+                }
+            } else if (path.startsWith("daySummaries[")) {
+                const match = path.match(/daySummaries\[(\d+)\]/);
+                if (match) {
+                    const idx = parseInt(match[1], 10);
+                    if (!Array.isArray(newData.daySummaries)) newData.daySummaries = [];
+                    newData.daySummaries[idx] = cleanActivityText(text);
+                }
             }
 
             // Bank details
@@ -659,19 +1048,19 @@ export default function LuxuryEditorPage() {
             // Inclusions, Exclusions, Terms, Conditions, Cancellation Policy
             else if (path.startsWith("inclusions[")) {
                 const match = path.match(/inclusions\[(\d+)\]/);
-                if (match) inclusionsArr[parseInt(match[1], 10)] = text;
+                if (match) inclusionsArr[parseInt(match[1], 10)] = cleanListItemText(text);
             } else if (path.startsWith("exclusions[")) {
                 const match = path.match(/exclusions\[(\d+)\]/);
-                if (match) exclusionsArr[parseInt(match[1], 10)] = text;
+                if (match) exclusionsArr[parseInt(match[1], 10)] = cleanListItemText(text);
             } else if (path.startsWith("terms[")) {
                 const match = path.match(/terms\[(\d+)\]/);
-                if (match) termsArr[parseInt(match[1], 10)] = text;
+                if (match) termsArr[parseInt(match[1], 10)] = cleanListItemText(text);
             } else if (path.startsWith("conditions[")) {
                 const match = path.match(/conditions\[(\d+)\]/);
-                if (match) conditionsArr[parseInt(match[1], 10)] = text;
+                if (match) conditionsArr[parseInt(match[1], 10)] = cleanListItemText(text);
             } else if (path.startsWith("cancellationPolicy[")) {
                 const match = path.match(/cancellationPolicy\[(\d+)\]/);
-                if (match) cancelArr[parseInt(match[1], 10)] = text;
+                if (match) cancelArr[parseInt(match[1], 10)] = cleanListItemText(text);
             }
 
             // Installments
@@ -722,16 +1111,17 @@ export default function LuxuryEditorPage() {
                             const actMatch = subProp.match(/activities\[(\d+)\]/);
                             if (actMatch) {
                                 const aIdx = parseInt(actMatch[1], 10);
+                                const cleanAct = cleanActivityText(text);
                                 if (Array.isArray(day.timeline) && day.timeline[aIdx]) {
                                     if (typeof day.timeline[aIdx] === "object") {
                                         // Write to both fields: activityTitle (PDF theme) AND details (The Lab timeline)
-                                        day.timeline[aIdx].activityTitle = text;
-                                        day.timeline[aIdx].details = text;
+                                        day.timeline[aIdx].activityTitle = cleanAct;
+                                        day.timeline[aIdx].details = cleanAct;
                                     } else {
-                                        day.timeline[aIdx] = text;
+                                        day.timeline[aIdx] = cleanAct;
                                     }
                                 } else if (Array.isArray(day.activities)) {
-                                    day.activities[aIdx] = text;
+                                    day.activities[aIdx] = cleanAct;
                                 }
                             }
                         }
@@ -860,14 +1250,26 @@ export default function LuxuryEditorPage() {
     }, [editMode, collectEdits]);
 
     const handleThemeChange = useCallback((theme: PdfTheme) => {
-        if (editMode && containerRef.current) {
-            const updated = collectEdits();
-            if (updated) setLiveData(updated);
-        }
+        if (saving) return;
         setSelectedTheme(theme);
-        setDirty(true);
-        setSaved(false);
-    }, [editMode, collectEdits]);
+
+        // Asynchronously persist selected theme preference to DB without DOM scraping or setting content dirty
+        if (itinerary && user) {
+            const currentData = liveDataRef.current || liveData;
+            const updatedData = { ...currentData, selectedTheme: theme };
+            supabase
+                .from("itineraries")
+                .update({
+                    itinerary_data: updatedData,
+                    updated_at: new Date().toISOString(),
+                })
+                .eq("id", itinerary.id)
+                .eq("user_id", user.id)
+                .then(({ error }) => {
+                    if (error) console.error("Failed to persist theme preference:", error);
+                });
+        }
+    }, [saving, itinerary, user, liveData, supabase]);
 
     // ── Build props for PdfTemplate ─────────────────────────────
     const themeProps = useMemo(() => {
@@ -1061,32 +1463,88 @@ export default function LuxuryEditorPage() {
 
             {/* Edit mode hint banner */}
             {editMode && (
-                <div
-                    style={{
-                        position: "fixed",
-                        top: 56,
-                        left: 0,
-                        right: 0,
-                        zIndex: 9998,
-                        background: "#18181b",
-                        borderBottom: "1px solid #27272a",
-                        padding: "8px 24px",
-                        fontSize: 12,
-                        fontWeight: 600,
-                        color: "#71717A",
-                        textAlign: "center",
-                    }}
-                >
-                    Click any highlighted field to edit · Changes auto-apply to the PDF theme on export
+                <div className="fixed top-14 left-0 right-0 z-[9998] bg-zinc-950/80 border-b border-zinc-800/80 backdrop-blur-md py-2 px-6 text-xs font-medium text-zinc-400 text-center animate-in fade-in duration-200">
+                    Click any highlighted field to edit inline · Changes sync to DB & PDF export
                 </div>
             )}
+
+            {/* Floating context toolbar */}
+            <FloatingToolbar
+                editMode={editMode}
+                onOpenImagePicker={handleOpenImagePicker}
+                onUpdateTime={handleUpdateTime}
+            />
+
+            {/* Sidebar structure navigator */}
+            <StructuralControls
+                editMode={editMode}
+                liveData={liveData}
+                onReorderDays={handleReorderDays}
+                onDeleteDay={handleDeleteDay}
+                onAddDay={handleAddDay}
+                onAddActivity={handleAddActivity}
+                onDeleteActivity={handleDeleteActivity}
+                onMoveActivity={handleMoveActivity}
+                onUpdateDaySummary={handleUpdateDaySummary}
+                onUpdateAboutTitle={handleUpdateAboutTitle}
+                onUpdateAboutDescription={handleUpdateAboutDescription}
+                onAddHighlight={handleAddHighlight}
+                onDeleteHighlight={handleDeleteHighlight}
+                onUpdateHighlight={handleUpdateHighlight}
+                onAddInclusion={handleAddInclusion}
+                onDeleteInclusion={handleDeleteInclusion}
+                onAddExclusion={handleAddExclusion}
+                onDeleteExclusion={handleDeleteExclusion}
+                onAddTerm={handleAddTerm}
+                onDeleteTerm={handleDeleteTerm}
+                onAddCancellation={handleAddCancellation}
+                onDeleteCancellation={handleDeleteCancellation}
+                onAddPayment={handleAddPayment}
+                onDeletePayment={handleDeletePayment}
+                onOpenImagePicker={handleOpenImagePicker}
+            />
+
+            {/* Unsplash & Local Photo Picker Modal */}
+            <ImagePicker
+                open={imagePickerOpen}
+                onClose={() => setImagePickerOpen(false)}
+                onSelectImage={handleSelectImage}
+                title={`Choose ${imageTargetField.includes("cover") ? "Cover Photo" : "Day Photo"}`}
+                initialQuery={imagePickerQuery}
+            />
+
+            {/* Custom CSS for Editable Fields in Edit Mode */}
+            <style jsx global>{`
+                .html-editor-field-active {
+                    outline: 1.5px dashed rgba(59, 130, 246, 0.45) !important;
+                    outline-offset: 2px !important;
+                    background-color: rgba(59, 130, 246, 0.04) !important;
+                    border-radius: 6px !important;
+                    cursor: text !important;
+                    transition: outline 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+                                background-color 0.18s cubic-bezier(0.4, 0, 0.2, 1),
+                                box-shadow 0.18s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                }
+                .html-editor-field-active:hover {
+                    outline: 1.5px solid #3b82f6 !important;
+                    background-color: rgba(59, 130, 246, 0.08) !important;
+                    box-shadow: 0 0 10px rgba(59, 130, 246, 0.15) !important;
+                }
+                .html-editor-field-active:focus {
+                    outline: 2px solid #3b82f6 !important;
+                    outline-offset: 2px !important;
+                    background-color: rgba(59, 130, 246, 0.12) !important;
+                    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.22), 0 4px 14px rgba(0, 0, 0, 0.15) !important;
+                }
+            `}</style>
 
             {/* Itinerary render — PdfTemplate renders the selected theme.
                 instrumentTheme() stamps data-field on all themes after mount. */}
             <div
-                style={{ paddingTop: editMode ? 88 : 56, background: "#000000", minHeight: "100vh" }}
+                style={{ paddingTop: editMode ? 80 : 64, paddingBottom: 48, background: "#05070a", minHeight: "100vh" }}
+                className="px-2 sm:px-4 transition-all duration-200 w-full overflow-x-auto"
             >
-                <div ref={containerRef}>
+                <div ref={containerRef} className="max-w-5xl mx-auto overflow-x-auto min-w-0">
                     <PdfTemplate {...(themeProps as any)} theme={selectedTheme} />
                 </div>
             </div>

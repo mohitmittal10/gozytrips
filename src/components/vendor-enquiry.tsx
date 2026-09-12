@@ -27,11 +27,20 @@ import { useVendorEnquiryAi } from "@/hooks/use-vendor-enquiry-ai";
 import { FormField } from "@/components/ui/form-field";
 import { EnquiryHistory } from "@/components/vendor/EnquiryHistory";
 import { validateEmail } from "@/lib/security/input-sanitizer";
+import { cn } from "@/lib/utils";
 
 
 const ICON_MAP: Record<string, any> = {
   Building2, Car, Compass, FileCheck, Shield, Sparkles
 };
+
+const DEFAULT_ENQUIRY_TYPES: EnquiryTypeOption[] = [
+  { value: "hotel", label: "Hotel", icon: Building2, color: "text-zinc-300", bg: "bg-zinc-800", border: "border-zinc-700" },
+  { value: "transport", label: "Cab / Transport", icon: Car, color: "text-zinc-300", bg: "bg-zinc-800", border: "border-zinc-700" },
+  { value: "activities", label: "Activities", icon: Compass, color: "text-zinc-300", bg: "bg-zinc-800", border: "border-zinc-700" },
+  { value: "visa", label: "Visa", icon: FileCheck, color: "text-zinc-300", bg: "bg-zinc-800", border: "border-zinc-700" },
+  { value: "insurance", label: "Insurance", icon: Shield, color: "text-zinc-300", bg: "bg-zinc-800", border: "border-zinc-700" },
+];
 
 // ── Mailto helper ────────────────────────────────────────────────────────────
 
@@ -50,8 +59,9 @@ export default function VendorEnquiry() {
 
   const enquiryTypes = useMemo<EnquiryTypeOption[]>(() => {
     const opts = options.filter(opt => opt.scope === 'vendor_enquiry_type' || opt.scope === 'enquiry_type');
+    if (opts.length === 0) return DEFAULT_ENQUIRY_TYPES;
     return opts.map(opt => ({
-      value: opt.value,
+      value: opt.value as EnquiryType,
       label: opt.label,
       icon: ICON_MAP[opt.metadata?.icon] || Sparkles,
       color: opt.metadata?.color || "text-zinc-300",
@@ -176,7 +186,7 @@ export default function VendorEnquiry() {
   }, [userProfile?.id]);
 
   const hasGenerated = generatedSubject.length > 0;
-  const activeType = enquiryTypes.find(t => t.value === enquiryType) || enquiryTypes[0];
+  const activeType = enquiryTypes.find(t => t.value === enquiryType) || enquiryTypes[0] || DEFAULT_ENQUIRY_TYPES[0];
 
   // ── Persistence ───────────────────────────────────────────────────────────
   
@@ -385,38 +395,17 @@ export default function VendorEnquiry() {
 
   // ── Send via Gmail ────────────────────────────────────────────────────────
 
-  const handleSendGmail = useCallback(async () => {
-    if (!generatedSubject || !generatedBody) return;
-    openGmailCompose(vendorEmail, generatedSubject, generatedBody);
-    
-    // Mark as sent
-    await saveEnquiry({ status: "sent", sent_at: new Date().toISOString() });
-    setStatus("sent");
-
-    toast({ title: "Opening Gmail", description: "Enquiry marked as sent." });
-  }, [vendorEmail, generatedSubject, generatedBody, saveEnquiry, toast]);
-
-  if (optionsLoading) {
-    return (
-      <div className="flex items-center justify-center py-24">
-        <UniqueLoading variant="morph" size="md" />
-      </div>
-    );
-  }
-
-  if (!activeType) {
-    return (
-      <div className="flex flex-col items-center justify-center py-24 text-gray-500">
-        <AlertCircle className="w-8 h-8 mb-2" />
-        <p>No enquiry types found in reference options. Please check reference options in settings.</p>
-      </div>
-    );
-  }
+  const handleSendGmail = () => {
+    const to = encodeURIComponent(vendorEmail || "");
+    const subject = encodeURIComponent(generatedSubject || "");
+    const body = encodeURIComponent(generatedBody || "");
+    window.open(`https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${subject}&body=${body}`, "_blank");
+  };
 
   return (
     <div className="space-y-6">
       {/* Enquiry Type Selector */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex flex-wrap gap-2">
           {enquiryTypes.map(type => {
             const Icon = type.icon;
@@ -425,12 +414,12 @@ export default function VendorEnquiry() {
               <button
                 key={type.value}
                 onClick={() => { setEnquiryType(type.value); handleReset(); }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all duration-200
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all duration-200 cursor-pointer
                   ${isActive
-                    ? `${type.bg} ${type.border} ${type.color} shadow-lg shadow-${type.color}/5`
-                    : "bg-white/5 border-white/10 text-gray-400 hover:bg-white/10 hover:text-gray-200"}`}
+                    ? "bg-primary/20 border-primary/50 text-white shadow-lg shadow-primary/20"
+                    : "bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white"}`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className={cn("w-4 h-4", isActive ? "text-primary" : "text-zinc-400")} />
                 {type.label}
               </button>
             );
@@ -447,27 +436,29 @@ export default function VendorEnquiry() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Form */}
-        <Card className="border-zinc-800 bg-[#0c0c0e] shadow-2xl backdrop-blur-xl">
-          <CardHeader className="pb-4">
-            <div className="flex items-center gap-2">
-              {React.createElement(activeType.icon, { className: `w-5 h-5 ${activeType.color}` })}
-              <CardTitle className="text-lg text-white">{activeType.label} Enquiry</CardTitle>
+        <Card className="border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-2xl rounded-2xl">
+          <CardHeader className="pb-4 border-b border-white/5">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+                {React.createElement(activeType.icon, { className: "w-5 h-5 text-primary" })}
+              </div>
+              <CardTitle className="text-lg font-bold text-white">{activeType.label} Enquiry</CardTitle>
             </div>
-            <CardDescription className="text-gray-500">
+            <CardDescription className="text-zinc-400 text-xs">
               Fill in the details and let AI generate a professional enquiry email.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-5">
+          <CardContent className="space-y-5 pt-4">
             <div className="space-y-3">
-              <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Persistence & Context</p>
-              <div className="grid grid-cols-2 gap-3">
+              <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Persistence & Context</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Link to Client</Label>
+                  <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Link to Client</Label>
                   <Select value={clientId || "none"} onValueChange={(v) => setClientId(v === "none" ? null : v)}>
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-sm">
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 text-sm rounded-xl">
                       <SelectValue placeholder="Select client..." />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-obsidian-dark border-white/10 text-white">
                       <SelectItem value="none">No Client</SelectItem>
                       {clients.map(c => (
                         <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
@@ -476,12 +467,12 @@ export default function VendorEnquiry() {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Link to Itinerary</Label>
+                  <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Link to Itinerary</Label>
                   <Select value={itineraryId || "none"} onValueChange={(v) => setItineraryId(v === "none" ? null : v)}>
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-sm">
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 text-sm rounded-xl">
                       <SelectValue placeholder="Select itinerary..." />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-obsidian-dark border-white/10 text-white">
                       <SelectItem value="none">No Itinerary</SelectItem>
                       {userItineraries.map(i => (
                         <SelectItem key={i.id} value={i.id}>{i.title}</SelectItem>
@@ -493,9 +484,9 @@ export default function VendorEnquiry() {
             </div>
 
             {/* Common Fields */}
-            <div className="space-y-3 pt-2 border-t border-white/5">
-              <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">Trip Details</p>
-              <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3 pt-3 border-t border-white/5">
+              <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Trip Details</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField label="Destination" value={destination} onChange={setDestination} placeholder="e.g. Manali, Himachal Pradesh" required />
                 <FormField label="Travel Dates" value={travelDates} onChange={setTravelDates} placeholder="e.g. 15 Apr - 22 Apr 2026" required />
               </div>
@@ -507,21 +498,21 @@ export default function VendorEnquiry() {
             </div>
 
             {/* Type-Specific Fields */}
-            <div className="space-y-3 pt-2 border-t border-white/5">
-              <p className="text-[10px] uppercase tracking-widest text-gray-500 font-bold">{activeType.label} Details</p>
+            <div className="space-y-3 pt-3 border-t border-white/5">
+              <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">{activeType.label} Details</p>
 
               {enquiryType === "hotel" && (
-                <div className="grid grid-cols-2 gap-3">
-                  <FormField label="Hotel Name" value={hotelName} onChange={setHotelName} placeholder="e.g. The Taj Palace" className="col-span-2" />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <FormField label="Hotel Name" value={hotelName} onChange={setHotelName} placeholder="e.g. The Taj Palace" className="sm:col-span-2" />
                   <FormField label="Room Type" value={roomType} onChange={setRoomType} placeholder="e.g. Deluxe, Suite" />
                   <FormField label="No. of Rooms" value={numberOfRooms} onChange={setNumberOfRooms} type="number" />
-                  <div className="space-y-1.5 col-span-2">
-                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Meal Plan</Label>
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Meal Plan</Label>
                     <Select value={mealPlan} onValueChange={setMealPlan}>
-                      <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-sm">
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 text-sm rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-obsidian-dark border-white/10 text-white">
                         {mealPlans.map(mp => (
                           <SelectItem key={mp.value} value={mp.value}>{mp.label}</SelectItem>
                         ))}
@@ -532,22 +523,22 @@ export default function VendorEnquiry() {
               )}
 
               {enquiryType === "transport" && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5 col-span-2">
-                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Vehicle Type</Label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1.5 sm:col-span-2">
+                    <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Vehicle Type</Label>
                     <Select value={vehicleType} onValueChange={setVehicleType}>
-                      <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-sm">
+                      <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 text-sm rounded-xl">
                         <SelectValue placeholder="Select vehicle..." />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-obsidian-dark border-white/10 text-white">
                         {vehicleTypes.map(vt => (
                           <SelectItem key={vt.value} value={vt.value}>{vt.label}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                  <FormField label="Route" value={route} onChange={setRoute} placeholder="e.g. Delhi → Manali round trip" className="col-span-2" />
-                  <FormField label="Pickup Location" value={pickupLocation} onChange={setPickupLocation} placeholder="e.g. IGI Airport T3" className="col-span-2" />
+                  <FormField label="Route" value={route} onChange={setRoute} placeholder="e.g. Delhi → Manali round trip" className="sm:col-span-2" />
+                  <FormField label="Pickup Location" value={pickupLocation} onChange={setPickupLocation} placeholder="e.g. IGI Airport T3" className="sm:col-span-2" />
                 </div>
               )}
 
@@ -556,7 +547,7 @@ export default function VendorEnquiry() {
               )}
 
               {enquiryType === "visa" && (
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <FormField label="Destination Country" value={destinationCountry} onChange={setDestinationCountry} placeholder="e.g. Thailand" />
                   <FormField label="Nationality" value={nationality} onChange={setNationality} placeholder="e.g. Indian" />
                 </div>
@@ -564,12 +555,12 @@ export default function VendorEnquiry() {
 
               {enquiryType === "insurance" && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Coverage Type</Label>
+                  <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Coverage Type</Label>
                   <Select value={coverageType} onValueChange={setCoverageType}>
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-sm">
+                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 text-sm rounded-xl">
                       <SelectValue placeholder="Select coverage..." />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-obsidian-dark border-white/10 text-white">
                       {coverageTypes.map(ct => (
                         <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
                       ))}
@@ -580,41 +571,41 @@ export default function VendorEnquiry() {
             </div>
 
             {/* Vendor Email + Special Requests */}
-            <div className="space-y-3 pt-2 border-t border-white/5">
+            <div className="space-y-3 pt-3 border-t border-white/5">
               <FormField label="Vendor Email" value={vendorEmail} onChange={setVendorEmail} placeholder="e.g. reservations@tajhotels.com" />
               <div className="space-y-1.5">
-                <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Special Requests</Label>
+                <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Special Requests</Label>
                 <textarea
                   value={specialRequests}
                   onChange={(e) => setSpecialRequests(e.target.value)}
                   placeholder="Any special requirements, preferences, or notes..."
-                  className="w-full h-20 rounded-md bg-white/5 border border-white/10 text-white text-sm p-3 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-zinc-600 resize-none"
+                  className="w-full h-20 rounded-xl bg-white/5 border border-white/10 text-white text-sm p-3 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 resize-none transition-all"
                 />
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-2">
+            <div className="flex gap-3 pt-2">
               <Button
                 onClick={() => {
                   saveEnquiry();
                   toast({ title: "Draft Saved", description: "Your enquiry details have been persisted." });
                 }}
                 variant="outline"
-                className="flex-1 border-white/10 text-gray-300 hover:bg-white/10 hover:text-white h-11 text-sm font-semibold gap-2"
+                className="flex-1 border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-white h-11 text-sm font-semibold rounded-xl gap-2 transition-all cursor-pointer"
               >
-                <Save className="w-4 h-4" />
+                <Save className="w-4 h-4 text-zinc-400" />
                 Save Draft
               </Button>
               <Button
                 onClick={onGenerate}
                 disabled={isGenerating || !destination.trim() || !travelDates.trim()}
-                className="flex-[2] bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 h-11 text-sm font-semibold gap-2 shadow-sm"
+                className="flex-[2] aurora-gradient text-white h-11 text-sm font-bold gap-2 shadow-lg shadow-primary/25 rounded-xl transition-all hover:brightness-110 active:scale-98 cursor-pointer disabled:opacity-50 border-none"
               >
                 {isGenerating ? (
                   <>
                     <UniqueLoading variant="morph" size="sm" className="w-5 h-5" />
-                    Generating...
+                    Crafting Email...
                   </>
                 ) : (
                   <>
@@ -630,36 +621,36 @@ export default function VendorEnquiry() {
         {/* Right: Email Preview */}
         <div className="space-y-4">
           {!hasGenerated && !isGenerating ? (
-            <div className="flex flex-col items-center justify-center h-full min-h-[400px] bg-[#0c0c0e] border border-white/10 rounded-xl p-8">
-              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mb-4 text-white">
-                <Sparkles className="w-7 h-7 text-white" />
+            <div className="flex flex-col items-center justify-center h-full min-h-[420px] bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8 shadow-xl">
+              <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4 text-primary shadow-inner">
+                <Sparkles className="w-7 h-7 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-300 mb-2">AI Email Preview</h3>
-              <p className="text-sm text-gray-500 text-center max-w-xs">
-                Fill in the enquiry details and click "Generate Email" to see a professionally crafted enquiry email.
+              <h3 className="text-lg font-bold text-white mb-2">AI Email Preview</h3>
+              <p className="text-sm text-zinc-400 text-center max-w-xs leading-relaxed">
+                Fill in the enquiry details and click "Generate with AI" to construct a polished vendor outreach email.
               </p>
             </div>
           ) : isGenerating ? (
-            <div className="flex flex-col items-center justify-center h-full min-h-[400px] bg-[#0c0c0e] border border-white/10 rounded-xl p-8">
+            <div className="flex flex-col items-center justify-center h-full min-h-[420px] bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8 shadow-xl">
               <div className="relative mb-6">
-                <div className="absolute -inset-4 bg-white/5 rounded-full blur-xl opacity-50 animate-pulse" />
+                <div className="absolute -inset-4 bg-primary/20 rounded-full blur-xl opacity-50 animate-pulse" />
                 <UniqueLoading variant="morph" size="md" className="relative z-10" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-300 mb-2">Generating Email...</h3>
-              <p className="text-sm text-gray-500 text-center">AI is crafting a professional enquiry email for you.</p>
+              <h3 className="text-lg font-bold text-white mb-2">Generating Email...</h3>
+              <p className="text-sm text-zinc-400 text-center">AI is crafting a professional enquiry email for your vendor.</p>
             </div>
           ) : (
-            <Card className="border-zinc-800 bg-[#0c0c0e] shadow-2xl backdrop-blur-xl">
-              <CardHeader className="pb-3 border-b border-white/10">
+            <Card className="border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-2xl rounded-2xl">
+              <CardHeader className="pb-3 border-b border-white/5">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold text-white flex items-center gap-2">
-                    <Send className="w-5 h-5 text-white" />
+                  <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                    <Send className="w-5 h-5 text-primary" />
                     Email Preview
                   </CardTitle>
                   <div className="flex items-center gap-1">
                     <Button
                       variant="ghost" size="icon"
-                      className="h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-800"
+                      className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       onClick={() => setIsEditing(!isEditing)}
                       title="Edit"
                     >
@@ -667,15 +658,15 @@ export default function VendorEnquiry() {
                     </Button>
                     <Button
                       variant="ghost" size="icon"
-                      className="h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-800"
+                      className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       onClick={handleCopy}
                       title="Copy"
                     >
-                      {copied ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                     </Button>
                     <Button
                       variant="ghost" size="icon"
-                      className="h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-800"
+                      className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       onClick={handleReset}
                       title="Reset"
                     >
@@ -686,16 +677,16 @@ export default function VendorEnquiry() {
               </CardHeader>
               <CardContent className="space-y-4 pt-4">
                 {/* TO field */}
-                <div className="flex items-center gap-2 text-sm bg-black/60 p-2.5 rounded-lg border border-white/10">
-                  <span className="text-gray-400 font-semibold w-12">To:</span>
-                  <span className="text-zinc-200 font-semibold">{vendorEmail || <span className="text-gray-500 italic">No vendor email set</span>}</span>
+                <div className="flex items-center gap-2 text-sm bg-black/40 p-3 rounded-xl border border-white/10">
+                  <span className="text-zinc-400 font-semibold w-12 shrink-0">To:</span>
+                  <span className="text-white font-semibold truncate">{vendorEmail || <span className="text-zinc-500 italic">No vendor email set</span>}</span>
                 </div>
 
                 {/* Subject */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-300 font-semibold text-sm">Subject:</span>
-                    <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${generatedSubject.length > 90 ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"}`}>
+                    <span className="text-zinc-300 font-semibold text-xs uppercase tracking-wider">Subject:</span>
+                    <Badge variant="secondary" className={`text-[10px] px-2 py-0.5 rounded-full ${generatedSubject.length > 90 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"}`}>
                       {generatedSubject.length}/100
                     </Badge>
                   </div>
@@ -703,11 +694,11 @@ export default function VendorEnquiry() {
                     <input
                       value={generatedSubject}
                       onChange={(e) => setGeneratedSubject(e.target.value)}
-                      className="w-full bg-black border-white/10 text-white text-sm h-9 px-3 rounded-md focus:outline-none focus:ring-2 focus:ring-zinc-600"
+                      className="w-full bg-black/50 border-white/10 text-white text-sm h-10 px-3 rounded-xl focus:outline-none focus:border-primary/50"
                       maxLength={100}
                     />
                   ) : (
-                    <p className="text-sm font-semibold text-white bg-black/60 rounded-lg px-3.5 py-2.5 border border-white/10 shadow-inner leading-normal">
+                    <p className="text-sm font-semibold text-white bg-black/40 rounded-xl px-3.5 py-2.5 border border-white/10 leading-normal">
                       {generatedSubject}
                     </p>
                   )}
@@ -716,8 +707,8 @@ export default function VendorEnquiry() {
                 {/* Body */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-gray-300 font-semibold text-sm">Body:</span>
-                    <Badge variant="secondary" className={`text-[10px] px-1.5 py-0 ${generatedBody.length > 1400 ? "bg-amber-500/20 text-amber-300 border-amber-500/30" : "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"}`}>
+                    <span className="text-zinc-300 font-semibold text-xs uppercase tracking-wider">Body:</span>
+                    <Badge variant="secondary" className={`text-[10px] px-2 py-0.5 rounded-full ${generatedBody.length > 1400 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"}`}>
                       {generatedBody.length}/1500
                     </Badge>
                   </div>
@@ -725,11 +716,11 @@ export default function VendorEnquiry() {
                     <textarea
                       value={generatedBody}
                       onChange={(e) => setGeneratedBody(e.target.value.slice(0, 1500))}
-                      className="w-full h-64 rounded-md bg-black border border-white/10 text-white text-sm p-3 focus:outline-none focus:ring-2 focus:ring-zinc-600 resize-none font-mono leading-relaxed"
+                      className="w-full h-64 rounded-xl bg-black/50 border border-white/10 text-white text-sm p-3 focus:outline-none focus:border-primary/50 resize-none font-sans leading-relaxed"
                     />
                   ) : (
-                    <div className="bg-black/60 rounded-lg border border-white/10 p-4 max-h-[340px] overflow-y-auto shadow-inner">
-                      <pre className="text-sm text-gray-200 whitespace-pre-wrap font-sans leading-relaxed font-normal">
+                    <div className="bg-black/40 rounded-xl border border-white/10 p-4 max-h-[340px] overflow-y-auto">
+                      <pre className="text-sm text-zinc-200 whitespace-pre-wrap font-sans leading-relaxed font-normal">
                         {generatedBody}
                       </pre>
                     </div>
@@ -739,7 +730,7 @@ export default function VendorEnquiry() {
                 <Button
                   onClick={handleSendGmail}
                   disabled={!generatedSubject || !generatedBody}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-11 text-sm font-semibold gap-2 shadow-lg shadow-emerald-500/20"
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold h-11 text-sm gap-2 shadow-lg shadow-emerald-500/20 rounded-xl transition-all active:scale-98 cursor-pointer disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
                   Open in Gmail

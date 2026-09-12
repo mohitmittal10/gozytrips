@@ -113,8 +113,28 @@ export const PdfTemplate = ({ itinerary, title, clientName, userProfile, agencyS
     }
 
     return (
-        <div style={{ position: "relative" }}>
-            {ThemeComponent}
+        <div style={{ position: "relative", width: "100%" }}>
+            <style>{`
+                @media print {
+                    .pdf-template-wrapper {
+                        max-width: 100% !important;
+                        margin: 0 !important;
+                        box-shadow: none !important;
+                    }
+                }
+            `}</style>
+            <div
+                className="pdf-template-wrapper"
+                style={{
+                    position: "relative",
+                    maxWidth: 1056,
+                    margin: "0 auto",
+                    width: "100%",
+                    boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+                }}
+            >
+                {ThemeComponent}
+            </div>
         </div>
     );
 };

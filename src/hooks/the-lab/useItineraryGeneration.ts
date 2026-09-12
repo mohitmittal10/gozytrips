@@ -71,7 +71,7 @@ export function useItineraryGeneration() {
         hotels: effectiveValues.hotels || [],
       });
 
-      const result = await generateTravelItinerary({
+      const res = await generateTravelItinerary({
         startingLocation: effectiveValues.startingLocation,
         endingLocation: effectiveValues.endingLocation || effectiveValues.startingLocation,
         startDate: startDateStr,
@@ -89,7 +89,19 @@ export function useItineraryGeneration() {
         hotels: effectiveValues.hotels || [],
         hotelsText: "",
       });
-      console.log("[useItineraryGeneration] generateTravelItinerary response received:", result);
+      console.log("[useItineraryGeneration] generateTravelItinerary response received:", res);
+
+      if (!res.success) {
+        console.error(`[useItineraryGeneration] Generation failed${res.code ? ` [${res.code}]` : ''}:`, res.error);
+        toast({
+          variant: "destructive",
+          title: "Generation Failed",
+          description: res.error,
+        });
+        return null;
+      }
+
+      const result = res.data;
 
       // Fetch dynamic images — exactly ONE image per day from Unsplash
       try {

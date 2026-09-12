@@ -192,12 +192,12 @@ export const EditItineraryView = ({
     // ── Empty state ────────────────────────────────────────────────────────────
     if (!loading && !error && itineraries.length === 0) {
         return (
-            <div className="mt-4 bg-white/[0.02] border border-white/10 rounded-xl p-16 text-center text-gray-400 flex flex-col items-center justify-center gap-3">
-                <Compass className="w-12 h-12 text-gray-600 opacity-40" />
-                <h3 className="text-xl font-medium text-white">No Itineraries Yet</h3>
-                <p className="text-sm">Create a new itinerary in the The Lab to get started.</p>
+            <div className="mt-4 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-16 text-center text-zinc-300 flex flex-col items-center justify-center gap-3">
+                <Compass className="w-12 h-12 text-zinc-400 opacity-60" />
+                <h3 className="text-xl font-bold text-white">No Itineraries Yet</h3>
+                <p className="text-sm text-zinc-400">Create a new itinerary in The Lab to get started.</p>
                 <Link href="/the-lab">
-                    <Button className="mt-2 px-6 py-2.5 aurora-gradient text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 h-10 border-none">
+                    <Button className="mt-2 px-6 py-2.5 aurora-gradient text-white rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-2 h-10 border-none">
                         <Plus className="w-4 h-4" /> Create New Itinerary
                     </Button>
                 </Link>
@@ -211,22 +211,22 @@ export const EditItineraryView = ({
             <div className="flex flex-col sm:flex-row gap-3">
                 {/* Search */}
                 <div className="relative flex-1 min-w-0">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 pointer-events-none" />
                     <Input
                         placeholder="Search by title, destination, client…"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="pl-10 h-10 bg-black/30 border-white/10 text-white placeholder:text-gray-600 focus-visible:ring-purple-500/40 rounded-lg text-sm"
+                        className="pl-10 h-10 bg-black/40 border-white/10 text-white placeholder:text-zinc-400 focus-visible:ring-primary/40 rounded-xl text-sm"
                     />
                 </div>
 
                 {/* Status filter */}
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-full sm:w-[160px] h-10 bg-white/5 border-white/10 text-white rounded-lg text-sm">
-                        <Filter className="w-3.5 h-3.5 mr-2 text-gray-500" />
+                    <SelectTrigger className="w-full sm:w-[160px] h-10 bg-white/5 border-white/10 text-white rounded-xl text-sm">
+                        <Filter className="w-3.5 h-3.5 mr-2 text-zinc-400" />
                         <SelectValue placeholder="All Statuses" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#1a1a2e] border-white/10 text-white">
+                    <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white">
                         <SelectItem value="all">All Statuses</SelectItem>
                         {itineraryStatuses.length > 0 ? (
                             itineraryStatuses.map((opt) => (
@@ -253,7 +253,7 @@ export const EditItineraryView = ({
                     size="sm"
                     onClick={() => fetchItineraries(true)}
                     disabled={isRefreshing || loading}
-                    className="h-10 px-3 border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 hover:text-white rounded-lg shrink-0"
+                    className="h-10 px-3 border-white/10 bg-white/5 text-zinc-300 hover:bg-white/10 hover:text-white rounded-xl shrink-0"
                     title="Refresh list"
                 >
                     <RefreshCw className={cn("w-4 h-4", (isRefreshing || loading) && "animate-spin")} />
@@ -261,14 +261,14 @@ export const EditItineraryView = ({
 
                 {/* New itinerary shortcut */}
                 <Link href="/the-lab">
-                    <Button className="h-10 px-4 aurora-gradient text-white rounded-lg text-sm font-semibold hover:brightness-110 transition-all shadow-lg shadow-purple-500/20 flex items-center gap-2 border-none whitespace-nowrap">
+                    <Button className="h-10 px-4 aurora-gradient text-white rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-2 border-none whitespace-nowrap">
                         <Plus className="w-4 h-4" /> New
                     </Button>
                 </Link>
             </div>
 
             {/* Row count */}
-            <p className="text-xs text-gray-500 font-medium">
+            <p className="text-xs text-zinc-400 font-medium">
                 {loading
                     ? "Loading…"
                     : filtered.length === 0
@@ -292,7 +292,7 @@ export const EditItineraryView = ({
             )}
 
             {/* ── List ────────────────────────────────────────────────────────── */}
-            <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
+            <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden shadow-xl">
                 {loading ? (
                     /* Skeleton */
                     <div className="divide-y divide-white/5">
@@ -308,14 +308,14 @@ export const EditItineraryView = ({
                         ))}
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 gap-3 text-gray-500">
-                        <Search className="w-8 h-8 opacity-30" />
+                    <div className="flex flex-col items-center justify-center py-16 gap-3 text-zinc-400">
+                        <Search className="w-8 h-8 opacity-40 text-zinc-400" />
                         <p className="text-sm">No itineraries match your search.</p>
                         {(searchQuery || statusFilter !== "all") && (
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-purple-400 text-xs"
+                                className="text-primary hover:text-primary/80 text-xs"
                                 onClick={() => { setSearchQuery(""); setStatusFilter("all"); }}
                             >
                                 Clear filters
@@ -339,42 +339,42 @@ export const EditItineraryView = ({
                             return (
                                 <div
                                     key={trip.id}
-                                    className="flex items-center gap-3 p-4 hover:bg-white/[0.03] transition-colors group"
+                                    className="flex items-center gap-3 p-4 hover:bg-white/[0.04] transition-colors group"
                                 >
                                     {/* Icon */}
-                                    <div className="w-9 h-9 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center shrink-0">
-                                        <Compass className="w-4 h-4 text-purple-400" />
+                                    <div className="w-9 h-9 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                                        <Compass className="w-4 h-4 text-primary" />
                                     </div>
 
                                     {/* Main info */}
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-medium text-white truncate leading-snug">
+                                        <p className="text-sm font-semibold text-white truncate leading-snug">
                                             {title}
                                         </p>
                                         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5 mt-0.5">
                                             {destination && (
-                                                <span className="text-[11px] text-gray-500 flex items-center gap-1">
-                                                    <Compass className="w-3 h-3 text-purple-400/60 shrink-0" />
+                                                <span className="text-[11px] text-zinc-400 flex items-center gap-1 font-medium">
+                                                    <Compass className="w-3 h-3 text-primary/70 shrink-0" />
                                                     {destination}
                                                 </span>
                                             )}
                                             {trip.client_name && (
-                                                <span className="text-[11px] text-gray-500 flex items-center gap-1">
-                                                    <Users className="w-3 h-3 shrink-0" />
+                                                <span className="text-[11px] text-zinc-400 flex items-center gap-1">
+                                                    <Users className="w-3 h-3 shrink-0 text-zinc-400" />
                                                     {trip.client_name}
                                                 </span>
                                             )}
                                             {trip.start_date && (
-                                                <span className="text-[11px] text-gray-500 flex items-center gap-1">
-                                                    <CalendarDays className="w-3 h-3 shrink-0" />
+                                                <span className="text-[11px] text-zinc-400 flex items-center gap-1">
+                                                    <CalendarDays className="w-3 h-3 shrink-0 text-zinc-400" />
                                                     {formatDate(trip.start_date)}
                                                     {duration && (
-                                                        <span className="text-purple-400/70 font-medium">· {duration}</span>
+                                                        <span className="text-primary font-medium">· {duration}</span>
                                                     )}
                                                 </span>
                                             )}
                                             {totalPax > 0 && (
-                                                <span className="text-[11px] text-gray-600">{totalPax} pax</span>
+                                                <span className="text-[11px] text-zinc-400">{totalPax} pax</span>
                                             )}
                                         </div>
                                     </div>
@@ -382,7 +382,7 @@ export const EditItineraryView = ({
                                     {/* Status badge */}
                                     <span
                                         className={cn(
-                                            "hidden sm:inline-flex text-[10px] font-semibold uppercase px-2 py-0.5 rounded-full shrink-0",
+                                            "hidden sm:inline-flex text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full shrink-0",
                                             statusClasses(trip.status, itineraryStatuses)
                                         )}
                                     >
@@ -390,17 +390,17 @@ export const EditItineraryView = ({
                                     </span>
 
                                     {/* Updated at */}
-                                    <span className="hidden lg:block text-[10px] text-gray-600 shrink-0 w-[72px] text-right">
+                                    <span className="hidden lg:block text-[10px] text-zinc-400 font-medium shrink-0 w-[72px] text-right">
                                         {formatDate(trip.updated_at)}
                                     </span>
 
                                     {/* Actions */}
-                                    <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
                                         {/* View itinerary */}
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg"
+                                            className="h-8 w-8 text-zinc-300 hover:text-white hover:bg-white/10 rounded-lg"
                                             title="Preview Itinerary"
                                             onClick={() => {
                                                 setSelectedTripForModal(trip);
@@ -415,7 +415,7 @@ export const EditItineraryView = ({
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-8 w-8 text-gray-400 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg"
+                                                className="h-8 w-8 text-zinc-300 hover:text-primary hover:bg-primary/10 rounded-lg"
                                                 title="Edit in The Lab"
                                             >
                                                 <Pencil className="w-3.5 h-3.5" />
@@ -426,7 +426,7 @@ export const EditItineraryView = ({
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8 text-gray-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg"
+                                            className="h-8 w-8 text-zinc-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg"
                                             title="Delete Itinerary"
                                             onClick={() => handleDeleteTrip(trip.id)}
                                             disabled={deleting === trip.id}
@@ -447,8 +447,8 @@ export const EditItineraryView = ({
 
             {/* ── Pagination Controls ─────────────────────────────────────────── */}
             {!loading && filtered.length > 0 && totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-xl border border-white/10 bg-white/[0.02] backdrop-blur-sm mt-4">
-                    <p className="text-xs text-gray-400 font-medium">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl mt-4">
+                    <p className="text-xs text-zinc-400 font-medium">
                         Page <span className="text-white font-bold">{currentPage}</span> of{" "}
                         <span className="text-white font-bold">{totalPages}</span> ({filtered.length} total)
                     </p>
@@ -458,7 +458,7 @@ export const EditItineraryView = ({
                             size="icon"
                             onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                             disabled={currentPage === 1}
-                            className="h-8 w-8 rounded-lg bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-all cursor-pointer disabled:cursor-not-allowed"
+                            className="h-8 w-8 rounded-xl bg-white/5 border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-all cursor-pointer disabled:cursor-not-allowed"
                             title="Previous page"
                         >
                             <ChevronLeft className="w-4 h-4" />
@@ -471,10 +471,10 @@ export const EditItineraryView = ({
                                 if (totalPages > 5) {
                                     if (pageNum !== 1 && pageNum !== totalPages && Math.abs(pageNum - currentPage) > 1) {
                                         if (pageNum === 2 && currentPage > 3) {
-                                            return <span key="dots-start" className="text-gray-600 px-1 text-xs select-none">...</span>;
+                                            return <span key="dots-start" className="text-zinc-500 px-1 text-xs select-none">...</span>;
                                         }
                                         if (pageNum === totalPages - 1 && currentPage < totalPages - 2) {
-                                            return <span key="dots-end" className="text-gray-600 px-1 text-xs select-none">...</span>;
+                                            return <span key="dots-end" className="text-zinc-500 px-1 text-xs select-none">...</span>;
                                         }
                                         return null;
                                     }
@@ -485,10 +485,10 @@ export const EditItineraryView = ({
                                         key={pageNum}
                                         onClick={() => setCurrentPage(pageNum)}
                                         className={cn(
-                                            "h-8 min-w-[2rem] px-2 rounded-lg text-xs font-semibold tracking-wide transition-all cursor-pointer",
+                                            "h-8 min-w-[2rem] px-2 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer",
                                             currentPage === pageNum
-                                                ? "bg-purple-500/20 border border-purple-500/40 text-purple-400 font-bold shadow-[0_0_10px_rgba(168,85,247,0.2)]"
-                                                : "bg-transparent text-gray-400 hover:text-white hover:bg-white/5"
+                                                ? "bg-primary/20 border border-primary/40 text-white font-bold shadow-lg shadow-primary/20"
+                                                : "bg-transparent text-zinc-400 hover:text-white hover:bg-white/5"
                                         )}
                                     >
                                         {pageNum}
@@ -502,7 +502,7 @@ export const EditItineraryView = ({
                             size="icon"
                             onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
                             disabled={currentPage === totalPages}
-                            className="h-8 w-8 rounded-lg bg-white/5 border-white/10 text-gray-400 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-all cursor-pointer disabled:cursor-not-allowed"
+                            className="h-8 w-8 rounded-xl bg-white/5 border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-30 transition-all cursor-pointer disabled:cursor-not-allowed"
                             title="Next page"
                         >
                             <ChevronRight className="w-4 h-4" />

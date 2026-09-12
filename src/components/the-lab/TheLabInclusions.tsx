@@ -160,7 +160,7 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
       {/* Tab bar */}
       <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 mb-6 shadow-xl">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="relative flex gap-1 pb-[1px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="relative flex gap-1 pb-[1px] max-w-full overflow-x-auto hide-scrollbar" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
             {TAB_CONFIG.map((tab, i) => {
               const isSelected = activeTab === tab.value;
               const TabIcon = tab.icon;
@@ -170,14 +170,14 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
                   ref={el => { tabRefs.current[i] = el; }}
                   onClick={() => handleTabSelect(tab.value)}
                   type="button"
-                  className={`flex items-center gap-1.5 px-3 pb-[8px] pt-1 cursor-pointer font-sans text-sm font-semibold transition-colors duration-200 select-none rounded-t-sm ${
+                  className={`flex items-center gap-1.5 px-2.5 sm:px-3 pb-[8px] pt-1 cursor-pointer font-sans text-xs sm:text-sm font-semibold transition-colors duration-200 select-none rounded-t-sm whitespace-nowrap shrink-0 ${
                     isSelected
                       ? "text-primary"
                       : "text-foreground/40 hover:text-foreground/70"
                   }`}
                 >
                   <TabIcon className="w-3.5 h-3.5 shrink-0" />
-                  <span className="hidden sm:inline">{tab.label}</span>
+                  <span>{tab.label}</span>
                 </button>
               );
             })}

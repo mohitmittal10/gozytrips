@@ -239,41 +239,41 @@ export const TripDetailSheet = ({
 
     return (
         <Sheet open={!!trip} onOpenChange={(open) => !open && onClose()}>
-            <SheetContent className="bg-[#0A0A0A] border-l border-white/10 text-white w-full sm:max-w-xl overflow-y-auto">
+            <SheetContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-white/10 text-white w-full sm:max-w-xl overflow-y-auto shadow-2xl">
                 <SheetHeader className="mb-6">
                     <SheetTitle className="text-xl font-bold text-white tracking-tight">
                         Trip Details
                     </SheetTitle>
-                    <SheetDescription className="text-gray-400 line-clamp-2">
+                    <SheetDescription className="text-zinc-400 line-clamp-2">
                         {trip?.title || "Untitled Trip"}
                     </SheetDescription>
                 </SheetHeader>
 
                 {trip && (
                     <Tabs defaultValue="overview" className="w-full">
-                        <TabsList className="grid w-full grid-cols-5 bg-white/5 border border-white/10 rounded-xl p-1 mb-6">
-                            <TabsTrigger value="overview" className="text-xs data-[state=active]:bg-white/10 data-[state=active]:text-white">Overview</TabsTrigger>
-                            <TabsTrigger value="itinerary" className="text-xs data-[state=active]:bg-white/10 data-[state=active]:text-white">Days</TabsTrigger>
-                            <TabsTrigger value="logistics" className="text-xs data-[state=active]:bg-white/10 data-[state=active]:text-white">Logistics</TabsTrigger>
-                            <TabsTrigger value="finances" className="text-xs data-[state=active]:bg-white/10 data-[state=active]:text-white">Finances</TabsTrigger>
-                            <TabsTrigger value="inclusions" className="text-xs data-[state=active]:bg-white/10 data-[state=active]:text-white">Policies</TabsTrigger>
+                        <TabsList className="grid w-full grid-cols-5 bg-white/[0.04] border border-white/10 rounded-2xl p-1 mb-6">
+                            <TabsTrigger value="overview" className="text-xs data-[state=active]:bg-primary/20 data-[state=active]:text-white font-semibold rounded-xl">Overview</TabsTrigger>
+                            <TabsTrigger value="itinerary" className="text-xs data-[state=active]:bg-primary/20 data-[state=active]:text-white font-semibold rounded-xl">Days</TabsTrigger>
+                            <TabsTrigger value="logistics" className="text-xs data-[state=active]:bg-primary/20 data-[state=active]:text-white font-semibold rounded-xl">Logistics</TabsTrigger>
+                            <TabsTrigger value="finances" className="text-xs data-[state=active]:bg-primary/20 data-[state=active]:text-white font-semibold rounded-xl">Finances</TabsTrigger>
+                            <TabsTrigger value="inclusions" className="text-xs data-[state=active]:bg-primary/20 data-[state=active]:text-white font-semibold rounded-xl">Policies</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="overview" className="space-y-5 focus-visible:outline-none">
                             {/* --- Core Info Card --- */}
-                            <div className="p-5 bg-white/[0.03] border border-white/10 rounded-xl space-y-4">
+                            <div className="p-5 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl space-y-4">
                                 {/* Title + Status Row */}
                                 <div className="flex items-start justify-between gap-3">
                                     <div className="min-w-0">
-                                        <p className="text-lg font-semibold text-white leading-snug truncate">
+                                        <p className="text-lg font-bold text-white leading-snug truncate">
                                             {trip.title || "Untitled Trip"}
                                         </p>
                                         {trip.clientName && (
                                             <div className="flex items-center gap-1.5 mt-1">
-                                                <User className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-                                                <p className="text-sm text-gray-400 truncate">{trip.clientName}</p>
+                                                <User className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                                <p className="text-sm text-zinc-300 font-medium truncate">{trip.clientName}</p>
                                                 {trip.clientEmail && (
-                                                    <p className="text-xs text-gray-600 hidden sm:block truncate">
+                                                    <p className="text-xs text-zinc-400 hidden sm:block truncate">
                                                         · {trip.clientEmail}
                                                     </p>
                                                 )}
@@ -283,7 +283,7 @@ export const TripDetailSheet = ({
                                     <Badge
                                         variant="outline"
                                         className={cn(
-                                            "shrink-0 capitalize text-xs font-semibold px-2.5 py-0.5",
+                                            "shrink-0 capitalize text-xs font-bold px-2.5 py-0.5 rounded-full",
                                             getStatusClasses(trip.status)
                                         )}
                                     >
@@ -294,8 +294,8 @@ export const TripDetailSheet = ({
                                 {/* Destination */}
                                 {trip.destinations && (
                                     <div className="flex items-center gap-2 pt-2 border-t border-white/5">
-                                        <Compass className="w-4 h-4 text-purple-400 shrink-0" />
-                                        <p className="text-sm text-gray-200">{trip.destinations}</p>
+                                        <Compass className="w-4 h-4 text-primary shrink-0" />
+                                        <p className="text-sm font-medium text-zinc-200">{trip.destinations}</p>
                                     </div>
                                 )}
                             </div>
@@ -303,30 +303,30 @@ export const TripDetailSheet = ({
                             {/* --- Stats Grid --- */}
                             <div className="grid grid-cols-2 gap-3">
                                 {/* Dates */}
-                                <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl">
+                                <div className="p-4 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl">
                                     <div className="flex items-center gap-2 mb-2">
                                         <CalendarDays className="w-4 h-4 text-blue-400" />
-                                        <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Dates</p>
+                                        <p className="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Dates</p>
                                     </div>
-                                    <p className="text-sm font-medium text-white">{formatDate(trip.start_date)}</p>
+                                    <p className="text-sm font-semibold text-white">{formatDate(trip.start_date)}</p>
                                     {trip.end_date && (
-                                        <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
+                                        <p className="text-xs text-zinc-400 mt-0.5 flex items-center gap-1">
                                             <ArrowRight className="w-3 h-3" />
                                             {formatDate(trip.end_date)}
                                         </p>
                                     )}
                                     {trip.start_date && trip.end_date && (
-                                        <p className="text-xs text-purple-400 mt-1 font-semibold">
+                                        <p className="text-xs text-primary mt-1 font-bold">
                                             {formatDuration(trip.start_date, trip.end_date)}
                                         </p>
                                     )}
                                 </div>
 
                                 {/* Cost */}
-                                <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl">
+                                <div className="p-4 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <DollarSign className="w-4 h-4 text-green-400" />
-                                        <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Cost</p>
+                                        <DollarSign className="w-4 h-4 text-emerald-400" />
+                                        <p className="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Cost</p>
                                     </div>
                                     <p className="text-lg font-bold text-white">
                                         {trip.tripCost > 0
@@ -334,7 +334,7 @@ export const TripDetailSheet = ({
                                             : "N/A"}
                                     </p>
                                     {trip.budget && trip.budget > 0 && trip.budget !== trip.tripCost && (
-                                        <p className="text-xs text-gray-500 mt-0.5">
+                                        <p className="text-xs text-zinc-400 mt-0.5 font-medium">
                                             Budget: {formatMoney(trip.budget, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}
                                         </p>
                                     )}
@@ -342,13 +342,13 @@ export const TripDetailSheet = ({
 
                                 {/* Pax */}
                                 {totalPax > 0 && (
-                                    <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl">
+                                    <div className="p-4 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl">
                                         <div className="flex items-center gap-2 mb-2">
                                             <Users className="w-4 h-4 text-amber-400" />
-                                            <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Travellers</p>
+                                            <p className="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Travellers</p>
                                         </div>
-                                        <p className="text-sm font-medium text-white">{totalPax} pax</p>
-                                        <div className="flex gap-2 mt-1 text-[10px] text-gray-500">
+                                        <p className="text-sm font-semibold text-white">{totalPax} pax</p>
+                                        <div className="flex gap-2 mt-1 text-[10px] text-zinc-400 font-medium">
                                             {(trip.adult_pax ?? 0) > 0 && <span>{trip.adult_pax}A</span>}
                                             {(trip.child_pax ?? 0) > 0 && <span>{trip.child_pax}C</span>}
                                             {(trip.infant_pax ?? 0) > 0 && <span>{trip.infant_pax}I</span>}
@@ -357,32 +357,32 @@ export const TripDetailSheet = ({
                                 )}
 
                                 {/* Last Updated */}
-                                <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl">
+                                <div className="p-4 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <Clock className="w-4 h-4 text-gray-400" />
-                                        <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">Updated</p>
+                                        <Clock className="w-4 h-4 text-zinc-400" />
+                                        <p className="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Updated</p>
                                     </div>
-                                    <p className="text-sm font-medium text-white">{formatDate(trip.updated_at)}</p>
-                                    <p className="text-xs text-gray-500 mt-0.5">
+                                    <p className="text-sm font-semibold text-white">{formatDate(trip.updated_at)}</p>
+                                    <p className="text-xs text-zinc-400 mt-0.5">
                                         Created {formatDate(trip.created_at)}
                                     </p>
                                 </div>
                             </div>
 
                             {/* --- Status Change --- */}
-                            <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl">
-                                <p className="text-xs text-gray-500 uppercase tracking-wider font-medium mb-3 flex items-center gap-1.5">
-                                    <Plane className="w-3.5 h-3.5" />
+                            <div className="p-4 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl">
+                                <p className="text-xs text-zinc-400 uppercase tracking-wider font-semibold mb-3 flex items-center gap-1.5">
+                                    <Plane className="w-3.5 h-3.5 text-primary" />
                                     Change Status
                                 </p>
                                 <Select
                                     value={trip.status.toLowerCase()}
                                     onValueChange={(val) => onStatusChange(trip.id, val)}
                                 >
-                                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 rounded-lg">
+                                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 rounded-xl">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-[#1a1a2e] border-white/10 text-white">
+                                    <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white">
                                         {itineraryStatuses.length > 0 ? (
                                             itineraryStatuses.map((opt) => (
                                                 <SelectItem key={opt.value} value={opt.value}>
@@ -725,18 +725,18 @@ export const TripDetailSheet = ({
                                     </div>
 
                                     {pricingBreakdown.milestoneAmounts && pricingBreakdown.milestoneAmounts.length > 0 && (
-                                        <div className="p-4 bg-white/[0.02] border border-white/10 rounded-xl space-y-3">
-                                            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center gap-1.5 border-b border-white/5 pb-2">
-                                                <CreditCard className="w-3.5 h-3.5 text-blue-400" /> Payment Milestones
+                                        <div className="p-4 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl space-y-3">
+                                            <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5 border-b border-white/5 pb-2">
+                                                <CreditCard className="w-3.5 h-3.5 text-primary" /> Payment Milestones
                                             </h4>
                                             <div className="space-y-3">
                                                 {pricingBreakdown.milestoneAmounts.map((m: any, idx: number) => (
                                                     <div key={idx} className="flex justify-between items-start text-xs">
                                                         <div>
-                                                            <p className="font-semibold text-gray-200">{m.title || `Milestone ${idx + 1}`}</p>
-                                                            <p className="text-[10px] text-gray-500">{m.percentage}% due</p>
+                                                            <p className="font-semibold text-white">{m.title || `Milestone ${idx + 1}`}</p>
+                                                            <p className="text-[10px] text-zinc-400 font-medium">{m.percentage}% due</p>
                                                         </div>
-                                                        <span className="font-bold text-white">
+                                                        <span className="font-bold text-primary">
                                                             {formatMoney(m.amount, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}
                                                         </span>
                                                     </div>

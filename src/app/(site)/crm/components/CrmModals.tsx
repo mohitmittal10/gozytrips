@@ -166,10 +166,10 @@ export function CrmModals() {
             />
 
             <Dialog open={showModal} onOpenChange={setShowModal}>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-[#0A0A0A] border-white/10 text-white">
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white shadow-2xl">
                     <DialogHeader>
                         <DialogTitle>{selectedTripForModal?.title}</DialogTitle>
-                        <DialogDescription className="text-gray-400">{selectedTripForModal?.description}</DialogDescription>
+                        <DialogDescription className="text-zinc-400">{selectedTripForModal?.description}</DialogDescription>
                         <div className="flex items-center gap-4 mt-4">
                             <Select 
                                 value={selectedTheme} 
@@ -182,14 +182,14 @@ export function CrmModals() {
                                     }
                                 }}
                             >
-                                <SelectTrigger className="w-[180px] bg-white/5 border-white/10 text-white">
+                                <SelectTrigger className="w-[180px] bg-white/5 border-white/10 text-white rounded-xl">
                                     <SelectValue placeholder="Select PDF Format" />
                                 </SelectTrigger>
-                                <SelectContent>
+                                <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white">
                                     {pdfThemeOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
-                            <Button onClick={handleDownloadPdf} disabled={!selectedTripForModal} className="w-fit bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 font-semibold">
+                            <Button onClick={handleDownloadPdf} disabled={!selectedTripForModal} className="w-fit aurora-gradient text-white border-none rounded-xl font-bold shadow-lg shadow-primary/20 hover:brightness-110">
                                 <Eye className="mr-2 h-4 w-4" /> Preview & Export
                             </Button>
                         </div>
@@ -252,7 +252,7 @@ export function CrmModals() {
             />
 
             <Sheet open={isActivitySheetOpen} onOpenChange={setIsActivitySheetOpen}>
-                <SheetContent className="w-[400px] sm:w-[540px] bg-[#0c0c0e] border-zinc-800 text-white p-0 flex flex-col">
+                <SheetContent className="w-[400px] sm:w-[540px] bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-white/10 text-white p-0 flex flex-col shadow-2xl">
                     <SheetHeader className="p-6 border-b border-zinc-800">
                         <SheetTitle className="text-xl flex items-center gap-2"><History className="w-5 h-5 text-white" />Activity Center</SheetTitle>
                         <SheetDescription className="text-zinc-400">A complete history of all your CRM events.</SheetDescription>

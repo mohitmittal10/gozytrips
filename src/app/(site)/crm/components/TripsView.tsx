@@ -151,11 +151,11 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
     // We'll handle empty states inside the table body now to keep the header visible.
 
     return (
-        <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
+        <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-2xl rounded-2xl overflow-hidden">
             <div className="crm-table-wrapper">
                 <table className="w-full text-left border-collapse min-w-[640px]">
                     <thead>
-                        <tr className="border-b border-white/10 text-gray-500 font-semibold">
+                        <tr className="border-b border-white/10 text-zinc-400 font-semibold text-xs">
                             <th className="p-4">Trip</th>
                             <th className="p-4 hidden md:table-cell">Destination</th>
                             <th className="p-4 hidden lg:table-cell">Dates</th>
@@ -168,10 +168,10 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                     <tbody className="divide-y divide-white/5">
                         {!loading && trips.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="p-12 text-center text-gray-500">
+                                <td colSpan={7} className="p-12 text-center text-zinc-400">
                                     <div className="flex flex-col items-center justify-center space-y-3">
-                                        <Plane className="w-10 h-10 opacity-20" />
-                                        <p className="text-sm">No trips found matching your filters.</p>
+                                        <Plane className="w-10 h-10 text-zinc-500 opacity-40" />
+                                        <p className="text-sm font-semibold">No trips found matching your filters.</p>
                                     </div>
                                 </td>
                             </tr>
@@ -185,7 +185,7 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                                 return (
                                     <tr
                                         key={trip.id}
-                                        className="hover:bg-white/[0.04] transition-colors group cursor-pointer"
+                                        className="hover:bg-white/5 transition-colors group cursor-pointer"
                                         onClick={() => onTripClick(trip)}
                                         role="button"
                                         tabIndex={0}
@@ -193,12 +193,12 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                                     >
                                         {/* Trip Name */}
                                         <td className="p-4">
-                                            <p className="font-medium text-white text-sm group-hover:text-purple-300 transition-colors line-clamp-1">
+                                            <p className="font-bold text-white text-sm group-hover:text-primary transition-colors line-clamp-1">
                                                 {trip.title}
                                             </p>
                                             {/* Show destination on mobile where separate column is hidden */}
                                             {trip.destinations && (
-                                                <p className="text-xs text-gray-500 line-clamp-1 mt-0.5 md:hidden">
+                                                <p className="text-xs text-zinc-400 line-clamp-1 mt-0.5 md:hidden">
                                                     {trip.destinations}
                                                 </p>
                                             )}
@@ -208,24 +208,24 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                                         <td className="p-4 hidden md:table-cell">
                                             {trip.destinations ? (
                                                 <div className="flex items-center gap-1.5">
-                                                    <Compass className="w-3.5 h-3.5 text-purple-400 shrink-0" />
-                                                    <span className="text-sm text-gray-300 line-clamp-1">
+                                                    <Compass className="w-3.5 h-3.5 text-primary shrink-0" />
+                                                    <span className="text-sm text-zinc-200 font-medium line-clamp-1">
                                                         {trip.destinations}
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <span className="text-xs text-gray-600">—</span>
+                                                <span className="text-xs text-zinc-500 italic">—</span>
                                             )}
                                         </td>
 
                                         {/* Dates */}
                                         <td className="p-4 hidden lg:table-cell">
-                                            <div className="flex items-center gap-1 text-xs text-gray-400">
-                                                <CalendarDays className="w-3.5 h-3.5 shrink-0" />
+                                            <div className="flex items-center gap-1 text-xs text-zinc-400 font-medium">
+                                                <CalendarDays className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                                                 <span>{formatShortDate(trip.start_date)}</span>
                                                 {trip.end_date && (
                                                     <>
-                                                        <ArrowRight className="w-3 h-3 text-gray-600" />
+                                                        <ArrowRight className="w-3 h-3 text-zinc-500" />
                                                         <span>{formatShortDate(trip.end_date)}</span>
                                                     </>
                                                 )}
@@ -236,13 +236,13 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                                         <td className="p-4 hidden lg:table-cell">
                                             {trip.clientName ? (
                                                 <div className="flex items-center gap-1.5">
-                                                    <Users className="w-3.5 h-3.5 text-gray-500 shrink-0" />
-                                                    <span className="text-xs text-gray-400 line-clamp-1">
+                                                    <Users className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                                    <span className="text-xs text-zinc-300 font-semibold line-clamp-1">
                                                         {trip.clientName}
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <span className="text-xs text-gray-600">—</span>
+                                                <span className="text-xs text-zinc-500 italic">—</span>
                                             )}
                                         </td>
 

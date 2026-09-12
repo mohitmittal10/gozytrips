@@ -178,12 +178,12 @@ export const BookingDetailSheet = ({
 
     return (
         <Sheet open={!!booking} onOpenChange={(open) => !open && onClose()}>
-            <SheetContent className="bg-[#0A0A0A] border-l border-white/10 text-white w-full sm:max-w-md overflow-y-auto">
+            <SheetContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-white/10 text-white w-full sm:max-w-md overflow-y-auto shadow-2xl">
                 <SheetHeader className="mb-6">
                     <SheetTitle className="text-xl font-bold text-white tracking-tight">
                         Booking Details
                     </SheetTitle>
-                    <SheetDescription className="text-gray-400">
+                    <SheetDescription className="text-zinc-400">
                         Full details, invoice, and sharing options.
                     </SheetDescription>
                 </SheetHeader>
@@ -192,51 +192,51 @@ export const BookingDetailSheet = ({
                     <div className="space-y-5">
 
                         {/* ── Header Info ── */}
-                        <div className="p-5 bg-white/[0.03] border border-white/10 rounded-xl space-y-4">
+                        <div className="p-5 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-white/5 rounded-lg">
+                                    <div className="p-2 bg-white/5 rounded-xl border border-white/10">
                                         {getIcon(booking.service_type)}
                                     </div>
                                     <div>
-                                        <h4 className="text-lg font-semibold text-white leading-tight">{booking.title}</h4>
-                                        <p className="text-[10px] text-gray-500 uppercase tracking-wider">{booking.service_type}</p>
+                                        <h4 className="text-lg font-bold text-white leading-tight">{booking.title}</h4>
+                                        <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">{booking.service_type}</p>
                                     </div>
                                 </div>
-                                <Badge variant="outline" className={cn("capitalize px-2.5 py-0.5 text-xs", getStatusClasses(booking.status))}>
+                                <Badge variant="outline" className={cn("capitalize px-2.5 py-0.5 text-xs font-bold rounded-full", getStatusClasses(booking.status))}>
                                     {booking.status || "Draft"}
                                 </Badge>
                             </div>
                         </div>
 
                         {/* ── Client Details ── */}
-                        <div className="p-5 bg-white/[0.03] border border-white/10 rounded-xl">
-                            <h5 className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2 mb-4 flex items-center gap-2">
-                                <User className="w-3.5 h-3.5" /> Client
+                        <div className="p-5 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl">
+                            <h5 className="text-xs font-bold text-zinc-400 uppercase tracking-widest border-b border-white/5 pb-2 mb-4 flex items-center gap-2">
+                                <User className="w-3.5 h-3.5 text-primary" /> Client
                             </h5>
                             {client ? (
                                 <div className="space-y-2.5">
                                     <div className="flex items-center gap-2">
-                                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs shrink-0", CRM_AVATAR_CLASS)}>
+                                        <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs shrink-0 font-bold", CRM_AVATAR_CLASS)}>
                                             {client.name.charAt(0).toUpperCase()}
                                         </div>
                                         <p className="font-semibold text-white">{client.name}</p>
                                     </div>
                                     {client.email && (
-                                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                                            <Mail className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                                        <div className="flex items-center gap-2 text-sm text-zinc-300">
+                                            <Mail className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                                             <span className="truncate">{client.email}</span>
                                         </div>
                                     )}
                                     {client.phone && (
-                                        <div className="flex items-center gap-2 text-sm text-gray-400">
-                                            <PhoneCall className="w-3.5 h-3.5 text-gray-500 shrink-0" />
+                                        <div className="flex items-center gap-2 text-sm text-zinc-300">
+                                            <PhoneCall className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
                                             <span>{client.phone}</span>
                                         </div>
                                     )}
                                 </div>
                             ) : (
-                                <p className="text-sm text-gray-500 italic">No client assigned to this booking.</p>
+                                <p className="text-sm text-zinc-400 italic">No client assigned to this booking.</p>
                             )}
                         </div>
 

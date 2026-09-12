@@ -13,7 +13,13 @@ interface InlineEditProps {
   placeholder?: string;
   onEditStart?: () => void;
   disabled?: boolean;
+  allowHtml?: boolean;
 }
+
+const sanitizeHtml = (str: string) => {
+  if (!str) return "";
+  return str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "");
+};
 
 export function InlineEdit({
   value,
@@ -24,6 +30,7 @@ export function InlineEdit({
   placeholder = "Enter text...",
   onEditStart,
   disabled = false,
+  allowHtml = true,
 }: InlineEditProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(value);
@@ -63,9 +70,15 @@ export function InlineEdit({
     setEditing(false);
   };
 
+  const containsHtml = allowHtml && /<[a-z][\s\S]*>/i.test(value || "");
+
   if (!editing) {
     if (disabled) {
-      return <span className={className}>{value}</span>;
+      return containsHtml ? (
+        <span className={className} dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} />
+      ) : (
+        <span className={className}>{value}</span>
+      );
     }
 
     return (
@@ -80,7 +93,11 @@ export function InlineEdit({
         }}
         title="Click to edit"
       >
-        <span className="flex-1">{value}</span>
+        {containsHtml ? (
+          <span className="flex-1" dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} />
+        ) : (
+          <span className="flex-1">{value}</span>
+        )}
         <Pencil className="w-3 h-3 text-primary/40 opacity-0 group-hover/edit:opacity-100 transition-opacity flex-shrink-0" />
       </span>
     );

@@ -93,7 +93,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
   };
 
   return (
-    <div className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 hover:bg-white/[0.04] hover:border-white/10 transition-all group flex flex-col justify-between">
+    <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5 hover:border-primary/40 transition-all group flex flex-col justify-between shadow-xl">
       <div>
         {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
@@ -103,7 +103,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
                 {isExpired ? "Expired" : form.status}
               </span>
               {form.response_count !== undefined && form.response_count > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/10 text-zinc-300 border border-white/10">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/20 text-white border border-primary/30">
                   {form.response_count} response{form.response_count !== 1 ? "s" : ""}
                 </span>
               )}
@@ -124,12 +124,12 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
                   }}
                   disabled={renaming}
                   autoFocus
-                  className="flex-1 h-8 px-2 rounded-lg bg-black/50 border border-zinc-700 text-xs text-white focus:outline-none focus:border-zinc-500"
+                  className="flex-1 h-8 px-2.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-primary/50"
                 />
                 <button
                   onClick={handleRename}
                   disabled={renaming || !editTitleVal.trim() || editTitleVal.trim().length < 2}
-                  className="p-1 text-green-400 hover:text-green-300 disabled:opacity-40 transition-colors shrink-0"
+                  className="p-1 text-emerald-400 hover:text-emerald-300 disabled:opacity-40 transition-colors shrink-0 cursor-pointer"
                   title="Save Title"
                 >
                   {renaming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
@@ -140,7 +140,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
                     setIsEditingTitle(false);
                   }}
                   disabled={renaming}
-                  className="p-1 text-gray-500 hover:text-gray-300 transition-colors shrink-0"
+                  className="p-1 text-zinc-400 hover:text-white transition-colors shrink-0 cursor-pointer"
                   title="Cancel"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -148,10 +148,10 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
               </div>
             ) : (
               <div className="flex items-center gap-1.5 group/title mt-1 w-full">
-                <h3 className="text-sm font-semibold text-white truncate max-w-[85%]">{form.title}</h3>
+                <h3 className="text-sm font-bold text-white truncate max-w-[85%] group-hover/title:text-primary transition-colors">{form.title}</h3>
                 <button
                   onClick={() => setIsEditingTitle(true)}
-                  className="opacity-0 group-hover/title:opacity-100 p-0.5 text-gray-500 hover:text-white hover:bg-white/5 rounded transition-all shrink-0"
+                  className="opacity-0 group-hover/title:opacity-100 p-0.5 text-zinc-400 hover:text-white hover:bg-white/5 rounded transition-all shrink-0 cursor-pointer"
                   title="Rename Form"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
@@ -160,12 +160,12 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
             )}
 
             {form.client_name && (
-              <p className="text-xs text-gray-500 mt-0.5 flex items-center gap-1">
-                <Users className="w-3 h-3" /> {form.client_name}
+              <p className="text-xs text-zinc-400 mt-0.5 flex items-center gap-1 font-medium">
+                <Users className="w-3 h-3 text-primary" /> {form.client_name}
               </p>
             )}
             {form.description && (
-              <p className="text-xs text-gray-600 mt-1 line-clamp-2">{form.description}</p>
+              <p className="text-xs text-zinc-400 mt-1 line-clamp-2 font-medium">{form.description}</p>
             )}
           </div>
         </div>
@@ -174,32 +174,32 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
         <div className="mt-2.5 mb-1">
           <button
             onClick={() => setShowFields(!showFields)}
-            className="flex items-center gap-1 text-[11px] font-semibold text-zinc-300 hover:text-white transition-colors"
+            className="flex items-center gap-1 text-[11px] font-semibold text-zinc-300 hover:text-white transition-colors cursor-pointer"
           >
             {showFields ? (
               <>
-                Hide Fields <ChevronUp className="w-3 h-3" />
+                Hide Fields <ChevronUp className="w-3 h-3 text-primary" />
               </>
             ) : (
               <>
-                View Fields <ChevronDown className="w-3 h-3" />
+                View Fields <ChevronDown className="w-3 h-3 text-primary" />
               </>
             )}
           </button>
 
           {showFields && (
-            <div className="mt-2 p-3 bg-black/40 border border-white/5 rounded-xl space-y-1.5 text-[11px] text-gray-400 animate-in fade-in duration-200">
-              <p className="font-medium text-white/80 border-b border-white/5 pb-1 mb-1.5">This form collects:</p>
+            <div className="mt-2 p-3 bg-white/5 border border-white/10 rounded-xl space-y-1.5 text-[11px] text-zinc-300 animate-in fade-in duration-200">
+              <p className="font-semibold text-white border-b border-white/5 pb-1 mb-1.5">This form collects:</p>
               <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
-                <div className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Start/End Locations</span></div>
-                <div className="flex items-center gap-1.5"><Compass className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Destinations</span></div>
-                <div className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Travel Dates</span></div>
-                <div className="flex items-center gap-1.5"><Users className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Passenger Counts</span></div>
-                <div className="flex items-center gap-1.5"><Heart className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Trip Style Preference</span></div>
-                <div className="flex items-center gap-1.5"><Plane className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Travel Methods</span></div>
-                <div className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Timing Preference</span></div>
-                <div className="flex items-center gap-1.5"><DollarSign className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Approx. Budget</span></div>
-                <div className="flex items-center gap-1.5 col-span-2"><MessageSquare className="w-3 h-3 text-zinc-400 shrink-0" /> <span>Special Requests</span></div>
+                <div className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-primary shrink-0" /> <span>Start/End Locations</span></div>
+                <div className="flex items-center gap-1.5"><Compass className="w-3 h-3 text-primary shrink-0" /> <span>Destinations</span></div>
+                <div className="flex items-center gap-1.5"><Calendar className="w-3 h-3 text-primary shrink-0" /> <span>Travel Dates</span></div>
+                <div className="flex items-center gap-1.5"><Users className="w-3 h-3 text-primary shrink-0" /> <span>Passenger Counts</span></div>
+                <div className="flex items-center gap-1.5"><Heart className="w-3 h-3 text-primary shrink-0" /> <span>Trip Style Preference</span></div>
+                <div className="flex items-center gap-1.5"><Plane className="w-3 h-3 text-primary shrink-0" /> <span>Travel Methods</span></div>
+                <div className="flex items-center gap-1.5"><Clock className="w-3 h-3 text-primary shrink-0" /> <span>Timing Preference</span></div>
+                <div className="flex items-center gap-1.5"><DollarSign className="w-3 h-3 text-primary shrink-0" /> <span>Approx. Budget</span></div>
+                <div className="flex items-center gap-1.5 col-span-2"><MessageSquare className="w-3 h-3 text-primary shrink-0" /> <span>Special Requests</span></div>
               </div>
             </div>
           )}
@@ -212,9 +212,9 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
           <CopiedButton url={shareUrl} />
           <button
             onClick={() => onViewResponses(form)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700 transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
           >
-            <Inbox className="w-3 h-3" /> Responses {form.response_count ? `(${form.response_count})` : ""}
+            <Inbox className="w-3 h-3 text-primary" /> Responses {form.response_count ? `(${form.response_count})` : ""}
           </button>
           <button
             onClick={() => onDelete(form.id)}

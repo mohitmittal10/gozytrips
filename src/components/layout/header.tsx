@@ -74,11 +74,12 @@ const Header = () => {
             <>
               {user ? (
                 <>
-                  <div className="hidden sm:block">
+                  <div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="text-slate-300 text-sm font-medium hover:text-white transition-colors flex items-center gap-2">
-                          <User className="w-4 h-4" /> Account
+                        <button className="text-slate-300 text-xs sm:text-sm font-medium hover:text-white transition-colors flex items-center gap-1.5 px-2.5 sm:px-0 py-1.5 sm:py-0 bg-white/5 sm:bg-transparent rounded-xl sm:rounded-none border border-white/10 sm:border-none">
+                          <User className="w-4 h-4 text-purple-400 sm:text-slate-300" />
+                          <span>Account</span>
                         </button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-[#0A0A0B] border-white/10 w-56">
@@ -88,18 +89,13 @@ const Header = () => {
                         </div>
                         <DropdownMenuSeparator className="bg-white/10" />
                         <DropdownMenuItem asChild>
-                          <Link href="/my-trips" className="cursor-pointer text-slate-300 hover:text-white hover:bg-white/5">
-                            <MapPin className="w-4 h-4 mr-2" /> My Trips
+                          <Link href="/profile" className="cursor-pointer text-slate-300 hover:text-white hover:bg-white/5">
+                            <User className="w-4 h-4 mr-2 text-purple-400" /> Profile & Account
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <Link href="/clients" className="cursor-pointer text-slate-300 hover:text-white hover:bg-white/5">
-                            <Users className="w-4 h-4 mr-2" /> Clients
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href="/profile" className="cursor-pointer text-slate-300 hover:text-white hover:bg-white/5">
-                            <User className="w-4 h-4 mr-2" /> Profile Settings
+                            <Users className="w-4 h-4 mr-2 text-blue-400" /> Clients
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator className="bg-white/10" />
@@ -151,24 +147,27 @@ const Header = () => {
                             })}
                           </nav>
                           <div className="p-5 border-t border-white/5 space-y-4 bg-white/[0.01]">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/20 flex items-center justify-center font-black text-xs text-white shadow-inner">
+                            <Link href="/profile" className="flex items-center gap-3 group/user hover:bg-white/5 p-2 -mx-2 rounded-xl transition-colors">
+                              <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/20 flex items-center justify-center font-black text-xs text-white shadow-inner shrink-0">
                                 {user?.email ? user.email.slice(0, 2).toUpperCase() : "U"}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider mb-0.5">Signed In</p>
+                                <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider mb-0.5 flex items-center justify-between">
+                                  <span>Signed In</span>
+                                  <span className="text-purple-400 group-hover/user:underline">View Account &rarr;</span>
+                                </p>
                                 <p className="text-xs font-semibold text-white truncate">{user?.email}</p>
                               </div>
-                            </div>
+                            </Link>
                             <div className="grid grid-cols-2 gap-2">
-                              <Link href="/my-trips" className="w-full">
-                                <button className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-slate-300 border border-white/5 transition-all flex items-center justify-center gap-1.5">
-                                  <MapPin className="w-3.5 h-3.5 text-primary" /> Trips
+                              <Link href="/profile" className="w-full">
+                                <button className="w-full py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-slate-300 border border-white/5 transition-all flex items-center justify-center gap-1.5">
+                                  <User className="w-3.5 h-3.5 text-purple-400" /> Account
                                 </button>
                               </Link>
                               <Link href="/clients" className="w-full">
-                                <button className="w-full py-2 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-slate-300 border border-white/5 transition-all flex items-center justify-center gap-1.5">
-                                  <Users className="w-3.5 h-3.5 text-primary" /> Clients
+                                <button className="w-full py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-slate-300 border border-white/5 transition-all flex items-center justify-center gap-1.5">
+                                  <Users className="w-3.5 h-3.5 text-blue-400" /> Clients
                                 </button>
                               </Link>
                             </div>

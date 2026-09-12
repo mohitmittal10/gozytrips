@@ -17,12 +17,14 @@ interface TheLabMobileTabsProps {
   selectedStatus: string;
   setSelectedStatus: (status: string) => void;
   handleCreateNew: () => void;
+  onOpenAddClient?: () => void;
 }
 
 const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
   activeLabTab, setActiveLabTab,
   clients, selectedClientId, setSelectedClientId,
-  selectedStatus, setSelectedStatus, handleCreateNew
+  selectedStatus, setSelectedStatus, handleCreateNew,
+  onOpenAddClient,
 }: TheLabMobileTabsProps) {
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
 
@@ -60,7 +62,13 @@ const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
         <div className="sm:hidden flex flex-col gap-2 mb-4">
           <div className="flex items-center gap-2">
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600 w-12 flex-shrink-0">Client</label>
-            <Select value={selectedClientId} onValueChange={setSelectedClientId}>
+            <Select value={selectedClientId} onValueChange={(val) => {
+              if (val === '__add_new__') {
+                onOpenAddClient?.();
+              } else {
+                setSelectedClientId(val);
+              }
+            }}>
               <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs font-medium focus:ring-zinc-700 h-9 flex-1">
                 <SelectValue placeholder="No Client" />
               </SelectTrigger>
@@ -69,6 +77,11 @@ const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
                 {clients.map((client) => (
                   <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
                 ))}
+                {onOpenAddClient && (
+                  <SelectItem value="__add_new__" className="text-indigo-400 font-semibold cursor-pointer border-t border-white/10 mt-1 pt-1">
+                    + Add New Client
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
