@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-import { Database } from "@/types/supabase";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import {
@@ -15,11 +14,6 @@ import {
     Phone,
     Mail,
 } from "lucide-react";
-
-const supabaseAdmin = createClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export const revalidate = 0;
 
@@ -36,9 +30,10 @@ function getServiceIcon(type: string) {
 
 export default async function BookingInvoicePage({ params }: { params: Promise<{ token: string }> }) {
     const { token } = await params;
+    const supabaseAdmin = createAdminClient();
 
     // 1. Fetch the standalone booking securely via share_token
-    const { data: bookingData, error: bookingError } = await supabaseAdmin
+    const { data: bookingData, error: bookingError } = await (supabaseAdmin as any)
         .from("standalone_bookings")
         .select("*")
         .eq("share_token", token as any)

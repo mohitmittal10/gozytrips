@@ -1,21 +1,15 @@
 import { notFound } from "next/navigation";
-import { createClient } from "@supabase/supabase-js";
-import { Database } from "@/types/supabase";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { MapPin, Calendar, FileText } from "lucide-react";
 import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 
-// Use service role key to bypass RLS for public invoice viewing
-const supabaseAdmin = createClient<Database>(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export const revalidate = 0; // Dynamic rendering
 
 export default async function InvoicePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const supabaseAdmin = createAdminClient();
 
   // 1. Fetch itinerary securely via share_token
   const { data: itinData, error: itinError } = await supabaseAdmin
