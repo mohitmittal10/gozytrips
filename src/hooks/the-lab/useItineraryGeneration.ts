@@ -53,6 +53,12 @@ export function useItineraryGeneration() {
       const startDateStr = format(startDate, "yyyy-MM-dd");
       const endDateStr = format(endDate, "yyyy-MM-dd");
 
+      const rawLeisureDay = effectiveValues.leisureDay as unknown;
+      const parsedLeisureDay = rawLeisureDay !== undefined && rawLeisureDay !== null && rawLeisureDay !== ''
+        ? Number(rawLeisureDay)
+        : undefined;
+      const validLeisureDay = parsedLeisureDay !== undefined && !isNaN(parsedLeisureDay) ? parsedLeisureDay : undefined;
+
       console.log("[useItineraryGeneration] Calling generateTravelItinerary server action with inputs:", {
         startingLocation: effectiveValues.startingLocation,
         endingLocation: effectiveValues.endingLocation || effectiveValues.startingLocation,
@@ -64,7 +70,7 @@ export function useItineraryGeneration() {
         mustInclude: effectiveValues.mustInclude || "",
         avoid: effectiveValues.avoid || "",
         leisureTime: !!effectiveValues.leisureTime,
-        leisureDay: effectiveValues.leisureDay ?? undefined,
+        leisureDay: validLeisureDay,
         travelTimePreference: effectiveValues.travelTimePreference,
         feedback: typeof feedback === 'string' ? feedback : "",
         daywiseDestinations: effectiveValues.daywiseDestinations || "",
@@ -82,7 +88,7 @@ export function useItineraryGeneration() {
         mustInclude: effectiveValues.mustInclude || "",
         avoid: effectiveValues.avoid || "",
         leisureTime: !!effectiveValues.leisureTime,
-        leisureDay: effectiveValues.leisureDay ?? undefined,
+        leisureDay: validLeisureDay,
         travelTimePreference: effectiveValues.travelTimePreference,
         feedback: typeof feedback === 'string' ? feedback : "",
         daywiseDestinations: effectiveValues.daywiseDestinations || "",

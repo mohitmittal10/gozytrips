@@ -386,7 +386,9 @@ export default function VendorEnquiry() {
 
     try {
       const result = await generateWithAi(input);
-      await saveEnquiry({ subject: result.subject, body: result.body });
+      if (result) {
+        await saveEnquiry({ subject: result.subject, body: result.body });
+      }
     } catch (err) {
       // toast handled in hook
     }

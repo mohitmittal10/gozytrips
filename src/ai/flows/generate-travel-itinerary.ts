@@ -36,7 +36,7 @@ const TravelItineraryInputSchema = z.object({
   mustInclude: z.string().max(500).default('').describe('A comma-separated list of must-see attractions or experiences.'),
   avoid: z.string().max(500).default('').describe('A comma-separated list of things to skip or avoid.'),
   leisureTime: z.boolean().default(false).describe('Whether to deliberately include unstructured leisure/free time.'),
-  leisureDay: z.number().max(30).optional().describe('The specific day (1-indexed) to schedule the most leisure time. Only applies if leisureTime is true.'),
+  leisureDay: z.coerce.number().max(30).optional().describe('The specific day (1-indexed) to schedule the most leisure time. Only applies if leisureTime is true.'),
   travelTimePreference: z.enum([
     "no_preference",
     "avoid_night_travel",
@@ -49,17 +49,17 @@ const TravelItineraryInputSchema = z.object({
   hotelsText: z.string().optional().default('').describe('Pre-formatted list of hotels/stays selected by the agent for each night.'),
   hotels: z.array(z.object({
     id: z.string(),
-    dayIndex: z.number(),
+    dayIndex: z.coerce.number(),
     name: z.string(),
     address: z.string().optional(),
-    starRating: z.number().optional(),
+    starRating: z.coerce.number().optional(),
     checkIn: z.string().optional(),
     checkOut: z.string().optional(),
     bookingRef: z.string().optional(),
-    nights: z.number().optional(),
-    costAdult: z.number().optional(),
-    costChild: z.number().optional(),
-    costInfant: z.number().optional(),
+    nights: z.coerce.number().optional(),
+    costAdult: z.coerce.number().optional(),
+    costChild: z.coerce.number().optional(),
+    costInfant: z.coerce.number().optional(),
     imageUrls: z.array(z.string()).optional(),
   })).optional().default([]),
 });
@@ -414,17 +414,17 @@ const generateTravelItineraryFlow = ai.defineFlow(
 // ── Day Regeneration Flow ──
 
 const RegenerateDayInputSchema = z.object({
-  day: z.number().min(1).max(30).describe('The day number.'),
+  day: z.coerce.number().min(1).max(30).describe('The day number.'),
   destinations: z.string().max(300).describe('The trip destinations.'),
   currentDayData: z.object({
-    day: z.number(),
+    day: z.coerce.number(),
     date: z.string().max(20),
     areaFocus: z.string().max(200),
     timeline: z.array(
       z.object({
         time: z.string().max(20),
         details: z.string().max(500),
-        cost: z.number().optional(),
+        cost: z.coerce.number().optional(),
       })
     ).max(20),
   }),

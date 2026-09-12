@@ -13,7 +13,7 @@ import { checkRateLimit } from '@/lib/security/rate-limiter';
 
 
 const DayInputSchema = z.object({
-  day: z.number().min(1).max(60),
+  day: z.coerce.number().min(1).max(60),
   date: z.string().max(20),
   areaFocus: z.string().max(200),
   timeline: z.array(

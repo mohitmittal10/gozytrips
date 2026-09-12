@@ -195,7 +195,12 @@ export default function ClientUpdateSuggestions({
 
     setIsLoading(true);
     try {
-      const result = await generateSuggestionsWithEmails(ctx);
+      const res = await generateSuggestionsWithEmails(ctx);
+      if (!res.success) {
+        toast({ variant: "destructive", title: "Error", description: res.error || "Failed to load AI suggestions." });
+        return;
+      }
+      const result = res.data;
       setSuggestions(result.suggestions);
       setEmailOverrides({});
       writeCache(cacheKey, result.suggestions);
@@ -214,12 +219,16 @@ export default function ClientUpdateSuggestions({
     setRedoingId(suggestion.id);
     try {
       const ctx = buildContext();
-      const result = await generateClientUpdateEmail({
+      const res = await generateClientUpdateEmail({
         ...ctx,
         suggestionTitle: suggestion.title,
         customMessage: suggestion.category === "custom" ? customMessage : undefined,
       });
-      setEmailOverrides(prev => ({ ...prev, [suggestion.id]: result }));
+      if (!res.success) {
+        toast({ variant: "destructive", title: "Error", description: res.error || "Failed to regenerate email." });
+        return;
+      }
+      setEmailOverrides(prev => ({ ...prev, [suggestion.id]: res.data }));
     } catch (err: any) {
       console.error("Failed to redo email:", err);
       toast({ variant: "destructive", title: "Error", description: "Failed to regenerate email." });

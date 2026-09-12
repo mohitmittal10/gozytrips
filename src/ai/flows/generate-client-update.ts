@@ -27,7 +27,7 @@ const ClientUpdateContextSchema = z.object({
   travelDates: z.string().max(100),
   tripDuration: z.string().max(50).optional(),
   totalCost: z.string().max(50).optional(),
-  daysUntilTrip: z.number().optional(),
+  daysUntilTrip: z.coerce.number().optional(),
   hotelNames: z.string().max(300).optional(),
   hasFlights: z.boolean().optional(),
   customMessage: z.string().max(500).optional(),
@@ -65,53 +65,75 @@ const SingleEmailOutputSchema = z.object({
 
 export type ClientUpdateEmailOutput = z.infer<typeof SingleEmailOutputSchema>;
 
+export type GenerateSuggestionsResult =
+  | { success: true; data: CombinedSuggestionsOutput }
+  | { success: false; error: string; code?: string };
+
+export type GenerateClientUpdateEmailResult =
+  | { success: true; data: ClientUpdateEmailOutput }
+  | { success: false; error: string; code?: string };
+
 
 // ── Exported Functions ────────────────────────────────────────────────────────
 
 /** Primary entry point — single AI call, returns suggestions + emails. */
 export async function generateSuggestionsWithEmails(
   input: ClientUpdateContext
-): Promise<CombinedSuggestionsOutput> {
-  const { createServerComponentClient } = await import('@/lib/supabase/server');
-  const supabase = await createServerComponentClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthorized');
+): Promise<GenerateSuggestionsResult> {
+  try {
+    const { createServerComponentClient } = await import('@/lib/supabase/server');
+    const supabase = await createServerComponentClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Unauthorized: You must be logged in.' };
 
-  assertNoInjection({ Destination: input.destination });
-  await checkRateLimit(user.id, 'client_update');
+    assertNoInjection({ Destination: input.destination });
+    await checkRateLimit(user.id, 'client_update');
 
-  const sanitized: ClientUpdateContext = {
-    ...input,
-    clientName: sanitizeText(input.clientName, 100),
-    destination: sanitizeText(input.destination, 200),
-    agentName: sanitizeText(input.agentName, 100),
-    customMessage: sanitizeForPrompt(input.customMessage, 500),
-  };
+    const sanitized: ClientUpdateContext = {
+      ...input,
+      clientName: sanitizeText(input.clientName, 100),
+      destination: sanitizeText(input.destination, 200),
+      agentName: sanitizeText(input.agentName, 100),
+      customMessage: sanitizeForPrompt(input.customMessage, 500),
+    };
 
-  return combinedFlow(sanitized);
+    const data = await combinedFlow(sanitized);
+    return { success: true, data };
+  } catch (err: any) {
+    const errorMsg = err?.message || String(err || 'Failed to generate client update suggestions.');
+    console.error('[generateSuggestionsWithEmails] error:', errorMsg);
+    return { success: false, error: errorMsg };
+  }
 }
 
 /** Redo / custom-message regeneration — lean single-email call. */
 export async function generateClientUpdateEmail(
   input: ClientUpdateContext & { suggestionTitle: string }
-): Promise<ClientUpdateEmailOutput> {
-  const { createServerComponentClient } = await import('@/lib/supabase/server');
-  const supabase = await createServerComponentClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthorized');
+): Promise<GenerateClientUpdateEmailResult> {
+  try {
+    const { createServerComponentClient } = await import('@/lib/supabase/server');
+    const supabase = await createServerComponentClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Unauthorized: You must be logged in.' };
 
-  assertNoInjection({ 'Custom Message': input.customMessage, Destination: input.destination });
-  await checkRateLimit(user.id, 'client_update');
+    assertNoInjection({ 'Custom Message': input.customMessage, Destination: input.destination });
+    await checkRateLimit(user.id, 'client_update');
 
-  const sanitized = {
-    ...input,
-    clientName: sanitizeText(input.clientName, 100),
-    destination: sanitizeText(input.destination, 200),
-    agentName: sanitizeText(input.agentName, 100),
-    customMessage: sanitizeForPrompt(input.customMessage, 500),
-  };
+    const sanitized = {
+      ...input,
+      clientName: sanitizeText(input.clientName, 100),
+      destination: sanitizeText(input.destination, 200),
+      agentName: sanitizeText(input.agentName, 100),
+      customMessage: sanitizeForPrompt(input.customMessage, 500),
+    };
 
-  return redoEmailFlow(sanitized);
+    const data = await redoEmailFlow(sanitized);
+    return { success: true, data };
+  } catch (err: any) {
+    const errorMsg = err?.message || String(err || 'Failed to generate email.');
+    console.error('[generateClientUpdateEmail] error:', errorMsg);
+    return { success: false, error: errorMsg };
+  }
 }
 
 // Keep old name as alias for any callers that still use it

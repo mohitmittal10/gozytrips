@@ -29,14 +29,14 @@ const VendorEnquiryInputSchema = z.object({
   agentCompany: z.string().max(100).optional().describe('Company/agency name of the travel agent.'),
   destination: z.string().max(200).describe('Travel destination city/region.'),
   travelDates: z.string().max(100).describe('Travel dates in human-readable format, e.g. "15 Apr 2026 - 22 Apr 2026".'),
-  numberOfAdults: z.number().min(1).max(200).describe('Number of adult travellers.'),
-  numberOfChildren: z.number().min(0).max(100).optional().describe('Number of child travellers.'),
-  numberOfInfants: z.number().min(0).max(50).optional().describe('Number of infant travellers.'),
+  numberOfAdults: z.coerce.number().min(1).max(200).describe('Number of adult travellers.'),
+  numberOfChildren: z.coerce.number().min(0).max(100).optional().describe('Number of child travellers.'),
+  numberOfInfants: z.coerce.number().min(0).max(50).optional().describe('Number of infant travellers.'),
 
   // Hotel-specific
   hotelName: z.string().max(200).optional().describe('Name of the hotel being enquired about.'),
   roomType: z.string().max(100).optional().describe('Preferred room type, e.g. Deluxe, Suite, Standard.'),
-  numberOfRooms: z.number().min(1).max(100).optional().describe('Number of rooms required.'),
+  numberOfRooms: z.coerce.number().min(1).max(100).optional().describe('Number of rooms required.'),
   mealPlan: z.string().max(50).optional().describe('Preferred meal plan: CP, MAP, AP, EP.'),
   
   // Transport-specific
@@ -71,39 +71,50 @@ const VendorEnquiryOutputSchema = z.object({
 
 export type VendorEnquiryOutput = z.infer<typeof VendorEnquiryOutputSchema>;
 
+export type GenerateVendorEnquiryResult =
+  | { success: true; data: VendorEnquiryOutput }
+  | { success: false; error: string; code?: string };
+
 // ── Exported function ────────────────────────────────────────────────────────
 
-export async function generateVendorEnquiry(input: VendorEnquiryInput): Promise<VendorEnquiryOutput> {
-  // ── Security: Auth guard ─────────────────────────────────────────────────────
-  const { createServerComponentClient } = await import('@/lib/supabase/server');
-  const supabase = await createServerComponentClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('Unauthorized: You must be logged in.');
+export async function generateVendorEnquiry(input: VendorEnquiryInput): Promise<GenerateVendorEnquiryResult> {
+  try {
+    // ── Security: Auth guard ─────────────────────────────────────────────────────
+    const { createServerComponentClient } = await import('@/lib/supabase/server');
+    const supabase = await createServerComponentClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return { success: false, error: 'Unauthorized: You must be logged in.' };
 
-  // ── Security: Injection guard on freetext fields ──────────────────────────
-  assertNoInjection({
-    'Destination': input.destination,
-    'Special Requests': input.specialRequests,
-    'Route': input.route,
-    'Activity Name': input.activityName,
-  });
+    // ── Security: Injection guard on freetext fields ──────────────────────────
+    assertNoInjection({
+      'Destination': input.destination,
+      'Special Requests': input.specialRequests,
+      'Route': input.route,
+      'Activity Name': input.activityName,
+    });
 
-  // ── Security: Rate limiting ────────────────────────────────────────────────
-  await checkRateLimit(user.id, 'vendor_enquiry');
+    // ── Security: Rate limiting ────────────────────────────────────────────────
+    await checkRateLimit(user.id, 'vendor_enquiry');
 
-  // ── Security: Sanitize freetext fields ────────────────────────────────────
-  const sanitizedInput: VendorEnquiryInput = {
-    ...input,
-    destination: sanitizeText(input.destination, 200),
-    agentName: sanitizeText(input.agentName, 100),
-    hotelName: input.hotelName ? sanitizeText(input.hotelName, 200) : undefined,
-    route: input.route ? sanitizeText(input.route, 200) : undefined,
-    pickupLocation: input.pickupLocation ? sanitizeText(input.pickupLocation, 200) : undefined,
-    activityName: input.activityName ? sanitizeText(input.activityName, 200) : undefined,
-    specialRequests: input.specialRequests ? sanitizeForPrompt(input.specialRequests, 500) : undefined,
-  };
+    // ── Security: Sanitize freetext fields ────────────────────────────────────
+    const sanitizedInput: VendorEnquiryInput = {
+      ...input,
+      destination: sanitizeText(input.destination, 200),
+      agentName: sanitizeText(input.agentName, 100),
+      hotelName: input.hotelName ? sanitizeText(input.hotelName, 200) : undefined,
+      route: input.route ? sanitizeText(input.route, 200) : undefined,
+      pickupLocation: input.pickupLocation ? sanitizeText(input.pickupLocation, 200) : undefined,
+      activityName: input.activityName ? sanitizeText(input.activityName, 200) : undefined,
+      specialRequests: input.specialRequests ? sanitizeForPrompt(input.specialRequests, 500) : undefined,
+    };
 
-  return generateVendorEnquiryFlow(sanitizedInput);
+    const data = await generateVendorEnquiryFlow(sanitizedInput);
+    return { success: true, data };
+  } catch (err: any) {
+    const errorMsg = err?.message || String(err || 'Failed to generate vendor enquiry email.');
+    console.error('[generateVendorEnquiry] error:', errorMsg);
+    return { success: false, error: errorMsg };
+  }
 }
 
 

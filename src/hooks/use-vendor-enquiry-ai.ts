@@ -17,7 +17,17 @@ export function useVendorEnquiryAi({ onGenerateSuccess }: UseVendorEnquiryAiProp
   const handleGenerate = useCallback(async (input: VendorEnquiryInput) => {
     setIsGenerating(true);
     try {
-      const result = await generateVendorEnquiry(input);
+      const res = await generateVendorEnquiry(input);
+      if (!res.success) {
+        toast({ 
+          variant: "destructive", 
+          title: "Generation Failed", 
+          description: res.error || "Failed to generate email." 
+        });
+        return null;
+      }
+
+      const result = res.data;
       setGeneratedSubject(result.subject);
       setGeneratedBody(result.body);
       setIsEditing(false);
@@ -35,7 +45,7 @@ export function useVendorEnquiryAi({ onGenerateSuccess }: UseVendorEnquiryAiProp
         title: "Generation Failed", 
         description: err.message || "Failed to generate email." 
       });
-      throw err;
+      return null;
     } finally {
       setIsGenerating(false);
     }
