@@ -35,6 +35,7 @@ function runTests() {
     address: "123 Ocean Drive, Goa",
     checkIn: "14:00",
     checkOut: "11:00",
+    costAdult: 1500,
     imageUrls: [], // photo is optional!
   };
   assertEqual(isEntryCompleteForExport(completeHotel, "hotel"), true, "Complete hotel returns true");
@@ -49,6 +50,7 @@ function runTests() {
     departureAirport: "DEL",
     arrivalAirport: "BOM",
     flightType: "direct",
+    costAdult: 4500,
   };
   assertEqual(isEntryCompleteForExport(completeFlight, "flight"), true, "Complete flight returns true");
 
@@ -75,6 +77,7 @@ function runTests() {
     pickupTime: "11:00 AM",
     driverName: "Ramesh Singh",
     driverContact: "+91 9876543210",
+    flatCost: 2500,
   };
   assertEqual(isEntryCompleteForExport(completeCab, "cab"), true, "Complete cab returns true");
 
@@ -86,6 +89,7 @@ function runTests() {
     reportingTime: "08:30 PM",
     departureTime: "09:00 PM",
     pnr: "PNR-998877",
+    costAdult: 1200,
   };
   assertEqual(isEntryCompleteForExport(completeBus, "bus"), true, "Complete bus returns true");
 

@@ -261,7 +261,7 @@ export function CrmModals() {
                                 <button
                                     key={filter}
                                     onClick={() => context.filters.setActivityFilter(filter)}
-                                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${context.filters.activityFilter === filter ? 'bg-zinc-800 text-zinc-100 border border-zinc-700 font-semibold' : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10 hover:text-gray-200'}`}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${context.filters.activityFilter === filter ? 'bg-zinc-800 text-zinc-100 border border-zinc-700 font-semibold' : 'bg-white/5 text-gray-400 border border-white/10 hover:bg-white/10 hover:text-zinc-200'}`}
                                 >
                                     {filter === 'all' && 'All Activity'}
                                     {filter === 'client_added' && 'New Clients'}
@@ -283,7 +283,7 @@ export function CrmModals() {
                                         {event.icon === 'user' ? <UserPlus className="w-4 h-4 text-purple-400" /> : event.icon === 'plane' ? <Plane className="w-4 h-4 text-blue-400" /> : <Activity className="w-4 h-4 text-amber-400" />}
                                     </div>
                                     <div className="min-w-0 flex-1 pt-0.5">
-                                        <p className="text-sm text-gray-200 leading-snug">{event.label}</p>
+                                        <p className="text-sm text-zinc-200 leading-snug">{event.label}</p>
                                         <p className="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5"><Clock className="w-3 h-3" />{event.time.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} at {event.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                     </div>
                                 </div>

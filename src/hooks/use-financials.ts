@@ -264,18 +264,24 @@ export function useFinancials(
 
                 const adultPaxCount = it.adult_pax ?? 2;
                 const childPaxCount = it.child_pax ?? 0;
+                const infantPaxCount = it.infant_pax ?? 0;
 
                 // Hotels
                 for (const h of (itData.hotels || [])) {
                     const perAdult = Number(h.costAdult) || 0;
                     const perChild = Number(h.costChild) || 0;
-                    const total = (perAdult * adultPaxCount) + (perChild * childPaxCount);
+                    const perInfant = Number(h.costInfant) || 0;
+                    const nights = Number(h.nights) || 1;
+                    const isFlat = h.costType === 'flat';
+                    const total = isFlat
+                        ? (Number(h.flatCost) || 0) * nights
+                        : ((perAdult * adultPaxCount) + (perChild * childPaxCount) + (perInfant * infantPaxCount)) * nights;
                     if (total > 0) {
                         const key = `hotel|${h.name || 'Hotel'}|${total}`;
                         suggestedExpenses.push({
                             category: 'hotel',
                             vendor: h.name || 'Hotel',
-                            description: `${h.name || 'Hotel'} (${h.nights || 1}N)`,
+                            description: `${h.name || 'Hotel'} (${nights}N)`,
                             amount: total,
                             currency: it.currency,
                             alreadySeeded: existingKeys.has(key),
@@ -285,10 +291,16 @@ export function useFinancials(
 
                 // Flights
                 for (const f of (itData.flights || [])) {
-                    const amt = Number(f.costAdult ?? f.cost ?? f.price ?? f.amount) || 0;
+                    const perAdult = Number(f.costAdult) || 0;
+                    const perChild = Number(f.costChild) || 0;
+                    const perInfant = Number(f.costInfant) || 0;
+                    const isFlat = f.costType === 'flat';
+                    const amt = isFlat
+                        ? (Number(f.flatCost ?? f.cost ?? f.price ?? f.amount) || 0)
+                        : (perAdult * adultPaxCount) + (perChild * childPaxCount) + (perInfant * infantPaxCount);
                     if (amt > 0) {
                         const label = f.airline || f.name || 'Flight';
-                        const desc = `${f.from || ''} → ${f.to || ''} (${f.airline || 'Flight'})`.trim();
+                        const desc = `${f.departureAirport || f.from || ''} → ${f.arrivalAirport || f.to || ''} (${f.airline || 'Flight'})`.trim();
                         const key = `flight|${label}|${amt}`;
                         suggestedExpenses.push({
                             category: 'flight',
@@ -303,14 +315,20 @@ export function useFinancials(
 
                 // Cabs
                 for (const c of (itData.cabs || [])) {
-                    const amt = Number(c.cost ?? c.amount ?? c.price) || 0;
+                    const perAdult = Number(c.costAdult) || 0;
+                    const perChild = Number(c.costChild) || 0;
+                    const perInfant = Number(c.costInfant) || 0;
+                    const isFlat = (c.costType || 'flat') === 'flat';
+                    const amt = isFlat
+                        ? (Number(c.totalCost ?? c.flatCost ?? c.cost ?? c.amount ?? c.price) || 0)
+                        : (perAdult * adultPaxCount) + (perChild * childPaxCount) + (perInfant * infantPaxCount);
                     if (amt > 0) {
-                        const label = c.vendor || c.type || 'Cab/Transfer';
+                        const label = c.vehicleType || c.vendor || c.type || 'Cab/Transfer';
                         const key = `transport|${label}|${amt}`;
                         suggestedExpenses.push({
                             category: 'transport',
                             vendor: label,
-                            description: c.description || label,
+                            description: c.route || c.description || label,
                             amount: amt,
                             currency: it.currency,
                             alreadySeeded: existingKeys.has(key),
@@ -320,14 +338,20 @@ export function useFinancials(
 
                 // Buses
                 for (const b of (itData.buses || [])) {
-                    const amt = Number(b.cost ?? b.amount ?? b.price) || 0;
+                    const perAdult = Number(b.costAdult) || 0;
+                    const perChild = Number(b.costChild) || 0;
+                    const perInfant = Number(b.costInfant) || 0;
+                    const isFlat = b.costType === 'flat';
+                    const amt = isFlat
+                        ? (Number(b.flatCost ?? b.cost ?? b.amount ?? b.price) || 0)
+                        : (perAdult * adultPaxCount) + (perChild * childPaxCount) + (perInfant * infantPaxCount);
                     if (amt > 0) {
-                        const label = b.vendor || b.operator || 'Bus';
+                        const label = b.busType || b.vendor || b.operator || 'Bus';
                         const key = `transport|${label}|${amt}`;
                         suggestedExpenses.push({
                             category: 'transport',
                             vendor: label,
-                            description: b.description || label,
+                            description: b.route || b.description || label,
                             amount: amt,
                             currency: it.currency,
                             alreadySeeded: existingKeys.has(key),

@@ -640,7 +640,7 @@ export default function TheLab() {
           <div className="max-w-[1500px] mx-auto flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 text-sm">
               <Zap className="w-4 h-4 text-purple-400 shrink-0" />
-              <span className="text-gray-200">
+              <span className="text-zinc-200">
                 Form pre-filled from{" "}
                 <span className="text-purple-300 font-semibold">{enquiryBanner.clientName}</span>'s enquiry —{" "}
                 <span className="text-gray-400">review and click Generate!</span>

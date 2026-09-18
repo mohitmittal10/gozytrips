@@ -160,7 +160,7 @@ const NoteLogCard = ({ log }: { log: NoteLog }) => {
           {isEmail && log.subject && (
             <div className="pt-3 pb-2 border-b border-white/[0.04]">
               <p className="text-[10px] text-gray-600 uppercase tracking-wider font-semibold mb-0.5">Subject</p>
-              <p className="text-xs text-gray-200 font-medium">{log.subject}</p>
+              <p className="text-xs text-zinc-200 font-medium">{log.subject}</p>
             </div>
           )}
           <p className="text-[11px] text-gray-300 leading-relaxed whitespace-pre-wrap font-light pt-1">

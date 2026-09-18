@@ -223,7 +223,7 @@ export function InvoicesTab({ financials, cs, fm, onOpenFinances }: InvoicesTabP
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
                                         <tr>
-                                            <td className="p-2.5 text-gray-200">
+                                            <td className="p-2.5 text-zinc-200">
                                                 Complete Travel Package & Itinerary Arrangements ({selectedInvoiceFin.tripTitle})
                                             </td>
                                             <td className="p-2.5 text-right font-bold text-white">

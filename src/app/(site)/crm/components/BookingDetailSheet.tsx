@@ -273,21 +273,21 @@ export const BookingDetailSheet = ({
                                     <Hotel className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
                                     <div>
                                         <p className="text-[10px] text-gray-500 uppercase">Provider / Vendor</p>
-                                        <p className="text-sm font-medium text-gray-200">{booking.booking_details?.provider || "N/A"}</p>
+                                        <p className="text-sm font-medium text-zinc-200">{booking.booking_details?.provider || "N/A"}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
                                     <Info className="w-4 h-4 text-gray-500 mr-2 shrink-0" />
                                     <div>
                                         <p className="text-[10px] text-gray-500 uppercase">PNR / Confirmation</p>
-                                        <p className="text-sm font-medium text-gray-200">{booking.booking_details?.pnr_or_confirmation || "N/A"}</p>
+                                        <p className="text-sm font-medium text-zinc-200">{booking.booking_details?.pnr_or_confirmation || "N/A"}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
                                     <Users className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
                                     <div>
                                         <p className="text-[10px] text-gray-500 uppercase">Passengers / Pax</p>
-                                        <p className="text-sm font-medium text-gray-200">{booking.booking_details?.passengers || 1} Person(s)</p>
+                                        <p className="text-sm font-medium text-zinc-200">{booking.booking_details?.passengers || 1} Person(s)</p>
                                     </div>
                                 </div>
                             </div>

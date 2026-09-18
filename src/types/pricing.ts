@@ -15,6 +15,10 @@ export type ManualCostItem = {
   amount: number;
   type: "per-person" | "total";
   category: string; // e.g. "Flight" | "Hotel" | "Transport" | "Activity" | "Visa" | "Insurance" | "Other";
+  linkedItemId?: string;
+  markupType?: "percentage" | "flat";
+  markupValue?: number;
+  taxPercentage?: number;
 };
 
 export type PricingConfig = {

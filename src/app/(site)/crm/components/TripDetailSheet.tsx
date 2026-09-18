@@ -592,10 +592,10 @@ export const TripDetailSheet = ({
                                                             )}
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-2 text-xs text-gray-400 border-t border-white/5 pt-2 mt-1">
-                                                            <p>Check-in: <span className="text-gray-200">{h.checkIn || "—"}</span></p>
-                                                            <p>Check-out: <span className="text-gray-200">{h.checkOut || "—"}</span></p>
-                                                            {h.nights && <p>Nights: <span className="text-gray-200">{h.nights}</span></p>}
-                                                            {h.bookingRef && <p>Booking Ref: <span className="text-gray-200">{h.bookingRef}</span></p>}
+                                                            <p>Check-in: <span className="text-zinc-200">{h.checkIn || "—"}</span></p>
+                                                            <p>Check-out: <span className="text-zinc-200">{h.checkOut || "—"}</span></p>
+                                                            {h.nights && <p>Nights: <span className="text-zinc-200">{h.nights}</span></p>}
+                                                            {h.bookingRef && <p>Booking Ref: <span className="text-zinc-200">{h.bookingRef}</span></p>}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -617,13 +617,13 @@ export const TripDetailSheet = ({
                                                         <div className="flex items-center gap-4 text-xs text-gray-400 border-t border-white/5 pt-2.5 mt-1">
                                                             <div className="flex-1">
                                                                 <p className="text-[9px] text-gray-500 uppercase font-semibold">Departure</p>
-                                                                <p className="text-xs text-gray-200 font-semibold">{f.departureAirport || "—"}</p>
+                                                                <p className="text-xs text-zinc-200 font-semibold">{f.departureAirport || "—"}</p>
                                                                 <p className="text-[11px] text-gray-400">{f.departure || "—"}</p>
                                                             </div>
                                                             <ArrowRight className="w-3.5 h-3.5 text-gray-600" />
                                                             <div className="flex-1 text-right">
                                                                 <p className="text-[9px] text-gray-500 uppercase font-semibold">Arrival</p>
-                                                                <p className="text-xs text-gray-200 font-semibold">{f.arrivalAirport || "—"}</p>
+                                                                <p className="text-xs text-zinc-200 font-semibold">{f.arrivalAirport || "—"}</p>
                                                                 <p className="text-[11px] text-gray-400">{f.arrival || "—"}</p>
                                                             </div>
                                                         </div>
@@ -671,8 +671,8 @@ export const TripDetailSheet = ({
                                                         </div>
                                                         {b.route && <p className="text-xs text-gray-300">{b.route}</p>}
                                                         <div className="grid grid-cols-2 gap-2 text-xs text-gray-400 border-t border-white/5 pt-2">
-                                                            <p>Report: <span className="text-gray-200">{b.reportingTime || "—"}</span></p>
-                                                            <p>Depart: <span className="text-gray-200">{b.departureTime || "—"}</span></p>
+                                                            <p>Report: <span className="text-zinc-200">{b.reportingTime || "—"}</span></p>
+                                                            <p>Depart: <span className="text-zinc-200">{b.departureTime || "—"}</span></p>
                                                         </div>
                                                     </div>
                                                 ))}

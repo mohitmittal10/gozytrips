@@ -401,7 +401,7 @@ export default function ClientUpdateSuggestions({
                           <span className="text-[9px] bg-white/10 px-1.5 py-0.5 rounded text-gray-300">Click to Edit</span>
                         </div>
                         <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold">Subject:</p>
-                        <p className="text-xs text-gray-200 font-medium line-clamp-1">{email.subject}</p>
+                        <p className="text-xs text-zinc-200 font-medium line-clamp-1">{email.subject}</p>
                         <p className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mt-1.5">Preview:</p>
                         <p className="text-[11px] text-gray-300 line-clamp-2 whitespace-pre-wrap">{email.body}</p>
                       </div>

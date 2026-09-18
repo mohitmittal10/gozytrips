@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
-  Hotel, Plane, Plus, Minus, Trash2, Star, ChevronDown, X, Camera, Car, Bus, Minimize2, Maximize2, AlertCircle, AlertTriangle
+  Hotel, Plane, Plus, Minus, Trash2, Star, ChevronDown, X, Camera, Car, Bus, Minimize2, Maximize2, AlertCircle, AlertTriangle, Calculator, Receipt, Coins, DollarSign, CheckCircle2
 } from "lucide-react";
 import { CustomTabs } from "@/components/ui/custom-tabs";
 import {
@@ -32,6 +32,8 @@ export type HotelInfo = {
   bookingRef: string;
   starRating: number;
   nights?: number;
+  costType?: 'per-person' | 'flat';
+  flatCost?: number;
   costAdult?: number;
   costChild?: number;
   costInfant?: number;
@@ -60,6 +62,8 @@ export type FlightInfo = {
   connectingArrivalAirport?: string;
   connectingTerminal?: string;
   connectingPnr?: string;
+  costType?: 'per-person' | 'flat';
+  flatCost?: number;
   costAdult?: number;
   costChild?: number;
   costInfant?: number;
@@ -75,6 +79,11 @@ export type CabInfo = {
   driverName: string;
   driverContact: string;
   bookingRef: string;
+  costType?: 'per-person' | 'flat';
+  flatCost?: number;
+  costAdult?: number;
+  costChild?: number;
+  costInfant?: number;
   totalCost?: number;
 };
 
@@ -87,6 +96,8 @@ export type BusInfo = {
   reportingTime: string;
   departureTime: string;
   pnr: string;
+  costType?: 'per-person' | 'flat';
+  flatCost?: number;
   costAdult?: number;
   costChild?: number;
   costInfant?: number;
@@ -260,7 +271,7 @@ function DayMultiPicker({ selectedDays, onChange, totalDays, label = "Select Day
                     ? isPending
                       ? "bg-amber-500/20 text-amber-300 border-amber-400/50 cursor-pointer ring-1 ring-amber-400/30"
                       : "bg-amber-500/8 text-amber-300/70 border-amber-500/20 cursor-pointer hover:bg-amber-500/15 hover:text-amber-300 hover:border-amber-500/40"
-                    : "bg-white/5 text-gray-400 border-white/10 hover:border-primary/40 hover:text-gray-200 hover:bg-white/8 cursor-pointer"
+                    : "bg-white/5 text-gray-400 border-white/10 hover:border-primary/40 hover:text-zinc-200 hover:bg-white/8 cursor-pointer"
               )}
             >
               Day {i + 1}
@@ -447,12 +458,35 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
       </div>
 
       <div className="pt-2 border-t border-white/5 space-y-2 mt-2!">
-        <label className="text-xs font-semibold text-gray-400">Costs (Per Night — Optional)</label>
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="Adult Cost" type="number" value={hotel.costAdult} onChange={(v) => update("costAdult", v ? Number(v) : undefined)} placeholder="0" />
-          <Field label="Child Cost" type="number" value={hotel.costChild} onChange={(v) => update("costChild", v ? Number(v) : undefined)} placeholder="0" />
-          <Field label="Infant Cost" type="number" value={hotel.costInfant} onChange={(v) => update("costInfant", v ? Number(v) : undefined)} placeholder="0" />
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-gray-400 flex items-center">
+            <span>Cost to Agent</span>
+            <span className="text-rose-400 font-bold ml-0.5" title="Required field">*</span>
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase font-bold text-zinc-400">Cost Type:</span>
+            <Select value={hotel.costType || "per-person"} onValueChange={(v: 'per-person' | 'flat') => update("costType", v)}>
+              <SelectTrigger className="the-lab-input h-7 text-xs bg-black/30 border-white/10 w-28 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-obsidian-dark border-white/10 text-zinc-300">
+                <SelectItem value="per-person">Per Person</SelectItem>
+                <SelectItem value="flat">Flat Cost</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+        {(hotel.costType || "per-person") === "flat" ? (
+          <div className="grid grid-cols-1 gap-3">
+            <Field label="Cost to Agent (Flat)" required type="number" value={hotel.flatCost} onChange={(v) => update("flatCost", v ? Number(v) : undefined)} onBlur={handleBlur} error={errors.flatCost} placeholder="0" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            <Field label="Cost to Agent (Adult)" required type="number" value={hotel.costAdult} onChange={(v) => update("costAdult", v ? Number(v) : undefined)} onBlur={handleBlur} error={errors.costAdult} placeholder="0" />
+            <Field label="Cost to Agent (Child)" type="number" value={hotel.costChild} onChange={(v) => update("costChild", v ? Number(v) : undefined)} placeholder="0" />
+            <Field label="Cost to Agent (Infant)" type="number" value={hotel.costInfant} onChange={(v) => update("costInfant", v ? Number(v) : undefined)} placeholder="0" />
+          </div>
+        )}
       </div>
 
       {/* Photo Upload — Explicitly Optional */}
@@ -615,12 +649,35 @@ function FlightCard({ flight, totalDays, onChange, onDelete, isCollapsed, allFli
       </div>
 
       <div className="pt-2 border-t border-white/5 space-y-2 mt-2!">
-        <label className="text-xs font-semibold text-gray-400">Costs (Optional)</label>
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="Adult Cost" type="number" value={flight.costAdult} onChange={(v) => update("costAdult", v ? Number(v) : undefined)} placeholder="0" />
-          <Field label="Child Cost" type="number" value={flight.costChild} onChange={(v) => update("costChild", v ? Number(v) : undefined)} placeholder="0" />
-          <Field label="Infant Cost" type="number" value={flight.costInfant} onChange={(v) => update("costInfant", v ? Number(v) : undefined)} placeholder="0" />
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-gray-400 flex items-center">
+            <span>Cost to Agent</span>
+            <span className="text-rose-400 font-bold ml-0.5" title="Required field">*</span>
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase font-bold text-zinc-400">Cost Type:</span>
+            <Select value={flight.costType || "per-person"} onValueChange={(v: 'per-person' | 'flat') => update("costType", v)}>
+              <SelectTrigger className="the-lab-input h-7 text-xs bg-black/30 border-white/10 w-28 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-obsidian-dark border-white/10 text-zinc-300">
+                <SelectItem value="per-person">Per Person</SelectItem>
+                <SelectItem value="flat">Flat Cost</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+        {(flight.costType || "per-person") === "flat" ? (
+          <div className="grid grid-cols-1 gap-3">
+            <Field label="Cost to Agent (Flat)" required type="number" value={flight.flatCost} onChange={(v) => update("flatCost", v ? Number(v) : undefined)} onBlur={handleBlur} error={errors.flatCost} placeholder="0" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            <Field label="Cost to Agent (Adult)" required type="number" value={flight.costAdult} onChange={(v) => update("costAdult", v ? Number(v) : undefined)} onBlur={handleBlur} error={errors.costAdult} placeholder="0" />
+            <Field label="Cost to Agent (Child)" type="number" value={flight.costChild} onChange={(v) => update("costChild", v ? Number(v) : undefined)} placeholder="0" />
+            <Field label="Cost to Agent (Infant)" type="number" value={flight.costInfant} onChange={(v) => update("costInfant", v ? Number(v) : undefined)} placeholder="0" />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -699,7 +756,38 @@ function CabCard({ cab, totalDays, onChange, onDelete, isCollapsed, allCabs = []
         <Field label="Pickup Time" required value={cab.pickupTime} onChange={(v) => update("pickupTime", v)} onBlur={handleBlur} error={errors.pickupTime} placeholder="09:00 AM" />
         <Field label="Driver Name" required value={cab.driverName} onChange={(v) => update("driverName", v)} onBlur={handleBlur} error={errors.driverName} placeholder="Rajesh Kumar" />
         <Field label="Driver Contact" required value={cab.driverContact} onChange={(v) => update("driverContact", v)} onBlur={handleBlur} error={errors.driverContact} placeholder="+91 98765 43210" className="col-span-2" />
-        <Field label={`Total Cost (${getCurrencySymbol(DEFAULT_CURRENCY)}) (Optional)`} type="number" value={cab.totalCost} onChange={(v) => update("totalCost", v ? Number(v) : undefined)} placeholder="0" className="col-span-2" />
+      </div>
+
+      <div className="pt-2 border-t border-white/5 space-y-2 mt-2!">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-gray-400 flex items-center">
+            <span>Cost to Agent</span>
+            <span className="text-rose-400 font-bold ml-0.5" title="Required field">*</span>
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase font-bold text-zinc-400">Cost Type:</span>
+            <Select value={cab.costType || "flat"} onValueChange={(v: 'per-person' | 'flat') => update("costType", v)}>
+              <SelectTrigger className="the-lab-input h-7 text-xs bg-black/30 border-white/10 w-28 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-obsidian-dark border-white/10 text-zinc-300">
+                <SelectItem value="flat">Flat Cost</SelectItem>
+                <SelectItem value="per-person">Per Person</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        {(cab.costType || "flat") === "flat" ? (
+          <div className="grid grid-cols-1 gap-3">
+            <Field label="Cost to Agent (Flat)" required type="number" value={cab.totalCost ?? cab.flatCost} onChange={(v) => { const num = v ? Number(v) : undefined; update("totalCost", num); update("flatCost", num); }} onBlur={handleBlur} error={errors.totalCost || errors.flatCost} placeholder="0" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            <Field label="Cost to Agent (Adult)" required type="number" value={cab.costAdult} onChange={(v) => update("costAdult", v ? Number(v) : undefined)} onBlur={handleBlur} error={errors.costAdult} placeholder="0" />
+            <Field label="Cost to Agent (Child)" type="number" value={cab.costChild} onChange={(v) => update("costChild", v ? Number(v) : undefined)} placeholder="0" />
+            <Field label="Cost to Agent (Infant)" type="number" value={cab.costInfant} onChange={(v) => update("costInfant", v ? Number(v) : undefined)} placeholder="0" />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -781,12 +869,35 @@ function BusCard({ bus, totalDays, onChange, onDelete, isCollapsed, allBuses = [
       </div>
 
       <div className="pt-2 border-t border-white/5 space-y-2 mt-2!">
-        <label className="text-xs font-semibold text-gray-400">Costs (Per Seat — Optional)</label>
-        <div className="grid grid-cols-3 gap-3">
-          <Field label="Adult Cost" type="number" value={bus.costAdult} onChange={(v) => update("costAdult", v ? Number(v) : undefined)} placeholder="0" />
-          <Field label="Child Cost" type="number" value={bus.costChild} onChange={(v) => update("costChild", v ? Number(v) : undefined)} placeholder="0" />
-          <Field label="Infant Cost" type="number" value={bus.costInfant} onChange={(v) => update("costInfant", v ? Number(v) : undefined)} placeholder="0" />
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-gray-400 flex items-center">
+            <span>Cost to Agent</span>
+            <span className="text-rose-400 font-bold ml-0.5" title="Required field">*</span>
+          </label>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] uppercase font-bold text-zinc-400">Cost Type:</span>
+            <Select value={bus.costType || "per-person"} onValueChange={(v: 'per-person' | 'flat') => update("costType", v)}>
+              <SelectTrigger className="the-lab-input h-7 text-xs bg-black/30 border-white/10 w-28 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-obsidian-dark border-white/10 text-zinc-300">
+                <SelectItem value="per-person">Per Person</SelectItem>
+                <SelectItem value="flat">Flat Cost</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
+        {(bus.costType || "per-person") === "flat" ? (
+          <div className="grid grid-cols-1 gap-3">
+            <Field label="Cost to Agent (Flat)" required type="number" value={bus.flatCost} onChange={(v) => update("flatCost", v ? Number(v) : undefined)} onBlur={handleBlur} error={errors.flatCost} placeholder="0" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3">
+            <Field label="Cost to Agent (Adult)" required type="number" value={bus.costAdult} onChange={(v) => update("costAdult", v ? Number(v) : undefined)} onBlur={handleBlur} error={errors.costAdult} placeholder="0" />
+            <Field label="Cost to Agent (Child)" type="number" value={bus.costChild} onChange={(v) => update("costChild", v ? Number(v) : undefined)} placeholder="0" />
+            <Field label="Cost to Agent (Infant)" type="number" value={bus.costInfant} onChange={(v) => update("costInfant", v ? Number(v) : undefined)} placeholder="0" />
+          </div>
+        )}
       </div>
     </div>
   );
@@ -831,6 +942,7 @@ export default function HotelFlightEditor({
     { value: "flights", label: "Flights", icon: Plane, description: "Manage flight transfers", count: flights.length },
     { value: "cabs", label: "Cabs", icon: Car, description: "Manage private transfers", count: cabs.length },
     { value: "buses", label: "Buses", icon: Bus, description: "Manage bus tickets", count: buses.length },
+    { value: "costing", label: "Cost to Agent", icon: Calculator, description: "Logistics cost to agent overview referred in Financials", count: hotels.length + flights.length + cabs.length + buses.length },
   ], [hotels.length, flights.length, cabs.length, buses.length]);
 
   useEffect(() => {
@@ -887,6 +999,72 @@ export default function HotelFlightEditor({
     });
     onHotelsChange(updatedHotels);
   };
+
+  // Costing calculations for the Costing Module overview
+  const hotelsTotal = useMemo(() => hotels.reduce((sum, h) => {
+    const isFlat = h.costType === 'flat';
+    return sum + (isFlat ? (h.flatCost || 0) : (h.costAdult || 0) * (h.nights || 1));
+  }, 0), [hotels]);
+
+  const flightsTotal = useMemo(() => flights.reduce((sum, f) => {
+    const isFlat = f.costType === 'flat';
+    return sum + (isFlat ? (f.flatCost || 0) : (f.costAdult || 0));
+  }, 0), [flights]);
+
+  const cabsTotal = useMemo(() => cabs.reduce((sum, c) => {
+    const isFlat = (c.costType || 'flat') === 'flat';
+    return sum + (isFlat ? (c.totalCost ?? c.flatCost ?? 0) : (c.costAdult || 0));
+  }, 0), [cabs]);
+
+  const busesTotal = useMemo(() => buses.reduce((sum, b) => {
+    const isFlat = b.costType === 'flat';
+    return sum + (isFlat ? (b.flatCost || 0) : (b.costAdult || 0));
+  }, 0), [buses]);
+
+  const grandLogisticsTotal = hotelsTotal + flightsTotal + cabsTotal + busesTotal;
+
+  const allLogisticsItems = useMemo(() => [
+    ...hotels.map((h) => ({
+      id: h.id,
+      category: 'Hotel',
+      icon: <Hotel className="w-3.5 h-3.5 text-amber-400" />,
+      name: h.name || 'Untitled Hotel',
+      subtitle: `${(h.dayIndices || [h.dayIndex]).length} Day(s)${h.nights ? ` • ${h.nights} Night(s)` : ''}`,
+      costType: h.costType || 'per-person',
+      unitRate: h.costType === 'flat' ? (h.flatCost || 0) : (h.costAdult || 0),
+      calculatedTotal: h.costType === 'flat' ? (h.flatCost || 0) : (h.costAdult || 0) * (h.nights || 1),
+    })),
+    ...flights.map((f) => ({
+      id: f.id,
+      category: 'Flight',
+      icon: <Plane className="w-3.5 h-3.5 text-sky-400" />,
+      name: `${f.airline || 'Flight'} ${f.flightNumber || ''}`.trim(),
+      subtitle: `${f.departureAirport || 'DEP'} → ${f.arrivalAirport || 'ARR'}`,
+      costType: f.costType || 'per-person',
+      unitRate: f.costType === 'flat' ? (f.flatCost || 0) : (f.costAdult || 0),
+      calculatedTotal: f.costType === 'flat' ? (f.flatCost || 0) : (f.costAdult || 0),
+    })),
+    ...cabs.map((c) => ({
+      id: c.id,
+      category: 'Cab',
+      icon: <Car className="w-3.5 h-3.5 text-indigo-400" />,
+      name: c.vehicleType || 'Cab Transfer',
+      subtitle: c.route || 'Local Route',
+      costType: c.costType || 'flat',
+      unitRate: (c.costType || 'flat') === 'flat' ? (c.totalCost ?? c.flatCost ?? 0) : (c.costAdult || 0),
+      calculatedTotal: (c.costType || 'flat') === 'flat' ? (c.totalCost ?? c.flatCost ?? 0) : (c.costAdult || 0),
+    })),
+    ...buses.map((b) => ({
+      id: b.id,
+      category: 'Bus',
+      icon: <Bus className="w-3.5 h-3.5 text-purple-400" />,
+      name: b.busType || 'Bus Transfer',
+      subtitle: b.route || 'Bus Route',
+      costType: b.costType || 'per-person',
+      unitRate: b.costType === 'flat' ? (b.flatCost || 0) : (b.costAdult || 0),
+      calculatedTotal: b.costType === 'flat' ? (b.flatCost || 0) : (b.costAdult || 0),
+    })),
+  ], [hotels, flights, cabs, buses]);
 
   const active = TAB_CONFIG.find(t => t.value === selectedEditorTab)!;
   const Icon = active.icon;
@@ -975,16 +1153,20 @@ export default function HotelFlightEditor({
               )}
             </button>
 
-            <div className="h-6 w-[1px] bg-white/[0.08] hidden sm:block" />
+            {selectedEditorTab !== "costing" && (
+              <>
+                <div className="h-6 w-[1px] bg-white/[0.08] hidden sm:block" />
 
-            <button
-              type="button"
-              onClick={() => handleTabClick(selectedEditorTab)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 text-primary text-xs font-bold hover:bg-primary/10 transition-all cursor-pointer animate-in fade-in duration-200"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              Add {selectedEditorTab === "flights" ? "Flight" : selectedEditorTab === "hotels" ? "Hotel" : selectedEditorTab === "cabs" ? "Cab" : "Bus"}
-            </button>
+                <button
+                  type="button"
+                  onClick={() => handleTabClick(selectedEditorTab)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/30 text-primary text-xs font-bold hover:bg-primary/10 transition-all cursor-pointer animate-in fade-in duration-200"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Add {selectedEditorTab === "flights" ? "Flight" : selectedEditorTab === "hotels" ? "Hotel" : selectedEditorTab === "cabs" ? "Cab" : "Bus"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -1054,7 +1236,111 @@ export default function HotelFlightEditor({
                 ))
               : null}
 
-            {((selectedEditorTab === "hotels" && hotels.length === 0) ||
+            {selectedEditorTab === "costing" && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                {/* Information banner */}
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center justify-between flex-wrap gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                    <div>
+                      <p className="font-bold text-white text-sm">Logistics Cost to Agent Overview</p>
+                      <p className="text-emerald-300/80 mt-0.5">
+                        These cost to agent figures are dynamically referenced in the Financials section. Rates can be set per person or as a flat cost per item.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Summary stat cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                  <div className="p-3 rounded-xl border border-white/10 bg-white/5 space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Hotels ({hotels.length})</span>
+                    <p className="text-sm font-bold text-amber-400 font-mono">
+                      {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{hotelsTotal.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl border border-white/10 bg-white/5 space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Flights ({flights.length})</span>
+                    <p className="text-sm font-bold text-sky-400 font-mono">
+                      {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{flightsTotal.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl border border-white/10 bg-white/5 space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Cabs ({cabs.length})</span>
+                    <p className="text-sm font-bold text-indigo-400 font-mono">
+                      {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{cabsTotal.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl border border-white/10 bg-white/5 space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-gray-400">Buses ({buses.length})</span>
+                    <p className="text-sm font-bold text-purple-400 font-mono">
+                      {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{busesTotal.toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-xl border border-primary/30 bg-primary/10 col-span-2 sm:col-span-1 space-y-1">
+                    <span className="text-[10px] uppercase font-bold text-primary">Total Cost to Agent</span>
+                    <p className="text-base font-extrabold text-white font-mono">
+                      {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{grandLogisticsTotal.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Items costing table */}
+                <div className="rounded-xl border border-white/10 overflow-hidden bg-black/20">
+                  <table className="w-full text-left text-xs text-zinc-300">
+                    <thead className="bg-white/5 text-[10px] uppercase text-zinc-400 border-b border-white/10 font-bold">
+                      <tr>
+                        <th className="p-3">Category</th>
+                        <th className="p-3">Item Details</th>
+                        <th className="p-3">Cost Type</th>
+                        <th className="p-3 text-right">Cost to Agent (Rate)</th>
+                        <th className="p-3 text-right">Total Cost to Agent</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {allLogisticsItems.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="p-6 text-center text-zinc-500 italic">
+                            No logistics items added yet. Add hotels, flights, cabs, or buses to see cost to agent breakdown.
+                          </td>
+                        </tr>
+                      ) : (
+                        allLogisticsItems.map((item) => (
+                          <tr key={item.id} className="hover:bg-white/[0.02]">
+                            <td className="p-3">
+                              <span className="flex items-center gap-1.5 font-semibold text-white">
+                                {item.icon}
+                                {item.category}
+                              </span>
+                            </td>
+                            <td className="p-3 font-medium text-white">
+                              {item.name}
+                              {item.subtitle && <p className="text-[10px] text-zinc-500">{item.subtitle}</p>}
+                            </td>
+                            <td className="p-3">
+                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                item.costType === 'flat' ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                              }`}>
+                                {item.costType === 'flat' ? 'Flat Cost' : 'Per Person'}
+                              </span>
+                            </td>
+                            <td className="p-3 text-right font-mono font-medium text-zinc-200">
+                              {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{item.unitRate.toLocaleString()}
+                            </td>
+                            <td className="p-3 text-right font-mono font-bold text-primary">
+                              {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{item.calculatedTotal.toLocaleString()}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {selectedEditorTab !== "costing" &&
+              ((selectedEditorTab === "hotels" && hotels.length === 0) ||
               (selectedEditorTab === "flights" && flights.length === 0) ||
               (selectedEditorTab === "cabs" && cabs.length === 0) ||
               (selectedEditorTab === "buses" && buses.length === 0)) && (

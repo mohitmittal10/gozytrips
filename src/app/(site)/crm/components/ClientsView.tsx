@@ -338,7 +338,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                                                         client.bookedDestinations.map((dest: any, idx: number) => (
                                                             <div key={idx} className="flex items-center gap-2 group/dest">
                                                                 <Compass className="w-3.5 h-3.5 text-zinc-400 group-hover/dest:text-white transition-colors shrink-0" />
-                                                                <span className="truncate max-w-[180px] text-xs font-medium text-gray-200 group-hover/dest:text-white transition-colors">{dest.label}</span>
+                                                                <span className="truncate max-w-[180px] text-xs font-medium text-zinc-200 group-hover/dest:text-white transition-colors">{dest.label}</span>
                                                             </div>
                                                         ))
                                                     ) : (

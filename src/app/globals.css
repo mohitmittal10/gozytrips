@@ -73,7 +73,7 @@
     --sidebar-border: 225 30% 10%;
     --sidebar-ring: 12 100% 60%;
     --button-ripple-color: oklch(0.985 0 0 / 0.5);
-    --ds-gray-200: hsla(0, 0%, 12%, 1);
+    --ds-gray-200: hsla(0, 0%, 90%, 1);
     --ds-gray-900: hsla(0, 0%, 63%, 1);
     --ds-gray-1000: hsla(0, 0%, 93%, 1);
     --ds-gray-alpha-200: hsla(0, 0%, 100%, 0.09);

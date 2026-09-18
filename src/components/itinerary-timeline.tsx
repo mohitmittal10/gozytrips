@@ -4,7 +4,7 @@ import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Trash2, Plus, Minus, Sparkles, Camera } from "lucide-react";
+import { Trash2, Plus, Minus, Sparkles, Camera, Users } from "lucide-react";
 import { uploadItineraryPhoto } from "@/lib/upload-itinerary-photo";
 import { useState, useCallback, useContext, useEffect, useRef } from "react";
 import { CustomTabs } from "@/components/ui/custom-tabs";
@@ -59,6 +59,10 @@ type ItineraryTimelineProps = {
   showTimestamps?: boolean;
   currency?: string;
   destinations?: string;
+  adultPax?: number;
+  childPax?: number;
+  infantPax?: number;
+  onPaxChange?: (pax: { adultPax: number; childPax: number; infantPax: number }) => void;
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -233,6 +237,10 @@ const ItineraryTimeline = ({
   showTimestamps = true,
   currency,
   destinations,
+  adultPax,
+  childPax,
+  infantPax,
+  onPaxChange,
 }: ItineraryTimelineProps) => {
   const { toast } = useToast();
 
@@ -249,6 +257,27 @@ const ItineraryTimeline = ({
 
   const { agencySettings } = useAuth();
   const itineraryCtx = useContext(ItineraryContext);
+
+  // Resolve current Pax composition (from props or ItineraryContext)
+  const currentAdultPax = adultPax ?? itineraryCtx?.state.pricing.adultPax ?? 2;
+  const currentChildPax = childPax ?? itineraryCtx?.state.pricing.childPax ?? 0;
+  const currentInfantPax = infantPax ?? itineraryCtx?.state.pricing.infantPax ?? 0;
+
+  const handlePaxUpdate = (field: "adultPax" | "childPax" | "infantPax", val: number) => {
+    const newAdult = field === "adultPax" ? val : currentAdultPax;
+    const newChild = field === "childPax" ? val : currentChildPax;
+    const newInfant = field === "infantPax" ? val : currentInfantPax;
+
+    if (itineraryCtx?.dispatch) {
+      itineraryCtx.dispatch({
+        type: "UPDATE_PRICING",
+        payload: { adultPax: newAdult, childPax: newChild, infantPax: newInfant },
+      });
+    }
+    if (onPaxChange) {
+      onPaxChange({ adultPax: newAdult, childPax: newChild, infantPax: newInfant });
+    }
+  };
   
   // Resolve currency code
   const currencyCode = currency 
@@ -550,6 +579,132 @@ const ItineraryTimeline = ({
 
   return (
     <div className="relative w-full max-w-5xl mx-auto py-4">
+      {/* Travelers / Pax Configuration Header */}
+      <div className="mb-6 p-4 sm:p-5 rounded-2xl bg-white/[0.03] backdrop-blur-xl shadow-2xl">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5">
+            <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">
+              <Users className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <h3 className="text-sm font-bold text-white tracking-wide">
+                  Travelers &amp; Pax Composition
+                </h3>
+                <span className="text-[11px] font-semibold bg-primary/15 text-primary px-2.5 py-0.5 rounded-full font-mono">
+                  Total: {currentAdultPax + currentChildPax + currentInfantPax} Pax
+                </span>
+              </div>
+              <p className="text-xs text-foreground/50 mt-0.5">Configure adult, child, and infant counts for this itinerary</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 w-full lg:w-auto">
+            {/* Adults */}
+            <div className="space-y-1.5">
+              <div className="flex items-baseline justify-between px-0.5">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Adults</label>
+                <span className="text-[9px] text-foreground/30 font-medium">12+ yrs</span>
+              </div>
+              <div className="flex items-center justify-between bg-black/30 rounded-xl p-1 shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => handlePaxUpdate("adultPax", Math.max(1, currentAdultPax - 1))}
+                  disabled={currentAdultPax <= 1}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+                  aria-label="Decrease Adults"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <input
+                  type="number"
+                  min={1}
+                  value={currentAdultPax}
+                  onChange={(e) => handlePaxUpdate("adultPax", Math.max(1, Number(e.target.value)))}
+                  className="w-8 text-center font-mono font-bold text-xs text-white bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => handlePaxUpdate("adultPax", currentAdultPax + 1)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white transition-all cursor-pointer"
+                  aria-label="Increase Adults"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Children */}
+            <div className="space-y-1.5">
+              <div className="flex items-baseline justify-between px-0.5">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Children</label>
+                <span className="text-[9px] text-foreground/30 font-medium">2-11 yrs</span>
+              </div>
+              <div className="flex items-center justify-between bg-black/30 rounded-xl p-1 shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => handlePaxUpdate("childPax", Math.max(0, currentChildPax - 1))}
+                  disabled={currentChildPax <= 0}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+                  aria-label="Decrease Children"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <input
+                  type="number"
+                  min={0}
+                  value={currentChildPax}
+                  onChange={(e) => handlePaxUpdate("childPax", Math.max(0, Number(e.target.value)))}
+                  className="w-8 text-center font-mono font-bold text-xs text-white bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => handlePaxUpdate("childPax", currentChildPax + 1)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white transition-all cursor-pointer"
+                  aria-label="Increase Children"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Infants */}
+            <div className="space-y-1.5">
+              <div className="flex items-baseline justify-between px-0.5">
+                <label className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Infants</label>
+                <span className="text-[9px] text-foreground/30 font-medium">0-23 mos</span>
+              </div>
+              <div className="flex items-center justify-between bg-black/30 rounded-xl p-1 shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => handlePaxUpdate("infantPax", Math.max(0, currentInfantPax - 1))}
+                  disabled={currentInfantPax <= 0}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+                  aria-label="Decrease Infants"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <input
+                  type="number"
+                  min={0}
+                  value={currentInfantPax}
+                  onChange={(e) => handlePaxUpdate("infantPax", Math.max(0, Number(e.target.value)))}
+                  className="w-8 text-center font-mono font-bold text-xs text-white bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => handlePaxUpdate("infantPax", currentInfantPax + 1)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white transition-all cursor-pointer"
+                  aria-label="Increase Infants"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Horizontal Day Selector */}
       <div className="flex gap-3 overflow-x-auto pb-6 mb-8 mt-2 snap-x">
         {itinerary.map((day, dIdx) => (

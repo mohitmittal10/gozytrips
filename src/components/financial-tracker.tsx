@@ -5,11 +5,10 @@ import { cn } from "@/lib/utils";
 import { useFinancials } from "@/hooks/use-financials";
 import { PaymentsTab } from "@/components/financial/PaymentsTab";
 import { ExpensesTab } from "@/components/financial/ExpensesTab";
-import { CommissionsTab } from "@/components/financial/CommissionsTab";
 import { InvoicesTab } from "@/components/financial/InvoicesTab";
 import { ReportsTab } from "@/components/financial/ReportsTab";
 import {
-    CreditCard, Receipt, Percent, FileText, BarChart3,
+    CreditCard, Receipt, FileText, BarChart3,
     Sparkles, RefreshCw, DollarSign, Wallet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,12 +31,11 @@ interface FinancialTrackerProps {
     onOpenFinances?: (tripId: string) => void;
 }
 
-type FinanceTab = "payments" | "expenses" | "commissions" | "invoices" | "reports";
+type FinanceTab = "payments" | "expenses" | "invoices" | "reports";
 
 const TABS: { key: FinanceTab; label: string; icon: React.ElementType }[] = [
     { key: "payments", label: "Payments", icon: CreditCard },
     { key: "expenses", label: "Vendor Expenses", icon: Receipt },
-    { key: "commissions", label: "Commissions", icon: Percent },
     { key: "invoices", label: "Invoices", icon: FileText },
     { key: "reports", label: "P&L Reports", icon: BarChart3 },
 ];
@@ -161,26 +159,6 @@ export default function FinancialTracker({
                     addExpense={fin.addExpense}
                     addExpensesBatch={fin.addExpensesBatch}
                     deleteExpense={fin.deleteExpense}
-                />
-            )}
-
-            {activeFinTab === "commissions" && (
-                <CommissionsTab
-                    financials={fin.financials}
-                    commissionRate={fin.commissionRate}
-                    totalCommission={fin.stats.totalCommission}
-                    cs={fin.cs}
-                    fm={fin.fm}
-                    onRateChange={(rate) => {
-                        fin.setCommissionRate(rate);
-                        fin.financials.forEach((f) =>
-                            fin.updateFinancial(f.itineraryId, {
-                                commissionRate: rate,
-                                commissionAmount: f.clientPrice * (rate / 100),
-                            })
-                        );
-                    }}
-                    updateFinancial={fin.updateFinancial}
                 />
             )}
 

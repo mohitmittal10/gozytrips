@@ -71,7 +71,7 @@ export function CrmApp() {
                                     { id: 'client-forms', icon: FileText, label: 'Client Forms' },
                                     { id: 'archive', icon: Archive, label: 'Archive' }
                                 ].map((tab) => (
-                                    <Button key={tab.id} onClick={() => setActiveTab(tab.id)} variant={activeTab === tab.id ? 'secondary' : 'ghost'} className={cn("w-full justify-start h-10 px-3 transition-all group cursor-pointer", activeTab === tab.id ? "bg-primary/20 text-white border border-primary/40 font-bold shadow-lg shadow-primary/20" : "text-zinc-400 hover:text-white hover:bg-white/5", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
+                                    <Button key={tab.id} onClick={() => setActiveTab(tab.id)} variant="ghost" className={cn("w-full justify-start h-10 px-3 transition-all group cursor-pointer", activeTab === tab.id ? "bg-primary/20 text-white border border-primary/40 font-bold shadow-lg shadow-primary/20 hover:bg-primary/30 hover:border-primary/60 hover:shadow-primary/30" : "text-zinc-400 hover:text-white hover:bg-white/5", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
                                         <tab.icon className={cn("w-4 h-4 shrink-0", activeTab === tab.id ? "text-primary" : "text-zinc-400 group-hover:text-white")} />
                                         <span className={cn(
                                             "text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden",
@@ -118,7 +118,7 @@ export function CrmApp() {
                                         className={cn(
                                             "flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all shrink-0 border cursor-pointer",
                                             activeTab === tab.id
-                                                ? "bg-primary/20 text-white border-primary/40 shadow-lg shadow-primary/20 font-bold"
+                                                ? "bg-primary/20 text-white border-primary/40 shadow-lg shadow-primary/20 font-bold hover:bg-primary/30 hover:border-primary/60 hover:shadow-primary/30"
                                                 : "bg-white/5 text-zinc-400 border-white/10 hover:bg-white/10 hover:text-white"
                                         )}
                                     >
@@ -268,9 +268,9 @@ export function CrmApp() {
                                                 {activeTab === 'clients' && dataHook.data.uniqueTags.length > 0 && (
                                                     <div className="flex gap-2 overflow-x-auto no-scrollbar items-center py-1 flex-1" style={{ WebkitMaskImage: 'linear-gradient(to right, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%)', maskImage: 'gradient(to right, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%)' }}>
                                                         <span className="text-xs text-gray-500 uppercase tracking-wider mr-2 font-medium shrink-0 flex items-center"><Filter className="w-3 h-3 mr-1" /> Tags</span>
-                                                        <button onClick={(e) => { filters.setClientsTagFilter('all'); e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }} className={cn("px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap shrink-0", filters.clientsTagFilter === 'all' ? "bg-zinc-800 text-zinc-100 border-zinc-700 font-semibold" : "bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10")}>All</button>
+                                                        <button onClick={(e) => { filters.setClientsTagFilter('all'); e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }} className={cn("px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap shrink-0", filters.clientsTagFilter === 'all' ? "bg-zinc-800 text-zinc-100 border-zinc-700 font-semibold" : "bg-white/5 border-white/5 text-gray-400 hover:text-zinc-200 hover:bg-white/10")}>All</button>
                                                         {dataHook.data.uniqueTags.map((tag: string) => (
-                                                            <button key={tag} onClick={(e) => { filters.setClientsTagFilter(tag); e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }} className={cn("px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap shrink-0", filters.clientsTagFilter === tag ? "bg-zinc-800 text-zinc-100 border-zinc-700 font-semibold" : "bg-white/5 border-white/5 text-gray-400 hover:text-gray-200 hover:bg-white/10")}>{tag}</button>
+                                                            <button key={tag} onClick={(e) => { filters.setClientsTagFilter(tag); e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }} className={cn("px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap shrink-0", filters.clientsTagFilter === tag ? "bg-zinc-800 text-zinc-100 border-zinc-700 font-semibold" : "bg-white/5 border-white/5 text-gray-400 hover:text-zinc-200 hover:bg-white/10")}>{tag}</button>
                                                         ))}
                                                     </div>
                                                 )}
@@ -316,7 +316,7 @@ export function CrmApp() {
                                                                 <div className="max-h-48 overflow-y-auto no-scrollbar space-y-0.5 px-1">
                                                                     {filters.savedPresets.map((p, idx) => (
                                                                         <div key={idx} className="flex items-center justify-between px-2 py-2 hover:bg-white/5 rounded-lg cursor-pointer group transition-colors">
-                                                                            <button onClick={() => applyPreset(p)} className="text-xs text-gray-200 flex-1 text-left truncate pr-2 font-medium">{p.name}</button>
+                                                                            <button onClick={() => applyPreset(p)} className="text-xs text-zinc-200 flex-1 text-left truncate pr-2 font-medium">{p.name}</button>
                                                                             <button onClick={(e) => { e.stopPropagation(); filters.deletePreset(idx); }} className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-opacity p-1 bg-transparent hover:bg-red-400/10 rounded">
                                                                                 <X className="w-3.5 h-3.5" />
                                                                             </button>

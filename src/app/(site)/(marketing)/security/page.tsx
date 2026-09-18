@@ -340,7 +340,7 @@ export default function SecurityPage() {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-200 truncate">{log.description}</p>
+                      <p className="text-sm text-zinc-200 truncate">{log.description}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <Badge
                           variant="outline"
@@ -373,15 +373,15 @@ export default function SecurityPage() {
                 <ul className="space-y-1.5 text-sm text-gray-400">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
-                    <span><strong className="text-gray-200">Your data is yours</strong> — We never sell or share your client data with third parties.</span>
+                    <span><strong className="text-zinc-200">Your data is yours</strong> — We never sell or share your client data with third parties.</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
-                    <span><strong className="text-gray-200">Isolated environments</strong> — Your data is mathematically separated from other agents.</span>
+                    <span><strong className="text-zinc-200">Isolated environments</strong> — Your data is mathematically separated from other agents.</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
-                    <span><strong className="text-gray-200">Permanent accountability</strong> — All actions are permanently logged and cannot be tampered with.</span>
+                    <span><strong className="text-zinc-200">Permanent accountability</strong> — All actions are permanently logged and cannot be tampered with.</span>
                   </li>
                 </ul>
               </div>

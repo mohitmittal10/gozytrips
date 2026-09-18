@@ -427,7 +427,7 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
               ].map((item) => (
                 <div key={item.label} className="flex gap-2 text-sm">
                   <span className="text-gray-500 w-20 shrink-0">{item.label}</span>
-                  <span className="text-gray-200 font-medium truncate">{item.value}</span>
+                  <span className="text-zinc-200 font-medium truncate">{item.value}</span>
                 </div>
               ))}
             </div>

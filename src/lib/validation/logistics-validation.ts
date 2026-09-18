@@ -53,18 +53,27 @@ export const LOGISTICS_REQUIRED_FIELDS: Record<LogisticsEntityType, FieldDefinit
  * (such as connecting flights requiring additional fields).
  */
 export function getRequiredFields(entry: any, entityType: LogisticsEntityType): FieldDefinition[] {
-  const baseFields = LOGISTICS_REQUIRED_FIELDS[entityType] || [];
+  const baseFields = [...(LOGISTICS_REQUIRED_FIELDS[entityType] || [])];
   if (entityType === "flight" && entry?.flightType === "connecting") {
-    return [
-      ...baseFields,
+    baseFields.push(
       { key: "connectingAirline", label: "Connecting Airline", required: true },
       { key: "connectingFlightNumber", label: "Connecting Flight Number", required: true },
       { key: "connectingDeparture", label: "Connecting Departure", required: true },
       { key: "connectingArrival", label: "Connecting Arrival", required: true },
       { key: "connectingDepartureAirport", label: "Connecting Departure Airport", required: true },
-      { key: "connectingArrivalAirport", label: "Connecting Arrival Airport", required: true },
-    ];
+      { key: "connectingArrivalAirport", label: "Connecting Arrival Airport", required: true }
+    );
   }
+
+  // Cost to agent is mandatory
+  const isFlat = entry?.costType === "flat" || (entityType === "cab" && (entry?.costType || "flat") === "flat");
+  if (isFlat) {
+    const key = (entityType === "cab" && entry?.totalCost !== undefined) ? "totalCost" : "flatCost";
+    baseFields.push({ key, label: "Cost to Agent", required: true });
+  } else {
+    baseFields.push({ key: "costAdult", label: "Cost to Agent (Adult)", required: true });
+  }
+
   return baseFields;
 }
 
@@ -83,7 +92,12 @@ export function validateLogisticsEntry(
 
   for (const field of requiredFields) {
     const val = entry[field.key];
-    if (val === undefined || val === null || (typeof val === "string" && val.trim() === "")) {
+    if (
+      val === undefined ||
+      val === null ||
+      (typeof val === "string" && val.trim() === "") ||
+      (typeof val === "number" && isNaN(val))
+    ) {
       errors[field.key] = `${field.label} is required`;
     }
   }

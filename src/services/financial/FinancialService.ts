@@ -46,24 +46,235 @@ export interface MilestoneAmount extends PaymentMilestone {
  *  - flight costs (adult + child + infant)
  *  - cab and bus costs
  */
+export function getItemBaseCostForPax(
+  item: any,
+  pax: { adultPax: number; childPax: number; infantPax: number }
+): number {
+  if (!item) return 0;
+  const adult = Math.max(0, pax.adultPax || 0);
+  const child = Math.max(0, pax.childPax || 0);
+  const infant = Math.max(0, pax.infantPax || 0);
+  const totalPax = adult + child + infant;
+
+  if (
+    typeof item.costAdult === 'number' ||
+    typeof item.costChild === 'number' ||
+    typeof item.costInfant === 'number' ||
+    typeof item.flatCost === 'number'
+  ) {
+    const isFlat = item.costType === 'flat';
+    const nights = item.nights || 1;
+    if (isFlat) {
+      return (item.flatCost ?? item.totalCost ?? 0) * (item.nights ? nights : 1);
+    }
+    const adultCost = (item.costAdult || 0) * adult;
+    const childCost = (item.costChild || 0) * child;
+    const infantCost = (item.costInfant || 0) * infant;
+    return (adultCost + childCost + infantCost) * nights;
+  }
+
+  const amount = Number(item.amount) || 0;
+  if (item.type === 'per-person') {
+    return amount * (totalPax || 1);
+  }
+  return amount;
+}
+
+export function calcItemBaseCost(item: any, totalPax: number): number {
+  const amount = Number(item.amount) || 0;
+  return item.type === 'per-person' ? amount * (totalPax || 1) : amount;
+}
+
+export function calcItemMarkup(
+  item: any,
+  totalPax: number,
+  fallbackMarkupType: string = 'percentage',
+  fallbackMarkupValue: number = 0
+): number {
+  const itemBase = calcItemBaseCost(item, totalPax);
+  const mType = item.markupType || fallbackMarkupType;
+  const mVal = typeof item.markupValue === 'number' ? item.markupValue : fallbackMarkupValue;
+
+  if (mType === 'percentage') {
+    return (itemBase * mVal) / 100;
+  } else {
+    return item.type === 'per-person' ? mVal * (totalPax || 1) : mVal;
+  }
+}
+
 export function calcBaseCost(
   state: Pick<ItineraryState, 'itinerary' | 'hotels' | 'flights' | 'cabs' | 'buses' | 'pricing'>,
 ): number {
-  const { pricing } = state;
+  const { pricing, hotels, flights, cabs, buses, itinerary } = state;
   const pax = {
-    adult: pricing?.adultPax || 1,
-    child: pricing?.childPax || 0,
-    infant: pricing?.infantPax || 0
+    adultPax: typeof pricing?.adultPax === 'number' ? pricing.adultPax : 2,
+    childPax: typeof pricing?.childPax === 'number' ? pricing.childPax : 0,
+    infantPax: typeof pricing?.infantPax === 'number' ? pricing.infantPax : 0,
   };
+  const totalPax = pax.adultPax + pax.childPax + pax.infantPax;
 
-  let manualCost = 0;
-  const totalPax = pax.adult + pax.child + pax.infant;
-  for (const item of (pricing?.manualOptions ?? []) as any[]) {
-    const amount = Number(item.amount) || 0;
-    manualCost += item.type === 'per-person' ? amount * totalPax : amount;
+  const manualOptions = (pricing?.manualOptions ?? []) as any[];
+  if (manualOptions.length > 0) {
+    let manualCost = 0;
+    for (const item of manualOptions) {
+      if (item.linkedItemId) {
+        let linkedItem: any = null;
+        if (item.category === 'Hotel') {
+          linkedItem = (hotels || []).find((h) => h.id === item.linkedItemId);
+        } else if (item.category === 'Flight') {
+          linkedItem = (flights || []).find((f) => f.id === item.linkedItemId);
+        } else if (item.category === 'Transport') {
+          linkedItem =
+            (cabs || []).find((c) => c.id === item.linkedItemId) ||
+            (buses || []).find((b) => b.id === item.linkedItemId);
+        }
+        if (linkedItem) {
+          manualCost += getItemBaseCostForPax(linkedItem, pax);
+          continue;
+        }
+      }
+      manualCost += calcItemBaseCost(item, totalPax);
+    }
+    return manualCost;
   }
 
-  return manualCost;
+  // Fallback auto-calculation if manualOptions is empty
+  let autoCost = 0;
+  (hotels || []).forEach((h: any) => { autoCost += getItemBaseCostForPax(h, pax); });
+  (flights || []).forEach((f: any) => { autoCost += getItemBaseCostForPax(f, pax); });
+  (cabs || []).forEach((c: any) => { autoCost += getItemBaseCostForPax(c, pax); });
+  (buses || []).forEach((b: any) => { autoCost += getItemBaseCostForPax(b, pax); });
+  (itinerary || []).forEach((day: any) => {
+    (day.timeline || []).forEach((step: any) => {
+      const stepCost = Number(step.cost) || 0;
+      if (stepCost > 0) {
+        autoCost += stepCost * (totalPax || 1);
+      }
+    });
+  });
+
+  return autoCost;
+}
+
+export function calcTotalMarkupAmount(
+  state: Pick<ItineraryState, 'itinerary' | 'hotels' | 'flights' | 'cabs' | 'buses' | 'pricing'>,
+): number {
+  const { pricing, hotels, flights, cabs, buses } = state;
+  const pax = {
+    adultPax: typeof pricing?.adultPax === 'number' ? pricing.adultPax : 2,
+    childPax: typeof pricing?.childPax === 'number' ? pricing.childPax : 0,
+    infantPax: typeof pricing?.infantPax === 'number' ? pricing.infantPax : 0,
+  };
+  const totalPax = pax.adultPax + pax.childPax + pax.infantPax;
+
+  const fallbackMarkupVal =
+    pricing?.tiersEnabled && pricing?.tiers?.[pricing.selectedTier]?.isActive
+      ? (pricing.tiers[pricing.selectedTier]?.markupValue ?? pricing.markupValue)
+      : (pricing?.markupValue ?? 0);
+  const fallbackMarkupType = pricing?.markupType || 'percentage';
+
+  const items = (pricing?.manualOptions ?? []) as any[];
+  if (items.length === 0) {
+    const baseCost = calcBaseCost(state);
+    return fallbackMarkupType === 'percentage'
+      ? (baseCost * fallbackMarkupVal) / 100
+      : fallbackMarkupVal * (totalPax || 1);
+  }
+
+  let totalMarkup = 0;
+  for (const item of items) {
+    let itemBase = calcItemBaseCost(item, totalPax);
+    if (item.linkedItemId) {
+      let linkedItem: any = null;
+      if (item.category === 'Hotel') {
+        linkedItem = (hotels || []).find((h) => h.id === item.linkedItemId);
+      } else if (item.category === 'Flight') {
+        linkedItem = (flights || []).find((f) => f.id === item.linkedItemId);
+      } else if (item.category === 'Transport') {
+        linkedItem =
+          (cabs || []).find((c) => c.id === item.linkedItemId) ||
+          (buses || []).find((b) => b.id === item.linkedItemId);
+      }
+      if (linkedItem) {
+        itemBase = getItemBaseCostForPax(linkedItem, pax);
+      }
+    }
+    const mType = item.markupType || fallbackMarkupType;
+    const mVal = typeof item.markupValue === 'number' ? item.markupValue : fallbackMarkupVal;
+
+    if (mType === 'percentage') {
+      totalMarkup += (itemBase * mVal) / 100;
+    } else {
+      totalMarkup += item.type === 'per-person' ? mVal * (totalPax || 1) : mVal;
+    }
+  }
+  return totalMarkup;
+}
+
+export function calcItemTax(
+  item: any,
+  totalPax: number,
+  fallbackMarkupType: string = 'percentage',
+  fallbackMarkupValue: number = 0,
+  fallbackTaxPct: number = 0
+): number {
+  const itemBase = calcItemBaseCost(item, totalPax);
+  const itemMarkup = calcItemMarkup(item, totalPax, fallbackMarkupType, fallbackMarkupValue);
+  const itemCostWithMarkup = itemBase + itemMarkup;
+  const taxPct = typeof item.taxPercentage === 'number' ? item.taxPercentage : fallbackTaxPct;
+  return (itemCostWithMarkup * taxPct) / 100;
+}
+
+export function calcTotalTaxAmount(
+  state: Pick<ItineraryState, 'itinerary' | 'hotels' | 'flights' | 'cabs' | 'buses' | 'pricing'>,
+): number {
+  const { pricing, hotels, flights, cabs, buses } = state;
+  const pax = {
+    adultPax: typeof pricing?.adultPax === 'number' ? pricing.adultPax : 2,
+    childPax: typeof pricing?.childPax === 'number' ? pricing.childPax : 0,
+    infantPax: typeof pricing?.infantPax === 'number' ? pricing.infantPax : 0,
+  };
+  const totalPax = pax.adultPax + pax.childPax + pax.infantPax;
+  const fallbackMarkupVal =
+    pricing?.tiersEnabled && pricing?.tiers?.[pricing.selectedTier]?.isActive
+      ? (pricing.tiers[pricing.selectedTier]?.markupValue ?? pricing.markupValue)
+      : (pricing?.markupValue ?? 0);
+  const fallbackMarkupType = pricing?.markupType || 'percentage';
+  const fallbackTaxPct = pricing?.taxPercentage || 0;
+
+  const items = (pricing?.manualOptions ?? []) as any[];
+  if (items.length === 0) {
+    const baseCost = calcBaseCost(state);
+    const markupAmount = calcTotalMarkupAmount(state);
+    return ((baseCost + markupAmount) * fallbackTaxPct) / 100;
+  }
+
+  let totalTax = 0;
+  for (const item of items) {
+    let itemBase = calcItemBaseCost(item, totalPax);
+    if (item.linkedItemId) {
+      let linkedItem: any = null;
+      if (item.category === 'Hotel') {
+        linkedItem = (hotels || []).find((h) => h.id === item.linkedItemId);
+      } else if (item.category === 'Flight') {
+        linkedItem = (flights || []).find((f) => f.id === item.linkedItemId);
+      } else if (item.category === 'Transport') {
+        linkedItem =
+          (cabs || []).find((c) => c.id === item.linkedItemId) ||
+          (buses || []).find((b) => b.id === item.linkedItemId);
+      }
+      if (linkedItem) {
+        itemBase = getItemBaseCostForPax(linkedItem, pax);
+      }
+    }
+    const mType = item.markupType || fallbackMarkupType;
+    const mVal = typeof item.markupValue === 'number' ? item.markupValue : fallbackMarkupVal;
+    const itemMarkup = mType === 'percentage' ? (itemBase * mVal) / 100 : (item.type === 'per-person' ? mVal * (totalPax || 1) : mVal);
+    const itemCostWithMarkup = itemBase + itemMarkup;
+    const taxPct = typeof item.taxPercentage === 'number' ? item.taxPercentage : fallbackTaxPct;
+    totalTax += (itemCostWithMarkup * taxPct) / 100;
+  }
+  return totalTax;
 }
 
 export function calcMarkupAmount(baseCost: number, pricing: PricingConfig): number {
@@ -111,14 +322,23 @@ export function calcPricingBreakdown(
 ): PricingBreakdown {
   const { pricing } = state;
   const baseCost = calcBaseCost(state);
-  const results = calcPricingFromBaseCost(baseCost, pricing);
+  const markupAmount = calcTotalMarkupAmount(state);
+  const costWithMarkup = baseCost + markupAmount;
+  const taxAmount = calcTotalTaxAmount(state);
+  const finalTotal = costWithMarkup + taxAmount;
+
+  const milestones = pricing?.milestones || [];
+  const milestoneAmounts: MilestoneAmount[] = milestones.map((m) => ({
+    ...m,
+    amount: (finalTotal * m.percentage) / 100,
+  }));
 
   const totalPax = (pricing?.adultPax || 0) + (pricing?.childPax || 0) + (pricing?.infantPax || 0);
-  const perAdult = (pricing?.adultPax || 0) > 0 ? results.finalTotal / pricing.adultPax : results.finalTotal;
-  const perChild = (pricing?.childPax || 0) > 0 ? results.finalTotal / pricing.childPax : 0;
+  const perAdult = (pricing?.adultPax || 0) > 0 ? finalTotal / pricing.adultPax : finalTotal;
+  const perChild = (pricing?.childPax || 0) > 0 ? finalTotal / pricing.childPax : 0;
   const currencySymbol = getCurrencySymbol(pricing?.currency || DEFAULT_CURRENCY);
 
-  return { ...results, perAdult, perChild, totalPax, currencySymbol };
+  return { baseCost, markupAmount, costWithMarkup, taxAmount, finalTotal, milestoneAmounts, perAdult, perChild, totalPax, currencySymbol };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

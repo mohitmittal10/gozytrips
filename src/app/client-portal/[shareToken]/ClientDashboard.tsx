@@ -154,7 +154,7 @@ function TripSnapshot({ response }: { response: EnquiryResponseData }) {
             </div>
             <div className="min-w-0">
               <p className="text-[10px] text-gray-600 uppercase tracking-wider font-semibold">{item.label}</p>
-              <p className="text-sm text-gray-200 mt-0.5 font-medium break-words">{item.value}</p>
+              <p className="text-sm text-zinc-200 mt-0.5 font-medium break-words">{item.value}</p>
             </div>
           </div>
         ) : null
@@ -243,7 +243,7 @@ function ChatWidget({ responseId, agentName }: { responseId: string; agentName: 
                 "max-w-[80%] rounded-2xl px-4 py-2.5 shadow-sm",
                 isMe
                   ? "bg-gradient-to-br from-[#FF5C33] to-[#EC4899] text-white rounded-br-sm"
-                  : "bg-white/[0.07] border border-white/[0.08] text-gray-200 rounded-bl-sm"
+                  : "bg-white/[0.07] border border-white/[0.08] text-zinc-200 rounded-bl-sm"
               )}>
                 <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">{msg.body}</p>
                 <p className={cn("text-[10px] mt-1 opacity-60", isMe ? "text-white/80 text-right" : "text-gray-500")}>
@@ -515,18 +515,18 @@ function ItinerarySubTabs({
                 <div className="px-5 py-4 space-y-2.5">
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-gray-400">Base Cost</span>
-                    <span className="text-gray-200 font-medium">{currencySymbol}{fmt(baseCost)}</span>
+                    <span className="text-zinc-200 font-medium">{currencySymbol}{fmt(baseCost)}</span>
                   </div>
                   {markupAmount > 0 && (
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-gray-400">Service Charge{markupType === "percentage" && markupValue > 0 ? ` (${markupValue}%)` : ""}</span>
-                      <span className="text-gray-200 font-medium">+ {currencySymbol}{fmt(markupAmount)}</span>
+                      <span className="text-zinc-200 font-medium">+ {currencySymbol}{fmt(markupAmount)}</span>
                     </div>
                   )}
                   {taxAmount > 0 && (
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-gray-400">GST / Tax ({taxPct}%)</span>
-                      <span className="text-gray-200 font-medium">+ {currencySymbol}{fmt(taxAmount)}</span>
+                      <span className="text-zinc-200 font-medium">+ {currencySymbol}{fmt(taxAmount)}</span>
                     </div>
                   )}
                   <div className="border-t border-white/[0.06] pt-2.5 flex items-center justify-between">
@@ -924,7 +924,7 @@ export function ClientDashboard({ formMeta, shareToken, responseId }: ClientDash
                 </div>
                 <div>
                   <p className="text-[11px] text-[#FF5C33] font-bold uppercase tracking-widest mb-1">Message from {agentName}</p>
-                  <p className="text-sm text-gray-200 leading-relaxed">{response.agent_note}</p>
+                  <p className="text-sm text-zinc-200 leading-relaxed">{response.agent_note}</p>
                   {response.agent_note_updated_at && (
                     <p className="text-[10px] text-gray-600 mt-1.5">
                       {new Date(response.agent_note_updated_at).toLocaleDateString()}

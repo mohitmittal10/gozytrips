@@ -122,6 +122,17 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
               showTimestamps={showTimestamps}
               currency={pricing?.currency}
               destinations={form?.getValues?.()?.destinations || itinerary?.destinations}
+              adultPax={pricing?.adultPax ?? 2}
+              childPax={pricing?.childPax ?? 0}
+              infantPax={pricing?.infantPax ?? 0}
+              onPaxChange={(pax) => {
+                if (setPricing) {
+                  setPricing({
+                    ...(pricing || {}),
+                    ...pax,
+                  });
+                }
+              }}
             />
           </div>
         </ItineraryErrorBoundary>
@@ -167,7 +178,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
       {activeLabTab === 'pricing' && itinerary?.itinerary?.length > 0 && (
         <ItineraryErrorBoundary onReset={() => setPricing(undefined)} fallbackMessage="Pricing module failed to load.">
           <ItineraryProvider
-            key={JSON.stringify(itinerary?.itinerary?.length)}
+            key={`pricing-provider-${itinerary?.itinerary?.length}-${pricing?.adultPax ?? 2}-${pricing?.childPax ?? 0}-${pricing?.infantPax ?? 0}`}
             initialTrip={{
               itinerary: itinerary?.itinerary || [],
               hotels,

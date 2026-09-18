@@ -254,7 +254,7 @@ export function ExpensesTab({
                                                             {getCategoryIcon(item.category)}
                                                         </div>
                                                         <div className="truncate">
-                                                            <p className="font-medium text-gray-200 truncate">{item.vendor}</p>
+                                                            <p className="font-medium text-zinc-200 truncate">{item.vendor}</p>
                                                             <p className="text-[11px] text-gray-400 truncate">{item.description}</p>
                                                         </div>
                                                     </div>
@@ -294,7 +294,7 @@ export function ExpensesTab({
                                                             {getCategoryIcon(e.category)}
                                                             <span>{e.category}</span>
                                                         </Badge>
-                                                        <span className="text-gray-200 font-medium">{e.vendor}</span>
+                                                        <span className="text-zinc-200 font-medium">{e.vendor}</span>
                                                         {e.description && (
                                                             <span className="text-gray-400">· {e.description}</span>
                                                         )}
@@ -329,7 +329,7 @@ export function ExpensesTab({
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="h-8 text-xs border-white/10 bg-white/5 text-gray-200 hover:bg-white/10 hover:text-white w-full"
+                                        className="h-8 text-xs border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-white w-full"
                                         onClick={() => handleOpen(fin)}
                                     >
                                         <Plus className="w-3.5 h-3.5 mr-1.5" />
