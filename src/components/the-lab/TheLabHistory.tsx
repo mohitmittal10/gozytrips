@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { createClient } from "@/lib/supabase/client";
 import { format } from "date-fns";
 import { 
@@ -60,7 +60,12 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const { agencySettings } = useAuth();
-  const supabase = createClient();
+  // Stabilize the supabase client so it doesn't change on every parent re-render.
+  // If we called createClient() directly in the body, a new object would be created
+  // each render, making fetchHistory's useCallback dep [supabase] unstable and
+  // causing the history to re-fetch every time any parent state changed.
+  const supabaseRef = useRef(createClient());
+  const supabase = supabaseRef.current;
 
   const fetchHistory = useCallback(async () => {
     try {

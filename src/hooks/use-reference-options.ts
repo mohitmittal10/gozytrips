@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 export interface ReferenceOption {
@@ -13,13 +13,27 @@ export interface ReferenceOption {
   metadata: any;
 }
 
+// Module-level cache: keyed by scope string (or "__all__" for undefined scope).
+// Persists across component mounts so tab-switching doesn't trigger a fresh DB
+// round-trip and the loading→data transition that causes visible flicker.
+const optionsCache = new Map<string, ReferenceOption[]>();
+
 export function useReferenceOptions(scope?: string) {
-  const [options, setOptions] = useState<ReferenceOption[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cacheKey = scope ?? '__all__';
+  const cached = optionsCache.get(cacheKey);
+
+  const [options, setOptions] = useState<ReferenceOption[]>(cached ?? []);
+  const [loading, setLoading] = useState(!cached); // skip loading state if already cached
   const [error, setError] = useState<Error | null>(null);
   const supabase = useMemo(() => createClient(), []);
+  // Track whether we already kicked off a fetch for this scope in this session
+  const hasFetchedRef = useRef(Boolean(cached));
 
   useEffect(() => {
+    // If we already have cached data, skip the fetch entirely
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
+
     async function fetchOptions() {
       if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
         console.error('Supabase environment variables are missing in the browser');
@@ -42,7 +56,9 @@ export function useReferenceOptions(scope?: string) {
         const { data, error: fetchError } = await query;
 
         if (fetchError) throw fetchError;
-        setOptions(data || []);
+        const result = data || [];
+        optionsCache.set(cacheKey, result);
+        setOptions(result);
       } catch (err: any) {
         console.error('Error fetching reference options:', {
           message: err.message,
@@ -58,7 +74,7 @@ export function useReferenceOptions(scope?: string) {
     }
 
     fetchOptions();
-  }, [supabase, scope]);
+  }, [supabase, scope, cacheKey]);
 
   const getOptionsByScope = (targetScope: string) => {
     return options.filter(opt => opt.scope === targetScope);
@@ -71,4 +87,3 @@ export function useReferenceOptions(scope?: string) {
     getOptionsByScope
   };
 }
-

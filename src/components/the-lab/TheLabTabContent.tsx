@@ -1,5 +1,5 @@
 // Handles the conditional rendering of the 4 tabs, each wrapped in an Error Boundary
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { Sparkles } from 'lucide-react';
 import type { ActiveLabTab } from '@/types/the-lab';
 import { ItineraryErrorBoundary } from './ItineraryErrorBoundary';
@@ -103,10 +103,29 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
   setPaymentMethods,
 }: TheLabTabContentProps) {
 
+  // Determine which itinerary-dependent tabs are actually available
+  const hasItinerary = Boolean(itinerary?.itinerary?.length);
+
+  // Stable callbacks — must be defined before JSX so hooks are not called conditionally.
+  // Wrapping in useCallback prevents new references on every render, which would defeat
+  // React.memo on MemoizedItineraryTimeline and cause visible flicker when switching tabs.
+  const handleItineraryChange = useCallback((updatedItinerary: any) => {
+    // setItinerary is setItineraryWithHistory — it takes a plain value, not a functional updater.
+    // We read the current itinerary from the prop via the closure; the callback is re-created
+    // when itinerary changes so this is always fresh.
+    if (itinerary) {
+      setItinerary({ ...itinerary, itinerary: updatedItinerary });
+    }
+  }, [setItinerary, itinerary]);
+
+  const handlePaxChange = useCallback((pax: { adultPax: number; childPax: number; infantPax: number }) => {
+    setPricing({ ...(pricing || {}), ...pax } as any);
+  }, [setPricing, pricing]);
+
   return (
     <>
       {/* Tab Content - Timeline */}
-      {activeLabTab === 'itinerary' && itinerary?.itinerary?.length > 0 && (
+      <div className={activeLabTab !== 'itinerary' || !hasItinerary ? 'hidden' : undefined}>
         <ItineraryErrorBoundary onReset={() => setItinerary(null)} fallbackMessage="Timeline failed to render.">
           <div className="relative rounded-xl sm:rounded-2xl border border-white/[0.06] p-2 sm:p-4 md:p-6 backdrop-blur-sm overflow-hidden bg-[#0A0A0B]/95">
             <MemoizedItineraryTimeline
@@ -114,97 +133,92 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
               isLoading={isGenerating}
               editable={isEditing}
               onEditingChange={setIsEditing}
-              onItineraryChange={(updatedItinerary) => {
-                if (itinerary) {
-                  setItinerary({ ...itinerary, itinerary: updatedItinerary });
-                }
-              }}
+              onItineraryChange={handleItineraryChange}
               showTimestamps={showTimestamps}
               currency={pricing?.currency}
               destinations={form?.getValues?.()?.destinations || itinerary?.destinations}
               adultPax={pricing?.adultPax ?? 2}
               childPax={pricing?.childPax ?? 0}
               infantPax={pricing?.infantPax ?? 0}
-              onPaxChange={(pax) => {
-                if (setPricing) {
-                  setPricing({
-                    ...(pricing || {}),
-                    ...pax,
-                  });
-                }
-              }}
+              onPaxChange={handlePaxChange}
             />
           </div>
         </ItineraryErrorBoundary>
+      </div>
+
+      {/* Tab Content - Inclusions — always mounted when itinerary exists, hidden via CSS */}
+      {hasItinerary && (
+        <div className={activeLabTab !== 'inclusions' ? 'hidden' : undefined}>
+          <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Inclusions editor failed to load.">
+            <TheLabInclusions
+              inclusions={inclusions}
+              setInclusions={setInclusions}
+              exclusions={exclusions}
+              setExclusions={setExclusions}
+              termsAndConditions={termsAndConditions}
+              setTermsAndConditions={setTermsAndConditions}
+              cancellationPolicy={cancellationPolicy}
+              setCancellationPolicy={setCancellationPolicy}
+              paymentMethods={paymentMethods}
+              setPaymentMethods={setPaymentMethods}
+            />
+          </ItineraryErrorBoundary>
+        </div>
       )}
 
-      {/* Tab Content - Inclusions */}
-      {activeLabTab === 'inclusions' && itinerary?.itinerary?.length > 0 && (
-        <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Inclusions editor failed to load.">
-          <TheLabInclusions
-            inclusions={inclusions}
-            setInclusions={setInclusions}
-            exclusions={exclusions}
-            setExclusions={setExclusions}
-            termsAndConditions={termsAndConditions}
-            setTermsAndConditions={setTermsAndConditions}
-            cancellationPolicy={cancellationPolicy}
-            setCancellationPolicy={setCancellationPolicy}
-            paymentMethods={paymentMethods}
-            setPaymentMethods={setPaymentMethods}
-          />
-        </ItineraryErrorBoundary>
+      {/* Tab Content - Logistics (Hotels & Flights) — always mounted when itinerary exists */}
+      {hasItinerary && (
+        <div className={activeLabTab !== 'flights-hotels' ? 'hidden' : undefined}>
+          <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Logistics editor failed to load.">
+            <MemoizedHotelFlightEditor
+              hotels={hotels}
+              flights={flights}
+              cabs={cabs}
+              buses={buses}
+              totalDays={itinerary?.itinerary?.length || 0}
+              currency={pricing?.currency}
+              onHotelsChange={setHotels}
+              onFlightsChange={setFlights}
+              onCabsChange={setCabs}
+              onBusesChange={setBuses}
+            />
+          </ItineraryErrorBoundary>
+        </div>
       )}
 
-      {/* Tab Content - Logistics (Hotels & Flights) */}
-      {activeLabTab === 'flights-hotels' && itinerary?.itinerary?.length > 0 && (
-        <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Logistics editor failed to load.">
-          <MemoizedHotelFlightEditor
-            hotels={hotels}
-            flights={flights}
-            cabs={cabs}
-            buses={buses}
-            totalDays={itinerary?.itinerary?.length || 0}
-            currency={pricing?.currency}
-            onHotelsChange={setHotels}
-            onFlightsChange={setFlights}
-            onCabsChange={setCabs}
-            onBusesChange={setBuses}
-          />
-        </ItineraryErrorBoundary>
+      {/* Tab Content - Financials (Pricing) — always mounted when itinerary exists */}
+      {hasItinerary && (
+        <div className={activeLabTab !== 'pricing' ? 'hidden' : undefined}>
+          <ItineraryErrorBoundary onReset={() => setPricing(undefined)} fallbackMessage="Pricing module failed to load.">
+            <ItineraryProvider
+              key={`pricing-provider-${itinerary?.itinerary?.length}`}
+              initialTrip={{
+                itinerary: itinerary?.itinerary || [],
+                hotels,
+                flights,
+                cabs,
+                buses,
+                pricing: pricing || (agencySettings ? {
+                  currency: agencySettings.default_currency,
+                  markupType: agencySettings.default_markup_type,
+                  markupValue: agencySettings.default_markup_value,
+                  taxPercentage: agencySettings.default_tax_percentage,
+                  adultPax: 2,
+                  childPax: 0,
+                  infantPax: 0,
+                  milestones: [],
+                } as any : undefined),
+              }}
+            >
+              <PricingSync onChange={setPricing} />
+              <MemoizedPricingModule onSave={handleSaveItinerary} isSaving={isSaving} />
+            </ItineraryProvider>
+          </ItineraryErrorBoundary>
+        </div>
       )}
 
-      {/* Tab Content - Financials (Pricing) */}
-      {activeLabTab === 'pricing' && itinerary?.itinerary?.length > 0 && (
-        <ItineraryErrorBoundary onReset={() => setPricing(undefined)} fallbackMessage="Pricing module failed to load.">
-          <ItineraryProvider
-            key={`pricing-provider-${itinerary?.itinerary?.length}-${pricing?.adultPax ?? 2}-${pricing?.childPax ?? 0}-${pricing?.infantPax ?? 0}`}
-            initialTrip={{
-              itinerary: itinerary?.itinerary || [],
-              hotels,
-              flights,
-              cabs,
-              buses,
-              pricing: pricing || (agencySettings ? {
-                currency: agencySettings.default_currency,
-                markupType: agencySettings.default_markup_type,
-                markupValue: agencySettings.default_markup_value,
-                taxPercentage: agencySettings.default_tax_percentage,
-                adultPax: 2,
-                childPax: 0,
-                infantPax: 0,
-                milestones: [],
-              } as any : undefined),
-            }}
-          >
-            <PricingSync onChange={setPricing} />
-            <MemoizedPricingModule onSave={handleSaveItinerary} isSaving={isSaving} />
-          </ItineraryProvider>
-        </ItineraryErrorBoundary>
-      )}
-
-      {/* Tab Content - History */}
-      {activeLabTab === 'history' && (
+      {/* Tab Content - History — always mounted, hidden via CSS */}
+      <div className={activeLabTab !== 'history' ? 'hidden' : undefined}>
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="History failed to load.">
           <TheLabHistory 
             setCurrentTripId={setCurrentTripId} 
@@ -212,10 +226,10 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
             handleCreateNew={handleCreateNew}
           />
         </ItineraryErrorBoundary>
-      )}
+      </div>
 
-      {/* Tab Content - New Trip */}
-      {activeLabTab === 'new' && (
+      {/* Tab Content - New Trip — always mounted, hidden via CSS */}
+      <div className={activeLabTab !== 'new' ? 'hidden' : undefined}>
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Form failed to load.">
           <div className="mt-4 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="w-full max-w-3xl bg-[#0a0a0b]/80 border border-white/[0.08] backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 lg:p-12 shadow-[0_24px_48px_rgba(0,0,0,0.5)]">
@@ -234,10 +248,10 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
             </div>
           </div>
         </ItineraryErrorBoundary>
-      )}
+      </div>
 
-      {/* Tab Content - Empty/Welcome State */}
-      {(!itinerary || !itinerary?.itinerary?.length) && !isGenerating && activeLabTab !== 'history' && activeLabTab !== 'new' && (
+      {/* Tab Content - Empty/Welcome State (conditionally rendered — no state to preserve) */}
+      {!hasItinerary && !isGenerating && activeLabTab !== 'history' && activeLabTab !== 'new' && (
         <div className="flex flex-col items-center justify-center py-24 text-center px-4 animate-in fade-in duration-1000">
            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-emerald-500/20 flex items-center justify-center mb-8 border border-white/5 shadow-2xl">
               <Sparkles className="w-10 h-10 text-purple-400 animate-pulse" />

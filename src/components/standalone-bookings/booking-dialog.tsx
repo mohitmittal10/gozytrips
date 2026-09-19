@@ -518,7 +518,7 @@ export function StandaloneBookingDialog({
               <Button
                 type="submit"
                 disabled={loading || (hasFailedSubmit && !form.formState.isValid)}
-                className="glass-button border-0 bg-gradient-to-r from-pink-500 to-orange-400 text-white"
+                className="glass-button bg-white/10 hover:bg-white/15 text-white border border-white/10 font-semibold transition-all cursor-pointer"
               >
                 {loading ? 'Creating...' : 'Create Booking'}
               </Button>

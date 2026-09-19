@@ -256,8 +256,8 @@ export function useFinancials(
                     }
                 }
 
-                // ── Build suggested expenses from itinerary line items ───────
-                const suggestedExpenses: SuggestedExpense[] = [];
+                // ── Build auto vendor expenses from itinerary line items ───────
+                const autoExpenses: Expense[] = [];
                 const existingKeys = new Set(
                     itExpenses.map((e) => `${e.category}|${e.vendor}|${e.amount}`)
                 );
@@ -277,15 +277,22 @@ export function useFinancials(
                         ? (Number(h.flatCost) || 0) * nights
                         : ((perAdult * adultPaxCount) + (perChild * childPaxCount) + (perInfant * infantPaxCount)) * nights;
                     if (total > 0) {
-                        const key = `hotel|${h.name || 'Hotel'}|${total}`;
-                        suggestedExpenses.push({
-                            category: 'hotel',
-                            vendor: h.name || 'Hotel',
-                            description: `${h.name || 'Hotel'} (${nights}N)`,
-                            amount: total,
-                            currency: it.currency,
-                            alreadySeeded: existingKeys.has(key),
-                        });
+                        const vendorName = h.name || 'Hotel';
+                        const key = `hotel|${vendorName}|${total}`;
+                        if (!existingKeys.has(key)) {
+                            autoExpenses.push({
+                                id: `auto-hotel-${h.name || 'hotel'}-${total}`,
+                                itineraryId: it.id,
+                                category: 'hotel',
+                                vendor: vendorName,
+                                description: `${vendorName} (${nights}N)`,
+                                amount: total,
+                                date: it.start_date || new Date().toISOString(),
+                                isPaid: true,
+                                isAuto: true,
+                            });
+                            existingKeys.add(key);
+                        }
                     }
                 }
 
@@ -300,16 +307,22 @@ export function useFinancials(
                         : (perAdult * adultPaxCount) + (perChild * childPaxCount) + (perInfant * infantPaxCount);
                     if (amt > 0) {
                         const label = f.airline || f.name || 'Flight';
-                        const desc = `${f.departureAirport || f.from || ''} → ${f.arrivalAirport || f.to || ''} (${f.airline || 'Flight'})`.trim();
+                        const desc = `${f.departureAirport || f.from || ''} → ${f.arrivalAirport || f.to || ''} (${label})`.trim();
                         const key = `flight|${label}|${amt}`;
-                        suggestedExpenses.push({
-                            category: 'flight',
-                            vendor: label,
-                            description: desc || label,
-                            amount: amt,
-                            currency: it.currency,
-                            alreadySeeded: existingKeys.has(key),
-                        });
+                        if (!existingKeys.has(key)) {
+                            autoExpenses.push({
+                                id: `auto-flight-${label}-${amt}`,
+                                itineraryId: it.id,
+                                category: 'flight',
+                                vendor: label,
+                                description: desc || label,
+                                amount: amt,
+                                date: it.start_date || new Date().toISOString(),
+                                isPaid: true,
+                                isAuto: true,
+                            });
+                            existingKeys.add(key);
+                        }
                     }
                 }
 
@@ -325,14 +338,20 @@ export function useFinancials(
                     if (amt > 0) {
                         const label = c.vehicleType || c.vendor || c.type || 'Cab/Transfer';
                         const key = `transport|${label}|${amt}`;
-                        suggestedExpenses.push({
-                            category: 'transport',
-                            vendor: label,
-                            description: c.route || c.description || label,
-                            amount: amt,
-                            currency: it.currency,
-                            alreadySeeded: existingKeys.has(key),
-                        });
+                        if (!existingKeys.has(key)) {
+                            autoExpenses.push({
+                                id: `auto-cab-${label}-${amt}`,
+                                itineraryId: it.id,
+                                category: 'transport',
+                                vendor: label,
+                                description: c.route || c.description || label,
+                                amount: amt,
+                                date: it.start_date || new Date().toISOString(),
+                                isPaid: true,
+                                isAuto: true,
+                            });
+                            existingKeys.add(key);
+                        }
                     }
                 }
 
@@ -348,16 +367,24 @@ export function useFinancials(
                     if (amt > 0) {
                         const label = b.busType || b.vendor || b.operator || 'Bus';
                         const key = `transport|${label}|${amt}`;
-                        suggestedExpenses.push({
-                            category: 'transport',
-                            vendor: label,
-                            description: b.route || b.description || label,
-                            amount: amt,
-                            currency: it.currency,
-                            alreadySeeded: existingKeys.has(key),
-                        });
+                        if (!existingKeys.has(key)) {
+                            autoExpenses.push({
+                                id: `auto-bus-${label}-${amt}`,
+                                itineraryId: it.id,
+                                category: 'transport',
+                                vendor: label,
+                                description: b.route || b.description || label,
+                                amount: amt,
+                                date: it.start_date || new Date().toISOString(),
+                                isPaid: true,
+                                isAuto: true,
+                            });
+                            existingKeys.add(key);
+                        }
                     }
                 }
+
+                const allExpenses: Expense[] = [...itExpenses, ...autoExpenses];
 
                 return {
                     id: it.id,
@@ -378,7 +405,7 @@ export function useFinancials(
                         (it.currency as Currency) ??
                         (agencySettings?.default_currency as Currency) ??
                         DEFAULT_CURRENCY,
-                    expenses: itExpenses,
+                    expenses: allExpenses,
                     payments: itPayments,
                     // commission fields — always from DB columns
                     commissionRate: it.commission_rate ?? agencySettings?.default_commission_rate ?? 0,
@@ -395,7 +422,7 @@ export function useFinancials(
                     childPax: it.child_pax ?? 0,
                     infantPax: it.infant_pax ?? 0,
                     milestones,
-                    suggestedExpenses,
+                    suggestedExpenses: [],
                     createdAt: it.created_at ?? new Date().toISOString(),
                     updatedAt: it.updated_at ?? new Date().toISOString(),
                 };

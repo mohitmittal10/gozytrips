@@ -184,12 +184,14 @@ export function useItineraryPersistence({
     // the HTML itinerary editor) without requiring a trip ID change.
     const refetchDraft = async () => {
       if (!currentTripId) return;
-      await _fetchAndApply(active);
+      await _fetchAndApply(active, { silent: true });
     };
 
-    async function _fetchAndApply(isActive: boolean) {
+    async function _fetchAndApply(isActive: boolean, opts?: { silent?: boolean }) {
       try {
-        setIsLoading(true);
+        // Don't show the full-page loading spinner for background refetches
+        // (e.g. focus handler). Only show it for initial / explicit loads.
+        if (!opts?.silent) setIsLoading(true);
         const session = await getValidSession();
 
         // If not authenticated, we can't load from Supabase - default to empty state
@@ -257,12 +259,21 @@ export function useItineraryPersistence({
             paymentMethods: itineraryData.paymentMethods || ""
           };
 
-          // Seed the payload ref with canonical comparison structure so opening a
-          // draft (or re-fetching after external edits) doesn't trigger an immediate
-          // re-save that would overwrite the freshly-loaded DB data.
-          lastPayloadRef.current = JSON.stringify(buildComparisonPayload(newData));
+           // Seed the payload ref with canonical comparison structure so opening a
+           // draft (or re-fetching after external edits) doesn't trigger an immediate
+           // re-save that would overwrite the freshly-loaded DB data.
+           const newPayload = JSON.stringify(buildComparisonPayload(newData));
 
-          setLoadedData(newData);
+           // Skip state update if DB data matches what's already in memory.
+           // This prevents the visible "refresh" when switching browser tabs and
+           // coming back — the focus handler fires refetchDraft(), but if nothing
+           // changed externally we avoid the full loadedData → store hydration cycle.
+           if (newPayload === lastPayloadRef.current) {
+             return;
+           }
+           lastPayloadRef.current = newPayload;
+
+           setLoadedData(newData);
         } else if (isActive) {
           setLoadedData(getEmptyData());
         }

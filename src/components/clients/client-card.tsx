@@ -25,7 +25,7 @@ interface ClientCardProps {
 export function ClientCard({ client, onClick, onEdit, onDelete }: ClientCardProps) {
     return (
         <Card
-            className="glass-main border-white/10 overflow-hidden hover:border-primary/40 transition-all duration-300 group cursor-pointer relative rounded-3xl shadow-lg hover:shadow-primary/5"
+            className="glass-main border-white/10 overflow-hidden hover:border-primary/40 transition-all duration-300 group cursor-pointer relative rounded-3xl shadow-lg"
             onClick={onClick}
         >
             <CardHeader className="pb-5 relative px-6 pt-6">

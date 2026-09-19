@@ -303,7 +303,7 @@ export const ClientProfileSheet = ({
                 </Button>
                 <Button
                   size="sm"
-                  className="h-8 text-xs aurora-gradient text-white border-none rounded-xl font-bold shadow-lg shadow-primary/20 hover:brightness-110"
+                  className="h-8 text-xs aurora-gradient text-white border-none rounded-xl font-bold hover:brightness-110"
                   onClick={() => window.open(`/the-lab?clientId=${selectedClient.id}`, "_blank")}
                 >
                   + New Itinerary

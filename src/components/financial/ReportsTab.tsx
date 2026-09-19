@@ -157,7 +157,7 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                                         title={`Revenue: ${fm(m.revenue)}`}
                                     />
                                     <div
-                                        className="w-2.5 sm:w-4 bg-gradient-to-t from-red-600 to-pink-500 rounded-t shadow-sm transition-all hover:brightness-125"
+                                        className="w-2.5 sm:w-4 bg-gradient-to-t from-rose-600 to-red-500 rounded-t shadow-sm transition-all hover:brightness-125"
                                         style={{
                                             height: `${(m.expenses / maxVal) * 100}%`,
                                             minHeight: m.expenses > 0 ? "6px" : "0",
@@ -184,7 +184,7 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                         <span className="w-2.5 h-2.5 rounded-sm bg-blue-500 inline-block" /> Revenue
                     </span>
                     <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                        <span className="w-2.5 h-2.5 rounded-sm bg-pink-500 inline-block" /> Vendor Expenses
+                        <span className="w-2.5 h-2.5 rounded-sm bg-red-500 inline-block" /> Vendor Expenses
                     </span>
                     <span className="flex items-center gap-1.5 text-xs text-gray-400">
                         <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" /> Collected Cash

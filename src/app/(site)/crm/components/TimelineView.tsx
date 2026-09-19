@@ -110,7 +110,7 @@ export const TimelineView = ({
                                     ))}
                                 </SelectContent>
                             </Select>
-                            <Button onClick={handleDownloadPdf} className="px-4 py-2 aurora-gradient text-white border-none rounded-xl text-xs font-bold h-9 flex items-center gap-2 shadow-lg shadow-primary/20 hover:brightness-110">
+                            <Button onClick={handleDownloadPdf} className="px-4 py-2 aurora-gradient text-white border-none rounded-xl text-xs font-bold h-9 flex items-center gap-2 hover:brightness-110">
                                 <Eye className="h-3.5 w-3.5" /> Export
                             </Button>
                         </div>

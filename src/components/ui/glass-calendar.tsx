@@ -238,7 +238,7 @@ export const GlassCalendar = React.forwardRef<HTMLDivElement, GlassCalendarProps
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-200 relative",
                     {
-                      "bg-gradient-to-br from-pink-500 to-orange-400 text-white shadow-lg shadow-orange-500/20 scale-105":
+                      "bg-zinc-700 text-white shadow-lg shadow-black/40 scale-105 border border-white/20":
                         day.isSelected,
                       "hover:bg-white/20 text-white":
                         !day.isSelected && !disabled,
@@ -248,7 +248,7 @@ export const GlassCalendar = React.forwardRef<HTMLDivElement, GlassCalendarProps
                   )}
                 >
                   {day.isToday && !day.isSelected && (
-                    <span className="absolute bottom-1 h-1 w-1 rounded-full bg-pink-400"></span>
+                    <span className="absolute bottom-1 h-1 w-1 rounded-full bg-zinc-400"></span>
                   )}
                   {getDate(day.date)}
                 </button>

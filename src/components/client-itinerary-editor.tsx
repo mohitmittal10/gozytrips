@@ -288,7 +288,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
 
           <Button
             onClick={() => setIsPreviewOpen(true)}
-            className="h-9 glass-button bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 border-0"
+            className="h-9 glass-button bg-white/10 hover:bg-white/15 text-white border border-white/10 font-semibold transition-all cursor-pointer"
           >
             <Eye className="w-4 h-4 mr-2" />
             Preview &amp; Export

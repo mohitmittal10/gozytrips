@@ -85,6 +85,7 @@ export interface Expense {
     amount: number;
     date: string;
     isPaid: boolean;
+    isAuto?: boolean;            // True if automatically synced from itinerary vendor items
 }
 
 export interface InvoiceData {

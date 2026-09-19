@@ -418,7 +418,7 @@ export default function VendorEnquiry() {
                 onClick={() => { setEnquiryType(type.value); handleReset(); }}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all duration-200 cursor-pointer
                   ${isActive
-                    ? "bg-primary/20 border-primary/50 text-white shadow-lg shadow-primary/20"
+                    ? "bg-primary/20 border-primary/50 text-white"
                     : "bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white"}`}
               >
                 <Icon className={cn("w-4 h-4", isActive ? "text-primary" : "text-zinc-400")} />
@@ -602,7 +602,7 @@ export default function VendorEnquiry() {
               <Button
                 onClick={onGenerate}
                 disabled={isGenerating || !destination.trim() || !travelDates.trim()}
-                className="flex-[2] aurora-gradient text-white h-11 text-sm font-bold gap-2 shadow-lg shadow-primary/25 rounded-xl transition-all hover:brightness-110 active:scale-98 cursor-pointer disabled:opacity-50 border-none"
+                className="flex-[2] aurora-gradient text-white h-11 text-sm font-bold gap-2 rounded-xl transition-all hover:brightness-110 active:scale-98 cursor-pointer disabled:opacity-50 border-none"
               >
                 {isGenerating ? (
                   <>

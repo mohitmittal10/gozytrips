@@ -81,7 +81,7 @@ export function TripCard({
                                 e.preventDefault();
                                 onToggleFavourite(trip);
                             }}
-                            className="text-pink-500 hover:bg-pink-500/10 -mt-1 -mr-2 rounded-full h-8 w-8 flex-shrink-0"
+                            className="text-red-500 hover:bg-red-500/10 -mt-1 -mr-2 rounded-full h-8 w-8 flex-shrink-0"
                         >
                             <Heart className="w-5 h-5" fill={trip.is_favourite ? "currentColor" : "none"} />
                         </Button>

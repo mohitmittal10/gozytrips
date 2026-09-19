@@ -144,7 +144,7 @@ export function CreateFormModal({ onClose, onCreated, createForm }: CreateFormMo
               <button
                 onClick={handleCreate}
                 disabled={loading}
-                className="w-full h-11 rounded-xl aurora-gradient text-white font-bold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2 shadow-lg shadow-primary/25 cursor-pointer hover:brightness-110 active:scale-98"
+                className="w-full h-11 rounded-xl aurora-gradient text-white font-bold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 mt-2 cursor-pointer hover:brightness-110 active:scale-98"
               >
                 {loading ? (
                   <><Loader className="w-4 h-4 animate-spin" /> Creating…</>

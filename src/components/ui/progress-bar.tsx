@@ -96,7 +96,7 @@ export function ProgressBar({
         <div className="relative h-[6px] overflow-hidden rounded-[2px]">
           <motion.span
             aria-hidden
-            className="absolute inset-0 block origin-left rounded-[2px] bg-gradient-to-r from-pink-500 to-orange-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
+            className="absolute inset-0 block origin-left rounded-[2px] bg-gradient-to-r from-zinc-500 to-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
             initial={false}
             animate={{ scaleX: indeterminate ? 0 : fraction }}
             transition={reduced ? INSTANT : FILL}
@@ -105,7 +105,7 @@ export function ProgressBar({
           {indeterminate && !reduced ? (
             <motion.span
               aria-hidden
-              className="absolute inset-y-0 left-0 block w-2/5 rounded-[2px] bg-gradient-to-r from-pink-500 to-orange-400 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
+              className="absolute inset-y-0 left-0 block w-2/5 rounded-[2px] bg-gradient-to-r from-zinc-500 to-zinc-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.35)]"
               initial={{ x: "-100%", opacity: 0 }}
               animate={{ x: "250%", opacity: 1 }}
               exit={{ opacity: 0 }}

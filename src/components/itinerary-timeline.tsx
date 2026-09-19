@@ -1009,7 +1009,7 @@ const ItineraryTimeline = ({
             <Button
               onClick={handleRegenerateDay}
               disabled={isRegeneratingDay || !promptText.trim() || isOverLimit}
-              className="bg-gradient-to-r from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 border-0 text-white font-medium flex items-center gap-2"
+              className="bg-white/10 hover:bg-white/15 text-white border border-white/10 font-medium flex items-center gap-2 transition-all cursor-pointer"
             >
               {isRegeneratingDay ? (
                 <>

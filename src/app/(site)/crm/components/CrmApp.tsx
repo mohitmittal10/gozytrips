@@ -71,7 +71,7 @@ export function CrmApp() {
                                     { id: 'client-forms', icon: FileText, label: 'Client Forms' },
                                     { id: 'archive', icon: Archive, label: 'Archive' }
                                 ].map((tab) => (
-                                    <Button key={tab.id} onClick={() => setActiveTab(tab.id)} variant="ghost" className={cn("w-full justify-start h-10 px-3 transition-all group cursor-pointer", activeTab === tab.id ? "bg-primary/20 text-white border border-primary/40 font-bold shadow-lg shadow-primary/20 hover:bg-primary/30 hover:border-primary/60 hover:shadow-primary/30" : "text-zinc-400 hover:text-white hover:bg-white/5", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
+                                    <Button key={tab.id} onClick={() => setActiveTab(tab.id)} variant="ghost" className={cn("w-full justify-start h-10 px-3 transition-all group cursor-pointer", activeTab === tab.id ? "bg-primary/20 text-white border border-primary/40 font-bold hover:bg-primary/30 hover:border-primary/60" : "text-zinc-400 hover:text-white hover:bg-white/5", isSidebarExpanded ? "" : "w-10 px-0 justify-center")}>
                                         <tab.icon className={cn("w-4 h-4 shrink-0", activeTab === tab.id ? "text-primary" : "text-zinc-400 group-hover:text-white")} />
                                         <span className={cn(
                                             "text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden",
@@ -118,7 +118,7 @@ export function CrmApp() {
                                         className={cn(
                                             "flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all shrink-0 border cursor-pointer",
                                             activeTab === tab.id
-                                                ? "bg-primary/20 text-white border-primary/40 shadow-lg shadow-primary/20 font-bold hover:bg-primary/30 hover:border-primary/60 hover:shadow-primary/30"
+                                                ? "bg-primary/20 text-white border-primary/40 font-bold hover:bg-primary/30 hover:border-primary/60"
                                                 : "bg-white/5 text-zinc-400 border-white/10 hover:bg-white/10 hover:text-white"
                                         )}
                                     >
@@ -164,7 +164,7 @@ export function CrmApp() {
                                         if (activeTab === 'bookings') context.setIsBookingDialogOpen(true);
                                         else context.setIsAddClientOpen(true);
                                     }} 
-                                    className="px-6 py-2.5 aurora-gradient text-white border-none rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary/25 hover:brightness-110 active:scale-98 flex items-center gap-2 h-11 cursor-pointer"
+                                    className="px-6 py-2.5 aurora-gradient text-white border-none rounded-xl text-sm font-bold transition-all hover:brightness-110 active:scale-98 flex items-center gap-2 h-11 cursor-pointer"
                                 >
                                     <Plus className="w-4 h-4" /> 
                                     {activeTab === 'bookings' ? 'New Booking' : 'Add Client'}

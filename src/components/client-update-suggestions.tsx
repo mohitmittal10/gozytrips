@@ -42,7 +42,7 @@ const categoryStyles: Record<string, { icon: typeof Send; color: string; bg: str
   booking: { icon: CheckCircle2, color: "text-green-400", bg: "bg-green-500/10", border: "border-green-500/20" },
   reminder: { icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
   update: { icon: Send, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-  payment: { icon: Wallet, color: "text-pink-400", bg: "bg-pink-500/10", border: "border-pink-500/20" },
+  payment: { icon: Wallet, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
   custom: { icon: Pencil, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
 };
 

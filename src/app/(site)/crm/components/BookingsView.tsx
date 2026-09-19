@@ -51,7 +51,7 @@ export const BookingsView = ({
                     <FileText className="w-12 h-12 text-zinc-500 mb-4" />
                     <h3 className="text-xl font-bold text-white mb-2">No Standalone Bookings</h3>
                     <p className="mb-5 text-sm text-zinc-400 font-medium">Create a quick booking for a cab, flight, or hotel independent of a full trip.</p>
-                    <Button onClick={() => setIsBookingDialogOpen(true)} className="px-6 py-2.5 aurora-gradient text-white border-none rounded-xl text-sm font-bold transition-all shadow-lg shadow-primary/25 hover:brightness-110 active:scale-98 flex items-center gap-2 h-11 cursor-pointer">
+                    <Button onClick={() => setIsBookingDialogOpen(true)} className="px-6 py-2.5 aurora-gradient text-white border-none rounded-xl text-sm font-bold transition-all hover:brightness-110 active:scale-98 flex items-center gap-2 h-11 cursor-pointer">
                         <Plus className="w-4 h-4" />
                         Create First Booking
                     </Button>

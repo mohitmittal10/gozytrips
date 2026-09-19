@@ -18,7 +18,7 @@ import { updateItineraryStatus } from "@/lib/services/itinerary-status";
 import { useClients } from "@/lib/hooks/use-clients";
 import { useToast } from "@/hooks/use-toast";
 import { ClientDialog } from "@/components/client-dialog";
-import { formSchema, type TheLabFormValues, type ActiveLabTab } from "@/types/the-lab";
+import { formSchema, type TheLabFormValues, type ActiveLabTab, type TripMetadata } from "@/types/the-lab";
 import { theLabSteps, loadingTexts } from "@/constants/the-lab";
 import { useItineraryGeneration } from "@/hooks/the-lab/useItineraryGeneration";
 import { useItineraryPersistence } from "@/hooks/the-lab/useItineraryPersistence";
@@ -628,9 +628,176 @@ export default function TheLab() {
     }
   }, [generate, tripMetadata, setCurrentTripId, saveNow, resetForNewTrip, setHotels, setFlights, setCabs, setBuses, setPricing, setInclusions, setExclusions, enquiryBanner, fetchClients, user, supabase, setSelectedClientId]);
 
+  const handleRegenerateItinerary = useCallback(async (updatedMetadata: TripMetadata, feedbackPrompt?: string) => {
+    console.log("[TheLab index.tsx] handleRegenerateItinerary called. updatedMetadata:", updatedMetadata, "feedbackPrompt:", feedbackPrompt);
+    
+    if (feedbackPrompt && feedbackPrompt.trim()) {
+      const wordCount = feedbackPrompt.trim().split(/\s+/).filter(Boolean).length;
+      if (wordCount > 25) {
+        toast({
+          variant: "destructive",
+          title: "Prompt Too Long",
+          description: `Regeneration instructions cannot exceed 25 words (currently ${wordCount} words).`,
+        });
+        return;
+      }
+    }
+    
+    let sDate = updatedMetadata.startDate;
+    let eDate = updatedMetadata.endDate;
+    if (sDate && !(sDate instanceof Date)) sDate = new Date(sDate);
+    if (eDate && !(eDate instanceof Date)) eDate = new Date(eDate);
+
+    const sanitizedValues: TheLabFormValues = {
+      startingLocation: updatedMetadata.startingLocation || "",
+      endingLocation: updatedMetadata.endingLocation || updatedMetadata.startingLocation || "",
+      startDate: sDate instanceof Date && !isNaN(sDate.getTime()) ? sDate : new Date(),
+      endDate: eDate instanceof Date && !isNaN(eDate.getTime()) ? eDate : new Date(Date.now() + 86400000 * 3),
+      destinations: updatedMetadata.destinations || "",
+      tripType: (updatedMetadata.tripType as any) || "relaxed",
+      travelMethods: updatedMetadata.travelMethods || [],
+      mustInclude: updatedMetadata.mustInclude || "",
+      avoid: updatedMetadata.avoid || "",
+      leisureTime: !!updatedMetadata.leisureTime,
+      leisureDay: updatedMetadata.leisureDay,
+      travelTimePreference: (updatedMetadata.travelTimePreference as any) || "no_preference",
+      daywiseDestinations: updatedMetadata.daywiseDestinations || "",
+      hotels: (updatedMetadata.hotels || hotels || []) as any,
+    };
+
+    setTripMetadata(sanitizedValues);
+    form.reset(sanitizedValues as any);
+
+    const feedback = feedbackPrompt || "Regenerated itinerary based on updated trip requirements.";
+    const res = await generate(sanitizedValues, feedback, sanitizedValues);
+
+    if (res) {
+      setItinerary(res);
+      
+      const formattedHotels = (sanitizedValues.hotels || hotels || []).map((h: any) => ({
+        id: h.id,
+        dayIndex: h.dayIndex,
+        dayIndices: h.dayIndices?.length ? h.dayIndices : [h.dayIndex],
+        name: h.name,
+        address: h.address || "",
+        checkIn: h.checkIn || "2:00 PM",
+        checkOut: h.checkOut || "11:00 AM",
+        bookingRef: h.bookingRef || "",
+        starRating: h.starRating || 3,
+        nights: h.nights || 1,
+        costAdult: h.costAdult,
+        costChild: h.costChild,
+        costInfant: h.costInfant,
+        imageUrls: h.imageUrls,
+      }));
+
+      const savePayload = {
+        itinerary: res,
+        hotels: formattedHotels,
+        flights,
+        cabs,
+        buses,
+        pricing,
+        tripMetadata: sanitizedValues,
+        selectedStatus,
+        selectedClientId,
+        inclusions,
+        exclusions,
+        termsAndConditions,
+        cancellationPolicy,
+        paymentMethods,
+      };
+
+      if (currentTripId) {
+        await saveNow(savePayload, currentTripId);
+      } else {
+        const newTripId = await saveNow(savePayload, null);
+        if (newTripId) setCurrentTripId(newTripId);
+      }
+
+      toast({
+        title: "Itinerary Regenerated! ✨",
+        description: "Your itinerary has been updated with the new requirements.",
+      });
+
+      setActiveLabTab('itinerary');
+    }
+  }, [setTripMetadata, form, generate, setItinerary, currentTripId, saveNow, hotels, flights, cabs, buses, pricing, selectedStatus, selectedClientId, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods, setCurrentTripId, setActiveLabTab, toast]);
+
+  const handleUpdateTripMetadata = useCallback(async (updatedMetadata: TripMetadata) => {
+    console.log("[TheLab index.tsx] handleUpdateTripMetadata called:", updatedMetadata);
+    let sDate = updatedMetadata.startDate;
+    let eDate = updatedMetadata.endDate;
+    if (sDate && !(sDate instanceof Date)) sDate = new Date(sDate);
+    if (eDate && !(eDate instanceof Date)) eDate = new Date(eDate);
+
+    const merged = {
+      ...tripMetadata,
+      ...updatedMetadata,
+      startDate: sDate instanceof Date ? sDate : tripMetadata?.startDate,
+      endDate: eDate instanceof Date ? eDate : tripMetadata?.endDate,
+    };
+
+    setTripMetadata(merged as any);
+    form.reset(merged as any);
+
+    if (currentTripId) {
+      await saveNow({ tripMetadata: merged as any }, currentTripId);
+    }
+    toast({
+      title: "Trip Requirements Updated",
+      description: "Saved requirements successfully.",
+    });
+  }, [tripMetadata, setTripMetadata, form, currentTripId, saveNow, toast]);
 
   const isDesigningNew = activeLabTab === 'new';
   const isViewingItinerary = ['itinerary', 'flights-hotels', 'pricing', 'inclusions'].includes(activeLabTab);
+
+  // Stable callback for TheLabTabContent's handleSaveItinerary prop.
+  // An inline arrow here would create a new reference on every render and defeat
+  // React.memo on TheLabTabContent, causing all tabs to re-render on any store update.
+  const handleTabContentSaveItinerary = useCallback((latestPricing?: any) => {
+    saveItinerary({}, form.getValues(), {
+      itinerary,
+      selectedClientId,
+      selectedStatus,
+      hotels,
+      flights,
+      cabs,
+      buses,
+      pricing: latestPricing || pricing,
+      showTimestamps,
+      selectedTheme,
+      tripMetadata,
+      inclusions,
+      exclusions,
+      termsAndConditions,
+      cancellationPolicy,
+      paymentMethods,
+    });
+  }, [saveItinerary, form, itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, selectedTheme, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods]);
+
+  // Stable callback for TheLabHeader's handleSaveItinerary prop.
+  const handleHeaderSaveItinerary = useCallback(() => {
+    saveItinerary({}, form.getValues(), {
+      itinerary,
+      selectedClientId,
+      selectedStatus,
+      hotels,
+      flights,
+      cabs,
+      buses,
+      pricing,
+      showTimestamps,
+      selectedTheme,
+      tripMetadata,
+      inclusions,
+      exclusions,
+      termsAndConditions,
+      cancellationPolicy,
+      paymentMethods,
+    });
+  }, [saveItinerary, form, itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, selectedTheme, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods]);
 
   return (
     <section id="the-lab" className="w-full mx-auto pt-0 pb-10 bg-black min-h-screen">
@@ -689,7 +856,7 @@ export default function TheLab() {
                 }
                 setIsPreviewOpen(true);
               }} 
-              handleSaveItinerary={() => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, selectedTheme, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
+              handleSaveItinerary={handleHeaderSaveItinerary} 
               isSaving={isSaving} 
               isPreRendering={isPreRendering}
               activeLabTab={activeLabTab}
@@ -764,7 +931,7 @@ export default function TheLab() {
                     pricing={pricing} 
                     setPricing={setPricing} 
                     agencySettings={null} 
-                    handleSaveItinerary={(latestPricing?: any) => saveItinerary({}, form.getValues(), { itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing: latestPricing || pricing, showTimestamps, selectedTheme, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods })} 
+                    handleSaveItinerary={handleTabContentSaveItinerary} 
                     isSaving={isSaving} 
                     setCurrentTripId={setCurrentTripId} 
                     setActiveLabTab={setActiveLabTab} 
@@ -801,6 +968,8 @@ export default function TheLab() {
                   currencySymbol={currencySymbol}
                   tripMetadata={tripMetadata}
                   onOpenAddClient={() => setIsAddClientOpen(true)}
+                  onRegenerateItinerary={handleRegenerateItinerary}
+                  onUpdateTripMetadata={handleUpdateTripMetadata}
                 />
               </div>
             )}

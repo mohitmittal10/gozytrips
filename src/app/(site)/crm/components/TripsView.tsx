@@ -306,7 +306,7 @@ const TripsKanbanView = ({
                       }))
                 : [
                       { key: "draft", label: "Draft", borderColor: "border-purple-500/30", dotColor: "bg-purple-400" },
-                      { key: "proposed", label: "Proposed", borderColor: "border-pink-500/30", dotColor: "bg-pink-400" },
+                      { key: "proposed", label: "Proposed", borderColor: "border-zinc-500/30", dotColor: "bg-zinc-400" },
                       { key: "sent", label: "Sent", borderColor: "border-blue-500/30", dotColor: "bg-blue-400" },
                       { key: "booked", label: "Booked", borderColor: "border-green-500/30", dotColor: "bg-green-400" },
                   ];

@@ -483,7 +483,7 @@ function AgentControlsPanel({ response, formId, onUpdated }: { response: Respons
             pushSuccess
               ? "bg-emerald-500/20 border border-emerald-500/30 text-emerald-300"
               : selectedItineraryId
-              ? "aurora-gradient text-white shadow-primary/25 hover:brightness-110 active:scale-98"
+              ? "aurora-gradient text-white hover:brightness-110 active:scale-98"
               : "bg-white/5 border border-white/10 text-zinc-500 cursor-not-allowed"
           )}
         >
@@ -791,7 +791,7 @@ export function ResponseDetailSheet({ response, formId, onClose, onConverted, on
                   onClick={handleConvert}
                   disabled={converting}
                   id="convert-to-itinerary-btn"
-                  className="w-full h-12 rounded-xl aurora-gradient text-white font-bold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-primary/25 cursor-pointer hover:brightness-110 active:scale-98"
+                  className="w-full h-12 rounded-xl aurora-gradient text-white font-bold text-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer hover:brightness-110 active:scale-98"
                 >
                   {converting ? (
                     <><Loader2 className="w-4 h-4 animate-spin" /> Loading The Lab…</>

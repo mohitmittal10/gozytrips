@@ -197,7 +197,7 @@ export const EditItineraryView = ({
                 <h3 className="text-xl font-bold text-white">No Itineraries Yet</h3>
                 <p className="text-sm text-zinc-400">Create a new itinerary in The Lab to get started.</p>
                 <Link href="/the-lab">
-                    <Button className="mt-2 px-6 py-2.5 aurora-gradient text-white rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-2 h-10 border-none">
+                    <Button className="mt-2 px-6 py-2.5 aurora-gradient text-white rounded-xl text-sm font-bold hover:brightness-110 transition-all flex items-center gap-2 h-10 border-none">
                         <Plus className="w-4 h-4" /> Create New Itinerary
                     </Button>
                 </Link>
@@ -261,7 +261,7 @@ export const EditItineraryView = ({
 
                 {/* New itinerary shortcut */}
                 <Link href="/the-lab">
-                    <Button className="h-10 px-4 aurora-gradient text-white rounded-xl text-sm font-bold hover:brightness-110 transition-all shadow-lg shadow-primary/20 flex items-center gap-2 border-none whitespace-nowrap">
+                    <Button className="h-10 px-4 aurora-gradient text-white rounded-xl text-sm font-bold hover:brightness-110 transition-all flex items-center gap-2 border-none whitespace-nowrap">
                         <Plus className="w-4 h-4" /> New
                     </Button>
                 </Link>
@@ -487,7 +487,7 @@ export const EditItineraryView = ({
                                         className={cn(
                                             "h-8 min-w-[2rem] px-2 rounded-xl text-xs font-semibold tracking-wide transition-all cursor-pointer",
                                             currentPage === pageNum
-                                                ? "bg-primary/20 border border-primary/40 text-white font-bold shadow-lg shadow-primary/20"
+                                                ? "bg-primary/20 border border-primary/40 text-white font-bold"
                                                 : "bg-transparent text-zinc-400 hover:text-white hover:bg-white/5"
                                         )}
                                     >

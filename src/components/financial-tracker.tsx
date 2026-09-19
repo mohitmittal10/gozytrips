@@ -117,7 +117,7 @@ export default function FinancialTracker({
                             className={cn(
                                 "flex items-center justify-center gap-2 text-xs font-semibold py-2.5 px-4 rounded-xl transition-all whitespace-nowrap flex-1 shrink-0 border cursor-pointer",
                                 isActive
-                                    ? "bg-primary/20 text-white border-primary/40 font-bold shadow-lg shadow-primary/20"
+                                    ? "bg-primary/20 text-white border-primary/40 font-bold"
                                     : "border-transparent text-zinc-400 hover:text-white hover:bg-white/5"
                             )}
                         >

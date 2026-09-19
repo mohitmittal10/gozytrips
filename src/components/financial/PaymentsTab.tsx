@@ -302,7 +302,7 @@ export function PaymentsTab({
                                 </div>
 
                                 {/* Milestone Suggestions (Autofill One-Click Action) */}
-                                {effectiveMilestones.length > 0 && !isFullyPaid && (
+                                {effectiveMilestones.length > 0 && (
                                     <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 space-y-2.5">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-1.5 text-xs font-bold text-white">
@@ -315,17 +315,38 @@ export function PaymentsTab({
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                                             {effectiveMilestones.map((m, idx) => {
                                                 const milestoneAmt = Math.round(fin.clientPrice * (m.percentage / 100));
+                                                const cumPercentage = effectiveMilestones
+                                                    .slice(0, idx + 1)
+                                                    .reduce((sum, item) => sum + item.percentage, 0);
+                                                const cumAmount = Math.round(fin.clientPrice * (cumPercentage / 100));
+                                                const hasNoteMatch = fin.payments.some((p) =>
+                                                    p.notes?.toLowerCase().includes(m.label.toLowerCase())
+                                                );
+                                                const isRecorded =
+                                                    hasNoteMatch ||
+                                                    totalPaid >= cumAmount ||
+                                                    (fin.clientPrice > 0 && totalPaid >= fin.clientPrice);
+
                                                 return (
                                                     <div
                                                         key={idx}
-                                                        className="bg-black/40 border border-primary/20 hover:border-primary/50 rounded-xl p-2.5 flex flex-col justify-between gap-2 transition-all group"
+                                                        className={cn(
+                                                            "rounded-xl p-2.5 flex flex-col justify-between gap-2 transition-all group border",
+                                                            isRecorded
+                                                                ? "bg-emerald-950/20 border-emerald-500/30"
+                                                                : "bg-black/40 border-primary/20 hover:border-primary/50"
+                                                        )}
                                                     >
                                                         <div>
                                                             <div className="flex items-center justify-between text-xs">
-                                                                <span className="font-semibold text-white">{m.label}</span>
-                                                                <span className="text-primary font-bold text-[11px]">{m.percentage}%</span>
+                                                                <span className={cn("font-semibold", isRecorded ? "text-emerald-300" : "text-white")}>
+                                                                    {m.label}
+                                                                </span>
+                                                                <span className={cn("font-bold text-[11px]", isRecorded ? "text-emerald-400" : "text-primary")}>
+                                                                    {m.percentage}%
+                                                                </span>
                                                             </div>
-                                                            <div className="text-sm font-bold text-white mt-0.5">
+                                                            <div className={cn("text-sm font-bold mt-0.5", isRecorded ? "text-emerald-200" : "text-white")}>
                                                                 {fm(milestoneAmt, fin.currency)}
                                                             </div>
                                                             {m.dueDate && (
@@ -334,15 +355,22 @@ export function PaymentsTab({
                                                                 </p>
                                                             )}
                                                         </div>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="secondary"
-                                                            className="h-6 text-[11px] bg-primary/20 hover:bg-primary text-white border border-primary/40 font-bold transition-all justify-center w-full rounded-lg"
-                                                            onClick={() => handleRecordMilestone(fin, m)}
-                                                        >
-                                                            <span>Record {fm(milestoneAmt, fin.currency)}</span>
-                                                            <ArrowRight className="w-3 h-3 ml-1" />
-                                                        </Button>
+                                                        {isRecorded ? (
+                                                            <div className="h-6 text-[11px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold flex items-center justify-center w-full rounded-lg gap-1">
+                                                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                                                <span>Recorded</span>
+                                                            </div>
+                                                        ) : (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="secondary"
+                                                                className="h-6 text-[11px] bg-primary/20 hover:bg-primary text-white border border-primary/40 font-bold transition-all justify-center w-full rounded-lg cursor-pointer"
+                                                                onClick={() => handleRecordMilestone(fin, m)}
+                                                            >
+                                                                <span>Record {fm(milestoneAmt, fin.currency)}</span>
+                                                                <ArrowRight className="w-3 h-3 ml-1" />
+                                                            </Button>
+                                                        )}
                                                     </div>
                                                 );
                                             })}
@@ -406,11 +434,24 @@ export function PaymentsTab({
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="h-8 text-xs border-white/20 bg-white/10 text-white hover:bg-white/20 font-bold flex-1 shadow-sm transition-all rounded-xl cursor-pointer"
+                                        className={cn(
+                                            "h-8 text-xs border-white/20 bg-white/10 text-white font-bold flex-1 shadow-sm transition-all rounded-xl",
+                                            isFullyPaid ? "opacity-60 cursor-not-allowed hover:bg-white/10" : "hover:bg-white/20 cursor-pointer"
+                                        )}
+                                        disabled={isFullyPaid}
                                         onClick={() => handleOpen(fin)}
                                     >
-                                        <Plus className="w-3.5 h-3.5 mr-1.5 text-white" />
-                                        <span>Record Payment</span>
+                                        {isFullyPaid ? (
+                                            <>
+                                                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-400" />
+                                                <span>Fully Paid</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Plus className="w-3.5 h-3.5 mr-1.5 text-white" />
+                                                <span>Record Payment</span>
+                                            </>
+                                        )}
                                     </Button>
 
                                     {!isFullyPaid && balance > 0 && (

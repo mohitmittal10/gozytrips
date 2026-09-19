@@ -189,7 +189,7 @@ export function CrmModals() {
                                     {pdfThemeOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
-                            <Button onClick={handleDownloadPdf} disabled={!selectedTripForModal} className="w-fit aurora-gradient text-white border-none rounded-xl font-bold shadow-lg shadow-primary/20 hover:brightness-110">
+                            <Button onClick={handleDownloadPdf} disabled={!selectedTripForModal} className="w-fit aurora-gradient text-white border-none rounded-xl font-bold hover:brightness-110">
                                 <Eye className="mr-2 h-4 w-4" /> Preview & Export
                             </Button>
                         </div>
