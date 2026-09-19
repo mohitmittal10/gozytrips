@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useCallback } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -9,24 +10,31 @@ import {
     DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import {
-    FileText, Search, Printer, Download, CheckCircle2,
-    Clock, Mail, Building2, User, Sparkles, ExternalLink
+    FileText, Search, Printer, CheckCircle2,
+    Clock, Download, Eye, Building2, User, Calendar
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import type { TripFinancial, InvoiceData } from "@/types/financial";
+import type { TripFinancial } from "@/types/financial";
 import type { Currency } from "@/types/pricing";
+import { ProfessionalInvoice } from "./ProfessionalInvoice";
+import { useAuth } from "@/contexts/auth-context";
 
 interface InvoicesTabProps {
     financials: TripFinancial[];
     cs: (currency?: Currency) => string;
     fm: (amount: number | string, currency?: Currency) => string;
-    onOpenFinances?: (itineraryId: string) => void;
 }
 
-export function InvoicesTab({ financials, cs, fm, onOpenFinances }: InvoicesTabProps) {
+export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedInvoiceFin, setSelectedInvoiceFin] = useState<TripFinancial | null>(null);
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+    const invoiceRef = useRef<HTMLDivElement>(null);
+    const { user, agencySettings } = useAuth();
+
+    const companyName = agencySettings?.brand_name ?? "GozyTrips";
+    const agentName = (agencySettings as any)?.agent_name ?? user?.email?.split("@")[0] ?? "Travel Agent";
+    const agentEmail = user?.email ?? "";
 
     const filteredFinancials = useMemo(() => {
         return financials.filter(
@@ -43,9 +51,82 @@ export function InvoicesTab({ financials, cs, fm, onOpenFinances }: InvoicesTabP
         setShowInvoiceModal(true);
     };
 
-    const handlePrintInvoice = () => {
-        window.print();
-    };
+    const handleDirectPrint = useCallback((fin: TripFinancial) => {
+        const htmlContent = renderToStaticMarkup(
+            <ProfessionalInvoice
+                fin={fin}
+                fm={fm}
+                cs={cs}
+                companyName={companyName}
+                agentName={agentName}
+                agentEmail={agentEmail}
+            />
+        );
+
+        const win = window.open("", "_blank", "width=900,height=700");
+        if (!win) return;
+
+        win.document.write(`<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Invoice — ${fin.clientName || "GozyTrips"}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @page { size: A4; margin: 0; }
+      @media print {
+        body { margin: 0; }
+        #printable-invoice { page-break-inside: avoid; }
+      }
+    </style>
+  </head>
+  <body>${htmlContent}</body>
+</html>`);
+        win.document.close();
+        win.focus();
+        setTimeout(() => {
+            win.print();
+            win.close();
+        }, 600);
+    }, [fm, cs, companyName, agentName, agentEmail]);
+
+    const handlePrintInvoice = useCallback(() => {
+        const el = invoiceRef.current;
+        if (!el) return;
+
+        const printContent = el.outerHTML;
+        const win = window.open("", "_blank", "width=900,height=700");
+        if (!win) return;
+
+        win.document.write(`<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Invoice — ${selectedInvoiceFin?.clientName ?? "GozyTrips"}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      @page { size: A4; margin: 0; }
+      @media print {
+        body { margin: 0; }
+        #printable-invoice { page-break-inside: avoid; }
+      }
+    </style>
+  </head>
+  <body>${printContent}</body>
+</html>`);
+        win.document.close();
+        win.focus();
+        setTimeout(() => {
+            win.print();
+            win.close();
+        }, 600);
+    }, [selectedInvoiceFin]);
 
     return (
         <>
@@ -61,6 +142,9 @@ export function InvoicesTab({ financials, cs, fm, onOpenFinances }: InvoicesTabP
                             className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-9 text-xs"
                         />
                     </div>
+                    <div className="text-xs text-zinc-500 shrink-0 font-medium">
+                        {filteredFinancials.length} invoice{filteredFinancials.length !== 1 ? "s" : ""}
+                    </div>
                 </div>
 
                 {/* Grid of Invoice Cards */}
@@ -69,220 +153,169 @@ export function InvoicesTab({ financials, cs, fm, onOpenFinances }: InvoicesTabP
                         const totalPaid = fin.payments.reduce((s, p) => s + p.amount, 0);
                         const balance = fin.clientPrice - totalPaid;
                         const isFullyPaid = balance <= 0 && fin.clientPrice > 0;
+                        const paidPct = fin.clientPrice > 0 ? Math.min((totalPaid / fin.clientPrice) * 100, 100) : 0;
 
                         return (
                             <div
                                 key={fin.tripId || fin.itineraryId}
-                                className="bg-gradient-to-b from-white/[0.04] to-white/[0.01] border border-white/[0.08] hover:border-white/[0.15] transition-all rounded-2xl p-5 space-y-4 shadow-xl flex flex-col justify-between"
+                                className="bg-gradient-to-b from-white/[0.04] to-white/[0.01] border border-white/[0.08] hover:border-white/[0.15] transition-all rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between"
                             >
-                                <div className="space-y-3">
+                                {/* Card Top accent */}
+                                <div className={cn(
+                                    "h-1 w-full",
+                                    isFullyPaid ? "bg-gradient-to-r from-emerald-500 to-green-400" : "bg-gradient-to-r from-amber-500 to-orange-400"
+                                )} />
+
+                                <div className="p-5 space-y-4 flex-1">
+                                    {/* Header Row */}
                                     <div className="flex items-start justify-between gap-2">
-                                        <div>
+                                        <div className="space-y-0.5">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <p className="text-sm font-semibold text-white">{fin.clientName}</p>
-                                                {fin.clientEmail && (
-                                                    <span className="text-[11px] text-gray-400 font-mono bg-white/5 px-2 py-0.5 rounded">
-                                                        {fin.clientEmail}
-                                                    </span>
-                                                )}
+                                                <p className="text-sm font-bold text-white">{fin.clientName}</p>
                                             </div>
-                                            <p className="text-xs text-gray-400 mt-0.5">
-                                                {fin.tripTitle} · <span className="text-gray-300">{fin.destination}</span>
+                                            {fin.clientEmail && (
+                                                <p className="text-[11px] text-zinc-500 font-mono">{fin.clientEmail}</p>
+                                            )}
+                                            <p className="text-xs text-zinc-400 mt-1">
+                                                {fin.tripTitle} <span className="text-zinc-500">·</span> <span className="text-zinc-300">{fin.destination}</span>
                                             </p>
+                                            {fin.startDate && (
+                                                <p className="text-[11px] text-zinc-500 flex items-center gap-1 mt-0.5">
+                                                    <Calendar className="w-3 h-3" />
+                                                    {new Date(fin.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                                                    {fin.endDate && ` – ${new Date(fin.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`}
+                                                </p>
+                                            )}
                                         </div>
                                         <Badge
                                             variant="secondary"
                                             className={cn(
-                                                "text-[10px] font-semibold border-0 shrink-0 capitalize",
+                                                "text-[10px] font-bold border shrink-0 uppercase tracking-wider",
                                                 isFullyPaid
-                                                    ? "bg-green-500/15 text-green-400 border border-green-500/30"
+                                                    ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
                                                     : totalPaid > 0
-                                                    ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                                                    : "bg-red-500/15 text-red-400 border border-red-500/30"
+                                                    ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
+                                                    : "bg-red-500/15 text-red-400 border-red-500/30"
                                             )}
                                         >
-                                            {isFullyPaid ? "Paid in Full" : `${fm(Math.max(0, balance), fin.currency)} due`}
+                                            {isFullyPaid ? "Paid ✓" : totalPaid > 0 ? "Partial" : "Unpaid"}
                                         </Badge>
                                     </div>
 
-                                    {/* Breakdown Bar */}
+                                    {/* Progress Bar */}
+                                    <div className="space-y-1.5">
+                                        <div className="flex justify-between text-[11px]">
+                                            <span className="text-zinc-400">Collected: <strong className="text-emerald-400">{fm(totalPaid, fin.currency)}</strong></span>
+                                            <span className="text-zinc-400">Total: <strong className="text-white">{fm(fin.clientPrice, fin.currency)}</strong></span>
+                                        </div>
+                                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                            <div
+                                                className={cn("h-full rounded-full transition-all duration-700", isFullyPaid ? "bg-emerald-500" : "bg-amber-500")}
+                                                style={{ width: `${paidPct}%` }}
+                                            />
+                                        </div>
+                                        {!isFullyPaid && balance > 0 && (
+                                            <p className="text-[11px] text-amber-400 font-semibold text-right">
+                                                {fm(Math.max(0, balance), fin.currency)} outstanding
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Financial Breakdown */}
                                     <div className="grid grid-cols-3 gap-2 text-center">
-                                        <div className="p-2.5 bg-black/30 border border-white/5 rounded-xl">
-                                            <p className="text-[10px] text-gray-500 uppercase font-semibold">Total Price</p>
-                                            <p className="text-xs font-bold text-white mt-0.5">
-                                                {fm(fin.clientPrice, fin.currency)}
-                                            </p>
-                                        </div>
-                                        <div className="p-2.5 bg-black/30 border border-white/5 rounded-xl">
-                                            <p className="text-[10px] text-gray-500 uppercase font-semibold">Received</p>
-                                            <p className="text-xs font-bold text-green-400 mt-0.5">
-                                                {fm(totalPaid, fin.currency)}
-                                            </p>
-                                        </div>
-                                        <div className="p-2.5 bg-black/30 border border-white/5 rounded-xl">
-                                            <p className="text-[10px] text-gray-500 uppercase font-semibold">Outstanding</p>
-                                            <p className={cn("text-xs font-bold mt-0.5", balance > 0 ? "text-amber-400" : "text-green-400")}>
-                                                {fm(Math.max(0, balance), fin.currency)}
-                                            </p>
-                                        </div>
+                                        {[
+                                            { label: "Package", value: fm(fin.clientPrice, fin.currency), color: "text-white" },
+                                            { label: "Received", value: fm(totalPaid, fin.currency), color: "text-emerald-400" },
+                                            { label: "Outstanding", value: fm(Math.max(0, balance), fin.currency), color: balance > 0 ? "text-amber-400" : "text-emerald-400" },
+                                        ].map(({ label, value, color }) => (
+                                            <div key={label} className="p-2 bg-black/30 border border-white/5 rounded-xl">
+                                                <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold">{label}</p>
+                                                <p className={cn("text-xs font-bold mt-0.5", color)}>{value}</p>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex items-center gap-2 pt-2">
+                                <div className="flex items-center gap-2 p-5 pt-0">
                                     <Button
                                         variant="secondary"
                                         size="sm"
-                                        className="h-8 text-xs bg-purple-600/20 hover:bg-purple-600 text-purple-200 hover:text-white border border-purple-500/30 flex-1 transition-all"
+                                        className="h-9 text-xs bg-white/10 hover:bg-white/20 text-white border border-white/15 flex-1 transition-all font-semibold rounded-xl cursor-pointer"
                                         onClick={() => handleOpenInvoicePreview(fin)}
                                     >
-                                        <FileText className="w-3.5 h-3.5 mr-1.5" />
-                                        <span>View & Print Invoice</span>
+                                        <Eye className="w-3.5 h-3.5 mr-1.5" />
+                                        <span>Preview Invoice</span>
                                     </Button>
 
-                                    {onOpenFinances && (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-8 text-xs border-white/10 bg-white/5 text-gray-400 hover:text-white hover:bg-white/10"
-                                            onClick={() => onOpenFinances(fin.itineraryId)}
-                                            title="Manage in Full Finance Sheet"
-                                        >
-                                            <ExternalLink className="w-3.5 h-3.5" />
-                                        </Button>
-                                    )}
+                                    <Button
+                                        variant="secondary"
+                                        size="sm"
+                                        className="h-9 text-xs bg-indigo-600/20 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/30 transition-all font-semibold rounded-xl cursor-pointer px-3"
+                                        onClick={() => handleDirectPrint(fin)}
+                                        title="Print / Save as PDF"
+                                    >
+                                        <Printer className="w-3.5 h-3.5" />
+                                    </Button>
                                 </div>
                             </div>
                         );
                     })}
 
                     {filteredFinancials.length === 0 && (
-                        <div className="col-span-full text-center py-16 bg-white/[0.01] border border-white/5 rounded-2xl">
-                            <p className="text-sm text-gray-400">No invoices matched your search filter.</p>
+                        <div className="col-span-full text-center py-16 bg-white/[0.01] border border-white/5 rounded-2xl space-y-2">
+                            <FileText className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
+                            <p className="text-sm text-gray-400 font-medium">No invoices matched your search.</p>
+                            <p className="text-xs text-gray-600">Try adjusting your search or add trips in The Lab.</p>
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Invoice Printable Preview Modal */}
+            {/* Professional Invoice Preview Modal */}
             <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
-                <DialogContent className="bg-[#0A0A0E] border border-white/15 text-white sm:max-w-[620px] max-h-[85vh] overflow-y-auto shadow-2xl p-6">
-                    <DialogHeader>
-                        <DialogTitle className="flex items-center justify-between">
-                            <span className="text-base font-bold flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-purple-400" />
-                                Tax Invoice Preview
-                            </span>
-                        </DialogTitle>
-                        <DialogDescription className="text-xs text-gray-400">
-                            Auto-generated from itinerary metadata and payment records
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    {selectedInvoiceFin && (
-                        <div className="space-y-5 py-3 text-xs">
-                            {/* Invoice Header */}
-                            <div className="flex justify-between border-b border-white/10 pb-4">
-                                <div>
-                                    <h4 className="text-sm font-bold text-white">TAX INVOICE</h4>
-                                    <p className="text-[11px] text-gray-400 font-mono">
-                                        INV-{selectedInvoiceFin.tripId || selectedInvoiceFin.itineraryId.slice(0, 8).toUpperCase()}
-                                    </p>
-                                    <p className="text-[11px] text-gray-400 mt-1">
-                                        Date: {new Date().toLocaleDateString()}
-                                    </p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-xs font-bold text-white">BILL TO:</p>
-                                    <p className="text-sm font-semibold text-purple-300">{selectedInvoiceFin.clientName}</p>
-                                    {selectedInvoiceFin.clientEmail && (
-                                        <p className="text-[11px] text-gray-400 font-mono">{selectedInvoiceFin.clientEmail}</p>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Trip Info */}
-                            <div className="bg-white/[0.02] border border-white/5 p-3 rounded-xl space-y-1">
-                                <p className="font-semibold text-white text-xs">{selectedInvoiceFin.tripTitle}</p>
-                                <p className="text-[11px] text-gray-400">
-                                    Destination: {selectedInvoiceFin.destination}
-                                    {selectedInvoiceFin.adultPax && (
-                                        <span className="ml-2">· Guests: {selectedInvoiceFin.adultPax} Adult(s), {selectedInvoiceFin.childPax || 0} Child(ren)</span>
-                                    )}
-                                </p>
-                            </div>
-
-                            {/* Itemized Table */}
-                            <div className="border border-white/10 rounded-xl overflow-hidden">
-                                <table className="w-full text-xs">
-                                    <thead>
-                                        <tr className="bg-white/5 border-b border-white/10 text-gray-400 text-[11px]">
-                                            <th className="text-left p-2.5 font-semibold">Description</th>
-                                            <th className="text-right p-2.5 font-semibold">Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-white/5">
-                                        <tr>
-                                            <td className="p-2.5 text-zinc-200">
-                                                Complete Travel Package & Itinerary Arrangements ({selectedInvoiceFin.tripTitle})
-                                            </td>
-                                            <td className="p-2.5 text-right font-bold text-white">
-                                                {fm(selectedInvoiceFin.clientPrice, selectedInvoiceFin.currency)}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-
-                            {/* Summary Math */}
-                            {(() => {
-                                const totalPaid = selectedInvoiceFin.payments.reduce((s, p) => s + p.amount, 0);
-                                const balance = selectedInvoiceFin.clientPrice - totalPaid;
-
-                                return (
-                                    <div className="space-y-1.5 border-t border-white/10 pt-3 text-xs max-w-[280px] ml-auto">
-                                        <div className="flex justify-between text-gray-400">
-                                            <span>Subtotal:</span>
-                                            <span>{fm(selectedInvoiceFin.clientPrice, selectedInvoiceFin.currency)}</span>
-                                        </div>
-                                        <div className="flex justify-between text-gray-400">
-                                            <span>Tax / GST ({selectedInvoiceFin.taxPercentage}%):</span>
-                                            <span>{fm(selectedInvoiceFin.clientPrice * (selectedInvoiceFin.taxPercentage / 100), selectedInvoiceFin.currency)}</span>
-                                        </div>
-                                        <div className="flex justify-between font-bold text-white border-t border-white/5 pt-1.5">
-                                            <span>Total Package Price:</span>
-                                            <span>{fm(selectedInvoiceFin.clientPrice, selectedInvoiceFin.currency)}</span>
-                                        </div>
-                                        <div className="flex justify-between text-emerald-400 font-semibold">
-                                            <span>Total Payments Received:</span>
-                                            <span>-{fm(totalPaid, selectedInvoiceFin.currency)}</span>
-                                        </div>
-                                        <div className="flex justify-between font-bold text-amber-400 border-t border-white/10 pt-1.5 text-sm">
-                                            <span>Balance Due:</span>
-                                            <span>{fm(Math.max(0, balance), selectedInvoiceFin.currency)}</span>
-                                        </div>
-                                    </div>
-                                );
-                            })()}
+                <DialogContent className="bg-[#0c0c0e]/98 backdrop-blur-2xl border border-white/10 text-white w-full sm:max-w-[860px] max-h-[90vh] overflow-y-auto shadow-2xl p-0">
+                    {/* Modal Header */}
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 sticky top-0 bg-[#0c0c0e]/95 backdrop-blur-xl z-10">
+                        <div>
+                            <DialogTitle className="text-base font-bold flex items-center gap-2">
+                                <FileText className="w-4 h-4 text-indigo-400" />
+                                Professional Invoice
+                            </DialogTitle>
+                            <DialogDescription className="text-xs text-zinc-400 mt-0.5">
+                                {selectedInvoiceFin?.clientName} · {selectedInvoiceFin?.tripTitle}
+                            </DialogDescription>
                         </div>
-                    )}
-
-                    <DialogFooter className="gap-2">
                         <Button
-                            variant="outline"
-                            className="border-white/10 text-gray-400 hover:bg-white/10 text-xs h-9"
-                            onClick={() => setShowInvoiceModal(false)}
-                        >
-                            Close
-                        </Button>
-                        <Button
-                            className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-9 font-semibold gap-1.5"
+                            className="aurora-gradient text-white text-xs h-9 font-bold rounded-xl border-none hover:brightness-110 cursor-pointer flex items-center gap-2 px-4"
                             onClick={handlePrintInvoice}
                         >
                             <Printer className="w-3.5 h-3.5" />
                             Print / Save as PDF
                         </Button>
-                    </DialogFooter>
+                    </div>
+
+                    {/* Invoice Preview */}
+                    <div className="p-6">
+                        {/* Paper shadow wrapper */}
+                        <div style={{
+                            boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3)",
+                            borderRadius: "4px",
+                            overflow: "hidden",
+                        }}>
+                            {selectedInvoiceFin && (
+                                <ProfessionalInvoice
+                                    ref={invoiceRef}
+                                    fin={selectedInvoiceFin}
+                                    fm={fm}
+                                    cs={cs}
+                                    companyName={companyName}
+                                    agentName={agentName}
+                                    agentEmail={agentEmail}
+                                />
+                            )}
+                        </div>
+                    </div>
                 </DialogContent>
             </Dialog>
         </>

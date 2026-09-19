@@ -167,7 +167,6 @@ export default function FinancialTracker({
                     financials={fin.financials}
                     cs={fin.cs}
                     fm={fin.fm}
-                    onOpenFinances={onOpenFinances}
                 />
             )}
 

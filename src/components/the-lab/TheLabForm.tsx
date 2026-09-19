@@ -623,10 +623,14 @@ const TheLabForm = React.memo(function TheLabForm({
                 <div key={step.id} className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => { if (index < currentStep) setCurrentStep(index); }}
-                    disabled={index > currentStep}
+                    onClick={() => {
+                      if (index <= currentStep || Boolean(form.getValues("destinations"))) {
+                        setCurrentStep(index);
+                      }
+                    }}
+                    disabled={index > currentStep && !Boolean(form.getValues("destinations"))}
                     className={cn(
-                      "group relative flex h-7 w-7 items-center justify-center rounded-full transition-all duration-700 ease-out disabled:cursor-not-allowed",
+                      "group relative flex h-7 w-7 items-center justify-center rounded-full transition-all duration-700 ease-out cursor-pointer disabled:cursor-not-allowed",
                       index < currentStep && "bg-foreground/10 text-foreground/60",
                       index === currentStep && "bg-foreground text-background shadow-lg",
                       index > currentStep && "bg-muted/50 text-muted-foreground/40",

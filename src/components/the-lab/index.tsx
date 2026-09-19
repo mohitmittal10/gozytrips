@@ -6,7 +6,9 @@ import { useForm } from "react-hook-form";
 import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Sparkles, X, Zap } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Sparkles, X, Zap, Eye, MapPin, Calendar, Users, DollarSign, Clock, CheckCircle2, MessageSquare, Compass } from "lucide-react";
 import UniqueLoading from "@/components/ui/morph-loading";
 import { ShiningText } from "@/components/ui/shining-text";
 import { cn } from "@/lib/utils";
@@ -74,7 +76,12 @@ export default function TheLab() {
     window.history.replaceState({}, "", url.toString());
   }, []);
 
-  const [enquiryBanner, setEnquiryBanner] = useState<{ clientName: string; responseId: string } | null>(null);
+  const [enquiryBanner, setEnquiryBanner] = useState<{
+    clientName: string;
+    responseId: string;
+    rawResponse?: ClientEnquiryResponse;
+  } | null>(null);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false);
   const isEditing = useLabStore((state) => state.isEditing);
@@ -310,20 +317,33 @@ export default function TheLab() {
 
     const prefillFromEnquiry = async () => {
       try {
-        // Fetch the response — the agent must be authenticated (existing session)
-        // We use the client_enquiry_responses table indirectly via the public API.
-        // Since only the agent reads this, we need their own API.
         const res = await fetch(`/api/enquiry-responses/${enquiryIdFromUrl}/prefill`);
         if (!res.ok) return;
         const { response }: { response: ClientEnquiryResponse } = await res.json();
 
-        // Map response fields → TheLabFormValues
+        // Safe date parsing with fallbacks if dates are missing or invalid
+        let startDate: Date;
+        if (response.start_date) {
+          const parsed = new Date(response.start_date);
+          startDate = !isNaN(parsed.getTime()) ? parsed : new Date(Date.now() + 86400000);
+        } else {
+          startDate = new Date(Date.now() + 86400000);
+        }
+
+        let endDate: Date;
+        if (response.end_date) {
+          const parsed = new Date(response.end_date);
+          endDate = !isNaN(parsed.getTime()) && parsed > startDate ? parsed : new Date(startDate.getTime() + 86400000 * 3);
+        } else {
+          endDate = new Date(startDate.getTime() + 86400000 * 3);
+        }
+
         const prefillValues: Partial<any> = {
-          startingLocation: response.starting_location || "",
+          startingLocation: response.starting_location || "New Delhi",
           destinations: response.destinations || "",
-          endingLocation: response.ending_location || "",
-          startDate: response.start_date ? new Date(response.start_date) : undefined,
-          endDate: response.end_date ? new Date(response.end_date) : undefined,
+          endingLocation: response.ending_location || response.starting_location || "New Delhi",
+          startDate,
+          endDate,
           tripType: response.trip_type || "relaxed",
           travelMethods: response.travel_methods || [],
           mustInclude: response.must_include || "",
@@ -336,19 +356,22 @@ export default function TheLab() {
 
         form.reset(prefillValues as any);
         setEnquiryBanner({
-          clientName: response.client_name || response.client_email,
+          clientName: response.client_name || response.client_email || "Client",
           responseId: enquiryIdFromUrl,
+          rawResponse: response,
         });
         if (response.client_id) {
           setSelectedClientId(response.client_id);
         }
+        // Jump to Step 4 (final step) so Generate button is immediately accessible
+        setCurrentStep(4);
       } catch (err) {
         console.error("[TheLab] Failed to pre-fill from enquiry:", err);
       }
     };
 
     prefillFromEnquiry();
-  }, [enquiryIdFromUrl, form, setSelectedClientId]);
+  }, [enquiryIdFromUrl, form, setSelectedClientId, setCurrentStep]);
 
   // Cleanup legacy localStorage keys one-time
   useEffect(() => {
@@ -621,12 +644,13 @@ export default function TheLab() {
           }
         }
       }
+      setEnquiryBanner(null);
       console.log("[TheLab index.tsx] Switching active tab to 'itinerary'");
       setActiveLabTab('itinerary');
     } else {
       console.warn("[TheLab index.tsx] Generation did not return a result.");
     }
-  }, [generate, tripMetadata, setCurrentTripId, saveNow, resetForNewTrip, setHotels, setFlights, setCabs, setBuses, setPricing, setInclusions, setExclusions, enquiryBanner, fetchClients, user, supabase, setSelectedClientId]);
+  }, [generate, tripMetadata, setCurrentTripId, saveNow, resetForNewTrip, setHotels, setFlights, setCabs, setBuses, setPricing, setInclusions, setExclusions, enquiryBanner, fetchClients, user, supabase, setSelectedClientId, setEnquiryBanner]);
 
   const handleRegenerateItinerary = useCallback(async (updatedMetadata: TripMetadata, feedbackPrompt?: string) => {
     console.log("[TheLab index.tsx] handleRegenerateItinerary called. updatedMetadata:", updatedMetadata, "feedbackPrompt:", feedbackPrompt);
@@ -799,26 +823,112 @@ export default function TheLab() {
     });
   }, [saveItinerary, form, itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, selectedTheme, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods]);
 
+  const handleDirectGenerate = useCallback(async () => {
+    const currentValues = form.getValues();
+
+    // Sanitize and guarantee essential fields so generation never fails
+    let startLoc = currentValues.startingLocation?.trim();
+    if (!startLoc || startLoc.length < 2) startLoc = "New Delhi";
+
+    let dests = currentValues.destinations?.trim();
+    if (!dests || dests.length < 2) dests = "Destination";
+
+    let sDate = currentValues.startDate;
+    let eDate = currentValues.endDate;
+
+    if (!sDate || !(sDate instanceof Date) || isNaN(sDate.getTime())) {
+      sDate = new Date(Date.now() + 86400000);
+    }
+    if (!eDate || !(eDate instanceof Date) || isNaN(eDate.getTime()) || eDate <= sDate) {
+      eDate = new Date(sDate.getTime() + 86400000 * 3);
+    }
+
+    // Clean hotels array from stale RHF fields
+    const rawHotels = currentValues.hotels || [];
+    const cleanHotels = rawHotels.filter(
+      (h: any) => h && typeof h.id === 'string' && h.id.length > 0 && typeof h.dayIndex === 'number'
+    );
+
+    form.setValue("startingLocation", startLoc, { shouldValidate: false });
+    form.setValue("destinations", dests, { shouldValidate: false });
+    form.setValue("startDate", sDate, { shouldValidate: false });
+    form.setValue("endDate", eDate, { shouldValidate: false });
+    form.setValue("hotels", cleanHotels, { shouldValidate: false });
+
+    setIsReviewModalOpen(false);
+
+    const valuesToSubmit: TheLabFormValues = {
+      ...form.getValues(),
+      startingLocation: startLoc,
+      destinations: dests,
+      startDate: sDate,
+      endDate: eDate,
+      hotels: cleanHotels,
+    };
+
+    onSubmit(valuesToSubmit);
+  }, [form, onSubmit]);
+
   return (
     <section id="the-lab" className="w-full mx-auto pt-0 pb-10 bg-black min-h-screen">
       {/* Enquiry pre-fill banner */}
-      {enquiryBanner && (
-        <div className="w-full bg-gradient-to-r from-purple-600/20 to-indigo-600/20 border-b border-purple-500/30 px-4 py-2.5">
-          <div className="max-w-[1500px] mx-auto flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-sm">
-              <Zap className="w-4 h-4 text-purple-400 shrink-0" />
-              <span className="text-zinc-200">
-                Form pre-filled from{" "}
-                <span className="text-purple-300 font-semibold">{enquiryBanner.clientName}</span>'s enquiry —{" "}
-                <span className="text-gray-400">review and click Generate!</span>
-              </span>
+      {enquiryBanner && !itinerary && (
+        <div className="w-full bg-gradient-to-r from-purple-950/80 via-indigo-950/80 to-zinc-950 border-b border-purple-500/30 px-4 py-3 shadow-lg">
+          <div className="max-w-[1500px] mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className="w-8 h-8 rounded-lg bg-purple-500/20 border border-purple-500/40 flex items-center justify-center shrink-0">
+                <Sparkles className="w-4 h-4 text-purple-300" />
+              </div>
+              <div className="space-y-0.5">
+                <p className="text-xs sm:text-sm font-semibold text-zinc-100">
+                  Pre-filled from <span className="text-purple-300 font-bold">{enquiryBanner.clientName}</span>'s enquiry
+                </p>
+                <div className="flex items-center gap-3 text-[11px] text-zinc-400">
+                  {enquiryBanner.rawResponse?.destinations && (
+                    <span className="flex items-center gap-1 text-zinc-300">
+                      <MapPin className="w-3 h-3 text-purple-400 shrink-0" />
+                      {enquiryBanner.rawResponse.destinations}
+                    </span>
+                  )}
+                  {enquiryBanner.rawResponse?.start_date && (
+                    <span className="flex items-center gap-1 text-zinc-400">
+                      <Calendar className="w-3 h-3 text-zinc-400 shrink-0" />
+                      {new Date(enquiryBanner.rawResponse.start_date).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => setEnquiryBanner(null)}
-              className="text-gray-500 hover:text-white transition-colors shrink-0"
-            >
-              <X className="w-4 h-4" />
-            </button>
+
+            <div className="flex items-center gap-2.5 w-full md:w-auto justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsReviewModalOpen(true)}
+                className="h-8 text-xs border-white/15 bg-white/5 text-zinc-200 hover:text-white hover:bg-white/10 rounded-lg cursor-pointer"
+              >
+                <Eye className="w-3.5 h-3.5 mr-1.5 text-purple-300" />
+                <span>Review Details</span>
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={handleDirectGenerate}
+                disabled={isGenerating}
+                className="h-8 text-xs aurora-gradient text-white font-bold rounded-lg cursor-pointer shadow-md hover:brightness-110"
+              >
+                <Zap className="w-3.5 h-3.5 mr-1.5" />
+                <span>{isGenerating ? "Generating..." : "Generate Itinerary"}</span>
+              </Button>
+
+              <button
+                onClick={() => setEnquiryBanner(null)}
+                className="text-zinc-500 hover:text-white transition-colors p-1.5 rounded-lg hover:bg-white/10 shrink-0 cursor-pointer ml-1"
+                title="Dismiss Banner"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1018,6 +1128,165 @@ export default function TheLab() {
         onOpenChange={setIsAddClientOpen}
         onSave={handleCreateClient}
       />
+
+      {/* Enquiry Review Modal */}
+      {enquiryBanner?.rawResponse && (
+        <Dialog open={isReviewModalOpen} onOpenChange={setIsReviewModalOpen}>
+          <DialogContent className="bg-[#0c0c0e]/98 backdrop-blur-2xl border border-white/10 text-white w-full sm:max-w-[580px] max-h-[90vh] overflow-y-auto shadow-2xl p-0">
+            <DialogHeader className="p-6 pb-4 border-b border-white/10 sticky top-0 bg-[#0c0c0e]/95 backdrop-blur-xl z-10">
+              <div className="flex items-center gap-2 text-purple-400 font-bold text-xs uppercase tracking-wider mb-1">
+                <Sparkles className="w-4 h-4" /> Client Enquiry Parameters
+              </div>
+              <DialogTitle className="text-lg font-bold text-white">
+                Review Enquiry — {enquiryBanner.clientName}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-zinc-400">
+                Verify pre-filled parameters before generating the itinerary.
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="p-6 space-y-4">
+              {/* Client Info */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-2">
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Client Information</p>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-zinc-500 block text-[10px]">Name</span>
+                    <span className="font-semibold text-white">{enquiryBanner.rawResponse.client_name || "N/A"}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block text-[10px]">Email</span>
+                    <span className="font-semibold text-white font-mono">{enquiryBanner.rawResponse.client_email || "N/A"}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Trip Route & Dates */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <MapPin className="w-3.5 h-3.5 text-purple-400" /> Route & Schedule
+                </p>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-zinc-500 block text-[10px]">Starting Location</span>
+                    <span className="font-semibold text-zinc-200">{enquiryBanner.rawResponse.starting_location || "New Delhi"}</span>
+                  </div>
+                  <div>
+                    <span className="text-zinc-500 block text-[10px]">Destinations</span>
+                    <span className="font-semibold text-purple-300">{enquiryBanner.rawResponse.destinations}</span>
+                  </div>
+                  {enquiryBanner.rawResponse.ending_location && (
+                    <div>
+                      <span className="text-zinc-500 block text-[10px]">Ending Location</span>
+                      <span className="font-semibold text-zinc-200">{enquiryBanner.rawResponse.ending_location}</span>
+                    </div>
+                  )}
+                  {(enquiryBanner.rawResponse.start_date || enquiryBanner.rawResponse.end_date) && (
+                    <div>
+                      <span className="text-zinc-500 block text-[10px]">Travel Dates</span>
+                      <span className="font-semibold text-zinc-200 flex items-center gap-1 mt-0.5">
+                        <Calendar className="w-3.5 h-3.5 text-zinc-400" />
+                        {[enquiryBanner.rawResponse.start_date, enquiryBanner.rawResponse.end_date].filter(Boolean).map(d => new Date(d!).toLocaleDateString()).join(" → ")}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Travellers & Style */}
+              <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-purple-400" /> Travellers & Style
+                </p>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-zinc-500 block text-[10px]">Pax Breakdown</span>
+                    <span className="font-semibold text-zinc-200">
+                      {[
+                        enquiryBanner.rawResponse.adult_pax ? `${enquiryBanner.rawResponse.adult_pax} Adult(s)` : "",
+                        enquiryBanner.rawResponse.child_pax ? `${enquiryBanner.rawResponse.child_pax} Child(ren)` : "",
+                        enquiryBanner.rawResponse.infant_pax ? `${enquiryBanner.rawResponse.infant_pax} Infant(s)` : "",
+                      ].filter(Boolean).join(", ") || "Standard"}
+                    </span>
+                  </div>
+                  {enquiryBanner.rawResponse.trip_type && (
+                    <div>
+                      <span className="text-zinc-500 block text-[10px]">Trip Style</span>
+                      <span className="font-semibold text-zinc-200 capitalize">{enquiryBanner.rawResponse.trip_type}</span>
+                    </div>
+                  )}
+                </div>
+
+                {enquiryBanner.rawResponse.travel_methods && enquiryBanner.rawResponse.travel_methods.length > 0 && (
+                  <div>
+                    <span className="text-zinc-500 block text-[10px] mb-1">Travel Methods</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {enquiryBanner.rawResponse.travel_methods.map((m) => (
+                        <span key={m} className="px-2 py-0.5 bg-white/10 border border-white/15 rounded text-[11px] font-medium text-zinc-200">
+                          {m}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Preferences & Requests */}
+              {(enquiryBanner.rawResponse.must_include || enquiryBanner.rawResponse.avoid || enquiryBanner.rawResponse.special_requests || enquiryBanner.rawResponse.budget) && (
+                <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
+                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Preferences & Requests</p>
+                  {enquiryBanner.rawResponse.budget && (
+                    <div>
+                      <span className="text-zinc-500 block text-[10px]">Budget</span>
+                      <span className="font-semibold text-emerald-400">
+                        {enquiryBanner.rawResponse.currency || "INR"} {enquiryBanner.rawResponse.budget.toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                  {enquiryBanner.rawResponse.must_include && (
+                    <div>
+                      <span className="text-zinc-500 block text-[10px]">Must Include</span>
+                      <span className="text-xs text-zinc-200">{enquiryBanner.rawResponse.must_include}</span>
+                    </div>
+                  )}
+                  {enquiryBanner.rawResponse.avoid && (
+                    <div>
+                      <span className="text-zinc-500 block text-[10px]">Things to Avoid</span>
+                      <span className="text-xs text-zinc-200">{enquiryBanner.rawResponse.avoid}</span>
+                    </div>
+                  )}
+                  {enquiryBanner.rawResponse.special_requests && (
+                    <div>
+                      <span className="text-zinc-500 block text-[10px]">Special Requests</span>
+                      <span className="text-xs text-zinc-200">{enquiryBanner.rawResponse.special_requests}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <DialogFooter className="p-4 border-t border-white/10 bg-[#0c0c0e]/95 flex items-center justify-between gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsReviewModalOpen(false)}
+                className="h-9 text-xs border-white/15 bg-white/5 text-zinc-300 hover:text-white rounded-xl cursor-pointer"
+              >
+                Close & Edit in Form
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleDirectGenerate}
+                disabled={isGenerating}
+                className="h-9 text-xs aurora-gradient text-white font-bold rounded-xl cursor-pointer px-5"
+              >
+                <Zap className="w-3.5 h-3.5 mr-1.5" />
+                <span>{isGenerating ? "Generating..." : "Generate Itinerary"}</span>
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
 
     </section>
   );

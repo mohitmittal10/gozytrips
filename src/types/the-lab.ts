@@ -5,8 +5,8 @@ import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary
 import { type HotelInfo, type FlightInfo, type CabInfo, type BusInfo } from "@/components/hotel-flight-editor";
 import { type PricingConfig } from "@/types/pricing";
 
-// Regex: location names — letters, spaces, commas, hyphens, apostrophes, dots
-const LOCATION_REGEX = /^[a-zA-Z\s,\.\-'\u00C0-\u024F]+$/;
+// Regex: location names — letters, numbers, spaces, commas, hyphens, apostrophes, dots, parentheses, ampersands, slashes
+const LOCATION_REGEX = /^[a-zA-Z0-9\s,\.\-'\u00C0-\u024F\(\)\&\/\+]+$/;
 
 export const formSchema = z.object({
   startingLocation: z

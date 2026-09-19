@@ -1180,9 +1180,9 @@ export default function HotelFlightEditor({
         <div className="p-6 lg:p-8">
           <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar min-h-[200px]">
             {selectedEditorTab === "hotels"
-              ? hotels.map((hotel) => (
+              ? hotels.map((hotel, idx) => (
                   <HotelCard
-                    key={hotel.id}
+                    key={hotel.id ? `${hotel.id}-${idx}` : `hotel-${idx}`}
                     hotel={hotel}
                     totalDays={totalDays}
                     onChange={(updated) => updateHotel(hotel.id, updated)}
@@ -1195,9 +1195,9 @@ export default function HotelFlightEditor({
               : null}
 
             {selectedEditorTab === "flights"
-              ? flights.map((flight) => (
+              ? flights.map((flight, idx) => (
                   <FlightCard
-                    key={flight.id}
+                    key={flight.id ? `${flight.id}-${idx}` : `flight-${idx}`}
                     flight={flight}
                     totalDays={totalDays}
                     onChange={(updated) => updateFlight(flight.id, updated)}
@@ -1209,9 +1209,9 @@ export default function HotelFlightEditor({
               : null}
 
             {selectedEditorTab === "cabs"
-              ? cabs.map((cab) => (
+              ? cabs.map((cab, idx) => (
                   <CabCard
-                    key={cab.id}
+                    key={cab.id ? `${cab.id}-${idx}` : `cab-${idx}`}
                     cab={cab}
                     totalDays={totalDays}
                     onChange={(updated) => updateCab(cab.id, updated)}
@@ -1223,9 +1223,9 @@ export default function HotelFlightEditor({
               : null}
 
             {selectedEditorTab === "buses"
-              ? buses.map((bus) => (
+              ? buses.map((bus, idx) => (
                   <BusCard
-                    key={bus.id}
+                    key={bus.id ? `${bus.id}-${idx}` : `bus-${idx}`}
                     bus={bus}
                     totalDays={totalDays}
                     onChange={(updated) => updateBus(bus.id, updated)}
