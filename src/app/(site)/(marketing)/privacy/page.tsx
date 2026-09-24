@@ -14,7 +14,7 @@ export default function PrivacyPage() {
 
       <div className="max-w-4xl mx-auto px-6 relative z-10">
         <Link href="/">
-          <Button variant="ghost" className="mb-8 gap-2 text-zinc-400 hover:text-white hover:bg-white/5 transition-all">
+          <Button variant="ghost" className="mb-8 gap-2 text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/5 transition-all">
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Button>
@@ -80,7 +80,7 @@ export default function PrivacyPage() {
               <Lock className="w-6 h-6 text-indigo-400 shrink-0 mt-0.5" />
               <div>
                 <h4 className="text-white font-bold mb-1">Our Security Guarantee</h4>
-                <p className="text-sm text-zinc-400">
+                <p className="text-sm text-slate-600 dark:text-zinc-400">
                   Your data and client profiles are isolated in a private digital vault protected by Row Level Security and standard TLS 1.3 encryption protocols.
                 </p>
               </div>

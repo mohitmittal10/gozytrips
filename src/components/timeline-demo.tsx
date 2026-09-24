@@ -106,19 +106,19 @@ export function TimelineDemo() {
                     </p>
                     <div className="mb-8 space-y-2">
                         <div className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-xs md:text-sm">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Card grid component
+                            <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-500" /> Card grid component
                         </div>
                         <div className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-xs md:text-sm">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Startup template Aceternity
+                            <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-500" /> Startup template Aceternity
                         </div>
                         <div className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-xs md:text-sm">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Random file upload lol
+                            <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-500" /> Random file upload lol
                         </div>
                         <div className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-xs md:text-sm">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Himesh Reshammiya Music CD
+                            <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-500" /> Himesh Reshammiya Music CD
                         </div>
                         <div className="flex gap-2 items-center text-neutral-700 dark:text-neutral-300 text-xs md:text-sm">
-                            <CheckCircle2 className="h-4 w-4 text-emerald-500" /> Salman Bhai Fan Club registrations open
+                            <CheckCircle2 className="h-4 w-4 text-emerald-700 dark:text-emerald-500" /> Salman Bhai Fan Club registrations open
                         </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">

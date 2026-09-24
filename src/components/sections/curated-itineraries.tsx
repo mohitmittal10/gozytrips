@@ -31,15 +31,14 @@ const ITINERARY_ITEMS: FocusRailItem[] = [
 
 export default function CuratedItineraries() {
     return (
-        <section id="curated" className="w-full bg-black">
+        <section id="curated" className="w-full bg-slate-100 dark:bg-black text-slate-900 dark:text-white transition-colors duration-300">
             <div className="mx-auto max-w-7xl px-4 md:px-8 pt-24 pb-12 text-center">
-                <p className="text-xs font-medium uppercase tracking-[0.3em] text-[#71717A] mb-1">
+                <p className="text-xs font-medium uppercase tracking-[0.3em] text-slate-500 dark:text-[#71717A] mb-1">
                     Curated by Wander Labs
                 </p>
-                <h2 className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                    <span className="text-[#71717A]">PDF</span> Itinerary Formats
+                <h2 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white tracking-tight">
+                    <span className="text-slate-500 dark:text-[#71717A]">PDF</span> Itinerary Formats
                 </h2>
-                
             </div>
             <FocusRail
                 items={ITINERARY_ITEMS}

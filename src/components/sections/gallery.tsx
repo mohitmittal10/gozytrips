@@ -20,7 +20,7 @@ const Gallery = () => {
                     <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">
                         Visual <span className="bg-gradient-to-r from-purple-400 via-violet-400 to-indigo-400 bg-clip-text text-transparent">Escapes</span>
                     </h2>
-                    <p className="text-zinc-400 max-w-2xl mx-auto text-sm md:text-base font-light">
+                    <p className="text-slate-600 dark:text-zinc-400 max-w-2xl mx-auto text-sm md:text-base font-light">
                         A glimpse into the breathtaking destinations and unforgettable moments we curate.
                     </p>
                 </div>

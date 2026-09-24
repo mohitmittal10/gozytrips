@@ -109,7 +109,7 @@ export default function Step4Animation() {
                             transition={{ duration: 0.5 }}
                         >
                             <AnimatedLogo size="xs" />
-                            <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">Wander Labs</span>
+                            <span className="text-[10px] font-bold tracking-widest text-slate-600 dark:text-zinc-400 uppercase">Wander Labs</span>
                         </motion.div>
                     </div>
                     <div className="flex items-center justify-center gap-2">
@@ -171,7 +171,7 @@ export default function Step4Animation() {
                         <div className="grid grid-cols-2 gap-2">
                             <div className="bg-white/5 border border-white/5 rounded-lg p-2.5 flex flex-col justify-center relative overflow-hidden group">
                                 <div className="absolute top-0 right-0 p-1.5 opacity-20 group-hover:opacity-40 transition-opacity">
-                                    <DollarSign className="w-6 h-6 text-emerald-400" />
+                                    <DollarSign className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
                                 </div>
                                 <span className="text-[9px] uppercase tracking-wider text-zinc-500 font-bold mb-1 z-10">Total Revenue</span>
                                 <span className="text-sm font-black text-white z-10">
@@ -255,16 +255,16 @@ export default function Step4Animation() {
                                                         </div>
                                                         <div>
                                                             <div className="text-[11px] font-semibold text-white leading-tight">Elena R.</div>
-                                                            <div className="text-[9px] text-zinc-400 flex items-center gap-1">
+                                                            <div className="text-[9px] text-slate-600 dark:text-zinc-400 flex items-center gap-1">
                                                                 <MapPin className="w-2.5 h-2.5" /> Paris, FR
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div className="text-right">
-                                                        <div className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 text-[8px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider mb-1">
+                                                        <div className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[8px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider mb-1">
                                                             Converted
                                                         </div>
-                                                        <div className="text-[10px] font-bold text-emerald-400">+$4,500</div>
+                                                        <div className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">+$4,500</div>
                                                     </div>
                                                 </div>
                                             </motion.div>
@@ -278,13 +278,13 @@ export default function Step4Animation() {
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-400">
+                                                <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-slate-600 dark:text-zinc-400">
                                                     {phase > 0 ? "JM" : ""}
                                                 </div>
                                                 {phase > 0 ? (
                                                     <div>
                                                         <div className="text-[11px] font-semibold text-white leading-tight">James M.</div>
-                                                        <div className="text-[9px] text-zinc-400 flex items-center gap-1">
+                                                        <div className="text-[9px] text-slate-600 dark:text-zinc-400 flex items-center gap-1">
                                                             <MapPin className="w-2.5 h-2.5" /> Tokyo, JP
                                                         </div>
                                                     </div>
@@ -314,13 +314,13 @@ export default function Step4Animation() {
                                     >
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-zinc-400">
+                                                <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[10px] font-bold text-slate-600 dark:text-zinc-400">
                                                     {phase > 0 ? "SW" : ""}
                                                 </div>
                                                 {phase > 0 ? (
                                                     <div>
                                                         <div className="text-[11px] font-semibold text-white leading-tight">Sarah W.</div>
-                                                        <div className="text-[9px] text-zinc-400 flex items-center gap-1">
+                                                        <div className="text-[9px] text-slate-600 dark:text-zinc-400 flex items-center gap-1">
                                                             <MapPin className="w-2.5 h-2.5" /> Bali, ID
                                                         </div>
                                                     </div>
@@ -333,7 +333,7 @@ export default function Step4Animation() {
                                             </div>
                                             <div className="text-right">
                                                 {phase > 0 ? (
-                                                    <div className="bg-zinc-500/20 text-zinc-400 border border-zinc-500/20 text-[8px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">
+                                                    <div className="bg-zinc-500/20 text-slate-600 dark:text-zinc-400 border border-zinc-500/20 text-[8px] px-1.5 py-0.5 rounded font-semibold uppercase tracking-wider">
                                                         Completed
                                                     </div>
                                                 ) : (

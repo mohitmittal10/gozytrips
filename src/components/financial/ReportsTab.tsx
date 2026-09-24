@@ -98,23 +98,23 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
             {/* KPI Summary Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-4 shadow-lg">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Total Revenue</p>
+                    <p className="text-[10px] text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Total Revenue</p>
                     <p className="text-xl font-black mt-1 text-white">{fm(stats.totalRevenue)}</p>
                     <p className="text-[11px] text-gray-500 mt-0.5">{financials.length} total active itineraries</p>
                 </div>
 
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-4 shadow-lg">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Net Profit</p>
-                    <p className={cn("text-xl font-black mt-1", stats.netProfit >= 0 ? "text-emerald-400" : "text-red-400")}>
+                    <p className="text-[10px] text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Net Profit</p>
+                    <p className={cn("text-xl font-black mt-1", stats.netProfit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-400")}>
                         {fm(stats.netProfit)}
                     </p>
-                    <p className="text-[11px] text-emerald-400/80 mt-0.5 font-medium">
+                    <p className="text-[11px] text-emerald-600 dark:text-emerald-400/80 mt-0.5 font-medium">
                         {stats.profitMargin.toFixed(1)}% average net margin
                     </p>
                 </div>
 
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-4 shadow-lg">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Collected Cash</p>
+                    <p className="text-[10px] text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Collected Cash</p>
                     <p className="text-xl font-black mt-1 text-blue-400">{fm(stats.totalPaid)}</p>
                     <p className="text-[11px] text-gray-500 mt-0.5">
                         {stats.totalRevenue > 0 ? ((stats.totalPaid / stats.totalRevenue) * 100).toFixed(0) : 0}% realization
@@ -122,7 +122,7 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                 </div>
 
                 <div className="bg-white/5 border border-white/10 rounded-2xl p-4 shadow-lg">
-                    <p className="text-[10px] text-gray-400 uppercase tracking-wider font-semibold">Outstanding Receivable</p>
+                    <p className="text-[10px] text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Outstanding Receivable</p>
                     <p className="text-xl font-black mt-1 text-amber-400">{fm(stats.totalPending)}</p>
                     <p className="text-[11px] text-amber-400/80 mt-0.5">Pending client payments</p>
                 </div>
@@ -173,21 +173,21 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                                         title={`Payments: ${fm(m.payments)}`}
                                     />
                                 </div>
-                                <span className="text-[11px] text-gray-400 font-semibold">{m.month}</span>
+                                <span className="text-[11px] text-slate-600 dark:text-gray-400 font-semibold">{m.month}</span>
                             </div>
                         );
                     })}
                 </div>
 
                 <div className="flex items-center gap-6 mt-3 justify-center border-t border-white/5 pt-3">
-                    <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                    <span className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-gray-400">
                         <span className="w-2.5 h-2.5 rounded-sm bg-blue-500 inline-block" /> Revenue
                     </span>
-                    <span className="flex items-center gap-1.5 text-xs text-gray-400">
+                    <span className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-gray-400">
                         <span className="w-2.5 h-2.5 rounded-sm bg-red-500 inline-block" /> Vendor Expenses
                     </span>
-                    <span className="flex items-center gap-1.5 text-xs text-gray-400">
-                        <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" /> Collected Cash
+                    <span className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-gray-400">
+                        <span className="w-2.5 h-2.5 rounded-sm bg-emerald-600 dark:bg-emerald-500 inline-block" /> Collected Cash
                     </span>
                 </div>
             </div>
@@ -197,7 +197,7 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <h4 className="text-sm font-semibold text-white">Trip-by-Trip Profitability</h4>
                     <div className="relative w-full sm:w-64">
-                        <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                        <Search className="w-3.5 h-3.5 text-slate-600 dark:text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                         <Input
                             placeholder="Filter trips..."
                             value={searchQuery}
@@ -210,7 +210,7 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                 <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                         <thead>
-                            <tr className="text-gray-400 border-b border-white/10 bg-white/[0.02]">
+                            <tr className="text-slate-600 dark:text-gray-400 border-b border-white/10 bg-white/[0.02]">
                                 <th className="text-left p-3 font-semibold">Client / Trip</th>
                                 <th className="text-left p-3 font-semibold">Status</th>
                                 <th className="text-right p-3 font-semibold">Gross Revenue</th>
@@ -250,7 +250,7 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                                         <td className="p-3 text-right font-semibold text-red-400">
                                             -{fm(totalExp, fin.currency)}
                                         </td>
-                                        <td className={cn("p-3 text-right font-bold", profit >= 0 ? "text-emerald-400" : "text-red-400")}>
+                                        <td className={cn("p-3 text-right font-bold", profit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-400")}>
                                             {fm(profit, fin.currency)}
                                         </td>
                                         <td className="p-3 text-right">

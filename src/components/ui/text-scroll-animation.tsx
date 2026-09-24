@@ -41,7 +41,7 @@ const CharacterV1 = ({
         "inline-block font-black",
         isHighlighted
           ? "drop-shadow-[0_0_30px_rgba(249,115,22,0.55)]"
-          : "text-white",
+          : "text-slate-900 dark:text-white",
         isSpace && "w-3 sm:w-4"
       )}
       style={{ x, rotateX, ...colorStyle }}

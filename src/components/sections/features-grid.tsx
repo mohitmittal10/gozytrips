@@ -102,7 +102,7 @@ export default function FeaturesGrid() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-zinc-400 max-w-2xl mx-auto text-sm md:text-base font-light"
+            className="text-slate-600 dark:text-zinc-400 max-w-2xl mx-auto text-sm md:text-base font-light"
           >
             Sophisticated tools designed for the modern travel architect. 
             From synthesis to export, every detail is engineered for precision.
@@ -137,7 +137,7 @@ export default function FeaturesGrid() {
                   {feature.title}
                 </h3>
                 
-                <p className="text-zinc-400 text-sm md:text-base leading-relaxed font-light group-hover:text-zinc-300 transition-colors duration-300 flex-grow">
+                <p className="text-slate-600 dark:text-zinc-400 text-sm md:text-base leading-relaxed font-light group-hover:text-zinc-300 transition-colors duration-300 flex-grow">
                   {feature.description}
                 </p>
 

@@ -86,7 +86,7 @@ export default function ClientsPage() {
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
                     <div>
                         <h1 className="text-4xl font-black font-headline text-white mb-2 tracking-tight">Client Management</h1>
-                        <p className="text-slate-400 font-medium">Manage your leads, active clients, and their custom itineraries.</p>
+                        <p className="text-slate-600 dark:text-slate-400 font-medium">Manage your leads, active clients, and their custom itineraries.</p>
                     </div>
 
                     <Button onClick={handleOpenCreate} className="bg-primary hover:bg-primary/90 text-white font-bold gap-2 px-6 py-6 rounded-xl shadow-lg shadow-primary/20 transform hover:scale-105 transition-all">
@@ -114,7 +114,7 @@ export default function ClientsPage() {
                                 <User className="w-12 h-12 text-slate-600" />
                             </div>
                             <h3 className="text-2xl font-bold text-white mb-3">No clients found</h3>
-                            <p className="text-slate-400 max-w-sm mx-auto mb-10">
+                            <p className="text-slate-600 dark:text-slate-400 max-w-sm mx-auto mb-10">
                                 {searchTerm ? "No clients match your search criteria. Try a different keyword." : "You haven't added any clients yet. Start building your premium client database."}
                             </p>
                             {!searchTerm && (
@@ -130,10 +130,10 @@ export default function ClientsPage() {
                             <table className="w-full text-left border-collapse min-w-[600px]">
                                 <thead>
                                     <tr className="border-b border-white/10 bg-white/[0.01]">
-                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Client Info</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Tags</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">Last Updated</th>
-                                        <th className="p-4 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Client Info</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Tags</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Last Updated</th>
+                                        <th className="p-4 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest text-right">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-white/5">
@@ -178,7 +178,7 @@ export default function ClientsPage() {
                                                     <Button 
                                                         variant="ghost" 
                                                         size="icon" 
-                                                        className="h-8 w-8 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg"
+                                                        className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-white hover:bg-white/10 rounded-lg"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleOpenEdit(client);
@@ -189,7 +189,7 @@ export default function ClientsPage() {
                                                     <Button 
                                                         variant="ghost" 
                                                         size="icon" 
-                                                        className="h-8 w-8 text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg"
+                                                        className="h-8 w-8 text-slate-600 dark:text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg"
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleDelete(client.id, client.name);

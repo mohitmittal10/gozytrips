@@ -129,21 +129,21 @@ export function ScrambleButton({
 
 export function HeroWithMarquee() {
   return (
-    <div className="w-full bg-[#020205] text-white py-16 lg:py-24 overflow-hidden relative">
+    <div className="w-full bg-[#EFECE5] dark:bg-[#020205] text-slate-900 dark:text-white py-16 lg:py-24 overflow-hidden relative transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left Content */}
           <div className="space-y-6">
-            <p className="text-xs font-black uppercase tracking-[0.3em] text-[#71717A]">
+            <p className="text-xs font-black uppercase tracking-[0.3em] text-slate-500 dark:text-[#71717A]">
               Upgrade Your Travel Agency
             </p>
-            <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+            <h2 className="text-3xl md:text-5xl font-black tracking-tight leading-tight text-slate-900 dark:text-white">
               Time to upgrade your agency.{" "}
-              <span className="text-[#71717A]">
+              <span className="text-slate-500 dark:text-[#71717A]">
                 Create quotes 10x faster.
               </span>
             </h2>
-            <p className="text-zinc-400 text-base md:text-lg max-w-xl">
+            <p className="text-slate-600 dark:text-zinc-400 text-base md:text-lg max-w-xl">
               Your competitors are already replying faster with AI-powered, beautiful proposal formats that close clients instantly.
             </p>
 
@@ -153,13 +153,13 @@ export function HeroWithMarquee() {
               </Link>
             </div>
 
-            <div className="flex flex-wrap items-center gap-6 pt-2 text-xs text-zinc-400">
+            <div className="flex flex-wrap items-center gap-6 pt-2 text-xs text-slate-600 dark:text-zinc-400">
               <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-500 dark:text-emerald-400 shrink-0" />
                 No credit card required
               </span>
               <span className="flex items-center gap-1.5">
-                <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                <Check className="w-4 h-4 text-emerald-700 dark:text-emerald-500 dark:text-emerald-400 shrink-0" />
                 Your client data is 100% private
               </span>
             </div>

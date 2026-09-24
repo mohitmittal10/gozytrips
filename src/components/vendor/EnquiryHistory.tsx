@@ -34,7 +34,7 @@ export function EnquiryHistory({ enquiries, isLoading, onLoad, onDelete }: Enqui
             <History className="w-5 h-5 text-primary" />
             Recent Enquiries
           </SheetTitle>
-          <SheetDescription className="text-zinc-400 text-xs">
+          <SheetDescription className="text-slate-600 dark:text-zinc-400 text-xs">
             Audit and resume your past vendor outreach.
           </SheetDescription>
         </SheetHeader>
@@ -45,7 +45,7 @@ export function EnquiryHistory({ enquiries, isLoading, onLoad, onDelete }: Enqui
             </div>
           ) : enquiries.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-zinc-400 text-sm font-medium">No past enquiries found.</p>
+              <p className="text-slate-600 dark:text-zinc-400 text-sm font-medium">No past enquiries found.</p>
             </div>
           ) : (
             enquiries.map((enq) => (
@@ -65,21 +65,21 @@ export function EnquiryHistory({ enquiries, isLoading, onLoad, onDelete }: Enqui
                       variant="outline"
                       className={`capitalize text-[10px] font-semibold ${
                         enq.status === "sent"
-                          ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                          ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                           : "bg-amber-500/15 text-amber-300 border-amber-500/30"
                       }`}
                     >
                       {enq.status}
                     </Badge>
                   </div>
-                  <span className="text-[10px] text-zinc-400 font-medium">
+                  <span className="text-[10px] text-slate-600 dark:text-zinc-400 font-medium">
                     {new Date(enq.updated_at).toLocaleDateString()}
                   </span>
                 </div>
                 <h4 className="text-sm font-bold text-zinc-100 truncate pr-8">
                   {enq.payload.destination}
                 </h4>
-                <p className="text-xs text-zinc-400 truncate mb-3">
+                <p className="text-xs text-slate-600 dark:text-zinc-400 truncate mb-3">
                   {enq.subject || "No subject"}
                 </p>
                 <div className="flex items-center gap-2">
@@ -93,7 +93,7 @@ export function EnquiryHistory({ enquiries, isLoading, onLoad, onDelete }: Enqui
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 w-8 p-0 border-white/10 text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                    className="h-8 w-8 p-0 border-white/10 text-slate-600 dark:text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
                     onClick={() => onDelete(enq.id)}
                   >
                     <Trash2 className="w-3.5 h-3.5" />

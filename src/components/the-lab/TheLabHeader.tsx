@@ -73,10 +73,10 @@ const TheLabHeader = React.memo(function TheLabHeader({
                   setSelectedClientId(val);
                 }
               }}>
-                <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-zinc-700 h-9 min-w-[140px] sm:min-w-[180px]">
+                <SelectTrigger className="border-none bg-slate-300/60 dark:bg-white/5 text-slate-900 dark:text-zinc-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-zinc-700 h-9 min-w-[140px] sm:min-w-[180px]">
                   <SelectValue placeholder="No Client Assigned" />
                 </SelectTrigger>
-                <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+                <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/5 text-slate-900 dark:text-zinc-300">
                   <SelectItem value="none">No Client Assigned</SelectItem>
                   {clients.map((client) => (
                     <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
@@ -93,7 +93,7 @@ const TheLabHeader = React.memo(function TheLabHeader({
                   variant="ghost"
                   size="icon"
                   onClick={onOpenAddClient}
-                  className="h-9 w-9 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-lg transition-colors flex-shrink-0"
+                  className="h-9 w-9 bg-white/5 hover:bg-white/10 text-slate-600 dark:text-zinc-400 hover:text-white rounded-lg transition-colors flex-shrink-0"
                   title="Add New Client"
                 >
                   <Plus className="w-4 h-4" />
@@ -105,10 +105,10 @@ const TheLabHeader = React.memo(function TheLabHeader({
           <div className={cn("hidden sm:flex items-center gap-3 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
             <label className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">Status</label>
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-              <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-zinc-700 h-9">
+              <SelectTrigger className="border-none bg-slate-300/60 dark:bg-white/5 text-slate-900 dark:text-zinc-300 rounded-lg text-xs sm:text-sm font-medium focus:ring-zinc-700 h-9">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+              <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/5 text-slate-900 dark:text-zinc-300">
                 {itineraryStatuses.length > 0 ? (
                   itineraryStatuses.map(opt => (
                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
@@ -125,7 +125,7 @@ const TheLabHeader = React.memo(function TheLabHeader({
             </Select>
           </div>
           
-          <div className={cn("flex items-center gap-4 bg-black/20 rounded-xl p-1 border border-white/5 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
+          <div className={cn("flex items-center gap-4 bg-white/80 dark:bg-black/20 rounded-xl p-1 border border-slate-300/60 dark:border-white/5 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
             <div className="flex items-center space-x-2 px-2 py-1">
               <Switch
                 id="show-timestamps-header"
@@ -141,10 +141,10 @@ const TheLabHeader = React.memo(function TheLabHeader({
 
           {/* Edit Mode Toggle — Never blurred */}
           <div className={cn(
-            "flex items-center gap-3 bg-black/20 rounded-xl p-1 border h-10 px-3 transition-all duration-300 relative z-10",
+            "flex items-center gap-3 rounded-xl p-1 border h-10 px-3 transition-all duration-300 relative z-10 bg-white/80 dark:bg-black/20",
             isEditing 
               ? "border-primary/50 bg-primary/10 shadow-[0_0_15px_rgba(255,92,51,0.15)] ring-1 ring-primary/30" 
-              : "border-white/5 hover:border-white/10"
+              : "border-slate-300/60 dark:border-white/5 hover:border-slate-400 dark:hover:border-white/10"
           )}>
             <label htmlFor="edit-mode-toggle" className={cn(
               "text-[10px] font-bold uppercase select-none cursor-pointer transition-colors",
@@ -201,7 +201,7 @@ const TheLabHeader = React.memo(function TheLabHeader({
             variant="outline"
             size="sm"
             onClick={handleDownloadPdf}
-            className="flex-1 sm:flex-none px-4 sm:px-5 py-2.5 bg-white/5 border border-white/10 text-zinc-300 rounded-xl text-xs sm:text-sm font-semibold hover:bg-white/10 transition-all flex items-center justify-center gap-2 h-11 sm:h-10"
+            className="flex-1 sm:flex-none px-4 sm:px-5 py-2.5 bg-slate-300/60 dark:bg-white/5 border border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-zinc-300 rounded-xl text-xs sm:text-sm font-semibold hover:bg-slate-300 dark:hover:bg-white/10 transition-all flex items-center justify-center gap-2 h-11 sm:h-10"
           >
             <Eye className="w-4 h-4" />
             <span className="xs:inline">Preview</span>
@@ -212,9 +212,9 @@ const TheLabHeader = React.memo(function TheLabHeader({
               size="sm"
               onClick={() => router.push(`/itinerary/${currentTripId}/editor`)}
               title="Edit itinerary"
-              className="flex-1 sm:flex-none px-4 sm:px-5 py-2.5 bg-white/5 border border-white/10 text-zinc-300 rounded-xl text-xs sm:text-sm font-semibold hover:bg-white/10 transition-all flex items-center justify-center gap-2 h-11 sm:h-10"
+              className="flex-1 sm:flex-none px-4 sm:px-5 py-2.5 bg-slate-300/60 dark:bg-white/5 border border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-zinc-300 rounded-xl text-xs sm:text-sm font-semibold hover:bg-slate-300 dark:hover:bg-white/10 transition-all flex items-center justify-center gap-2 h-11 sm:h-10"
             >
-              <Edit className="w-4 h-4 text-zinc-400" />
+              <Edit className="w-4 h-4 text-slate-600 dark:text-zinc-400" />
               <span className="xs:inline">Edit</span>
             </Button>
           )}

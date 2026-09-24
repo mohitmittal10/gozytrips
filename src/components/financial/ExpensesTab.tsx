@@ -121,7 +121,7 @@ export function ExpensesTab({
                 {/* Header & Search Bar */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/[0.06] p-3 rounded-xl backdrop-blur-sm">
                     <div className="relative flex-1">
-                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <Search className="w-4 h-4 text-slate-600 dark:text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <Input
                             placeholder="Search by client, trip, or vendor..."
                             value={searchQuery}
@@ -129,7 +129,7 @@ export function ExpensesTab({
                             className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-9 text-xs"
                         />
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-gray-400 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 shrink-0">
+                    <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-gray-400 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 shrink-0">
                         <span>Total Tracked Expenses:</span>
                         <strong className="text-red-400 font-bold">{fm(totalExpenses)}</strong>
                     </div>
@@ -154,7 +154,7 @@ export function ExpensesTab({
                                             <span className="text-sm font-semibold text-white tracking-wide">
                                                 {fin.clientName}
                                             </span>
-                                            <span className="text-xs text-gray-400">· {fin.tripTitle}</span>
+                                            <span className="text-xs text-slate-600 dark:text-gray-400">· {fin.tripTitle}</span>
                                             <Badge
                                                 variant="outline"
                                                 className={cn(
@@ -187,7 +187,7 @@ export function ExpensesTab({
                                         </div>
                                         <div className="border-l border-white/10 pl-4">
                                             <p className="text-[10px] text-gray-500 uppercase">Net Margin</p>
-                                            <p className={cn("font-bold", margin >= 20 ? "text-emerald-400" : margin > 0 ? "text-amber-400" : "text-red-400")}>
+                                            <p className={cn("font-bold", margin >= 20 ? "text-emerald-600 dark:text-emerald-400" : margin > 0 ? "text-amber-400" : "text-red-400")}>
                                                 {margin.toFixed(0)}% ({fm(netProfit, fin.currency)})
                                             </p>
                                         </div>
@@ -197,7 +197,7 @@ export function ExpensesTab({
                                 {/* Vendor & Custom Expenses List */}
                                 {fin.expenses.length > 0 ? (
                                     <div className="space-y-2">
-                                        <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                                        <p className="text-[11px] font-semibold text-slate-600 dark:text-gray-400 uppercase tracking-wider">
                                             Vendor & Trip Expenses ({fin.expenses.length})
                                         </p>
                                         <div className="grid grid-cols-1 gap-1.5">
@@ -213,7 +213,7 @@ export function ExpensesTab({
                                                         </Badge>
                                                         <span className="text-zinc-200 font-medium">{e.vendor}</span>
                                                         {e.description && (
-                                                            <span className="text-gray-400">· {e.description}</span>
+                                                            <span className="text-slate-600 dark:text-gray-400">· {e.description}</span>
                                                         )}
                                                         {e.isAuto ? (
                                                             <Badge variant="outline" className="bg-blue-500/10 text-blue-300 border-blue-500/20 text-[9px] font-semibold">
@@ -270,7 +270,7 @@ export function ExpensesTab({
 
                     {filteredFinancials.length === 0 && (
                         <div className="text-center py-16 bg-white/[0.01] border border-white/5 rounded-2xl space-y-2">
-                            <p className="text-sm text-gray-400 font-medium">No trips matched your search filter.</p>
+                            <p className="text-sm text-slate-600 dark:text-gray-400 font-medium">No trips matched your search filter.</p>
                             <p className="text-xs text-gray-600">Try searching a different client or itinerary name.</p>
                         </div>
                     )}
@@ -282,7 +282,7 @@ export function ExpensesTab({
                 <DialogContent className="bg-[#0D0D10] border border-white/15 text-white sm:max-w-[440px] shadow-2xl">
                     <DialogHeader>
                         <DialogTitle className="text-base font-bold">Add Custom Expense</DialogTitle>
-                        <DialogDescription className="text-gray-400 text-xs">
+                        <DialogDescription className="text-slate-600 dark:text-gray-400 text-xs">
                             {selectedTripFin
                                 ? `${selectedTripFin.clientName} · ${selectedTripFin.tripTitle}`
                                 : "Add an additional expense for this trip"}
@@ -356,7 +356,7 @@ export function ExpensesTab({
                     <DialogFooter className="gap-2">
                         <Button
                             variant="outline"
-                            className="border-white/10 text-gray-400 hover:bg-white/10 text-xs h-9"
+                            className="border-white/10 text-slate-600 dark:text-gray-400 hover:bg-white/10 text-xs h-9"
                             onClick={() => setShowAddExpense(false)}
                         >
                             Cancel

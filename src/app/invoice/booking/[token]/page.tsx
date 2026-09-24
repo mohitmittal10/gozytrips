@@ -112,16 +112,16 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
                     <div className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-8 py-6">
                         <div className="flex items-start justify-between">
                             <div>
-                                <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-1">Invoice</p>
+                                <p className="text-xs font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-1">Invoice</p>
                                 <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{booking.title}</h2>
                                 <p className="text-zinc-500 text-sm mt-1 capitalize">{getServiceIcon(booking.service_type)} {booking.service_type} Booking</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-xs text-zinc-400">Reference</p>
+                                <p className="text-xs text-slate-600 dark:text-zinc-400">Reference</p>
                                 <p className="text-sm font-mono font-bold text-zinc-600 dark:text-zinc-400 uppercase">
                                     {booking.id.split("-")[0]}
                                 </p>
-                                <p className="text-xs text-zinc-400 mt-1">
+                                <p className="text-xs text-slate-600 dark:text-zinc-400 mt-1">
                                     Issued: {formatDate(booking.created_at)}
                                 </p>
                             </div>
@@ -144,7 +144,7 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             {/* Bill To (Client) */}
                             <div>
-                                <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-2">Bill To</p>
+                                <p className="text-xs font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-2">Bill To</p>
                                 {client ? (
                                     <div className="space-y-1">
                                         <p className="font-semibold text-zinc-900 dark:text-zinc-100">{client.name}</p>
@@ -160,13 +160,13 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
                                         )}
                                     </div>
                                 ) : (
-                                    <p className="text-sm text-zinc-400 italic">No client assigned</p>
+                                    <p className="text-sm text-slate-600 dark:text-zinc-400 italic">No client assigned</p>
                                 )}
                             </div>
 
                             {/* Agent Contact */}
                             <div>
-                                <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-2">Your Agent</p>
+                                <p className="text-xs font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-2">Your Agent</p>
                                 <div className="space-y-1">
                                     <p className="font-semibold text-zinc-900 dark:text-zinc-100">
                                         {profile?.full_name || profile?.company_name || "Your Travel Agent"}
@@ -183,7 +183,7 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
 
                         {/* Booking Details */}
                         <div>
-                            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-3">Booking Details</p>
+                            <p className="text-xs font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-3">Booking Details</p>
                             <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-100 dark:border-zinc-800 overflow-hidden">
                                 <table className="w-full text-sm">
                                     <thead className="bg-zinc-100 dark:bg-zinc-800">
@@ -198,10 +198,10 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
                                                 <p className="font-medium text-zinc-900 dark:text-zinc-100">{booking.title}</p>
                                                 <p className="text-xs text-zinc-500 mt-0.5 capitalize">{booking.service_type} — {booking.booking_details?.provider || "N/A"}</p>
                                                 {booking.booking_details?.pnr_or_confirmation && (
-                                                    <p className="text-xs text-zinc-400 mt-0.5">PNR: {booking.booking_details.pnr_or_confirmation}</p>
+                                                    <p className="text-xs text-slate-600 dark:text-zinc-400 mt-0.5">PNR: {booking.booking_details.pnr_or_confirmation}</p>
                                                 )}
                                                 {booking.booking_details?.passengers && (
-                                                    <p className="text-xs text-zinc-400 mt-0.5">{booking.booking_details.passengers} Passenger(s)</p>
+                                                    <p className="text-xs text-slate-600 dark:text-zinc-400 mt-0.5">{booking.booking_details.passengers} Passenger(s)</p>
                                                 )}
                                             </td>
                                             <td className="px-5 py-4 text-right font-semibold text-zinc-900 dark:text-zinc-100">
@@ -224,7 +224,7 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
                         {/* Notes */}
                         {booking.booking_details?.notes && (
                             <div>
-                                <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest mb-2">Notes</p>
+                                <p className="text-xs font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-2">Notes</p>
                                 <p className="text-sm text-zinc-600 dark:text-zinc-400 whitespace-pre-wrap leading-relaxed bg-zinc-50 dark:bg-zinc-800/30 rounded-xl p-4 border border-zinc-100 dark:border-zinc-800">
                                     {booking.booking_details.notes}
                                 </p>
@@ -265,7 +265,7 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
                 </div>
 
                 {/* Footer */}
-                <p className="text-center text-xs text-zinc-400">
+                <p className="text-center text-xs text-slate-600 dark:text-zinc-400">
                     This invoice was generated by {profile?.company_name || "your travel agent"} via Wander Labs.
                 </p>
             </div>

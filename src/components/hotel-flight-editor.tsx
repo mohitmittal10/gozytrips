@@ -178,7 +178,7 @@ function Field({
 
   return (
     <div className={cn("space-y-1", className)}>
-      <label htmlFor={fieldId} className="text-[11px] uppercase tracking-wider text-gray-400 font-semibold flex items-center">
+      <label htmlFor={fieldId} className="text-[11px] uppercase tracking-wider text-slate-600 dark:text-gray-400 font-semibold flex items-center">
         <span>{label}</span>
         {required && <span className="text-rose-400 font-bold ml-0.5" title="Required field">*</span>}
       </label>
@@ -195,7 +195,7 @@ function Field({
           "the-lab-input h-8 text-sm transition-colors",
           error
             ? "border-rose-500/60 focus:border-rose-500 focus:ring-1 focus:ring-rose-500/20 bg-rose-500/5 text-rose-200 placeholder:text-rose-400/40"
-            : "border-white/10"
+            : "bg-white dark:bg-transparent border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-600 dark:text-slate-400 dark:placeholder:text-gray-500"
         )}
       />
       {error && (
@@ -248,7 +248,7 @@ function DayMultiPicker({ selectedDays, onChange, totalDays, label = "Select Day
   return (
     <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3 space-y-3 relative">
       <div className="flex items-center justify-between">
-        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">{label}</span>
+        <span className="text-[11px] font-bold text-slate-600 dark:text-gray-400 uppercase tracking-wider">{label}</span>
         <span className="text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
           {selectedDays.length} Day{selectedDays.length !== 1 ? 's' : ''}
         </span>
@@ -269,9 +269,9 @@ function DayMultiPicker({ selectedDays, onChange, totalDays, label = "Select Day
                   ? "bg-primary text-white border-primary shadow-sm shadow-primary/30 cursor-pointer hover:bg-primary/85"
                   : isOccupied
                     ? isPending
-                      ? "bg-amber-500/20 text-amber-300 border-amber-400/50 cursor-pointer ring-1 ring-amber-400/30"
-                      : "bg-amber-500/8 text-amber-300/70 border-amber-500/20 cursor-pointer hover:bg-amber-500/15 hover:text-amber-300 hover:border-amber-500/40"
-                    : "bg-white/5 text-gray-400 border-white/10 hover:border-primary/40 hover:text-zinc-200 hover:bg-white/8 cursor-pointer"
+                      ? "bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-400/50 cursor-pointer ring-1 ring-amber-400/30"
+                      : "bg-amber-500/10 dark:bg-amber-500/8 text-amber-600 dark:text-amber-300/70 border-amber-500/30 dark:border-amber-500/20 cursor-pointer hover:bg-amber-500/20 dark:hover:bg-amber-500/15 hover:text-amber-700 dark:hover:text-amber-300 hover:border-amber-500/50 dark:hover:border-amber-500/40"
+                    : "bg-[#EFECE5] dark:bg-white/5 text-slate-600 dark:text-gray-400 border-slate-300/60 dark:border-white/10 hover:border-primary/40 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-[#EFECE5]/80 dark:hover:bg-white/8 cursor-pointer"
               )}
             >
               Day {i + 1}
@@ -286,28 +286,28 @@ function DayMultiPicker({ selectedDays, onChange, totalDays, label = "Select Day
 
       {/* Same Day Hotel Warning Modal / Confirmation Banner */}
       {conflictPending !== null && (
-        <div className="mt-3 p-4 rounded-2xl bg-zinc-950/90 border border-amber-500/25 text-xs space-y-3 animate-in fade-in zoom-in-95 duration-200 shadow-2xl backdrop-blur-2xl">
+        <div className="mt-3 p-4 rounded-2xl bg-[#EFECE5] dark:bg-zinc-950/90 border border-amber-500/25 text-xs space-y-3 animate-in fade-in zoom-in-95 duration-200 shadow-2xl backdrop-blur-2xl">
           <div className="flex items-start gap-3">
             <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 shrink-0">
-              <AlertCircle className="w-4 h-4 text-amber-400" />
+              <AlertCircle className="w-4 h-4 text-amber-500 dark:text-amber-400" />
             </div>
             <div className="space-y-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="font-bold text-sm text-zinc-100">Hotel Selection Conflict</span>
-                <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] font-bold uppercase tracking-wider">
+                <span className="font-bold text-sm text-slate-900 dark:text-zinc-100">Hotel Selection Conflict</span>
+                <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 text-[10px] font-bold uppercase tracking-wider">
                   Day {conflictPending.dayIndex + 1}
                 </span>
               </div>
-              <p className="text-zinc-400 leading-relaxed text-[12px]">
-                Day {conflictPending.dayIndex + 1} is currently assigned to <strong className="text-zinc-100 font-semibold px-1.5 py-0.5 rounded bg-white/5 border border-white/10">{conflictPending.existingHotelName}</strong>. Would you like to reassign this day to the current hotel?
+              <p className="text-slate-700 dark:text-zinc-400 leading-relaxed text-[12px]">
+                Day {conflictPending.dayIndex + 1} is currently assigned to <strong className="text-slate-900 dark:text-zinc-100 font-semibold px-1.5 py-0.5 rounded bg-slate-100/50 dark:bg-white/5 border border-slate-300/60 dark:border-white/10">{conflictPending.existingHotelName}</strong>. Would you like to reassign this day to the current hotel?
               </p>
             </div>
           </div>
-          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-white/5">
+          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-300/60 dark:border-white/5">
             <button
               type="button"
               onClick={() => setConflictPending(null)}
-              className="px-4 py-2 rounded-xl border border-white/10 text-zinc-300 hover:text-white hover:bg-white/5 text-xs font-semibold transition-all cursor-pointer select-none"
+              className="px-4 py-2 rounded-xl border border-slate-300/60 dark:border-white/10 text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5 text-xs font-semibold transition-all cursor-pointer select-none"
             >
               Cancel
             </button>
@@ -398,14 +398,14 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
 
   if (isCollapsed) {
     return (
-      <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
+      <div className="rounded-xl border border-slate-300/60 dark:border-white/5 bg-[#EFECE5] dark:bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg shrink-0">
             <Hotel className="w-5 h-5 text-primary" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold text-white">{hotel.name || "Untitled Hotel"}</span>
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">{hotel.name || "Untitled Hotel"}</span>
               {!isComplete && (
                 <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wide uppercase text-amber-300 bg-amber-500/[0.12] border-l-2 border-amber-400 pl-1.5 pr-2 py-0.5">
                   <AlertTriangle className="w-3 h-3 shrink-0" />
@@ -413,7 +413,7 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
                 </span>
               )}
             </div>
-            {hotel.address && <p className="text-xs text-gray-400 mt-1">{hotel.address}</p>}
+            {hotel.address && <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">{hotel.address}</p>}
           </div>
         </div>
         <div className="flex items-center gap-3">
@@ -427,7 +427,7 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3 group">
+    <div className="rounded-xl border border-slate-300/60 dark:border-white/10 bg-[#EFECE5] dark:bg-white/5 p-4 space-y-3 group">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-center gap-2 flex-wrap">
           <Hotel className="w-4 h-4 text-primary shrink-0" />
@@ -457,19 +457,19 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
         <Field label="Booking Ref (Optional)" value={hotel.bookingRef} onChange={(v) => update("bookingRef", v)} placeholder="CONF-12345" className="col-span-2" />
       </div>
 
-      <div className="pt-2 border-t border-white/5 space-y-2 mt-2!">
+      <div className="pt-2 border-t border-slate-300/60 dark:border-white/5 space-y-2 mt-2!">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-gray-400 flex items-center">
+          <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 flex items-center">
             <span>Cost to Agent</span>
             <span className="text-rose-400 font-bold ml-0.5" title="Required field">*</span>
           </label>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-bold text-zinc-400">Cost Type:</span>
+            <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-zinc-400">Cost Type:</span>
             <Select value={hotel.costType || "per-person"} onValueChange={(v: 'per-person' | 'flat') => update("costType", v)}>
-              <SelectTrigger className="the-lab-input h-7 text-xs bg-black/30 border-white/10 w-28 text-white">
+              <SelectTrigger className="the-lab-input h-7 text-xs bg-[#EFECE5] dark:bg-black/30 border-slate-300/60 dark:border-white/10 w-28 text-slate-900 dark:text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-obsidian-dark border-white/10 text-zinc-300">
+              <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-zinc-300">
                 <SelectItem value="per-person">Per Person</SelectItem>
                 <SelectItem value="flat">Flat Cost</SelectItem>
               </SelectContent>
@@ -490,9 +490,9 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
       </div>
 
       {/* Photo Upload — Explicitly Optional */}
-      <div className="pt-2 border-t border-white/5 space-y-2 mt-2!">
+      <div className="pt-2 border-t border-slate-300/60 dark:border-white/5 space-y-2 mt-2!">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-gray-400 flex items-center gap-1.5">
+          <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 flex items-center gap-1.5">
             <span>Hotel Photos</span>
             <span className="text-[10px] text-zinc-500 font-normal">(Optional — Max 2 images)</span>
           </label>
@@ -519,8 +519,8 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
               </div>
             )}
             {(!hotel.imageUrls || hotel.imageUrls.length < 2) && !isUploadingPhoto && (
-              <div className="relative flex items-center justify-center w-24 h-24 flex-shrink-0 rounded-lg border-2 border-dashed border-white/20 bg-white/5 hover:bg-white/10 transition-colors cursor-pointer group/upload">
-                <div className="flex flex-col items-center gap-1 text-gray-400 group-hover/upload:text-white transition-colors">
+              <div className="relative flex items-center justify-center w-24 h-24 flex-shrink-0 rounded-lg border-2 border-dashed border-slate-300/60 dark:border-white/20 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors cursor-pointer group/upload">
+                <div className="flex flex-col items-center gap-1 text-slate-600 dark:text-gray-400 group-hover/upload:text-slate-700 dark:group-hover/upload:text-white transition-colors">
                   <Camera className="w-5 h-5" />
                   <span className="text-[10px] uppercase font-semibold text-center leading-tight">Upload<br />({(hotel.imageUrls || []).length}/2)</span>
                 </div>
@@ -561,14 +561,14 @@ function FlightCard({ flight, totalDays, onChange, onDelete, isCollapsed, allFli
 
   if (isCollapsed) {
     return (
-      <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
+      <div className="rounded-xl border border-slate-300/60 dark:border-white/5 bg-[#EFECE5] dark:bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg shrink-0">
             <Plane className="w-5 h-5 text-primary" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold text-white">
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">
                 {flight.airline || "Untitled Airline"} {flight.flightNumber}
               </span>
               {!isComplete && (
@@ -578,7 +578,7 @@ function FlightCard({ flight, totalDays, onChange, onDelete, isCollapsed, allFli
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">
               {flight.departureAirport || "DEP"} → {flight.arrivalAirport || "ARR"}
             </p>
           </div>
@@ -591,7 +591,7 @@ function FlightCard({ flight, totalDays, onChange, onDelete, isCollapsed, allFli
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3 group">
+    <div className="rounded-xl border border-slate-300/60 dark:border-white/10 bg-[#EFECE5] dark:bg-white/5 p-4 space-y-3 group">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-wrap">
           <Plane className="w-4 h-4 text-primary shrink-0" />
@@ -619,12 +619,12 @@ function FlightCard({ flight, totalDays, onChange, onDelete, isCollapsed, allFli
         <Field label="Arrival Time" required value={flight.arrival} onChange={(v) => update("arrival", v)} onBlur={handleBlur} error={errors.arrival} placeholder="09:15 AM" />
 
         <div className="space-y-1">
-          <label className="text-[11px] uppercase tracking-wider text-gray-400 font-semibold">Flight Type</label>
+          <label className="text-[11px] uppercase tracking-wider text-slate-600 dark:text-gray-400 font-semibold">Flight Type</label>
           <Select value={flight.flightType || "direct"} onValueChange={(v) => update("flightType", v as any)}>
-            <SelectTrigger className="the-lab-input h-8 text-sm bg-black/20 border-white/10">
+            <SelectTrigger className="the-lab-input h-8 text-sm bg-[#EFECE5] dark:bg-black/20 border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-white">
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+            <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/5 text-slate-900 dark:text-zinc-300">
               <SelectItem value="direct">Direct</SelectItem>
               <SelectItem value="connecting">Connecting</SelectItem>
             </SelectContent>
@@ -634,7 +634,7 @@ function FlightCard({ flight, totalDays, onChange, onDelete, isCollapsed, allFli
         <Field label="PNR / Booking Ref (Optional)" value={flight.pnr} onChange={(v) => update("pnr", v)} placeholder="PNR-1234" className="col-span-2" />
 
         {flight.flightType === 'connecting' && (
-          <div className="col-span-2 space-y-3 pt-2 border-t border-white/5 mt-2!">
+          <div className="col-span-2 space-y-3 pt-2 border-t border-slate-300/60 dark:border-white/5 mt-2!">
             <label className="text-xs font-semibold text-primary">Connecting Flight Leg Details</label>
             <div className="grid grid-cols-2 gap-3">
               <Field label="Connecting Airline" required value={flight.connectingAirline} onChange={(v) => update("connectingAirline", v)} onBlur={handleBlur} error={errors.connectingAirline} placeholder="e.g. Emirates" />
@@ -648,19 +648,19 @@ function FlightCard({ flight, totalDays, onChange, onDelete, isCollapsed, allFli
         )}
       </div>
 
-      <div className="pt-2 border-t border-white/5 space-y-2 mt-2!">
+      <div className="pt-2 border-t border-slate-300/60 dark:border-white/5 space-y-2 mt-2!">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-gray-400 flex items-center">
+          <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 flex items-center">
             <span>Cost to Agent</span>
             <span className="text-rose-400 font-bold ml-0.5" title="Required field">*</span>
           </label>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-bold text-zinc-400">Cost Type:</span>
+            <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-zinc-400">Cost Type:</span>
             <Select value={flight.costType || "per-person"} onValueChange={(v: 'per-person' | 'flat') => update("costType", v)}>
-              <SelectTrigger className="the-lab-input h-7 text-xs bg-black/30 border-white/10 w-28 text-white">
+              <SelectTrigger className="the-lab-input h-7 text-xs bg-[#EFECE5] dark:bg-black/30 border-slate-300/60 dark:border-white/10 w-28 text-slate-900 dark:text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-obsidian-dark border-white/10 text-zinc-300">
+              <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-zinc-300">
                 <SelectItem value="per-person">Per Person</SelectItem>
                 <SelectItem value="flat">Flat Cost</SelectItem>
               </SelectContent>
@@ -705,14 +705,14 @@ function CabCard({ cab, totalDays, onChange, onDelete, isCollapsed, allCabs = []
 
   if (isCollapsed) {
     return (
-      <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
+      <div className="rounded-xl border border-slate-300/60 dark:border-white/5 bg-[#EFECE5] dark:bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg shrink-0">
             <Car className="w-5 h-5 text-primary" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold text-white">{cab.vehicleType || "Cab Transfer"}</span>
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">{cab.vehicleType || "Cab Transfer"}</span>
               {!isComplete && (
                 <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wide uppercase text-amber-300 bg-amber-500/[0.12] border-l-2 border-amber-400 pl-1.5 pr-2 py-0.5">
                   <AlertTriangle className="w-3 h-3 shrink-0" />
@@ -720,7 +720,7 @@ function CabCard({ cab, totalDays, onChange, onDelete, isCollapsed, allCabs = []
                 </span>
               )}
             </div>
-            {cab.route && <p className="text-xs text-gray-400 mt-1">{cab.route}</p>}
+            {cab.route && <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">{cab.route}</p>}
           </div>
         </div>
         <button onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors p-1.5 hover:bg-white/5 rounded-lg">
@@ -731,7 +731,7 @@ function CabCard({ cab, totalDays, onChange, onDelete, isCollapsed, allCabs = []
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3 group">
+    <div className="rounded-xl border border-slate-300/60 dark:border-white/10 bg-[#EFECE5] dark:bg-white/5 p-4 space-y-3 group">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-wrap">
           <Car className="w-4 h-4 text-primary shrink-0" />
@@ -758,19 +758,19 @@ function CabCard({ cab, totalDays, onChange, onDelete, isCollapsed, allCabs = []
         <Field label="Driver Contact" required value={cab.driverContact} onChange={(v) => update("driverContact", v)} onBlur={handleBlur} error={errors.driverContact} placeholder="+91 98765 43210" className="col-span-2" />
       </div>
 
-      <div className="pt-2 border-t border-white/5 space-y-2 mt-2!">
+      <div className="pt-2 border-t border-slate-300/60 dark:border-white/5 space-y-2 mt-2!">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-gray-400 flex items-center">
+          <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 flex items-center">
             <span>Cost to Agent</span>
             <span className="text-rose-400 font-bold ml-0.5" title="Required field">*</span>
           </label>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-bold text-zinc-400">Cost Type:</span>
+            <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-zinc-400">Cost Type:</span>
             <Select value={cab.costType || "flat"} onValueChange={(v: 'per-person' | 'flat') => update("costType", v)}>
-              <SelectTrigger className="the-lab-input h-7 text-xs bg-black/30 border-white/10 w-28 text-white">
+              <SelectTrigger className="the-lab-input h-7 text-xs bg-[#EFECE5] dark:bg-black/30 border-slate-300/60 dark:border-white/10 w-28 text-slate-900 dark:text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-obsidian-dark border-white/10 text-zinc-300">
+              <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-zinc-300">
                 <SelectItem value="flat">Flat Cost</SelectItem>
                 <SelectItem value="per-person">Per Person</SelectItem>
               </SelectContent>
@@ -815,14 +815,14 @@ function BusCard({ bus, totalDays, onChange, onDelete, isCollapsed, allBuses = [
 
   if (isCollapsed) {
     return (
-      <div className="rounded-xl border border-white/5 bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
+      <div className="rounded-xl border border-slate-300/60 dark:border-white/5 bg-[#EFECE5] dark:bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-primary/10 rounded-lg shrink-0">
             <Bus className="w-5 h-5 text-primary" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <span className="text-sm font-semibold text-white">{bus.busType || "Bus Transfer"}</span>
+              <span className="text-sm font-semibold text-slate-900 dark:text-white">{bus.busType || "Bus Transfer"}</span>
               {!isComplete && (
                 <span className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-wide uppercase text-amber-300 bg-amber-500/[0.12] border-l-2 border-amber-400 pl-1.5 pr-2 py-0.5">
                   <AlertTriangle className="w-3 h-3 shrink-0" />
@@ -830,7 +830,7 @@ function BusCard({ bus, totalDays, onChange, onDelete, isCollapsed, allBuses = [
                 </span>
               )}
             </div>
-            {bus.route && <p className="text-xs text-gray-400 mt-1">{bus.route}</p>}
+            {bus.route && <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">{bus.route}</p>}
           </div>
         </div>
         <button onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors p-1.5 hover:bg-white/5 rounded-lg">
@@ -841,7 +841,7 @@ function BusCard({ bus, totalDays, onChange, onDelete, isCollapsed, allBuses = [
   }
 
   return (
-    <div className="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3 group">
+    <div className="rounded-xl border border-slate-300/60 dark:border-white/10 bg-[#EFECE5] dark:bg-white/5 p-4 space-y-3 group">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2 flex-wrap">
           <Bus className="w-4 h-4 text-primary shrink-0" />
@@ -870,17 +870,17 @@ function BusCard({ bus, totalDays, onChange, onDelete, isCollapsed, allBuses = [
 
       <div className="pt-2 border-t border-white/5 space-y-2 mt-2!">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-gray-400 flex items-center">
+          <label className="text-xs font-semibold text-slate-600 dark:text-gray-400 flex items-center">
             <span>Cost to Agent</span>
             <span className="text-rose-400 font-bold ml-0.5" title="Required field">*</span>
           </label>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] uppercase font-bold text-zinc-400">Cost Type:</span>
+            <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-zinc-400">Cost Type:</span>
             <Select value={bus.costType || "per-person"} onValueChange={(v: 'per-person' | 'flat') => update("costType", v)}>
-              <SelectTrigger className="the-lab-input h-7 text-xs bg-black/30 border-white/10 w-28 text-white">
+              <SelectTrigger className="the-lab-input h-7 text-xs bg-[#EFECE5] dark:bg-black/30 border-slate-300/60 dark:border-white/10 w-28 text-slate-900 dark:text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-obsidian-dark border-white/10 text-zinc-300">
+              <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-zinc-300">
                 <SelectItem value="per-person">Per Person</SelectItem>
                 <SelectItem value="flat">Flat Cost</SelectItem>
               </SelectContent>
@@ -1077,7 +1077,7 @@ export default function HotelFlightEditor({
       `}</style>
 
       {/* Required Legend Bar */}
-      <div className="flex items-center justify-between px-2 mb-3 text-xs text-zinc-400">
+      <div className="flex items-center justify-between px-2 mb-3 text-xs text-slate-600 dark:text-zinc-400">
         <div className="flex items-center gap-1.5 font-medium">
           <span className="text-rose-400 font-bold text-sm">*</span>
           <span>Indicates required field</span>
@@ -1086,9 +1086,9 @@ export default function HotelFlightEditor({
       </div>
 
       {/* Tab bar */}
-      <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 mb-6 shadow-xl">
+      <div className="bg-[#EFECE5]/95 dark:bg-obsidian-dark/95 backdrop-blur-xl border border-primary/20 rounded-2xl p-4 mb-6 shadow-[0_0_25px_rgba(255,92,51,0.12)]">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="relative flex gap-1 pb-[1px]" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="relative flex gap-1 pb-[1px] border-b border-primary/15 dark:border-white/[0.08]">
             {TAB_CONFIG.map((tab, i) => {
               const isSelected = selectedEditorTab === tab.value;
               const TabIcon = tab.icon;
@@ -1101,13 +1101,13 @@ export default function HotelFlightEditor({
                   className={`flex items-center gap-1.5 px-3 pb-[8px] pt-1 cursor-pointer font-sans text-sm font-semibold transition-colors duration-200 select-none rounded-t-sm ${
                     isSelected
                       ? "text-primary"
-                      : "text-foreground/40 hover:text-foreground/70"
+                      : "text-slate-500 dark:text-zinc-400 hover:text-primary"
                   }`}
                 >
                   <TabIcon className="w-3.5 h-3.5 shrink-0" />
                   <span className="hidden sm:inline">{tab.label}</span>
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full transition-colors ${
-                    isSelected ? "bg-primary/20 text-primary" : "bg-white/5 text-foreground/40"
+                    isSelected ? "bg-primary/20 text-primary" : "bg-primary/5 text-slate-500 dark:text-zinc-400"
                   }`}>{tab.count}</span>
                 </button>
               );
@@ -1124,21 +1124,21 @@ export default function HotelFlightEditor({
 
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2.5">
-              <div className="p-1.5 bg-primary/10 rounded-lg">
+              <div className="p-1.5 bg-primary/10 rounded-lg border border-primary/20">
                 <Icon className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white leading-none">{active.label}</p>
-                <p className="text-[11px] text-foreground/40 mt-0.5 leading-none">{active.description}</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white leading-none">{active.label}</p>
+                <p className="text-[11px] text-slate-600 dark:text-zinc-400 mt-0.5 leading-none">{active.description}</p>
               </div>
             </div>
 
-            <div className="h-6 w-[1px] bg-white/[0.08] hidden sm:block" />
+            <div className="h-6 w-[1px] bg-slate-300/60 dark:bg-white/[0.08] hidden sm:block" />
 
             <button
               type="button"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-white/80 hover:text-white text-xs font-semibold hover:bg-white/5 transition-all cursor-pointer select-none animate-in fade-in duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/20 text-primary hover:bg-primary/10 text-xs font-semibold transition-all cursor-pointer select-none animate-in fade-in duration-200"
             >
               {isCollapsed ? (
                 <>
@@ -1174,7 +1174,7 @@ export default function HotelFlightEditor({
       {/* Content pane */}
       <div
         key={selectedEditorTab}
-        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden"
+        className="bg-[#EFECE5]/95 dark:bg-[#0A0A0B]/95 backdrop-blur-xl border border-slate-300/60 dark:border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden"
         style={{ animation: `${slideDir === 'right' ? 'slideFromRight' : 'slideFromLeft'} 0.22s cubic-bezier(0.4,0,0.2,1) both` }}
       >
         <div className="p-6 lg:p-8">
@@ -1239,12 +1239,12 @@ export default function HotelFlightEditor({
             {selectedEditorTab === "costing" && (
               <div className="space-y-6 animate-in fade-in duration-200">
                 {/* Information banner */}
-                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs flex items-center justify-between flex-wrap gap-3">
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-2.5">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <div>
                       <p className="font-bold text-white text-sm">Logistics Cost to Agent Overview</p>
-                      <p className="text-emerald-300/80 mt-0.5">
+                      <p className="text-emerald-700 dark:text-emerald-300/80 mt-0.5">
                         These cost to agent figures are dynamically referenced in the Financials section. Rates can be set per person or as a flat cost per item.
                       </p>
                     </div>
@@ -1254,25 +1254,25 @@ export default function HotelFlightEditor({
                 {/* Summary stat cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                   <div className="p-3 rounded-xl border border-white/10 bg-white/5 space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-gray-400">Hotels ({hotels.length})</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-gray-400">Hotels ({hotels.length})</span>
                     <p className="text-sm font-bold text-amber-400 font-mono">
                       {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{hotelsTotal.toLocaleString()}
                     </p>
                   </div>
                   <div className="p-3 rounded-xl border border-white/10 bg-white/5 space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-gray-400">Flights ({flights.length})</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-gray-400">Flights ({flights.length})</span>
                     <p className="text-sm font-bold text-sky-400 font-mono">
                       {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{flightsTotal.toLocaleString()}
                     </p>
                   </div>
                   <div className="p-3 rounded-xl border border-white/10 bg-white/5 space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-gray-400">Cabs ({cabs.length})</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-gray-400">Cabs ({cabs.length})</span>
                     <p className="text-sm font-bold text-indigo-400 font-mono">
                       {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{cabsTotal.toLocaleString()}
                     </p>
                   </div>
                   <div className="p-3 rounded-xl border border-white/10 bg-white/5 space-y-1">
-                    <span className="text-[10px] uppercase font-bold text-gray-400">Buses ({buses.length})</span>
+                    <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-gray-400">Buses ({buses.length})</span>
                     <p className="text-sm font-bold text-purple-400 font-mono">
                       {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{busesTotal.toLocaleString()}
                     </p>
@@ -1286,9 +1286,9 @@ export default function HotelFlightEditor({
                 </div>
 
                 {/* Items costing table */}
-                <div className="rounded-xl border border-white/10 overflow-hidden bg-black/20">
-                  <table className="w-full text-left text-xs text-zinc-300">
-                    <thead className="bg-white/5 text-[10px] uppercase text-zinc-400 border-b border-white/10 font-bold">
+                <div className="rounded-xl border border-slate-300/60 dark:border-white/10 overflow-hidden bg-[#EFECE5]/90 dark:bg-black/20">
+                  <table className="w-full text-left text-xs text-slate-700 dark:text-zinc-300">
+                    <thead className="bg-[#EFECE5] dark:bg-white/5 text-[10px] uppercase text-slate-600 dark:text-zinc-400 border-b border-slate-300/60 dark:border-white/10 font-bold">
                       <tr>
                         <th className="p-3">Category</th>
                         <th className="p-3">Item Details</th>
@@ -1348,7 +1348,7 @@ export default function HotelFlightEditor({
                   <div className="p-3 rounded-full bg-primary/10 mb-3">
                     <Plus className="w-6 h-6 text-primary/70" />
                   </div>
-                  <p className="text-gray-400 font-medium">No {selectedEditorTab} added yet</p>
+                  <p className="text-slate-600 dark:text-gray-400 font-medium">No {selectedEditorTab} added yet</p>
                   <p className="text-gray-500 text-xs mt-1">
                     Click <span className="text-primary font-semibold">Add {selectedEditorTab === "flights" ? "Flight" : selectedEditorTab === "hotels" ? "Hotel" : selectedEditorTab === "cabs" ? "Cab" : "Bus"}</span> to get started.
                   </p>

@@ -129,7 +129,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
           <UniqueLoading variant="morph" size="lg" className="relative z-10" />
         </div>
         <div className="text-center space-y-2">
-          <p className="text-white font-medium tracking-tight">Retrieving Archive</p>
+          <p className="text-slate-900 dark:text-white font-medium tracking-tight">Retrieving Archive</p>
           <p className="text-zinc-500 text-xs uppercase tracking-widest font-black opacity-30">Syncing with cloud repository</p>
         </div>
       </div>
@@ -161,7 +161,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
           <History className="w-10 h-10 text-primary/70" />
           <div className="absolute inset-0 rounded-full border border-primary/20 scale-125 animate-ping opacity-20" />
         </div>
-        <h3 className="text-3xl font-bold text-white mb-4 uppercase tracking-wider">The Archive is Empty</h3>
+        <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">The Archive is Empty</h3>
         <p className="text-zinc-500 max-w-sm mx-auto text-sm leading-relaxed mb-10">
           Your travel masterpieces await. Start a new generation to begin cataloging your travel experiences.
         </p>
@@ -180,7 +180,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             <History className="w-5 h-5 text-primary" />
             Itinerary Archive
           </h2>
@@ -235,7 +235,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
               <div 
                 key={item.id}
                 onClick={() => handleLoad(item.id)}
-                className="group relative overflow-hidden rounded-xl border border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.05] hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer p-4 xl:py-3"
+                className="group relative overflow-hidden rounded-xl border border-slate-300/60 dark:border-white/[0.04] bg-white/80 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-white/[0.05] hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 cursor-pointer p-4 xl:py-3"
               >
                 <div className="flex flex-col xl:grid xl:grid-cols-12 gap-3 items-start xl:items-center">
                   
@@ -244,10 +244,10 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                     <div className={cn(
                       "inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[9px] font-bold uppercase tracking-wider",
                       status === 'confirmed' 
-                        ? "bg-emerald-500/10 text-emerald-400" 
+                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" 
                         : "bg-primary/10 text-primary"
                     )}>
-                      <div className={cn("w-1 h-1 rounded-full", status === 'confirmed' ? "bg-emerald-400" : "bg-primary")} />
+                      <div className={cn("w-1 h-1 rounded-full", status === 'confirmed' ? "bg-emerald-600 dark:bg-emerald-400" : "bg-primary")} />
                       {status}
                     </div>
 
@@ -260,7 +260,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                   {/* Title & Destinations */}
                   <div className="col-span-3 w-full">
                     <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-white group-hover:text-primary transition-colors truncate">
+                      <span className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors truncate">
                         {displayTitle}
                       </span>
                       <span className="text-[10px] text-zinc-500 font-mono mt-0.5">ID: {item.trip_id}</span>
@@ -270,7 +270,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                   {/* Departure & Modified dates container on mobile */}
                   <div className="col-span-4 w-full flex flex-wrap items-center gap-4 xl:contents">
                     {/* Departure */}
-                    <div className="col-span-2 flex items-center gap-1.5 text-zinc-400">
+                    <div className="col-span-2 flex items-center gap-1.5 text-slate-600 dark:text-zinc-400">
                       <Calendar className="w-3 h-3 text-primary/70 shrink-0" />
                       <span className="text-xs font-medium">
                         {startDate ? format(startDate, "MMM d, yyyy") : "—"}
@@ -278,7 +278,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                     </div>
 
                     {/* Last Modified */}
-                    <div className="col-span-2 flex items-center gap-1.5 text-zinc-400">
+                    <div className="col-span-2 flex items-center gap-1.5 text-slate-600 dark:text-zinc-400">
                       <Clock className="w-3 h-3 text-primary/70 shrink-0" />
                       <span className="text-xs font-medium">
                         {format(new Date(item.last_activity_at), "MMM d, HH:mm")}
@@ -295,7 +295,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                           <Receipt className="w-3 h-3 text-primary/70 shrink-0" />
                           <div className="flex flex-col leading-none">
                             <span className="text-[9px] text-zinc-600 uppercase tracking-widest">Client Price</span>
-                            <span className="text-sm font-bold text-emerald-400">
+                            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                               {formatMoney(clientPrice!, currency as any)}
                             </span>
                           </div>
@@ -372,7 +372,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
             <button
               onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
               disabled={currentPage === 1}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 disabled:hover:text-zinc-400 transition-all cursor-pointer disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 disabled:hover:text-zinc-400 transition-all cursor-pointer disabled:cursor-not-allowed"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -402,7 +402,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
                       "h-8 min-w-[2rem] px-2 rounded-lg text-xs font-semibold tracking-wide transition-all cursor-pointer",
                       currentPage === pageNum
                         ? "bg-primary/20 border border-primary/40 text-primary shadow-[0_0_12px_rgba(255,92,51,0.15)] font-bold"
-                        : "bg-transparent text-zinc-400 hover:text-white hover:bg-white/5"
+                        : "bg-transparent text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/5"
                     )}
                   >
                     {pageNum}
@@ -414,7 +414,7 @@ export const TheLabHistory: React.FC<TheLabHistoryProps> = ({
             <button
               onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 disabled:hover:text-zinc-400 transition-all cursor-pointer disabled:cursor-not-allowed"
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/10 text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 disabled:hover:text-zinc-400 transition-all cursor-pointer disabled:cursor-not-allowed"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

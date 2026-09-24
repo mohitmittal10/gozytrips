@@ -112,10 +112,10 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                     <span className="text-sm text-purple-300 font-medium">{selectedIds.size} selected</span>
                     <div className="h-4 w-px bg-purple-500/30" />
                     <Select onValueChange={(val) => handleBulkStatusChange(val)}>
-                        <SelectTrigger className="h-8 w-[140px] bg-white/5 border-white/10 text-white text-xs">
+                        <SelectTrigger className="h-8 w-[140px] bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white text-xs">
                             <SelectValue placeholder="Set Status..." />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1a1a2e] border-white/10 text-white">
+                        <SelectContent className="bg-[#1a1a2e] border-slate-300 dark:border-white/10 text-slate-900 dark:text-white">
                             {itineraryStatuses.length > 0 ? (
                                 itineraryStatuses.map(opt => (
                                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
@@ -130,10 +130,10 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                             )}
                         </SelectContent>
                     </Select>
-                    <Button variant="outline" size="sm" className="h-8 border-white/10 bg-transparent text-gray-300 hover:bg-white/10 text-xs" onClick={handleExportCSV}>
+                    <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 text-xs" onClick={handleExportCSV}>
                         <Download className="w-3.5 h-3.5 mr-1.5" /> Export
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-8 text-gray-400 hover:text-white text-xs ml-auto" onClick={() => setSelectedIds(new Set())}>
+                    <Button variant="ghost" size="sm" className="h-8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs ml-auto" onClick={() => setSelectedIds(new Set())}>
                         Clear
                     </Button>
                 </div>
@@ -143,18 +143,18 @@ export const CRMTableView = (props: CRMTableViewProps) => {
             <div className="flex items-center justify-between">
                 <p className="text-xs text-gray-500">{sortedClients.length} client{sortedClients.length !== 1 ? 's' : ''}</p>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="h-8 border-white/10 bg-transparent text-gray-300 hover:bg-white/10 text-xs" onClick={handleExportCSV}>
+                    <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 text-xs" onClick={handleExportCSV}>
                         <Download className="w-3.5 h-3.5 mr-1.5" /> Export CSV
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-8 border-white/10 bg-transparent text-zinc-300 hover:bg-white/10 hover:text-white text-xs rounded-xl font-semibold cursor-pointer">
+                            <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-zinc-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white text-xs rounded-xl font-semibold cursor-pointer">
                                 <Columns3 className="w-3.5 h-3.5 mr-1.5 text-primary" /> Columns
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white">
-                            <DropdownMenuLabel className="text-xs text-zinc-400 font-semibold">Toggle Columns</DropdownMenuLabel>
-                            <DropdownMenuSeparator className="bg-white/10" />
+                        <DropdownMenuContent align="end" className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-300 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
+                            <DropdownMenuLabel className="text-xs text-slate-600 dark:text-zinc-400 font-semibold">Toggle Columns</DropdownMenuLabel>
+                            <DropdownMenuSeparator className="bg-slate-200 dark:bg-white/10" />
                             <DropdownMenuCheckboxItem checked={visibleColumns.destination} onCheckedChange={() => toggleColumn('destination')} className="text-xs">Destination</DropdownMenuCheckboxItem>
                             <DropdownMenuCheckboxItem checked={visibleColumns.lastUpdated} onCheckedChange={() => toggleColumn('lastUpdated')} className="text-xs">Last Updated</DropdownMenuCheckboxItem>
                         </DropdownMenuContent>
@@ -167,22 +167,22 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                 <div className="crm-table-wrapper">
                     <table className="w-full text-left border-collapse min-w-[520px]">
                         <thead>
-                            <tr className="border-b border-white/10 text-zinc-400 font-semibold text-xs">
+                            <tr className="border-b border-slate-300 dark:border-white/10 text-slate-600 dark:text-zinc-400 font-semibold text-xs">
                                 <th className="p-4 w-10">
                                     <Checkbox
                                         checked={paginatedClients.length > 0 && selectedIds.size === paginatedClients.length}
                                         onCheckedChange={toggleSelectAll}
-                                        className="h-4 w-4 rounded-full border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary shrink-0 transition-all"
+                                        className="h-4 w-4 rounded-full border-slate-300 dark:border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary shrink-0 transition-all"
                                     />
                                 </th>
-                                <th className="p-4 cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('name')}>
+                                <th className="p-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('name')}>
                                     <span className="inline-flex items-center">Client Info <SortIcon col="name" /></span>
                                 </th>
                                 {visibleColumns.destination && (
                                     <th className="p-4">Destination</th>
                                 )}
                                 {visibleColumns.lastUpdated && (
-                                    <th className="p-4 cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('date')}>
+                                    <th className="p-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('date')}>
                                         <span className="inline-flex items-center">Last Updated <SortIcon col="date" /></span>
                                     </th>
                                 )}
@@ -192,7 +192,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                         <tbody className="divide-y divide-white/5">
                             {clientsLoading || isComputing ? (
                                 <tr>
-                                    <td colSpan={7} className="p-8 text-center text-zinc-400">
+                                    <td colSpan={7} className="p-8 text-center text-slate-600 dark:text-zinc-400">
                                         <div className="animate-pulse flex flex-col items-center gap-2">
                                             <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                                             Loading data...
@@ -201,7 +201,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                 </tr>
                             ) : paginatedClients.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="p-8 text-center text-zinc-400 bg-white/5">
+                                    <td colSpan={7} className="p-8 text-center text-slate-600 dark:text-zinc-400 bg-slate-100 dark:bg-white/5">
                                         <div className="flex flex-col items-center justify-center py-6">
                                             <Users className="w-12 h-12 text-zinc-500 mb-3" />
                                             <p className="font-semibold text-sm">No records found matching your criteria.</p>
@@ -212,7 +212,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                 paginatedClients.map((client) => (
                                     <tr 
                                         key={client.id} 
-                                        className={cn("hover:bg-white/5 transition-colors group cursor-pointer", selectedIds.has(client.id) && "bg-primary/10")}
+                                        className={cn("hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group cursor-pointer", selectedIds.has(client.id) && "bg-primary/10")}
                                         onClick={() => setSelectedClient(client)}
                                         role="button"
                                         tabIndex={0}
@@ -222,7 +222,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                             <Checkbox
                                                 checked={selectedIds.has(client.id)}
                                                 onCheckedChange={() => toggleSelectOne(client.id)}
-                                                className="h-4 w-4 rounded-full border-white/20 data-[state=checked]:bg-primary data-[state=checked]:text-white data-[state=checked]:border-primary shrink-0 transition-all"
+                                                className="h-4 w-4 rounded-full border-slate-300 dark:border-white/20 data-[state=checked]:bg-primary data-[state=checked]:text-slate-900 dark:text-white data-[state=checked]:border-primary shrink-0 transition-all"
                                             />
                                         </td>
                                         <td className="p-4">
@@ -231,8 +231,8 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                                     {client.name.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-white group-hover:text-primary transition-colors text-sm">{client.name}</p>
-                                                    <p className="text-xs text-zinc-400">{client.email || 'No email provided'}</p>
+                                                    <p className="font-bold text-slate-900 dark:text-white group-hover:text-primary transition-colors text-sm">{client.name}</p>
+                                                    <p className="text-xs text-slate-600 dark:text-zinc-400">{client.email || 'No email provided'}</p>
                                                     {client.tags && client.tags.length > 0 && (
                                                         <div className="flex flex-wrap gap-1 mt-1">
                                                             {client.tags.map((tag: string, idx: number) => (
@@ -251,8 +251,8 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                                     {client.bookedDestinations && client.bookedDestinations.length > 0 ? (
                                                         client.bookedDestinations.map((dest: any, idx: number) => (
                                                             <div key={idx} className="flex items-center gap-2 group/dest">
-                                                                <Compass className="w-3.5 h-3.5 text-primary group-hover/dest:text-white transition-colors shrink-0" />
-                                                                <span className="truncate max-w-[180px] text-xs font-semibold text-zinc-200 group-hover/dest:text-white transition-colors">{dest.label}</span>
+                                                                <Compass className="w-3.5 h-3.5 text-primary group-hover/dest:text-slate-900 dark:text-white transition-colors shrink-0" />
+                                                                <span className="truncate max-w-[180px] text-xs font-semibold text-zinc-200 group-hover/dest:text-slate-900 dark:text-white transition-colors">{dest.label}</span>
                                                             </div>
                                                         ))
                                                     ) : (
@@ -262,15 +262,15 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                             </td>
                                         )}
                                         {visibleColumns.lastUpdated && (
-                                            <td className="p-4 text-xs text-zinc-400 font-medium">
+                                            <td className="p-4 text-xs text-slate-600 dark:text-zinc-400 font-medium">
                                                 <div className="flex items-center gap-1.5">
-                                                    <Clock className="w-3.5 h-3.5 text-zinc-400" />
+                                                    <Clock className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400" />
                                                     {client.latestContact}
                                                 </div>
                                             </td>
                                         )}
                                         <td className="p-4 text-right">
-                                            <ChevronRight className="w-4 h-4 text-zinc-400 group-hover:text-primary transition-colors ml-auto" />
+                                            <ChevronRight className="w-4 h-4 text-slate-600 dark:text-zinc-400 group-hover:text-primary transition-colors ml-auto" />
                                         </td>
                                     </tr>
                                 ))
@@ -281,15 +281,15 @@ export const CRMTableView = (props: CRMTableViewProps) => {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-between p-4 border-t border-white/10">
-                        <p className="text-xs text-zinc-400 font-medium">
+                    <div className="flex items-center justify-between p-4 border-t border-slate-300 dark:border-white/10">
+                        <p className="text-xs text-slate-600 dark:text-zinc-400 font-medium">
                             Page {currentPage} of {totalPages} ({sortedClients.length} total)
                         </p>
                         <div className="flex items-center gap-1">
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-zinc-400 hover:text-white disabled:opacity-30 cursor-pointer"
+                                className="h-8 w-8 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 cursor-pointer"
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(p => p - 1)}
                             >
@@ -311,7 +311,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                         key={page}
                                         variant="ghost"
                                         size="icon"
-                                        className={cn("h-8 w-8 text-xs cursor-pointer", page === currentPage ? "bg-primary/20 text-primary font-bold" : "text-zinc-400 hover:text-white")}
+                                        className={cn("h-8 w-8 text-xs cursor-pointer", page === currentPage ? "bg-primary/20 text-primary font-bold" : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white")}
                                         onClick={() => setCurrentPage(page)}
                                     >
                                         {page}
@@ -321,7 +321,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-zinc-400 hover:text-white disabled:opacity-30 cursor-pointer"
+                                className="h-8 w-8 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30 cursor-pointer"
                                 disabled={currentPage === totalPages}
                                 onClick={() => setCurrentPage(p => p + 1)}
                             >

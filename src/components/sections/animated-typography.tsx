@@ -28,7 +28,7 @@ export default function AnimatedTypography() {
             ></div>
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-neutral-900/50 via-transparent to-black/80 z-0"></div>
 
-            <p className="text-zinc-400 text-sm md:text-base mb-2 tracking-[0.3em] uppercase z-10 font-light relative">
+            <p className="text-slate-600 dark:text-zinc-400 text-sm md:text-base mb-2 tracking-[0.3em] uppercase z-10 font-light relative">
                 Your journey begins here
             </p>
             <div className="relative z-10 w-full flex items-center justify-center">

@@ -100,7 +100,7 @@ const WorkflowFeed = () => {
         { text: "Proposal sent to client...", icon: <Mail className="w-3 h-3" /> },
         { text: "Client viewed trip details...", icon: <Activity className="w-3 h-3" /> },
         { text: "Deposit received...", icon: <CreditCard className="w-3 h-3" /> },
-        { text: "Trip confirmed.", icon: <CheckCircle2 className="w-3 h-3 text-emerald-500" /> }
+        { text: "Trip confirmed.", icon: <CheckCircle2 className="w-3 h-3 text-emerald-700 dark:text-emerald-500" /> }
     ];
     const [visibleSteps, setVisibleSteps] = useState<{text: string, icon: any}[]>([]);
 
@@ -343,7 +343,7 @@ const Hero = () => {
                         </Link>
                         <Link href="#how-it-works" className="w-full sm:w-auto">
                             <button className="w-full sm:w-auto bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20 px-8 py-4 rounded-full text-sm font-extrabold hover:scale-[1.03] active:scale-[0.97] transition-all duration-300 flex items-center justify-center gap-2">
-                                How It Works <ArrowRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
+                                How It Works <ArrowRight className="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:translate-x-1 transition-transform" />
                             </button>
                         </Link>
                     </motion.div>
@@ -389,7 +389,7 @@ const Hero = () => {
                                     Recent Activity
                                 </h3>
                                 <div className="flex items-center gap-2">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-500 animate-pulse" />
                                     <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 text-[9px] font-black text-indigo-400 uppercase tracking-widest">Live</span>
                                 </div>
                             </div>
@@ -400,7 +400,7 @@ const Hero = () => {
 
                             <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
                                 <span className="text-[9px] font-black text-zinc-600 uppercase tracking-widest">Today&apos;s Operations</span>
-                                <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest">Active now</span>
+                                <span className="text-[9px] font-black text-emerald-700 dark:text-emerald-500 uppercase tracking-widest">Active now</span>
                             </div>
                         </div>
                     </motion.div>
@@ -433,8 +433,8 @@ const Hero = () => {
                                         <Counter value={98.2} decimals={1} />%
                                     </motion.h2>
                                     <div className="flex items-center gap-1 mb-1">
-                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                                        <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Optimal</span>
+                                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-500 animate-pulse" />
+                                        <span className="text-[8px] font-black text-emerald-700 dark:text-emerald-500 uppercase tracking-widest">Optimal</span>
                                     </div>
                                 </div>
                                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">Accuracy Threshold</p>
@@ -473,7 +473,7 @@ const Hero = () => {
                                         className="w-1/3 h-full bg-indigo-500/50"
                                     />
                                 </div>
-                                <p className="text-[10px] text-zinc-400 leading-relaxed font-bold uppercase tracking-wider h-8 flex items-center">
+                                <p className="text-[10px] text-slate-600 dark:text-zinc-400 leading-relaxed font-bold uppercase tracking-wider h-8 flex items-center">
                                     <StatusRotator />
                                 </p>
                             </div>

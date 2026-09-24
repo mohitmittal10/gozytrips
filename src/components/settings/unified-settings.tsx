@@ -436,7 +436,7 @@ export function UnifiedSettings() {
             <Home className="w-4 h-4 mr-2 text-blue-400 shrink-0" /> Profile & Brand
           </TabsTrigger>
           <TabsTrigger value="financials" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all whitespace-nowrap shrink-0">
-            <DollarSign className="w-4 h-4 mr-2 text-emerald-400 shrink-0" /> Costing Defaults
+            <DollarSign className="w-4 h-4 mr-2 text-emerald-600 dark:text-emerald-400 shrink-0" /> Costing Defaults
           </TabsTrigger>
           <TabsTrigger value="operations" className="data-[state=active]:bg-white/10 data-[state=active]:text-white justify-start min-h-[44px] text-xs sm:text-sm px-4 rounded-xl border border-transparent data-[state=active]:border-white/10 transition-all whitespace-nowrap shrink-0">
             <Settings className="w-4 h-4 mr-2 text-orange-400 shrink-0" /> Operations
@@ -463,11 +463,11 @@ export function UnifiedSettings() {
               <CardContent className="space-y-6 px-3 sm:px-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Email</Label>
+                    <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Email</Label>
                     <Input type="email" value={user?.email || ''} disabled className="bg-white/5 border-white/10 text-white h-10 text-sm opacity-70" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Member Since</Label>
+                    <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Member Since</Label>
                     <Input type="text" value={userProfile?.created_at ? new Date(userProfile.created_at).toLocaleDateString() : ''} disabled className="bg-white/5 border-white/10 text-white h-10 text-sm opacity-70" />
                   </div>
                 </div>
@@ -517,7 +517,7 @@ export function UnifiedSettings() {
               <CardContent className="space-y-4 px-3 sm:px-6">
                 {/* Agency Logo Uploader */}
                 <div className="space-y-3">
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Agency Logo</Label>
+                  <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Agency Logo</Label>
                   <div className="flex items-center gap-4">
                     {/* Preview */}
                     <div className="relative w-20 h-20 rounded-xl border border-white/10 bg-white/5 flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -543,7 +543,7 @@ export function UnifiedSettings() {
                         htmlFor="logo-upload-input"
                         className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-all ${
                           logoUploading
-                            ? 'opacity-50 pointer-events-none bg-white/5 text-gray-400 border border-white/10'
+                            ? 'opacity-50 pointer-events-none bg-white/5 text-slate-600 dark:text-gray-400 border border-white/10'
                             : 'bg-white/5 hover:bg-white/10 text-white border border-white/10 hover:border-white/20'
                         }`}
                       >
@@ -581,38 +581,38 @@ export function UnifiedSettings() {
                 <div className="border-t border-white/5 pt-4">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                    <div className="space-y-1.5">
-                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Agent Full Name</Label>
+                    <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Agent Full Name</Label>
                     <Input value={profileData.full_name} onChange={(e) => updateProfile('full_name', e.target.value)} placeholder="Your Name" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Company Name</Label>
+                    <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Company Name</Label>
                     <Input value={profileData.company_name} onChange={(e) => updateProfile('company_name', e.target.value)} placeholder="Agency Name" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Business Email</Label>
+                    <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Business Email</Label>
                     <Input type="email" value={profileData.business_email} onChange={(e) => updateProfile('business_email', e.target.value)} placeholder="hello@agency.com" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Business Phone</Label>
+                    <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Business Phone</Label>
                     <Input type="tel" value={profileData.business_phone} onChange={(e) => updateProfile('business_phone', e.target.value)} placeholder="+1 (555) 000-0000" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
-                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Website URL</Label>
+                    <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Website URL</Label>
                     <Input type="url" value={profileData.website} onChange={(e) => updateProfile('website', e.target.value)} placeholder="https://www.youragency.com" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Brand Accent Color (Hex)</Label>
+                    <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Brand Accent Color (Hex)</Label>
                     <div className="flex items-center gap-2 sm:gap-3">
                       <Input type="color" value={profileData.brand_color} onChange={(e) => updateProfile('brand_color', e.target.value)} className="h-10 w-16 p-1 bg-white/5 border-white/10 flex-shrink-0 rounded-lg cursor-pointer" />
                       <Input type="text" value={profileData.brand_color} onChange={(e) => updateProfile('brand_color', e.target.value)} className="bg-white/5 border-white/10 text-white flex-1 h-10 text-sm uppercase" maxLength={7} />
                     </div>
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
-                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Agent Bio / Tagline</Label>
+                    <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Agent Bio / Tagline</Label>
                     <Textarea value={profileData.bio} onChange={(e) => updateProfile('bio', e.target.value)} className="bg-white/5 border-white/10 text-white min-h-[80px] text-sm resize-none" placeholder="Tell us about yourself and your travel interests..." />
                   </div>
                   <div className="space-y-1.5 sm:col-span-2">
-                    <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Email Signature</Label>
+                    <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Email Signature</Label>
                     <Textarea value={agencyData.agent_signature} onChange={(e) => updateAgency('agent_signature', e.target.value)} className="bg-white/5 border-white/10 text-white min-h-[100px] text-sm font-mono" placeholder="Warm Regards,&#10;Agent Name&#10;Company" />
                   </div>
                   </div>
@@ -626,14 +626,14 @@ export function UnifiedSettings() {
             <Card className="glass-card border-white/10 bg-white/[0.02]">
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-emerald-400" />
+                  <DollarSign className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   <CardTitle className="text-lg">Global Costing Rules</CardTitle>
                 </div>
                 <CardDescription className="text-gray-500">Set the default markup, tax rate, and currency for new itineraries.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 px-3 sm:px-6">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Default Currency</Label>
+                  <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Default Currency</Label>
                   <Select value={agencyData.default_currency} onValueChange={(v) => updateAgency('default_currency', v)}>
                     <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 w-full text-sm">
                       <SelectValue />
@@ -646,7 +646,7 @@ export function UnifiedSettings() {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Default Markup</Label>
+                  <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Default Markup</Label>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <Select value={agencyData.default_markup_type} onValueChange={(v) => updateAgency('default_markup_type', v)}>
                       <SelectTrigger className="w-full sm:w-40 bg-white/5 border-white/10 text-white h-10 text-sm flex-shrink-0">
@@ -661,11 +661,11 @@ export function UnifiedSettings() {
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Default Tax (%)</Label>
+                  <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Default Tax (%)</Label>
                   <Input type="number" min={0} max={100} value={agencyData.default_tax_percentage} onChange={(e) => updateAgency('default_tax_percentage', Number(e.target.value))} className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Default Commission Rate (%)</Label>
+                  <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Default Commission Rate (%)</Label>
                   <Input type="number" min={0} max={100} value={agencyData.default_commission_rate} onChange={(e) => updateAgency('default_commission_rate', Number(e.target.value))} className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                 </div>
               </CardContent>
@@ -688,15 +688,15 @@ export function UnifiedSettings() {
                   <div className="space-y-4">
                     <h4 className="text-sm font-bold text-gray-300 border-b border-white/5 pb-2">Hotel Defaults</h4>
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Check-in Time</Label>
+                      <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Check-in Time</Label>
                       <Input value={agencyData.default_hotel_check_in} onChange={(e) => updateAgency('default_hotel_check_in', e.target.value)} placeholder="2:00 PM" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Check-out Time</Label>
+                      <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Check-out Time</Label>
                       <Input value={agencyData.default_hotel_check_out} onChange={(e) => updateAgency('default_hotel_check_out', e.target.value)} placeholder="11:00 AM" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Star Rating</Label>
+                      <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Star Rating</Label>
                       <Select value={String(agencyData.default_hotel_star_rating)} onValueChange={(v) => updateAgency('default_hotel_star_rating', Number(v))}>
                         <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 text-sm">
                           <SelectValue />
@@ -714,20 +714,20 @@ export function UnifiedSettings() {
                   <div className="space-y-4">
                     <h4 className="text-sm font-bold text-gray-300 border-b border-white/5 pb-2">Transport Defaults</h4>
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Cab Vehicle Type</Label>
+                      <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Cab Vehicle Type</Label>
                       <Input value={agencyData.default_cab_vehicle_type} onChange={(e) => updateAgency('default_cab_vehicle_type', e.target.value)} placeholder="SUV / Sedan" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                     </div>
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Bus Type</Label>
+                      <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Bus Type</Label>
                       <Input value={agencyData.default_bus_type} onChange={(e) => updateAgency('default_bus_type', e.target.value)} placeholder="Volvo AC" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1.5">
-                        <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Bus Reporting</Label>
+                        <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Bus Reporting</Label>
                         <Input value={agencyData.default_bus_reporting_time} onChange={(e) => updateAgency('default_bus_reporting_time', e.target.value)} placeholder="8:30 AM" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Bus Departure</Label>
+                        <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Bus Departure</Label>
                         <Input value={agencyData.default_bus_departure_time} onChange={(e) => updateAgency('default_bus_departure_time', e.target.value)} placeholder="9:00 AM" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                       </div>
                     </div>
@@ -738,11 +738,11 @@ export function UnifiedSettings() {
                     <h4 className="text-sm font-bold text-gray-300 border-b border-white/5 pb-2">Miscellaneous</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                       <div className="space-y-1.5">
-                        <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Default Meal Plan</Label>
+                        <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Default Meal Plan</Label>
                         <Input value={agencyData.default_meal_plan} onChange={(e) => updateAgency('default_meal_plan', e.target.value)} placeholder="MAP / CP" className="bg-white/5 border-white/10 text-white h-10 text-sm" />
                       </div>
                       <div className="space-y-1.5">
-                        <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Booking Currency</Label>
+                        <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Booking Currency</Label>
                         <Select value={agencyData.default_booking_currency} onValueChange={(v) => updateAgency('default_booking_currency', v)}>
                           <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 text-sm">
                             <SelectValue />
@@ -773,15 +773,15 @@ export function UnifiedSettings() {
               </CardHeader>
               <CardContent className="space-y-4 px-3 sm:px-6">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">GST / Tax ID Number</Label>
+                  <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">GST / Tax ID Number</Label>
                   <Input value={agencyData.gst_number} onChange={(e) => updateAgency('gst_number', e.target.value)} placeholder="e.g. 29GGGGG1314R9Z6" className="bg-white/5 border-white/10 text-white text-sm h-10" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Bank Details & UPI</Label>
+                  <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Bank Details & UPI</Label>
                   <Textarea value={agencyData.bank_details} onChange={(e) => updateAgency('bank_details', e.target.value)} placeholder="Bank Name: HDFC&#10;Account No: 1234567890&#10;IFSC: HDFC0001234&#10;UPI: your-agency@upi" className="bg-white/5 border-white/10 text-white min-h-[100px] text-sm" />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-gray-400 uppercase tracking-wider font-semibold">Terms & Conditions</Label>
+                  <Label className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Terms & Conditions</Label>
                   <Textarea value={agencyData.terms_conditions} onChange={(e) => updateAgency('terms_conditions', e.target.value)} placeholder="1. 50% advance payment required.&#10;2. Cancellations within 7 days are non-refundable." className="bg-white/5 border-white/10 text-white min-h-[150px] text-sm" />
                 </div>
               </CardContent>

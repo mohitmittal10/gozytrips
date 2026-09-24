@@ -4,25 +4,33 @@
 
 @layer base {
   :root {
-    --background: 216 33% 3%; /* #05070a */
-    --foreground: 210 17% 93%; /* #eceef0 */
-    --card: 225 29% 6%; /* #0a0c12 */
-    --card-foreground: 210 17% 93%;
-    --popover: 225 29% 6%;
-    --popover-foreground: 210 17% 93%;
+    --background: 40 20% 97%; /* Soft off-white */
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
     --primary: 12 100% 60%; /* #ff5c33 */
     --primary-foreground: 0 0% 100%;
     --secondary: 262 83% 58%; /* #7c3aed */
     --secondary-foreground: 0 0% 100%;
-    --muted: 225 30% 10%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 240 3.7% 15.9%; /* sleek dark grey (zinc-800) */
-    --accent-foreground: 210 17% 93%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 225 30% 10%;
-    --input: 225 30% 10%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 44%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
     --ring: 12 100% 60%;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 12 100% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 12 100% 60%;
     --radius: 1rem;
     --button-ripple-color: oklch(0.145 0 0 / 0.3);
     --radius-none: 0px;
@@ -132,12 +140,7 @@
   }
 
   body {
-    @apply bg-background text-foreground;
-  }
-
-  body {
-    background-color: #030507;
-    background-attachment: fixed;
+    @apply bg-background text-foreground transition-colors duration-300;
   }
 
   section {
@@ -159,12 +162,17 @@
   }
 
   .glass-panel {
-    background: rgba(10, 10, 11, 0.7);
+    background: rgba(255, 255, 255, 0.8);
     backdrop-filter: blur(40px);
     -webkit-backdrop-filter: blur(40px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+  }
+  .dark .glass-panel {
+    background: rgba(10, 10, 11, 0.7);
     border: 1px solid rgba(255, 255, 255, 0.08);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    transition: all 0.3s ease;
   }
   .glass-panel:hover {
     border: 1px solid rgba(255, 92, 51, 0.2);
@@ -190,13 +198,25 @@
   }
 
   .the-lab-page .the-lab-page-card {
-    background-color: rgba(30, 30, 30, 0.5) !important;
+    background-color: rgba(255, 255, 255, 0.7) !important;
     backdrop-filter: blur(18px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    color: #0f172a;
+  }
+
+  .dark .the-lab-page .the-lab-page-card {
+    background-color: rgba(30, 30, 30, 0.5) !important;
     border: 1px solid rgba(255, 255, 255, 0.1) !important;
     color: white;
   }
 
   .the-lab-input {
+    background-color: rgba(255, 255, 255, 0.9) !important;
+    border-color: rgba(0, 0, 0, 0.15) !important;
+    color: #0f172a !important;
+  }
+
+  .dark .the-lab-input {
     background-color: rgba(40, 40, 40, 0.7) !important;
     border-color: rgba(255, 255, 255, 0.15) !important;
     color: white !important;
@@ -217,24 +237,36 @@
   }
 
   ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.05);
     border-radius: 4px;
+  }
+  .dark ::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
   }
 
   ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 4px;
     transition: background 0.3s ease;
   }
+  .dark ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+  }
 
   ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.5);
+  }
+  .dark ::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.25);
   }
 
   /* Firefox Scrollbar */
   * {
-    scrollbar-color: rgba(255, 255, 255, 0.15) rgba(0, 0, 0, 0.1);
+    scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.05);
     scrollbar-width: thin;
+  }
+  .dark * {
+    scrollbar-color: rgba(255, 255, 255, 0.15) rgba(0, 0, 0, 0.1);
   }
 
   /* Midnight Edition Utilities */

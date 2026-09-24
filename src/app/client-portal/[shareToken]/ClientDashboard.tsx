@@ -440,13 +440,13 @@ function ItinerarySubTabs({
                 </div>
               </div>
             )},
-            { icon: <Car className="w-4 h-4 text-emerald-400" />, label: "Cab / Transfer", accent: "text-emerald-400", items: cabs, emptyMsg: "No cab / transfer details added yet", renderItem: (c: any, i: number) => (
+            { icon: <Car className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />, label: "Cab / Transfer", accent: "text-emerald-600 dark:text-emerald-400", items: cabs, emptyMsg: "No cab / transfer details added yet", renderItem: (c: any, i: number) => (
               <div key={i} className="px-5 py-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-white">{c.from} → {c.to}</p>
                     {c.date && <p className="text-[11px] text-gray-500 mt-0.5">{c.date}</p>}
-                    {c.serviceType && <p className="text-[11px] text-emerald-400 mt-0.5">{c.serviceType}</p>}
+                    {c.serviceType && <p className="text-[11px] text-emerald-600 dark:text-emerald-400 mt-0.5">{c.serviceType}</p>}
                   </div>
                   {c.duration && <p className="text-xs font-bold text-white shrink-0">{c.duration}</p>}
                 </div>
@@ -502,7 +502,7 @@ function ItinerarySubTabs({
                 <div className="flex items-end justify-between gap-3">
                   <p className="text-3xl font-black text-white">{currencySymbol}{fmt(clientPrice)}</p>
                   {totalPax > 0 && (
-                    <p className="text-xs text-gray-400 mb-1">{currencySymbol}{fmt(perPerson)} <span className="text-gray-600">/ person</span></p>
+                    <p className="text-xs text-slate-600 dark:text-gray-400 mb-1">{currencySymbol}{fmt(perPerson)} <span className="text-gray-600">/ person</span></p>
                   )}
                 </div>
                 <p className="text-[10px] text-gray-600 mt-1">
@@ -514,18 +514,18 @@ function ItinerarySubTabs({
               {baseCost > 0 && (
                 <div className="px-5 py-4 space-y-2.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-400">Base Cost</span>
+                    <span className="text-slate-600 dark:text-gray-400">Base Cost</span>
                     <span className="text-zinc-200 font-medium">{currencySymbol}{fmt(baseCost)}</span>
                   </div>
                   {markupAmount > 0 && (
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400">Service Charge{markupType === "percentage" && markupValue > 0 ? ` (${markupValue}%)` : ""}</span>
+                      <span className="text-slate-600 dark:text-gray-400">Service Charge{markupType === "percentage" && markupValue > 0 ? ` (${markupValue}%)` : ""}</span>
                       <span className="text-zinc-200 font-medium">+ {currencySymbol}{fmt(markupAmount)}</span>
                     </div>
                   )}
                   {taxAmount > 0 && (
                     <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400">GST / Tax ({taxPct}%)</span>
+                      <span className="text-slate-600 dark:text-gray-400">GST / Tax ({taxPct}%)</span>
                       <span className="text-zinc-200 font-medium">+ {currencySymbol}{fmt(taxAmount)}</span>
                     </div>
                   )}
@@ -607,9 +607,9 @@ function ItinerarySubTabs({
       {tab === "inclusions" && (
         <div className="space-y-4">
           {[
-            { icon: <CheckCheck className="w-4 h-4 text-emerald-400" />, title: "What's Included", borderCls: "border-emerald-500/20", bgCls: "bg-emerald-500/5", headerBorderCls: "border-emerald-500/10", content: itin.inclusions, accentCls: "text-emerald-400", emptyMsg: "Inclusions not yet added by your agent", renderLine: (line: string, i: number) => (
+            { icon: <CheckCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />, title: "What's Included", borderCls: "border-emerald-500/20", bgCls: "bg-emerald-500/5", headerBorderCls: "border-emerald-500/10", content: itin.inclusions, accentCls: "text-emerald-600 dark:text-emerald-400", emptyMsg: "Inclusions not yet added by your agent", renderLine: (line: string, i: number) => (
                 <div key={i} className="flex items-start gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-500 shrink-0 mt-0.5" />
                   <p className="text-xs text-gray-300 leading-relaxed">{line.replace(/^[-•*]\s*/, "")}</p>
                 </div>
               )},
@@ -619,9 +619,9 @@ function ItinerarySubTabs({
                   <p className="text-xs text-gray-300 leading-relaxed">{line.replace(/^[-•*]\s*/, "")}</p>
                 </div>
               )},
-            { icon: <ScrollText className="w-4 h-4 text-blue-400" />, title: "Terms & Conditions", borderCls: "border-white/[0.07]", bgCls: "bg-white/[0.02]", headerBorderCls: "border-white/[0.06]", content: itin.termsAndConditions, accentCls: "text-gray-400", emptyMsg: "Terms & conditions not yet added", renderLine: null },
+            { icon: <ScrollText className="w-4 h-4 text-blue-400" />, title: "Terms & Conditions", borderCls: "border-white/[0.07]", bgCls: "bg-white/[0.02]", headerBorderCls: "border-white/[0.06]", content: itin.termsAndConditions, accentCls: "text-slate-600 dark:text-gray-400", emptyMsg: "Terms & conditions not yet added", renderLine: null },
             { icon: <ShieldAlert className="w-4 h-4 text-amber-400" />, title: "Cancellation Policy", borderCls: "border-amber-500/20", bgCls: "bg-amber-500/5", headerBorderCls: "border-amber-500/10", content: itin.cancellationPolicy, accentCls: "text-amber-400", emptyMsg: "Cancellation policy not yet added", renderLine: null },
-            { icon: <CreditCard className="w-4 h-4 text-purple-400" />, title: "Payment Methods", borderCls: "border-white/[0.07]", bgCls: "bg-white/[0.02]", headerBorderCls: "border-white/[0.06]", content: itin.paymentMethods, accentCls: "text-gray-400", emptyMsg: "Payment methods not yet specified", renderLine: null },
+            { icon: <CreditCard className="w-4 h-4 text-purple-400" />, title: "Payment Methods", borderCls: "border-white/[0.07]", bgCls: "bg-white/[0.02]", headerBorderCls: "border-white/[0.06]", content: itin.paymentMethods, accentCls: "text-slate-600 dark:text-gray-400", emptyMsg: "Payment methods not yet specified", renderLine: null },
           ].map((section) => (
             <div key={section.title} className={cn("rounded-2xl overflow-hidden border", section.borderCls, section.bgCls)}>
               <div className={cn("flex items-center gap-2.5 px-5 py-3.5 border-b", section.headerBorderCls)}>
@@ -817,7 +817,7 @@ export function ClientDashboard({ formMeta, shareToken, responseId }: ClientDash
             )}
             <div className="min-w-0">
               <p className="text-[10px] text-[#FF5C33] font-bold uppercase tracking-widest truncate">{agentName}</p>
-              <p className="text-xs text-gray-400 truncate">{formMeta.title}</p>
+              <p className="text-xs text-slate-600 dark:text-gray-400 truncate">{formMeta.title}</p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -906,7 +906,7 @@ export function ClientDashboard({ formMeta, shareToken, responseId }: ClientDash
                 <h1 className="text-2xl font-black text-white tracking-tight">
                   {response.client_name ? `Hi, ${response.client_name.split(" ")[0]}! 👋` : "Your Trip Dashboard"}
                 </h1>
-                <p className="text-gray-400 text-sm mt-2 max-w-lg">
+                <p className="text-slate-600 dark:text-gray-400 text-sm mt-2 max-w-lg">
                   Track your enquiry status, view your trip details, and chat directly with {agentName}.
                 </p>
                 <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
@@ -1143,7 +1143,7 @@ export function ClientDashboard({ formMeta, shareToken, responseId }: ClientDash
                     <div className="relative z-10 p-5">
                       <p className="text-[10px] text-[#FF5C33] font-bold uppercase tracking-widest mb-1">Your Personalised Plan</p>
                       <h3 className="text-xl font-black text-white leading-tight mb-1">{itin.title || "Your Trip"}</h3>
-                      <p className="text-xs text-gray-400 mb-4">{itin.destinations}</p>
+                      <p className="text-xs text-slate-600 dark:text-gray-400 mb-4">{itin.destinations}</p>
                       <div className="flex flex-wrap gap-3">
                         {itin.start_date && (
                           <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/[0.06] border border-white/10 rounded-xl text-xs text-gray-300">

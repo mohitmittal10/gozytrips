@@ -74,7 +74,7 @@ export default function Step2Animation() {
                             transition={{ duration: 0.5 }}
                         >
                             <AnimatedLogo size="xs" />
-                            <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">Wander Labs</span>
+                            <span className="text-[10px] font-bold tracking-widest text-slate-600 dark:text-zinc-400 uppercase">Wander Labs</span>
                         </motion.div>
                     </div>
                     <div className="flex items-center justify-center gap-2">
@@ -203,7 +203,7 @@ export default function Step2Animation() {
                                 exit={{ opacity: 0, scale: 0.9 }}
                                 className="relative z-10 w-full h-full flex flex-col pt-2"
                             >
-                                <div className="text-[10px] uppercase tracking-[0.2em] text-emerald-400 mb-3 text-center font-bold">
+                                <div className="text-[10px] uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400 mb-3 text-center font-bold">
                                     Plotting Optimal Route
                                 </div>
                                 
@@ -227,7 +227,7 @@ export default function Step2Animation() {
                                     ].map((node, i) => (
                                         <div key={i} className="flex items-center gap-4 relative z-10">
                                             <motion.div 
-                                                className="w-8 h-8 rounded-full bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center text-[10px] font-bold text-zinc-400"
+                                                className="w-8 h-8 rounded-full bg-zinc-800 border-2 border-zinc-700 flex items-center justify-center text-[10px] font-bold text-slate-600 dark:text-zinc-400"
                                                 initial={{ borderColor: "rgba(63, 63, 70, 1)", color: "rgba(161, 161, 170, 1)", backgroundColor: "rgba(39, 39, 42, 1)" }}
                                                 animate={{ 
                                                     borderColor: "rgba(52, 211, 153, 0.5)", 
@@ -271,7 +271,7 @@ export default function Step2Animation() {
                                 <div className="bg-white/10 backdrop-blur-md border border-white/20 p-5 rounded-2xl w-[90%] shadow-xl">
                                     <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/10">
                                         <div className="flex items-center gap-2">
-                                            <ShieldCheck className="w-5 h-5 text-emerald-400" />
+                                            <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                                             <span className="text-sm font-bold text-white tracking-wide">100% Optimized</span>
                                         </div>
                                         <div className="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded-md font-bold">
@@ -281,16 +281,16 @@ export default function Step2Animation() {
                                     
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between text-xs">
-                                            <span className="text-zinc-400 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Best Routes</span>
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                            <span className="text-slate-600 dark:text-zinc-400 flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5" /> Best Routes</span>
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                                         </div>
                                         <div className="flex items-center justify-between text-xs">
-                                            <span className="text-zinc-400 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Perfect Timing</span>
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                            <span className="text-slate-600 dark:text-zinc-400 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Perfect Timing</span>
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                                         </div>
                                         <div className="flex items-center justify-between text-xs">
-                                            <span className="text-zinc-400 flex items-center gap-1.5"><Map className="w-3.5 h-3.5" /> Hidden Gems Added</span>
-                                            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                                            <span className="text-slate-600 dark:text-zinc-400 flex items-center gap-1.5"><Map className="w-3.5 h-3.5" /> Hidden Gems Added</span>
+                                            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                                         </div>
                                     </div>
                                     
@@ -301,7 +301,7 @@ export default function Step2Animation() {
                                         transition={{ delay: 0.5 }}
                                     >
                                         <motion.div 
-                                            className="h-full bg-emerald-400"
+                                            className="h-full bg-emerald-600 dark:bg-emerald-400"
                                             initial={{ width: "0%" }}
                                             animate={{ width: "100%" }}
                                             transition={{ duration: 1, ease: "easeOut", delay: 0.5 }}

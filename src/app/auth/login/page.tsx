@@ -138,7 +138,7 @@ export default function Login() {
                       />
                     </FormControl>
                     {showSuccess && (
-                      <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-400" />
+                      <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" />
                     )}
                   </div>
                   {!fieldState.error && emailSuggestion && emailSuggestion !== field.value && (
@@ -188,7 +188,7 @@ export default function Login() {
                       />
                     </FormControl>
                     {showSuccess && (
-                      <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-400" />
+                      <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" />
                     )}
                   </div>
                   <FormMessage className="text-xs" aria-live="polite" />

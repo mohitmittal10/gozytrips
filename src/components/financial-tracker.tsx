@@ -67,8 +67,8 @@ export default function FinancialTracker({
                         label: "Collected Cash",
                         value: fin.fm(fin.stats.totalPaid),
                         subtext: `${fin.stats.totalRevenue > 0 ? ((fin.stats.totalPaid / fin.stats.totalRevenue) * 100).toFixed(0) : 0}% realization`,
-                        color: "text-emerald-400",
-                        badge: "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30",
+                        color: "text-emerald-600 dark:text-emerald-400",
+                        badge: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
                         bg: "from-emerald-950/30 to-emerald-900/10 border-emerald-500/20",
                     },
                     {
@@ -93,13 +93,13 @@ export default function FinancialTracker({
                         className={`p-4 rounded-2xl border bg-gradient-to-b ${card.bg} shadow-xl flex flex-col justify-between space-y-2`}
                     >
                         <div className="flex items-center justify-between">
-                            <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">
+                            <p className="text-[10px] text-slate-600 dark:text-zinc-400 uppercase tracking-wider font-semibold">
                                 {card.label}
                             </p>
                         </div>
                         <div>
                             <p className={`text-2xl font-black tracking-tight ${card.color}`}>{card.value}</p>
-                            <p className="text-[11px] text-zinc-400 font-semibold mt-0.5">{card.subtext}</p>
+                            <p className="text-[11px] text-slate-600 dark:text-zinc-400 font-semibold mt-0.5">{card.subtext}</p>
                         </div>
                     </div>
                 ))}
@@ -118,10 +118,10 @@ export default function FinancialTracker({
                                 "flex items-center justify-center gap-2 text-xs font-semibold py-2.5 px-4 rounded-xl transition-all whitespace-nowrap flex-1 shrink-0 border cursor-pointer",
                                 isActive
                                     ? "bg-primary/20 text-white border-primary/40 font-bold"
-                                    : "border-transparent text-zinc-400 hover:text-white hover:bg-white/5"
+                                    : "border-transparent text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/5"
                             )}
                         >
-                            <Icon className={cn("w-3.5 h-3.5", isActive ? "text-primary" : "text-zinc-400")} />
+                            <Icon className={cn("w-3.5 h-3.5", isActive ? "text-primary" : "text-slate-600 dark:text-zinc-400")} />
                             <span>{tab.label}</span>
                         </button>
                     );

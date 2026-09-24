@@ -13,8 +13,6 @@
 
 .crm-page {
   min-height: 100vh;
-  background-color: #000000;
-  color: #f4f4f5;
   padding-top: 5rem; /* Increased to avoid overlap with fixed navbar (61px) */
   padding-bottom: 1rem;
   overflow-x: clip; /* clip instead of hidden to allow position: sticky to work on children */

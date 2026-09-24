@@ -42,7 +42,7 @@ const categoryStyles: Record<string, { icon: typeof Send; color: string; bg: str
   booking: { icon: CheckCircle2, color: "text-green-400", bg: "bg-green-500/10", border: "border-green-500/20" },
   reminder: { icon: Clock, color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20" },
   update: { icon: Send, color: "text-blue-400", bg: "bg-blue-500/10", border: "border-blue-500/20" },
-  payment: { icon: Wallet, color: "text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
+  payment: { icon: Wallet, color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", border: "border-emerald-500/20" },
   custom: { icon: Pencil, color: "text-purple-400", bg: "bg-purple-500/10", border: "border-purple-500/20" },
 };
 
@@ -286,7 +286,7 @@ export default function ClientUpdateSuggestions({
           {hasFetched && (
             <Button
               variant="ghost" size="icon"
-              className="h-7 w-7 text-gray-400 hover:text-white"
+              className="h-7 w-7 text-slate-600 dark:text-gray-400 hover:text-white"
               onClick={() => fetchSuggestions(true)}
               disabled={isLoading}
               title="Refresh suggestions"
@@ -296,7 +296,7 @@ export default function ClientUpdateSuggestions({
           )}
           <Button
             variant="ghost" size="icon"
-            className="h-7 w-7 text-gray-400 hover:text-white"
+            className="h-7 w-7 text-slate-600 dark:text-gray-400 hover:text-white"
             onClick={() => {
               if (!isExpanded) { handleExpand(); } else { setIsExpanded(false); }
             }}
@@ -320,7 +320,7 @@ export default function ClientUpdateSuggestions({
           Draft an Email for This Client
         </Button>
       ) : isLoading ? (
-        <div className="flex flex-col items-center justify-center py-8 gap-3 text-gray-400 text-sm">
+        <div className="flex flex-col items-center justify-center py-8 gap-3 text-slate-600 dark:text-gray-400 text-sm">
           <UniqueLoading variant="morph" size="sm" />
           <p className="text-[11px] animate-pulse">Writing email drafts...</p>
         </div>
@@ -345,7 +345,7 @@ export default function ClientUpdateSuggestions({
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-xs font-semibold text-white">{suggestion.title}</p>
-                    <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-1">{suggestion.preview}</p>
+                    <p className="text-[11px] text-slate-600 dark:text-gray-400 mt-0.5 line-clamp-1">{suggestion.preview}</p>
 
                     {/* Custom message input */}
                     {isCustom && (
@@ -363,7 +363,7 @@ export default function ClientUpdateSuggestions({
                     {isEditing ? (
                       <div className="mt-3 p-3 rounded-lg bg-black/40 border border-white/10 space-y-3">
                         <div>
-                          <label className="text-[9px] text-gray-400 uppercase tracking-wider font-bold block mb-1">Subject</label>
+                          <label className="text-[9px] text-slate-600 dark:text-gray-400 uppercase tracking-wider font-bold block mb-1">Subject</label>
                           <input
                             type="text"
                             value={email.subject}
@@ -372,7 +372,7 @@ export default function ClientUpdateSuggestions({
                           />
                         </div>
                         <div>
-                          <label className="text-[9px] text-gray-400 uppercase tracking-wider font-bold block mb-1">Email Body</label>
+                          <label className="text-[9px] text-slate-600 dark:text-gray-400 uppercase tracking-wider font-bold block mb-1">Email Body</label>
                           <textarea
                             rows={6}
                             value={email.body}
@@ -384,7 +384,7 @@ export default function ClientUpdateSuggestions({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-7 px-2.5 text-[10px] text-gray-400 hover:text-white hover:bg-white/5"
+                            className="h-7 px-2.5 text-[10px] text-slate-600 dark:text-gray-400 hover:text-white hover:bg-white/5"
                             onClick={() => setEditingId(null)}
                           >
                             Close Editor
@@ -423,7 +423,7 @@ export default function ClientUpdateSuggestions({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-xs text-gray-400 hover:bg-white/10 gap-1"
+                      className="h-7 px-2 text-xs text-slate-600 dark:text-gray-400 hover:bg-white/10 gap-1"
                       onClick={() => handleRedo(suggestion)}
                       disabled={isRedo}
                     >
@@ -437,7 +437,7 @@ export default function ClientUpdateSuggestions({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className={`h-7 px-2 text-xs gap-1 ${isEditing ? "text-purple-400 bg-purple-500/10" : "text-gray-400 hover:bg-white/10"}`}
+                      className={`h-7 px-2 text-xs gap-1 ${isEditing ? "text-purple-400 bg-purple-500/10" : "text-slate-600 dark:text-gray-400 hover:bg-white/10"}`}
                       onClick={() => setEditingId(isEditing ? null : suggestion.id)}
                     >
                       <Pencil className="w-3 h-3" />
@@ -446,7 +446,7 @@ export default function ClientUpdateSuggestions({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 px-2 text-xs text-emerald-400 hover:bg-emerald-500/10 gap-1"
+                      className="h-7 px-2 text-xs text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 gap-1"
                       onClick={() => handleCopy(suggestion.id, email.subject, email.body)}
                     >
                       {copiedId === suggestion.id ? (

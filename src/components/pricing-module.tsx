@@ -43,7 +43,7 @@ const getCategoryIcon = (category: string) => {
     case "Activity":
       return <Compass className="w-3.5 h-3.5 text-rose-400 shrink-0" />;
     default:
-      return <Settings className="w-3.5 h-3.5 text-gray-400 shrink-0" />;
+      return <Settings className="w-3.5 h-3.5 text-slate-600 dark:text-gray-400 shrink-0" />;
   }
 };
 
@@ -461,15 +461,15 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
         @keyframes slideFromRight { from { opacity:0; transform:translateX(12px); } to { opacity:1; transform:translateX(0); } }
       `}</style>
       {/* Tab bar / Header block */}
-      <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 mb-6 shadow-xl">
+      <div className="bg-[#EFECE5]/95 dark:bg-obsidian-dark/95 backdrop-blur-xl border border-primary/20 rounded-2xl p-4 mb-6 shadow-[0_0_25px_rgba(255,92,51,0.12)]">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-1.5 bg-primary/10 rounded-lg">
+            <div className="p-1.5 bg-primary/10 rounded-lg border border-primary/20">
               <Wallet className="w-4 h-4 text-primary" />
             </div>
             <div>
-              <p className="text-xs font-bold text-white leading-none">Trip Costing Builder</p>
-              <p className="text-[11px] text-foreground/40 mt-0.5 leading-none">Live synced costing across all categories with per-item markups and payment schedules.</p>
+              <p className="text-xs font-bold text-slate-900 dark:text-white leading-none">Trip Costing Builder</p>
+              <p className="text-[11px] text-slate-600 dark:text-zinc-400 mt-0.5 leading-none">Live synced costing across all categories with per-item markups and payment schedules.</p>
             </div>
           </div>
 
@@ -487,7 +487,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
             <button
               type="button"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-white/80 hover:text-white text-xs font-semibold hover:bg-white/5 transition-all cursor-pointer select-none animate-in fade-in duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/20 text-primary hover:bg-primary/10 text-xs font-semibold transition-all cursor-pointer select-none animate-in fade-in duration-200"
             >
               {isCollapsed ? (
                 <>
@@ -507,7 +507,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
 
       {/* Content pane */}
       <div 
-        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden"
+        className="bg-[#EFECE5]/95 dark:bg-[#0A0A0B]/95 backdrop-blur-xl border border-slate-300/60 dark:border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden"
         style={{ animation: `slideFromRight 0.22s cubic-bezier(0.4,0,0.2,1) both` }}
       >
         {/* Warnings list if not collapsed */}
@@ -527,8 +527,8 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in duration-200">
               {/* Summary block */}
               <div className="md:col-span-2 space-y-6">
-                <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-5 space-y-4">
-                  <h4 className="text-sm font-bold text-white uppercase tracking-wider border-b border-white/5 pb-2">Itemized Costs Summary</h4>
+                <div className="bg-[#EFECE5] dark:bg-white/[0.02] border border-slate-300/60 dark:border-white/[0.05] rounded-xl p-5 space-y-4">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-300/60 dark:border-white/5 pb-2">Itemized Costs Summary</h4>
                   
                   {pricing.manualOptions.length === 0 ? (
                     <p className="text-xs text-gray-500 italic">No manual cost items added.</p>
@@ -547,10 +547,10 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                         return (
                           <div key={opt.id} className="flex justify-between items-center text-sm border-b border-white/[0.02] pb-1.5">
                             <div>
-                              <span className="font-medium text-white">{opt.name}</span>
-                              <span className="text-[10px] bg-white/5 text-gray-400 px-1.5 py-0.5 rounded ml-2 uppercase">{opt.category}</span>
+                              <span className="font-medium text-slate-900 dark:text-white">{opt.name}</span>
+                              <span className="text-[10px] bg-white/5 text-slate-600 dark:text-gray-400 px-1.5 py-0.5 rounded ml-2 uppercase">{opt.category}</span>
                               {opt.linkedItemId && (
-                                <span className="text-[9px] bg-emerald-500/10 text-emerald-400 px-1.5 py-0.5 rounded ml-1 font-medium">
+                                <span className="text-[9px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded ml-1 font-medium">
                                   Synced
                                 </span>
                               )}
@@ -576,8 +576,8 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                 </div>
 
                 {/* Milestones schedule */}
-                <div className="bg-white/[0.02] border border-white/[0.05] rounded-xl p-5 space-y-4">
-                  <h4 className="text-sm font-bold text-white uppercase tracking-wider border-b border-white/5 pb-2">Payment Milestones</h4>
+                <div className="bg-[#EFECE5] dark:bg-white/[0.02] border border-slate-300/60 dark:border-white/[0.05] rounded-xl p-5 space-y-4">
+                  <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-300/60 dark:border-white/5 pb-2">Payment Milestones</h4>
                   {milestoneAmounts.length === 0 ? (
                     <p className="text-xs text-gray-500 italic">No payment milestones defined.</p>
                   ) : (
@@ -585,8 +585,8 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                       {milestoneAmounts.map((m) => (
                         <div key={m.id} className="flex justify-between items-center text-sm">
                           <div>
-                            <span className="font-semibold text-white">{m.name}</span>
-                            <span className="text-xs text-gray-400 ml-2">({m.percentage}%)</span>
+                            <span className="font-semibold text-slate-900 dark:text-white">{m.name}</span>
+                            <span className="text-xs text-slate-600 dark:text-gray-400 ml-2">({m.percentage}%)</span>
                           </div>
                           <div className="text-right font-mono">
                             <span className="text-primary font-bold">{formatMoney(m.amount, pricing.currency)}</span>
@@ -603,7 +603,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
               <div className="space-y-4">
                 <div className="space-y-4 bg-primary/10 p-5 rounded-xl border border-primary/20 text-sm">
                   <div className="text-primary font-bold text-base uppercase tracking-wider border-b border-primary/20 pb-2">Costing Summary</div>
-                  <div className="flex justify-between text-gray-400">
+                  <div className="flex justify-between text-slate-600 dark:text-gray-400">
                     <span>Base Cost</span>
                     <span className="font-mono">{formatMoney(baseCost, pricing.currency)}</span>
                   </div>
@@ -615,7 +615,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                     <span>Total Item Tax</span>
                     <span className="font-mono">+{formatMoney(taxAmount, pricing.currency)}</span>
                   </div>
-                  <div className="pt-3 mt-2 border-t border-primary/20 flex justify-between font-extrabold text-white text-xl">
+                  <div className="pt-3 mt-2 border-t border-primary/20 flex justify-between font-extrabold text-slate-900 dark:text-white text-xl">
                     <span>Total Quote</span>
                     <span className="text-primary font-mono">{formatMoney(finalTotal, pricing.currency)}</span>
                   </div>
@@ -633,7 +633,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                     value={pricing.currency}
                     onValueChange={(v: Currency) => updatePricing({ currency: v })}
                   >
-                    <SelectTrigger className="bg-black/20 border-white/10 text-white">
+                    <SelectTrigger className="bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-white">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -659,7 +659,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                           variant="outline" 
                           size="sm" 
                           onClick={autoSyncItineraryItems} 
-                          className="gap-1.5 h-8 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-semibold cursor-pointer"
+                          className="gap-1.5 h-8 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs font-semibold cursor-pointer"
                         >
                           <Sparkles className="w-3.5 h-3.5" />
                           Import All Categories ({availableItineraryItemsCount})
@@ -673,14 +673,14 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                   
                   <div className="space-y-4 max-h-[520px] overflow-y-auto pr-2 custom-scrollbar">
                     {pricing.manualOptions.length === 0 ? (
-                      <div className="p-8 text-center border border-dashed border-white/10 rounded-xl bg-white/5 text-gray-500 text-sm space-y-3">
+                      <div className="p-8 text-center border border-dashed border-slate-300/60 dark:border-white/10 rounded-xl bg-[#EFECE5]/60 dark:bg-white/5 text-gray-500 text-sm space-y-3">
                         <p>No cost items added yet.</p>
                         {availableItineraryItemsCount > 0 && (
                           <Button 
                             variant="outline" 
                             size="sm" 
                             onClick={autoSyncItineraryItems} 
-                            className="gap-2 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 cursor-pointer"
+                            className="gap-2 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 cursor-pointer"
                           >
                             <Sparkles className="w-4 h-4" />
                             Auto-Import {availableItineraryItemsCount} Category Item(s)
@@ -699,29 +699,29 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                             key={option.id} 
                             className={`p-4 rounded-xl border transition-all space-y-3.5 relative group ${
                               isLinked 
-                                ? "border-emerald-500/30 bg-gradient-to-r from-emerald-950/20 via-black/40 to-black/30 shadow-lg hover:border-emerald-500/40" 
-                                : "border-white/10 bg-white/5 hover:border-white/20"
+                                ? "border-emerald-500/40 bg-[#EFECE5] dark:bg-emerald-950/20 shadow-md hover:border-emerald-500/60" 
+                                : "border-slate-300/60 dark:border-white/10 bg-[#EFECE5] dark:bg-white/5 hover:border-white/20"
                             }`}
                           >
                             {/* Header row */}
                             <div className={`flex items-center justify-between border-b pb-2.5 ${isLinked ? "border-emerald-500/20" : "border-white/[0.05]"}`}>
                               <div className="flex items-center gap-2 flex-wrap min-w-0 flex-1 mr-2">
-                                <div className={`p-1.5 rounded-lg shrink-0 ${isLinked ? "bg-emerald-500/20 text-emerald-400" : "bg-primary/10 text-primary"}`}>
+                                <div className={`p-1.5 rounded-lg shrink-0 ${isLinked ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400" : "bg-primary/10 text-primary"}`}>
                                   {getCategoryIcon(option.category)}
                                 </div>
-                                <span className="text-xs font-bold text-white truncate max-w-[200px] sm:max-w-[300px]" title={itemTitle}>
+                                <span className="text-xs font-bold text-slate-900 dark:text-white truncate max-w-[200px] sm:max-w-[300px]" title={itemTitle}>
                                   {itemTitle}
                                 </span>
                                 {isLinked ? (
-                                  <span className="flex items-center gap-1.5 text-[10px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold tracking-wide uppercase shadow-sm shrink-0">
+                                  <span className="flex items-center gap-1.5 text-[10px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold tracking-wide uppercase shadow-sm shrink-0">
                                     <span className="relative flex h-2 w-2">
-                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-600 dark:bg-emerald-400 opacity-75"></span>
+                                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600 dark:bg-emerald-500"></span>
                                     </span>
                                     Live Synced ({option.category})
                                   </span>
                                 ) : (
-                                  <span className="text-[10px] bg-white/5 text-gray-400 border border-white/5 px-2 py-0.5 rounded-full font-medium shrink-0">
+                                  <span className="text-[10px] bg-white/5 text-slate-600 dark:text-gray-400 border border-slate-300/60 dark:border-white/5 px-2 py-0.5 rounded-full font-medium shrink-0">
                                     Manual Entry
                                   </span>
                                 )}
@@ -731,7 +731,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                   <button
                                     type="button"
                                     onClick={() => handleLinkItem(option.id, option.category, "unlinked")}
-                                    className="flex items-center gap-1 text-[11px] font-medium text-emerald-400 hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 px-2 py-1 rounded-lg transition-colors cursor-pointer select-none"
+                                    className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 hover:text-slate-900 dark:hover:text-white bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 px-2 py-1 rounded-lg transition-colors cursor-pointer select-none"
                                     title="Unlink this item to make it a standalone manual entry"
                                   >
                                     <Unlink className="w-3 h-3" />
@@ -752,12 +752,12 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                             {/* Inputs Row 1: Category & Linked Item Picker */}
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                               <div className="space-y-1.5">
-                                <Label className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">Category</Label>
+                                <Label className="text-[10px] uppercase tracking-wider text-slate-600 dark:text-gray-400 font-semibold">Category</Label>
                                 <Select value={option.category} onValueChange={(v) => handleCategoryChange(option.id, v)}>
-                                  <SelectTrigger className="bg-black/30 border-white/10 h-9 text-xs text-white">
+                                  <SelectTrigger className="bg-white dark:bg-black/30 border-slate-300/60 dark:border-white/10 h-9 text-xs text-slate-900 dark:text-white">
                                     <SelectValue />
                                   </SelectTrigger>
-                                  <SelectContent className="bg-obsidian-dark border-white/10 text-zinc-300">
+                                  <SelectContent className="bg-obsidian-dark border-slate-300/60 dark:border-white/10 text-zinc-300">
                                     {manualCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                   </SelectContent>
                                 </Select>
@@ -773,12 +773,12 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                     value={option.linkedItemId || "unlinked"}
                                     onValueChange={(v) => handleLinkItem(option.id, option.category, v)}
                                   >
-                                    <SelectTrigger className={`h-9 text-xs text-white ${isLinked ? "bg-emerald-950/40 border-emerald-500/30 text-emerald-200" : "bg-primary/5 border-primary/20"}`}>
+                                    <SelectTrigger className={`h-9 text-xs text-slate-900 dark:text-white ${isLinked ? "bg-white dark:bg-emerald-950/40 border-emerald-500/40 text-emerald-900 dark:text-emerald-200 font-medium" : "bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/10"}`}>
                                       <SelectValue placeholder={`Choose ${option.category}...`} />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-obsidian-dark border-white/10 text-zinc-200 max-h-56">
+                                    <SelectContent className="bg-obsidian-dark border-slate-300/60 dark:border-white/10 text-zinc-200 max-h-56">
                                       <SelectItem value="unlinked">
-                                        <span className="text-gray-400 italic">Manual Entry (Unlinked)</span>
+                                        <span className="text-slate-600 dark:text-gray-400 italic">Manual Entry (Unlinked)</span>
                                       </SelectItem>
 
                                       {option.category === "Flight" && (flights || []).map((f) => (
@@ -823,17 +823,17 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                               {/* Service Name */}
                               <div className="sm:col-span-1 space-y-1.5">
-                                <Label className={`text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1 ${isLinked ? "text-emerald-400" : "text-gray-400"}`}>
+                                <Label className={`text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1 ${isLinked ? "text-emerald-600 dark:text-emerald-400" : "text-slate-600 dark:text-gray-400"}`}>
                                   {isLinked && <Lock className="w-2.5 h-2.5" />}
                                   Service Name {isLinked ? "(Derived)" : ""}
                                 </Label>
                                 {isLinked ? (
-                                  <div className="h-9 px-3 bg-slate-950/70 border border-emerald-500/25 rounded-md flex items-center justify-between text-xs text-emerald-100 shadow-inner font-medium truncate select-none">
+                                  <div className="h-9 px-3 bg-white dark:bg-slate-950/70 border border-emerald-500/30 rounded-md flex items-center justify-between text-xs text-emerald-950 dark:text-emerald-100 shadow-sm font-medium truncate select-none">
                                     <span className="truncate flex items-center gap-1.5">
                                       {getCategoryIcon(option.category)}
-                                      <span className="text-white font-semibold">{option.name}</span>
+                                      <span className="text-slate-900 dark:text-white font-semibold">{option.name}</span>
                                     </span>
-                                    <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold uppercase shrink-0 ml-1">
+                                    <span className="text-[9px] bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded font-mono font-bold uppercase shrink-0 ml-1">
                                       Synced
                                     </span>
                                   </div>
@@ -841,7 +841,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                   <Input 
                                     value={option.name} 
                                     onChange={(e) => updateManualOption(option.id, "name", e.target.value)}
-                                    className="bg-black/20 border-white/5 h-9 text-xs text-white"
+                                    className="bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/5 h-9 text-xs text-slate-900 dark:text-white"
                                     placeholder="e.g. Visa Fee / Flight Ticket"
                                   />
                                 )}
@@ -849,23 +849,23 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
 
                               {/* Pricing Type */}
                               <div className="space-y-1.5">
-                                <Label className={`text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1 ${isLinked ? "text-emerald-400" : "text-gray-400"}`}>
+                                <Label className={`text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1 ${isLinked ? "text-emerald-600 dark:text-emerald-400" : "text-slate-600 dark:text-gray-400"}`}>
                                   {isLinked && <Lock className="w-2.5 h-2.5" />}
                                   Pricing Type
                                 </Label>
                                 {isLinked ? (
-                                  <div className="h-9 px-3 bg-slate-950/70 border border-emerald-500/25 rounded-md flex items-center justify-between text-xs text-emerald-100 shadow-inner font-medium select-none">
-                                    <span className="capitalize text-white font-semibold">
+                                  <div className="h-9 px-3 bg-white dark:bg-slate-950/70 border border-emerald-500/30 rounded-md flex items-center justify-between text-xs text-emerald-950 dark:text-emerald-100 shadow-sm font-medium select-none">
+                                    <span className="capitalize text-slate-900 dark:text-white font-semibold">
                                       {option.type === "per-person" ? "Per Person" : "Total Flat"}
                                     </span>
-                                    <Lock className="w-3 h-3 text-emerald-400/60 shrink-0" />
+                                    <Lock className="w-3 h-3 text-emerald-600 dark:text-emerald-400/60 shrink-0" />
                                   </div>
                                 ) : (
                                   <Select value={option.type} onValueChange={(v) => updateManualOption(option.id, "type", v)}>
-                                    <SelectTrigger className="bg-black/20 border-white/5 h-9 text-xs text-white">
+                                    <SelectTrigger className="bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/5 h-9 text-xs text-slate-900 dark:text-white">
                                       <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+                                    <SelectContent className="bg-obsidian-dark border-slate-300/60 dark:border-white/5 text-zinc-300">
                                       <SelectItem value="per-person">Per Person</SelectItem>
                                       <SelectItem value="total">Total Flat</SelectItem>
                                     </SelectContent>
@@ -875,14 +875,14 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
 
                               {/* Base Cost */}
                               <div className="space-y-1.5">
-                                <Label className={`text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1 ${isLinked ? "text-emerald-400" : "text-gray-400"}`}>
+                                <Label className={`text-[10px] uppercase tracking-wider font-semibold flex items-center gap-1 ${isLinked ? "text-emerald-600 dark:text-emerald-400" : "text-slate-600 dark:text-gray-400"}`}>
                                   {isLinked && <Lock className="w-2.5 h-2.5" />}
                                   Base Cost ({currencySymbol}) {isLinked ? "(Derived)" : ""}
                                 </Label>
                                 {isLinked ? (
-                                  <div className="h-9 px-3 bg-emerald-950/50 border border-emerald-500/30 rounded-md flex items-center justify-between text-xs font-mono font-bold text-emerald-300 shadow-inner select-none">
+                                  <div className="h-9 px-3 bg-white dark:bg-emerald-950/50 border border-emerald-500/30 rounded-md flex items-center justify-between text-xs font-mono font-bold text-emerald-900 dark:text-emerald-300 shadow-sm select-none">
                                     <span>{formatMoney(option.amount, pricing.currency)}</span>
-                                    <div className="flex items-center gap-1 text-[9px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded uppercase font-sans font-semibold">
+                                    <div className="flex items-center gap-1 text-[9px] bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded uppercase font-sans font-semibold">
                                       <RefreshCw className="w-2.5 h-2.5 animate-spin-slow" /> Auto
                                     </div>
                                   </div>
@@ -891,7 +891,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                     type="number"
                                     value={option.amount} 
                                     onChange={(e) => updateManualOption(option.id, "amount", Number(e.target.value))}
-                                    className="bg-black/20 border-white/5 h-9 text-xs text-white font-mono"
+                                    className="bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/5 h-9 text-xs text-slate-900 dark:text-white font-mono"
                                     placeholder="0"
                                   />
                                 )}
@@ -906,10 +906,10 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                   value={option.markupType || "percentage"} 
                                   onValueChange={(v) => updateManualOption(option.id, "markupType", v)}
                                 >
-                                  <SelectTrigger className="bg-black/20 border-white/5 h-9 text-xs text-white">
+                                  <SelectTrigger className="bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/5 h-9 text-xs text-slate-900 dark:text-white">
                                     <SelectValue />
                                   </SelectTrigger>
-                                  <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+                                  <SelectContent className="bg-obsidian-dark border-slate-300/60 dark:border-white/5 text-zinc-300">
                                     <SelectItem value="percentage">Percentage (%)</SelectItem>
                                     <SelectItem value="flat">Flat Amount ({currencySymbol})</SelectItem>
                                   </SelectContent>
@@ -923,7 +923,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                   type="number"
                                   value={typeof option.markupValue === "number" ? option.markupValue : (pricing.markupValue ?? 15)} 
                                   onChange={(e) => updateManualOption(option.id, "markupValue", Number(e.target.value))}
-                                  className="bg-black/20 border-white/5 h-9 text-xs text-white font-mono"
+                                  className="bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/5 h-9 text-xs text-slate-900 dark:text-white font-mono"
                                   placeholder="15"
                                 />
                               </div>
@@ -935,7 +935,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                   type="number"
                                   value={typeof option.taxPercentage === "number" ? option.taxPercentage : 0} 
                                   onChange={(e) => updateManualOption(option.id, "taxPercentage", Number(e.target.value))}
-                                  className="bg-black/20 border-white/5 h-9 text-xs text-white font-mono"
+                                  className="bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/5 h-9 text-xs text-slate-900 dark:text-white font-mono"
                                   placeholder="0"
                                 />
                               </div>
@@ -979,36 +979,36 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
 
                               return (
                                 <div className={`space-y-1.5 rounded-lg border font-mono text-[11px] overflow-hidden ${
-                                  isLinked ? "border-emerald-500/20" : "border-white/5"
+                                  isLinked ? "border-emerald-500/30" : "border-slate-300/60 dark:border-white/5"
                                 }`}>
                                   {showPaxBreakdown && (
-                                    <div className={`px-3 py-2 space-y-1 ${ isLinked ? "bg-emerald-950/20" : "bg-black/30" }`}>
+                                    <div className={`px-3 py-2 space-y-1 ${ isLinked ? "bg-white/80 dark:bg-emerald-950/20" : "bg-white dark:bg-black/30" }`}>
                                       <div className="text-[10px] uppercase tracking-wider text-gray-500 font-sans font-semibold mb-1">Pax Cost Breakdown</div>
                                       {adultPax > 0 && (
                                         <div className="flex justify-between text-gray-300">
-                                          <span className="text-gray-400">Adults: <span className="text-white">{adultPax}</span> × {formatMoney(adultCostEach, pricing.currency)}</span>
-                                          <span className="text-emerald-300 font-bold">{formatMoney(adultCostEach * adultPax, pricing.currency)}</span>
+                                          <span className="text-slate-600 dark:text-gray-400">Adults: <span className="text-slate-900 dark:text-white">{adultPax}</span> × {formatMoney(adultCostEach, pricing.currency)}</span>
+                                          <span className="text-emerald-700 dark:text-emerald-300 font-bold">{formatMoney(adultCostEach * adultPax, pricing.currency)}</span>
                                         </div>
                                       )}
                                       {childPax > 0 && (
                                         <div className="flex justify-between text-gray-300">
-                                          <span className="text-gray-400">Children: <span className="text-white">{childPax}</span> × {formatMoney(childCostEach, pricing.currency)}</span>
+                                          <span className="text-slate-600 dark:text-gray-400">Children: <span className="text-slate-900 dark:text-white">{childPax}</span> × {formatMoney(childCostEach, pricing.currency)}</span>
                                           <span className="text-amber-300 font-bold">{formatMoney(childCostEach * childPax, pricing.currency)}</span>
                                         </div>
                                       )}
                                       {infantPax > 0 && (
                                         <div className="flex justify-between text-gray-300">
-                                          <span className="text-gray-400">Infants: <span className="text-white">{infantPax}</span> × {formatMoney(infantCostEach, pricing.currency)}</span>
+                                          <span className="text-slate-600 dark:text-gray-400">Infants: <span className="text-slate-900 dark:text-white">{infantPax}</span> × {formatMoney(infantCostEach, pricing.currency)}</span>
                                           <span className="text-sky-300 font-bold">{formatMoney(infantCostEach * infantPax, pricing.currency)}</span>
                                         </div>
                                       )}
                                     </div>
                                   )}
                                   <div className={`flex flex-wrap items-center justify-between px-3 py-2 gap-2 ${
-                                    isLinked ? "bg-emerald-950/30" : "bg-black/40"
+                                    isLinked ? "bg-emerald-100/60 dark:bg-emerald-950/40 text-slate-900 dark:text-zinc-200" : "bg-slate-200/50 dark:bg-black/40 text-slate-900 dark:text-zinc-200"
                                   }`}>
-                                    <span className="text-gray-400">
-                                      Base: <strong className={isLinked ? "text-emerald-300" : "text-white"}>{formatMoney(baseVal, pricing.currency)}</strong>
+                                    <span className="text-slate-600 dark:text-gray-400">
+                                      Base: <strong className={isLinked ? "text-emerald-700 dark:text-emerald-300" : "text-slate-900 dark:text-white"}>{formatMoney(baseVal, pricing.currency)}</strong>
                                     </span>
                                     <span className="text-primary font-medium">
                                       + Markup ({mType === "percentage" ? `${mVal}%` : formatMoney(mVal, pricing.currency)}): +{formatMoney(markupVal, pricing.currency)}
@@ -1016,7 +1016,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                     <span className="text-sky-400 font-medium">
                                       + Tax ({taxPct}%): +{formatMoney(taxVal, pricing.currency)}
                                     </span>
-                                    <span className="text-white font-bold bg-primary/20 border border-primary/30 px-2 py-0.5 rounded text-xs">
+                                    <span className="text-slate-900 dark:text-white font-bold bg-primary/20 border border-primary/30 px-2 py-0.5 rounded text-xs">
                                       Subtotal: {formatMoney(subtotal, pricing.currency)}
                                     </span>
                                   </div>
@@ -1088,19 +1088,19 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                           <div className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-2">Pax Cost Breakdown (Base)</div>
                           {adultPax > 0 && (
                             <div className="flex justify-between items-center">
-                              <span className="text-gray-400">👤 {adultPax} Adult{adultPax > 1 ? "s" : ""}</span>
-                              <span className="font-mono text-white font-semibold">{formatMoney(totalAdultCost, pricing.currency)}</span>
+                              <span className="text-slate-600 dark:text-gray-400">👤 {adultPax} Adult{adultPax > 1 ? "s" : ""}</span>
+                              <span className="font-mono text-slate-900 dark:text-white font-semibold">{formatMoney(totalAdultCost, pricing.currency)}</span>
                             </div>
                           )}
                           {childPax > 0 && (
                             <div className="flex justify-between items-center">
-                              <span className="text-gray-400">🧒 {childPax} Child{childPax > 1 ? "ren" : ""}</span>
+                              <span className="text-slate-600 dark:text-gray-400">🧒 {childPax} Child{childPax > 1 ? "ren" : ""}</span>
                               <span className="font-mono text-amber-300 font-semibold">{formatMoney(totalChildCost, pricing.currency)}</span>
                             </div>
                           )}
                           {infantPax > 0 && (
                             <div className="flex justify-between items-center">
-                              <span className="text-gray-400">👶 {infantPax} Infant{infantPax > 1 ? "s" : ""}</span>
+                              <span className="text-slate-600 dark:text-gray-400">👶 {infantPax} Infant{infantPax > 1 ? "s" : ""}</span>
                               <span className="font-mono text-sky-300 font-semibold">{formatMoney(totalInfantCost, pricing.currency)}</span>
                             </div>
                           )}
@@ -1108,7 +1108,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                       );
                     })()}
 
-                    <div className="flex justify-between text-gray-400">
+                    <div className="flex justify-between text-slate-600 dark:text-gray-400">
                       <span>Base Cost</span>
                       <span className="font-mono">{formatMoney(baseCost, pricing.currency)}</span>
                     </div>
@@ -1120,7 +1120,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                       <span>Total Item Tax</span>
                       <span className="font-mono">+{formatMoney(taxAmount, pricing.currency)}</span>
                     </div>
-                    <div className="pt-3 mt-2 border-t border-primary/20 flex justify-between font-extrabold text-white text-xl">
+                    <div className="pt-3 mt-2 border-t border-primary/20 flex justify-between font-extrabold text-slate-900 dark:text-white text-xl">
                       <span>Total Client Quote</span>
                       <span className="text-primary font-mono">{formatMoney(finalTotal, pricing.currency)}</span>
                     </div>
@@ -1129,13 +1129,13 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
               </div>
 
               {/* Payment Milestones */}
-              <div className="space-y-4 pt-4 border-t border-white/10">
+              <div className="space-y-4 pt-4 border-t border-slate-300/60 dark:border-white/10">
                 <div className="flex items-center justify-between">
                   <h4 className="font-semibold text-lg flex items-center gap-2">
                     <Plus className="w-5 h-5 text-primary" />
                     Payment Schedule
                   </h4>
-                  <Button variant="outline" size="sm" onClick={addMilestone} className="gap-2 bg-white/5 border-white/10 hover:bg-white/10">
+                  <Button variant="outline" size="sm" onClick={addMilestone} className="gap-2 bg-white/5 border-slate-300/60 dark:border-white/10 hover:bg-white/10">
                     <Plus className="w-4 h-4" /> Add Milestone
                   </Button>
                 </div>
@@ -1144,7 +1144,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                   {milestoneAmounts.map((milestone, idx) => (
                     <div
                       key={milestone.id}
-                      className="flex items-center gap-3 p-3 rounded-xl border border-white/10 bg-black/20"
+                      className="flex items-center gap-3 p-3 rounded-xl border border-slate-300/60 dark:border-white/10 bg-slate-50 dark:bg-black/20"
                     >
                       <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div className="space-y-1">
@@ -1153,7 +1153,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                             value={milestone.name}
                             onChange={(e) => updateMilestone(milestone.id, "name", e.target.value)}
                             placeholder="e.g. Booking Advance"
-                            className="bg-black/20 border-white/5 text-xs"
+                            className="bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/5 text-xs"
                           />
                         </div>
                         <div className="space-y-1">
@@ -1162,7 +1162,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                             type="number"
                             value={milestone.percentage}
                             onChange={(e) => updateMilestone(milestone.id, "percentage", Number(e.target.value))}
-                            className="bg-black/20 border-white/5 text-xs"
+                            className="bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/5 text-xs"
                           />
                         </div>
                         <div className="space-y-1">
@@ -1171,7 +1171,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                             value={milestone.dueDate}
                             onChange={(e) => updateMilestone(milestone.id, "dueDate", e.target.value)}
                             placeholder="e.g. 15 days before"
-                            className="bg-black/20 border-white/5 text-xs"
+                            className="bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/5 text-xs"
                           />
                         </div>
                       </div>

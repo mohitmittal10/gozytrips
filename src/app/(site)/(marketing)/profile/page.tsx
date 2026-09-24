@@ -27,7 +27,7 @@ export default function ProfilePage() {
     <div className="flex flex-col min-h-screen bg-[#050505]">
       <main className="flex-grow container mx-auto px-4 py-20 max-w-5xl">
         <Link href="/the-lab">
-          <Button variant="ghost" className="mb-6 gap-2 text-gray-400 hover:text-white">
+          <Button variant="ghost" className="mb-6 gap-2 text-slate-600 dark:text-gray-400 hover:text-white">
             <ArrowLeft className="w-4 h-4" />
             Back to The Lab
           </Button>

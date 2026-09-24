@@ -870,7 +870,7 @@ export default function TheLab() {
   }, [form, onSubmit]);
 
   return (
-    <section id="the-lab" className="w-full mx-auto pt-0 pb-10 bg-black min-h-screen">
+    <section id="the-lab" className="w-full mx-auto pt-0 pb-10 bg-[#EFECE5] dark:bg-black min-h-screen">
       {/* Enquiry pre-fill banner */}
       {enquiryBanner && !itinerary && (
         <div className="w-full bg-gradient-to-r from-purple-950/80 via-indigo-950/80 to-zinc-950 border-b border-purple-500/30 px-4 py-3 shadow-lg">
@@ -883,7 +883,7 @@ export default function TheLab() {
                 <p className="text-xs sm:text-sm font-semibold text-zinc-100">
                   Pre-filled from <span className="text-purple-300 font-bold">{enquiryBanner.clientName}</span>'s enquiry
                 </p>
-                <div className="flex items-center gap-3 text-[11px] text-zinc-400">
+                <div className="flex items-center gap-3 text-[11px] text-slate-600 dark:text-zinc-400">
                   {enquiryBanner.rawResponse?.destinations && (
                     <span className="flex items-center gap-1 text-zinc-300">
                       <MapPin className="w-3 h-3 text-purple-400 shrink-0" />
@@ -891,8 +891,8 @@ export default function TheLab() {
                     </span>
                   )}
                   {enquiryBanner.rawResponse?.start_date && (
-                    <span className="flex items-center gap-1 text-zinc-400">
-                      <Calendar className="w-3 h-3 text-zinc-400 shrink-0" />
+                    <span className="flex items-center gap-1 text-slate-600 dark:text-zinc-400">
+                      <Calendar className="w-3 h-3 text-slate-600 dark:text-zinc-400 shrink-0" />
                       {new Date(enquiryBanner.rawResponse.start_date).toLocaleDateString()}
                     </span>
                   )}
@@ -933,7 +933,7 @@ export default function TheLab() {
         </div>
       )}
       {isViewingItinerary && (itinerary?.itinerary?.length ?? 0) > 0 && (
-        <div className="w-full sticky top-0 z-40 bg-black/90 backdrop-blur-xl border-b border-white/5">
+        <div className="w-full sticky top-0 z-40 bg-[#EFECE5]/90 dark:bg-black/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
           <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
             <TheLabHeader 
               itinerary={itinerary} 
@@ -1140,7 +1140,7 @@ export default function TheLab() {
               <DialogTitle className="text-lg font-bold text-white">
                 Review Enquiry — {enquiryBanner.clientName}
               </DialogTitle>
-              <DialogDescription className="text-xs text-zinc-400">
+              <DialogDescription className="text-xs text-slate-600 dark:text-zinc-400">
                 Verify pre-filled parameters before generating the itinerary.
               </DialogDescription>
             </DialogHeader>
@@ -1148,7 +1148,7 @@ export default function TheLab() {
             <div className="p-6 space-y-4">
               {/* Client Info */}
               <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-2">
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Client Information</p>
+                <p className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider">Client Information</p>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <span className="text-zinc-500 block text-[10px]">Name</span>
@@ -1163,7 +1163,7 @@ export default function TheLab() {
 
               {/* Trip Route & Dates */}
               <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                <p className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-purple-400" /> Route & Schedule
                 </p>
                 <div className="grid grid-cols-2 gap-3 text-xs">
@@ -1185,7 +1185,7 @@ export default function TheLab() {
                     <div>
                       <span className="text-zinc-500 block text-[10px]">Travel Dates</span>
                       <span className="font-semibold text-zinc-200 flex items-center gap-1 mt-0.5">
-                        <Calendar className="w-3.5 h-3.5 text-zinc-400" />
+                        <Calendar className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400" />
                         {[enquiryBanner.rawResponse.start_date, enquiryBanner.rawResponse.end_date].filter(Boolean).map(d => new Date(d!).toLocaleDateString()).join(" → ")}
                       </span>
                     </div>
@@ -1195,7 +1195,7 @@ export default function TheLab() {
 
               {/* Travellers & Style */}
               <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
-                <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
+                <p className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider flex items-center gap-1.5">
                   <Users className="w-3.5 h-3.5 text-purple-400" /> Travellers & Style
                 </p>
                 <div className="grid grid-cols-2 gap-3 text-xs">
@@ -1234,11 +1234,11 @@ export default function TheLab() {
               {/* Preferences & Requests */}
               {(enquiryBanner.rawResponse.must_include || enquiryBanner.rawResponse.avoid || enquiryBanner.rawResponse.special_requests || enquiryBanner.rawResponse.budget) && (
                 <div className="bg-white/5 border border-white/10 rounded-xl p-4 space-y-3">
-                  <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Preferences & Requests</p>
+                  <p className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-wider">Preferences & Requests</p>
                   {enquiryBanner.rawResponse.budget && (
                     <div>
                       <span className="text-zinc-500 block text-[10px]">Budget</span>
-                      <span className="font-semibold text-emerald-400">
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
                         {enquiryBanner.rawResponse.currency || "INR"} {enquiryBanner.rawResponse.budget.toLocaleString()}
                       </span>
                     </div>

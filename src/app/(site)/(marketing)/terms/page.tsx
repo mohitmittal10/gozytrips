@@ -14,7 +14,7 @@ export default function TermsPage() {
 
       <div className="max-w-4xl mx-auto px-6 relative z-10">
         <Link href="/">
-          <Button variant="ghost" className="mb-8 gap-2 text-zinc-400 hover:text-white hover:bg-white/5 transition-all">
+          <Button variant="ghost" className="mb-8 gap-2 text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/5 transition-all">
             <ArrowLeft className="w-4 h-4" />
             Back to Home
           </Button>

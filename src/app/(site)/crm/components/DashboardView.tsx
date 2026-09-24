@@ -48,17 +48,17 @@ const MetricCard = ({ title, value, subtext, icon: Icon, iconBg = "bg-primary/10
         <div className="flex items-center justify-between relative z-10">
             <div className="min-w-0 flex-1 pr-3">
                 <div className="flex items-center gap-1.5 mb-1.5">
-                    <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider">{title}</p>
+                    <p className="text-[10px] text-slate-600 dark:text-zinc-400 font-bold uppercase tracking-wider">{title}</p>
                     {badge && (
                         <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-primary/30 text-primary h-4 shrink-0 font-bold bg-primary/10">
                             {badge}
                         </Badge>
                     )}
                 </div>
-                <p className="text-2xl font-black text-white tracking-tighter">{loading ? (
-                    <span className="inline-block w-16 h-7 bg-white/10 rounded animate-pulse" />
+                <p className="text-2xl font-black text-slate-900 dark:text-white tracking-tighter">{loading ? (
+                    <span className="inline-block w-16 h-7 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                 ) : value}</p>
-                {subtext && <p className="text-[11px] text-zinc-400 mt-1 truncate font-semibold">{subtext}</p>}
+                {subtext && <p className="text-[11px] text-slate-600 dark:text-zinc-400 mt-1 truncate font-semibold">{subtext}</p>}
             </div>
             <div className={cn("p-2.5 rounded-xl shrink-0 border shadow-inner", iconBg)}>
                 <Icon className={cn("w-5 h-5", iconColor)} />
@@ -173,8 +173,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     value={clients.length}
                     loading={clientsLoading}
                     icon={Users}
-                    iconBg="bg-white/5"
-                    iconColor="text-white"
+                    iconBg="bg-slate-100 dark:bg-white/5"
+                    iconColor="text-slate-900 dark:text-white"
                 />
                 <MetricCard 
                     title="Active Trips"
@@ -182,8 +182,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     loading={isComputing}
                     badge={`${bookingsCount} Bookings`}
                     icon={Target}
-                    iconBg="bg-white/5"
-                    iconColor="text-white"
+                    iconBg="bg-slate-100 dark:bg-white/5"
+                    iconColor="text-slate-900 dark:text-white"
                 />
                 <MetricCard 
                     title="Conversion Rate"
@@ -191,8 +191,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     loading={isComputing}
                     subtext={`${bookedCount}/${totalProposals} proposals`}
                     icon={TrendingUp}
-                    iconBg="bg-white/5"
-                    iconColor="text-white"
+                    iconBg="bg-slate-100 dark:bg-white/5"
+                    iconColor="text-slate-900 dark:text-white"
                 />
                 <MetricCard 
                     title="Booked Revenue"
@@ -200,8 +200,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     loading={isComputing}
                     subtext="Incl. Standalone Bookings"
                     icon={CheckCircle2}
-                    iconBg="bg-white/5"
-                    iconColor="text-white"
+                    iconBg="bg-slate-100 dark:bg-white/5"
+                    iconColor="text-slate-900 dark:text-white"
                 />
             </div>
 
@@ -212,8 +212,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     loading={clientsLoading}
                     subtext="Created this calendar month"
                     icon={UserPlus}
-                    iconBg="bg-white/5"
-                    iconColor="text-white"
+                    iconBg="bg-slate-100 dark:bg-white/5"
+                    iconColor="text-slate-900 dark:text-white"
                 />
                 <MetricCard 
                     title="Repeat Clients"
@@ -221,8 +221,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     loading={isComputing}
                     subtext={`${repeatClientStats.repeat} with 2+ trips/bookings`}
                     icon={Briefcase}
-                    iconBg="bg-white/5"
-                    iconColor="text-white"
+                    iconBg="bg-slate-100 dark:bg-white/5"
+                    iconColor="text-slate-900 dark:text-white"
                 />
                 <MetricCard 
                     title="Avg Package Trip"
@@ -230,8 +230,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     loading={isComputing}
                     subtext="Booked and confirmed itineraries"
                     icon={Plane}
-                    iconBg="bg-white/5"
-                    iconColor="text-white"
+                    iconBg="bg-slate-100 dark:bg-white/5"
+                    iconColor="text-slate-900 dark:text-white"
                 />
                 <MetricCard 
                     title="Est. Markup %"
@@ -239,8 +239,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                     loading={isComputing}
                     subtext="Blended average across all business"
                     icon={DollarSign}
-                    iconBg="bg-white/5"
-                    iconColor="text-white"
+                    iconBg="bg-slate-100 dark:bg-white/5"
+                    iconColor="text-slate-900 dark:text-white"
                 />
             </div>
 
@@ -248,7 +248,7 @@ export const DashboardView = (props: DashboardViewProps) => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                 <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] shadow-xl rounded-2xl">
                     <CardHeader>
-                        <CardTitle className="text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
+                        <CardTitle className="text-slate-900 dark:text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
                             <Activity className="w-4 h-4 text-primary" />
                             Revenue Pipeline
                         </CardTitle>
@@ -277,7 +277,7 @@ export const DashboardView = (props: DashboardViewProps) => {
 
                 <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] shadow-xl rounded-2xl">
                     <CardHeader>
-                        <CardTitle className="text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
+                        <CardTitle className="text-slate-900 dark:text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
                             <LayoutDashboard className="w-4 h-4 text-primary" /> Revenue Mix
                         </CardTitle>
                     </CardHeader>
@@ -285,18 +285,18 @@ export const DashboardView = (props: DashboardViewProps) => {
                         <div className="space-y-3">
                             <div className="flex justify-between text-xs">
                                 <span className="text-zinc-300 font-semibold">Packages</span>
-                                <span className="text-white font-bold">{formatCurrency(packageVsStandaloneMix.packageRev)} ({packageVsStandaloneMix.packagePct}%)</span>
+                                <span className="text-slate-900 dark:text-white font-bold">{formatCurrency(packageVsStandaloneMix.packageRev)} ({packageVsStandaloneMix.packagePct}%)</span>
                             </div>
-                            <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                                 <div className="h-full bg-primary shadow-sm" style={{ width: `${packageVsStandaloneMix.packagePct}%` }} />
                             </div>
                         </div>
                         <div className="space-y-3">
                             <div className="flex justify-between text-xs">
                                 <span className="text-zinc-300 font-semibold">Standalone</span>
-                                <span className="text-white font-bold">{formatCurrency(packageVsStandaloneMix.standaloneRev)} ({packageVsStandaloneMix.standalonePct}%)</span>
+                                <span className="text-slate-900 dark:text-white font-bold">{formatCurrency(packageVsStandaloneMix.standaloneRev)} ({packageVsStandaloneMix.standalonePct}%)</span>
                             </div>
-                            <div className="h-1.5 bg-white/5 rounded-full overflow-hidden">
+                            <div className="h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                                 <div className="h-full bg-zinc-600" style={{ width: `${packageVsStandaloneMix.standalonePct}%` }} />
                             </div>
                         </div>
@@ -308,7 +308,7 @@ export const DashboardView = (props: DashboardViewProps) => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
                 <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] shadow-xl lg:col-span-2 rounded-2xl">
                     <CardHeader>
-                        <CardTitle className="text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
+                        <CardTitle className="text-slate-900 dark:text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
                             <TrendingUp className="w-4 h-4 text-primary" /> Pipeline Funnel
                         </CardTitle>
                     </CardHeader>
@@ -318,11 +318,11 @@ export const DashboardView = (props: DashboardViewProps) => {
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <span className="text-xs font-bold text-zinc-200">{stage.stage}</span>
-                                        <span className="text-[10px] text-zinc-400 font-semibold">{stage.pct}%</span>
+                                        <span className="text-[10px] text-slate-600 dark:text-zinc-400 font-semibold">{stage.pct}%</span>
                                     </div>
-                                    <span className="text-sm font-black text-white">{stage.count}</span>
+                                    <span className="text-sm font-black text-slate-900 dark:text-white">{stage.count}</span>
                                 </div>
-                                <div className="h-2 bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-2 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
                                     <div
                                         className="h-full rounded-full transition-all duration-700 shadow-sm"
                                         style={{ 
@@ -333,7 +333,7 @@ export const DashboardView = (props: DashboardViewProps) => {
                                 </div>
                                 {i < pipelineFunnel.length - 1 && (
                                     <div className="flex justify-center opacity-30">
-                                        <ArrowDown className="w-3 h-3 text-zinc-400" />
+                                        <ArrowDown className="w-3 h-3 text-slate-600 dark:text-zinc-400" />
                                     </div>
                                 )}
                             </div>
@@ -343,23 +343,23 @@ export const DashboardView = (props: DashboardViewProps) => {
 
                 <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] shadow-xl rounded-2xl">
                     <CardHeader>
-                        <CardTitle className="text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
+                        <CardTitle className="text-slate-900 dark:text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
                             <CalendarDays className="w-4 h-4 text-primary" /> Upcoming Departures
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl text-center group hover:border-primary/40 transition-all">
-                                <p className="text-[9px] text-zinc-400 uppercase tracking-widest mb-1.5 font-bold">This Month</p>
-                                <p className="text-3xl font-black text-white tracking-tighter">{departureCalendarStats.thisMonth}</p>
+                            <div className="p-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-2xl text-center group hover:border-primary/40 transition-all">
+                                <p className="text-[9px] text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-1.5 font-bold">This Month</p>
+                                <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{departureCalendarStats.thisMonth}</p>
                             </div>
-                            <div className="p-4 bg-white/5 border border-white/10 rounded-2xl text-center group hover:border-primary/40 transition-all">
-                                <p className="text-[9px] text-zinc-400 uppercase tracking-widest mb-1.5 font-bold">Next Month</p>
-                                <p className="text-3xl font-black text-white tracking-tighter">{departureCalendarStats.nextMonth}</p>
+                            <div className="p-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-2xl text-center group hover:border-primary/40 transition-all">
+                                <p className="text-[9px] text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-1.5 font-bold">Next Month</p>
+                                <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{departureCalendarStats.nextMonth}</p>
                             </div>
                         </div>
                         <div className="pt-4 border-t border-white/5 space-y-3">
-                            <p className="text-[9px] text-zinc-400 uppercase tracking-widest font-bold">Seasonality</p>
+                            <p className="text-[9px] text-slate-600 dark:text-zinc-400 uppercase tracking-widest font-bold">Seasonality</p>
                             <div className="h-[130px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <RechartsBarChart data={seasonalityChart}>
@@ -380,27 +380,27 @@ export const DashboardView = (props: DashboardViewProps) => {
             {/* Recent Activity */}
             <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] shadow-xl rounded-2xl">
                 <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
+                    <CardTitle className="text-slate-900 dark:text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
                         <Activity className="w-4 h-4 text-primary" /> Recent Activity
                         {unreadActivitiesCount > 0 && (
-                            <span className="ml-2 text-[9px] bg-primary/20 text-white px-2 py-0.5 rounded-full font-bold border border-primary/30">
+                            <span className="ml-2 text-[9px] bg-primary/20 text-slate-900 dark:text-white px-2 py-0.5 rounded-full font-bold border border-primary/30">
                                 {unreadActivitiesCount} new
                             </span>
                         )}
                     </CardTitle>
                     {handleOpenActivitySheet && (
-                        <button onClick={handleOpenActivitySheet} className="text-[10px] font-bold text-primary hover:text-white transition-colors uppercase tracking-widest cursor-pointer">
+                        <button onClick={handleOpenActivitySheet} className="text-[10px] font-bold text-primary hover:text-slate-900 dark:hover:text-white transition-colors uppercase tracking-widest cursor-pointer">
                             View All
                         </button>
                     )}
                 </CardHeader>
                 <CardContent>
                     {recentActivity.length === 0 ? (
-                        <p className="text-sm text-zinc-400 text-center py-8 font-medium">No recent activity</p>
+                        <p className="text-sm text-slate-600 dark:text-zinc-400 text-center py-8 font-medium">No recent activity</p>
                     ) : (
                         <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
                             {recentActivity.slice(0, 10).map((activity) => (
-                                <div key={activity.id} className="flex items-start gap-4 p-3 rounded-xl hover:bg-white/5 transition-all border border-transparent hover:border-white/10">
+                                <div key={activity.id} className="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-all border border-transparent hover:border-white/10">
                                     <div className="p-2 rounded-xl shrink-0 border border-primary/20 bg-primary/10">
                                         {activity.icon === 'user' ? (
                                             <User className="w-3.5 h-3.5 text-primary" />
@@ -410,8 +410,8 @@ export const DashboardView = (props: DashboardViewProps) => {
                                     </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-[13px] text-zinc-200 font-semibold truncate">{activity.label}</p>
-                                        <p className="text-[10px] text-zinc-400 flex items-center gap-1.5 mt-1 font-medium">
-                                            <Clock className="w-3 h-3 text-zinc-400" />
+                                        <p className="text-[10px] text-slate-600 dark:text-zinc-400 flex items-center gap-1.5 mt-1 font-medium">
+                                            <Clock className="w-3 h-3 text-slate-600 dark:text-zinc-400" />
                                             {activity.time instanceof Date ? activity.time.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Unknown'}
                                         </p>
                                     </div>

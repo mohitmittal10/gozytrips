@@ -163,29 +163,29 @@ export const ClientsView = (props: ClientsViewProps) => {
                 {Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="border-b border-white/5">
                         <td className="p-4 w-10">
-                            <div className="h-4 w-4 bg-white/10 rounded animate-pulse" />
+                            <div className="h-4 w-4 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                         </td>
                         <td className="p-4">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse" />
+                                <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/10 animate-pulse" />
                                 <div>
-                                    <div className="h-4 w-32 bg-white/10 rounded animate-pulse" />
-                                    <div className="h-3 w-40 bg-white/5 rounded animate-pulse mt-1.5" />
+                                    <div className="h-4 w-32 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                                    <div className="h-3 w-40 bg-slate-100 dark:bg-white/5 rounded animate-pulse mt-1.5" />
                                 </div>
                             </div>
                         </td>
                         {visibleColumns.destination && (
                             <td className="p-4">
-                                <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
+                                <div className="h-4 w-24 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                             </td>
                         )}
                         {visibleColumns.lastUpdated && (
                             <td className="p-4">
-                                <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                                <div className="h-4 w-20 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                             </td>
                         )}
                         <td className="p-4">
-                            <div className="h-4 w-4 bg-white/10 rounded animate-pulse ml-auto" />
+                            <div className="h-4 w-4 bg-slate-200 dark:bg-white/10 rounded animate-pulse ml-auto" />
                         </td>
                     </tr>
                 ))}
@@ -203,10 +203,10 @@ export const ClientsView = (props: ClientsViewProps) => {
                     <span className="text-sm text-purple-300 font-medium">{selectedIds.size} selected</span>
                     <div className="h-4 w-px bg-purple-500/30" />
                     <Select onValueChange={(val) => handleBulkStatusChange(val)}>
-                        <SelectTrigger className="h-8 w-[140px] bg-white/5 border-white/10 text-white text-xs">
+                        <SelectTrigger className="h-8 w-[140px] bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white text-xs">
                             <SelectValue placeholder="Set Status..." />
                         </SelectTrigger>
-                        <SelectContent className="bg-obsidian-dark border-white/10 text-white">
+                        <SelectContent className="bg-obsidian-dark border-slate-300 dark:border-white/10 text-slate-900 dark:text-white">
                             {itineraryStatuses.length > 0 ? (
                                 itineraryStatuses.map(opt => (
                                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
@@ -221,10 +221,10 @@ export const ClientsView = (props: ClientsViewProps) => {
                             )}
                         </SelectContent>
                     </Select>
-                    <Button variant="outline" size="sm" className="h-8 border-white/10 bg-transparent text-gray-300 hover:bg-white/10 text-xs" onClick={handleExportCSV}>
+                    <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 text-xs" onClick={handleExportCSV}>
                         <Download className="w-3.5 h-3.5 mr-1.5" /> Export
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-8 text-gray-400 hover:text-white text-xs ml-auto" onClick={() => setSelectedIds(new Set())}>
+                    <Button variant="ghost" size="sm" className="h-8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs ml-auto" onClick={() => setSelectedIds(new Set())}>
                         Clear
                     </Button>
                 </div>
@@ -234,18 +234,18 @@ export const ClientsView = (props: ClientsViewProps) => {
             <div className="flex items-center justify-between">
                 <p className="text-xs text-gray-500">{sortedClients.length} client{sortedClients.length !== 1 ? 's' : ''}</p>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="h-8 border-white/10 bg-transparent text-gray-300 hover:bg-white/10 text-xs" onClick={handleExportCSV}>
+                    <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 text-xs" onClick={handleExportCSV}>
                         <Download className="w-3.5 h-3.5 mr-1.5" /> Export CSV
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-8 border-white/10 bg-transparent text-gray-300 hover:bg-white/10 text-xs">
+                            <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 text-xs">
                                 <Columns3 className="w-3.5 h-3.5 mr-1.5" /> Columns
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-[#1a1a2e] border-white/10 text-white">
-                            <DropdownMenuLabel className="text-xs text-gray-400">Toggle Columns</DropdownMenuLabel>
-                            <DropdownMenuSeparator className="bg-white/10" />
+                        <DropdownMenuContent align="end" className="bg-white dark:bg-[#1a1a2e] border-slate-300 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
+                            <DropdownMenuLabel className="text-xs text-slate-600 dark:text-gray-400">Toggle Columns</DropdownMenuLabel>
+                            <DropdownMenuSeparator className="bg-slate-200 dark:bg-white/10" />
                             <DropdownMenuCheckboxItem checked={visibleColumns.destination} onCheckedChange={() => toggleColumn('destination')} className="text-xs">Destination</DropdownMenuCheckboxItem>
                             <DropdownMenuCheckboxItem checked={visibleColumns.lastUpdated} onCheckedChange={() => toggleColumn('lastUpdated')} className="text-xs">Last Updated</DropdownMenuCheckboxItem>
                         </DropdownMenuContent>
@@ -254,26 +254,26 @@ export const ClientsView = (props: ClientsViewProps) => {
             </div>
 
             {/* Table */}
-            <div className="bg-white/[0.02] border border-white/10 rounded-xl overflow-hidden">
+            <div className="bg-white/[0.02] border border-slate-300 dark:border-white/10 rounded-xl overflow-hidden">
                 <div className="crm-table-wrapper">
                     <table className="w-full text-left border-collapse min-w-[640px]">
                         <thead>
-                            <tr className="border-b border-white/10 text-[11px] uppercase tracking-wider text-gray-500 font-semibold bg-white/[0.02]">
+                            <tr className="border-b border-slate-300 dark:border-white/10 text-[11px] uppercase tracking-wider text-gray-500 font-semibold bg-white/[0.02]">
                                 <th className="p-4 w-10">
                                     <Checkbox
                                         checked={paginatedClients.length > 0 && selectedIds.size === paginatedClients.length}
                                         onCheckedChange={toggleSelectAll}
-                                        className="border-white/20 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"
+                                        className="border-slate-300 dark:border-white/20 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"
                                     />
                                 </th>
-                                <th className="p-4 cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('name')}>
+                                <th className="p-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('name')}>
                                     <span className="inline-flex items-center">Client Info <SortIcon col="name" /></span>
                                 </th>
                                 {visibleColumns.destination && (
                                     <th className="p-4">Destination</th>
                                 )}
                                 {visibleColumns.lastUpdated && (
-                                    <th className="p-4 cursor-pointer select-none hover:text-white transition-colors" onClick={() => handleSort('date')}>
+                                    <th className="p-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('date')}>
                                         <span className="inline-flex items-center">Last Updated <SortIcon col="date" /></span>
                                     </th>
                                 )}
@@ -285,7 +285,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                                 <SkeletonRows />
                             ) : paginatedClients.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="p-8 text-center text-gray-500 bg-white/5">
+                                    <td colSpan={7} className="p-8 text-center text-gray-500 bg-slate-100 dark:bg-white/5">
                                         <div className="flex flex-col items-center justify-center py-6">
                                             <Users className="w-12 h-12 text-gray-600 mb-3" />
                                             <p>No clients found matching your criteria.</p>
@@ -297,8 +297,8 @@ export const ClientsView = (props: ClientsViewProps) => {
                                     <tr 
                                         key={client.id} 
                                         className={cn(
-                                            "border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer group",
-                                            selectedIds.has(client.id) && "bg-white/5"
+                                            "border-b border-white/5 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer group",
+                                            selectedIds.has(client.id) && "bg-slate-100 dark:bg-white/5"
                                         )}
                                         onClick={() => setSelectedClient(client)}
                                     >
@@ -306,7 +306,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                                             <Checkbox
                                                 checked={selectedIds.has(client.id)}
                                                 onCheckedChange={() => toggleSelectOne(client.id)}
-                                                className="border-white/20 data-[state=checked]:bg-zinc-700 data-[state=checked]:text-white data-[state=checked]:border-zinc-600"
+                                                className="border-slate-300 dark:border-white/20 data-[state=checked]:bg-zinc-700 data-[state=checked]:text-slate-900 dark:text-white data-[state=checked]:border-zinc-600"
                                             />
                                         </td>
                                         <td className="p-4">
@@ -315,7 +315,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                                                     {client.name.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
-                                                    <p className="font-medium text-white text-sm group-hover:text-white transition-colors">
+                                                    <p className="font-medium text-slate-900 dark:text-white text-sm group-hover:text-slate-900 dark:hover:text-white transition-colors">
                                                         {client.name}
                                                     </p>
                                                     <p className="text-xs text-gray-500">{client.email || 'No email provided'}</p>
@@ -337,8 +337,8 @@ export const ClientsView = (props: ClientsViewProps) => {
                                                     {client.bookedDestinations && client.bookedDestinations.length > 0 ? (
                                                         client.bookedDestinations.map((dest: any, idx: number) => (
                                                             <div key={idx} className="flex items-center gap-2 group/dest">
-                                                                <Compass className="w-3.5 h-3.5 text-zinc-400 group-hover/dest:text-white transition-colors shrink-0" />
-                                                                <span className="truncate max-w-[180px] text-xs font-medium text-zinc-200 group-hover/dest:text-white transition-colors">{dest.label}</span>
+                                                                <Compass className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400 group-hover/dest:text-slate-900 dark:text-white transition-colors shrink-0" />
+                                                                <span className="truncate max-w-[180px] text-xs font-medium text-zinc-200 group-hover/dest:text-slate-900 dark:text-white transition-colors">{dest.label}</span>
                                                             </div>
                                                         ))
                                                     ) : (
@@ -356,7 +356,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                                             </td>
                                         )}
                                         <td className="p-4">
-                                            <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors ml-auto" />
+                                            <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-slate-900 dark:hover:text-white transition-colors ml-auto" />
                                         </td>
                                     </tr>
                                 ))
@@ -367,7 +367,7 @@ export const ClientsView = (props: ClientsViewProps) => {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="flex items-center justify-between p-4 border-t border-white/10">
+                    <div className="flex items-center justify-between p-4 border-t border-slate-300 dark:border-white/10">
                         <p className="text-xs text-gray-500">
                             Page {currentPage} of {totalPages} ({sortedClients.length} total)
                         </p>
@@ -375,7 +375,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-gray-400 hover:text-white disabled:opacity-30"
+                                className="h-8 w-8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30"
                                 disabled={currentPage === 1}
                                 onClick={() => setCurrentPage(p => p - 1)}
                             >
@@ -397,7 +397,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                                         key={page}
                                         variant="ghost"
                                         size="icon"
-                                        className={cn("h-8 w-8 text-xs", page === currentPage ? "bg-purple-500/20 text-purple-400" : "text-gray-400 hover:text-white")}
+                                        className={cn("h-8 w-8 text-xs", page === currentPage ? "bg-purple-500/20 text-purple-400" : "text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white")}
                                         onClick={() => setCurrentPage(page)}
                                     >
                                         {page}
@@ -407,7 +407,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-gray-400 hover:text-white disabled:opacity-30"
+                                className="h-8 w-8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30"
                                 disabled={currentPage === totalPages}
                                 onClick={() => setCurrentPage(p => p + 1)}
                             >

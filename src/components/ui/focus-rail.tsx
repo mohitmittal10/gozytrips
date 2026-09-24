@@ -125,7 +125,7 @@ export function FocusRail({
     return (
         <div
             className={cn(
-                "group relative flex h-auto py-24 md:py-32 w-full flex-col overflow-hidden bg-black text-white outline-none select-none",
+                "group relative flex h-auto py-24 md:py-32 w-full flex-col overflow-hidden bg-slate-100 dark:bg-black text-slate-900 dark:text-white outline-none select-none transition-colors duration-300",
                 className
             )}
             onMouseEnter={() => setIsHovering(true)}
@@ -144,7 +144,7 @@ export function FocusRail({
                     <motion.div
                         key={item.id}
                         className="absolute inset-0 overflow-hidden"
-                        animate={{ opacity: i === active ? 0.4 : 0 }}
+                        animate={{ opacity: i === active ? 0.3 : 0 }}
                         transition={{ duration: 0.8, ease: "easeOut" }}
                     >
                         <Image
@@ -153,7 +153,7 @@ export function FocusRail({
                             fill
                             sizes="100vw"
                             quality={60}
-                            className="object-cover blur-[48px] saturate-200 pointer-events-none"
+                            className="object-cover blur-[48px] saturate-200 pointer-events-none opacity-40 dark:opacity-100"
                             priority={i === 0}
                             aria-hidden
                         />
@@ -161,10 +161,10 @@ export function FocusRail({
                 ))}
                 {/* Ambient Gradient Orbs */}
                 <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-                    <div className="absolute top-[-10%] left-[-5%] w-[400px] h-[400px] bg-purple-600/[0.05] rounded-full blur-[100px]"></div>
-                    <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-indigo-600/[0.05] rounded-full blur-[100px]"></div>
+                    <div className="absolute top-[-10%] left-[-5%] w-[400px] h-[400px] bg-purple-500/[0.05] dark:bg-purple-600/[0.05] rounded-full blur-[100px]"></div>
+                    <div className="absolute bottom-[-10%] right-[-5%] w-[400px] h-[400px] bg-indigo-500/[0.05] dark:bg-indigo-600/[0.05] rounded-full blur-[100px]"></div>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-100 via-slate-100/60 dark:from-black dark:via-black/50 to-transparent" />
             </div>
 
             {/* Main Stage */}
@@ -176,22 +176,6 @@ export function FocusRail({
                     dragElastic={0.2}
                     onDragEnd={onDragEnd}
                 >
-                    {/*
-                     * THE CORE FIX — iterate over items, not visibleIndices.
-                     *
-                     * Old approach (visibleIndices.map):
-                     *   key=offset (-2..+2), src=items[wrap(active+offset)]
-                     *   → every slide: ALL 5 slots get a new src prop
-                     *   → Next.js Image resets loading state for each
-                     *   → commitMutationEffectsOnFiber fires for every card
-                     *   → deep React mutation loop in HAR
-                     *
-                     * New approach (items.map):
-                     *   key=item.id (permanent, never changes)
-                     *   src=item.imageSrc (permanent, never changes)
-                     *   → only animated x/z/rotateY/opacity/scale change
-                     *   → Next.js Image never reloads, zero mutation cascade
-                     */}
                     {items.map((item, itemIdx) => {
                         const offset = shortestOffset(itemIdx, active, count);
                         const isCenter = offset === 0;
@@ -201,9 +185,9 @@ export function FocusRail({
                             <motion.div
                                 key={item.id}
                                 className={cn(
-                                    "absolute w-[260px] md:w-[320px] lg:w-[400px] h-[300px] rounded-[32px] border border-white/10 bg-white/5 backdrop-blur-xl md:backdrop-blur-3xl shadow-lg md:shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden",
+                                    "absolute w-[260px] md:w-[320px] lg:w-[400px] h-[300px] rounded-[32px] border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur-xl md:backdrop-blur-3xl shadow-xl dark:shadow-[0_8px_32px_rgba(0,0,0,0.5)] overflow-hidden",
                                     isCenter
-                                        ? "z-20 ring-1 ring-white/20 shadow-[0_32px_64px_rgba(0,0,0,0.6)]"
+                                        ? "z-20 ring-1 ring-slate-300 dark:ring-white/20 shadow-2xl"
                                         : "z-10"
                                 )}
                                 initial={false}
@@ -223,27 +207,25 @@ export function FocusRail({
                                 }}
                                 style={{
                                     transformStyle: "preserve-3d",
-                                    // filter via CSS transition (browser compositor) instead of
-                                    // Framer Motion animate — eliminates JS RAF update loop.
-                                    filter: `blur(${isCenter ? 0 : dist * 6}px) brightness(${isCenter ? 1 : 0.5})`,
+                                    filter: `blur(${isCenter ? 0 : dist * 6}px) brightness(${isCenter ? 1 : 0.6})`,
                                     transition: "filter 0.5s ease",
                                 }}
                                 onClick={() => {
                                     if (!isCenter) setActive(itemIdx);
                                 }}
                             >
-                                <div className="absolute inset-2 overflow-hidden rounded-[24px] bg-black/40 border border-white/10">
+                                <div className="absolute inset-2 overflow-hidden rounded-[24px] bg-slate-900/10 dark:bg-black/40 border border-slate-200 dark:border-white/10">
                                     <Image
                                         src={item.imageSrc}
                                         alt={item.title}
                                         fill
                                         sizes="(max-width: 768px) 260px, (max-width: 1024px) 320px, 400px"
-                                        className="object-cover opacity-90 transition-opacity duration-500 hover:opacity-100 pointer-events-none"
+                                        className="object-cover opacity-95 transition-opacity duration-500 hover:opacity-100 pointer-events-none"
                                         priority={itemIdx === 0}
                                     />
                                 </div>
                                 {/* Apple-style inner highlight */}
-                                <div className="absolute inset-0 rounded-[32px] bg-gradient-to-br from-white/20 via-transparent to-black/40 pointer-events-none mix-blend-overlay" />
+                                <div className="absolute inset-0 rounded-[32px] bg-gradient-to-br from-white/30 dark:from-white/20 via-transparent to-black/20 dark:to-black/40 pointer-events-none mix-blend-overlay" />
                             </motion.div>
                         );
                     })}
@@ -259,18 +241,18 @@ export function FocusRail({
                                 animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                                 exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
                                 transition={{ duration: 0.3 }}
-                                className="space-y-3 rounded-3xl bg-white/[0.03] p-6 backdrop-blur-xl md:backdrop-blur-[40px] border border-white/10 shadow-xl md:shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
+                                className="space-y-3 rounded-3xl bg-white dark:bg-white/[0.03] p-6 backdrop-blur-xl md:backdrop-blur-[40px] border border-slate-200 dark:border-white/10 shadow-xl dark:shadow-[0_16px_32px_rgba(0,0,0,0.4)]"
                             >
                                 {activeItem.meta && (
-                                    <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 text-xs font-semibold uppercase tracking-wider text-emerald-400 ring-1 ring-emerald-500/20">
+                                    <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 text-xs font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20">
                                         {activeItem.meta}
                                     </span>
                                 )}
-                                <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-white">
+                                <h2 className="text-3xl font-bold tracking-tight md:text-4xl text-slate-900 dark:text-white">
                                     {activeItem.title}
                                 </h2>
                                 {activeItem.description && (
-                                    <p className="max-w-md text-neutral-400">
+                                    <p className="max-w-md text-slate-600 dark:text-neutral-400">
                                         {activeItem.description}
                                     </p>
                                 )}
@@ -279,20 +261,20 @@ export function FocusRail({
                     </div>
 
                     <div className="flex items-center gap-4">
-                        <div className="flex items-center gap-1 rounded-full bg-white/[0.03] p-1.5 ring-1 ring-white/10 backdrop-blur-xl md:backdrop-blur-[40px] shadow-lg md:shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
+                        <div className="flex items-center gap-1 rounded-full bg-white dark:bg-white/[0.03] p-1.5 ring-1 ring-slate-200 dark:ring-white/10 backdrop-blur-xl md:backdrop-blur-[40px] shadow-md dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
                             <button
                                 onClick={handlePrev}
-                                className="rounded-full p-3 text-neutral-400 transition hover:bg-white/10 hover:text-white active:scale-95"
+                                className="rounded-full p-3 text-slate-600 dark:text-neutral-400 transition hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white active:scale-95"
                                 aria-label="Previous"
                             >
                                 <ChevronLeft className="h-5 w-5" />
                             </button>
-                            <span className="min-w-[40px] text-center text-xs font-mono text-neutral-500">
+                            <span className="min-w-[40px] text-center text-xs font-mono text-slate-500 dark:text-neutral-500">
                                 {active + 1} / {count}
                             </span>
                             <button
                                 onClick={handleNext}
-                                className="rounded-full p-3 text-neutral-400 transition hover:bg-white/10 hover:text-white active:scale-95"
+                                className="rounded-full p-3 text-slate-600 dark:text-neutral-400 transition hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white active:scale-95"
                                 aria-label="Next"
                             >
                                 <ChevronRight className="h-5 w-5" />
@@ -302,7 +284,7 @@ export function FocusRail({
                         {activeItem.href && (
                             <Link
                                 href={activeItem.href}
-                                className="group flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-xl md:backdrop-blur-[40px] px-6 py-3.5 text-sm font-semibold text-white border border-white/10 shadow-lg md:shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all hover:bg-white/20 hover:scale-105 active:scale-95"
+                                className="group flex items-center gap-2 rounded-full bg-slate-900 dark:bg-white/10 backdrop-blur-xl md:backdrop-blur-[40px] px-6 py-3.5 text-sm font-semibold text-white border border-slate-700 dark:border-white/10 shadow-lg md:shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all hover:bg-slate-800 dark:hover:bg-white/20 hover:scale-105 active:scale-95"
                             >
                                 Explore
                                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />

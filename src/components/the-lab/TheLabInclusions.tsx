@@ -158,9 +158,9 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
       `}</style>
 
       {/* Tab bar */}
-      <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-4 mb-6 shadow-xl">
+      <div className="bg-[#EFECE5]/95 dark:bg-obsidian-dark/95 backdrop-blur-xl border border-primary/20 rounded-2xl p-4 mb-6 shadow-[0_0_25px_rgba(255,92,51,0.12)]">
         <div className="flex items-center justify-between flex-wrap gap-3">
-          <div className="relative flex gap-1 pb-[1px] max-w-full overflow-x-auto hide-scrollbar" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+          <div className="relative flex gap-1 pb-[1px] max-w-full overflow-x-auto hide-scrollbar border-b border-primary/15 dark:border-white/[0.08]">
             {TAB_CONFIG.map((tab, i) => {
               const isSelected = activeTab === tab.value;
               const TabIcon = tab.icon;
@@ -173,7 +173,7 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
                   className={`flex items-center gap-1.5 px-2.5 sm:px-3 pb-[8px] pt-1 cursor-pointer font-sans text-xs sm:text-sm font-semibold transition-colors duration-200 select-none rounded-t-sm whitespace-nowrap shrink-0 ${
                     isSelected
                       ? "text-primary"
-                      : "text-foreground/40 hover:text-foreground/70"
+                      : "text-slate-500 dark:text-zinc-400 hover:text-primary"
                   }`}
                 >
                   <TabIcon className="w-3.5 h-3.5 shrink-0" />
@@ -197,21 +197,21 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
           {/* Active section label & Collapse toggle */}
           <div className="flex items-center gap-4 flex-wrap">
             <div className="flex items-center gap-2.5">
-              <div className="p-1.5 bg-primary/10 rounded-lg">
+              <div className="p-1.5 bg-primary/10 rounded-lg border border-primary/20">
                 <Icon className="w-4 h-4 text-primary" />
               </div>
               <div>
-                <p className="text-xs font-bold text-white leading-none">{active.label}</p>
-                <p className="text-[11px] text-foreground/40 mt-0.5 leading-none">{active.description}</p>
+                <p className="text-xs font-bold text-slate-900 dark:text-white leading-none">{active.label}</p>
+                <p className="text-[11px] text-slate-600 dark:text-zinc-400 mt-0.5 leading-none">{active.description}</p>
               </div>
             </div>
 
-            <div className="h-6 w-[1px] bg-white/[0.08] hidden sm:block" />
+            <div className="h-6 w-[1px] bg-slate-300/60 dark:bg-white/[0.08] hidden sm:block" />
 
             <button
               type="button"
               onClick={() => setIsCollapsed(!isCollapsed)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 text-white/80 hover:text-white text-xs font-semibold hover:bg-white/5 transition-all cursor-pointer select-none animate-in fade-in duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-primary/20 text-primary hover:bg-primary/10 text-xs font-semibold transition-all cursor-pointer select-none animate-in fade-in duration-200"
             >
               {isCollapsed ? (
                 <>
@@ -232,7 +232,7 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
       {/* Content pane */}
       <div
         key={activeTab}
-        className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden"
+        className="bg-[#EFECE5]/95 dark:bg-[#0A0A0B]/95 backdrop-blur-xl border border-slate-300/60 dark:border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden"
         style={{
           animation: `${slideDir === 'right' ? 'inclSlideFromRight' : 'inclSlideFromLeft'} 0.22s cubic-bezier(0.4,0,0.2,1) both`,
         }}
@@ -264,9 +264,9 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
               return (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 animate-in fade-in duration-200">
                   {lines.map((line, idx) => (
-                    <div key={idx} className="flex items-start gap-2.5 p-3 rounded-xl border border-white/[0.05] bg-white/[0.01]">
+                    <div key={idx} className="flex items-start gap-2.5 p-3 rounded-xl border border-slate-300/60 dark:border-white/[0.05] bg-[#EFECE5] dark:bg-white/[0.01]">
                       <Icon className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground/80 leading-normal">{line}</span>
+                      <span className="text-sm text-slate-900 dark:text-foreground/80 leading-normal">{line}</span>
                     </div>
                   ))}
                 </div>
@@ -289,7 +289,7 @@ export function TheLabInclusions(props: TheLabInclusionsProps) {
               }}
               onBlur={() => flushDraftNow()}
               placeholder={active.placeholder}
-              className="min-h-[320px] bg-black/30 border-white/[0.08] text-white placeholder:text-foreground/20 rounded-xl resize-y text-sm p-4 focus-visible:ring-primary/30 focus-visible:border-primary/40 transition-colors"
+              className="min-h-[320px] bg-white dark:bg-black/30 border-slate-300/60 dark:border-white/[0.08] text-slate-900 dark:text-white placeholder:text-foreground/20 rounded-xl resize-y text-sm p-4 focus-visible:ring-primary/30 focus-visible:border-primary/40 transition-colors"
             />
             <p className="mt-3 text-[11px] text-foreground/25 text-right">
               {localDraft.length} characters

@@ -36,7 +36,7 @@ export class ItineraryErrorBoundary extends Component<Props, State> {
             <AlertCircle className="w-8 h-8 text-red-400" />
           </div>
           <h2 className="text-lg font-bold text-white mb-2">Wait, something went wrong here.</h2>
-          <p className="text-sm text-zinc-400 max-w-md mb-6">
+          <p className="text-sm text-slate-600 dark:text-zinc-400 max-w-md mb-6">
             {this.props.fallbackMessage || this.state.error?.message || "There was an error rendering this tab's content."}
           </p>
           <Button 

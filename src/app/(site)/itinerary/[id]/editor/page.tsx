@@ -53,7 +53,7 @@ function EditorToolbar({
                 >
                     ← Back
                 </button>
-                <span className="text-xs font-medium text-zinc-400 border-l border-zinc-800 pl-2.5 sm:pl-3 truncate max-w-[110px] sm:max-w-[200px] md:max-w-xs">
+                <span className="text-xs font-medium text-slate-600 dark:text-zinc-400 border-l border-zinc-800 pl-2.5 sm:pl-3 truncate max-w-[110px] sm:max-w-[200px] md:max-w-xs">
                     {itineraryTitle || "Itinerary Editor"}
                 </span>
             </div>
@@ -65,7 +65,7 @@ function EditorToolbar({
                     className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
                         !editMode
                             ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                            : "text-zinc-400 hover:text-zinc-200"
+                            : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200"
                     }`}
                 >
                     Preview
@@ -75,7 +75,7 @@ function EditorToolbar({
                     className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
                         editMode
                             ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                            : "text-zinc-400 hover:text-zinc-200"
+                            : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200"
                     }`}
                 >
                     ✏ Edit
@@ -85,7 +85,7 @@ function EditorToolbar({
             {/* Right: controls */}
             <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 flex-wrap sm:flex-nowrap">
                 {/* Theme selector */}
-                <div className="flex items-center gap-1 text-xs font-medium text-zinc-400 whitespace-nowrap">
+                <div className="flex items-center gap-1 text-xs font-medium text-slate-600 dark:text-zinc-400 whitespace-nowrap">
                     <span className="hidden sm:inline">Theme</span>
                     <select
                         disabled={saving}
@@ -143,7 +143,7 @@ function EditorToolbar({
                         </button>
                     </div>
                 ) : (
-                    <span className="text-[11px] sm:text-xs font-medium text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-2 sm:px-2.5 py-1 rounded-full whitespace-nowrap">
+                    <span className="text-[11px] sm:text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-2 sm:px-2.5 py-1 rounded-full whitespace-nowrap">
                         ✓ Saved
                     </span>
                 )}
@@ -1463,7 +1463,7 @@ export default function LuxuryEditorPage() {
 
             {/* Edit mode hint banner */}
             {editMode && (
-                <div className="fixed top-14 left-0 right-0 z-[9998] bg-zinc-950/80 border-b border-zinc-800/80 backdrop-blur-md py-2 px-6 text-xs font-medium text-zinc-400 text-center animate-in fade-in duration-200">
+                <div className="fixed top-14 left-0 right-0 z-[9998] bg-zinc-950/80 border-b border-zinc-800/80 backdrop-blur-md py-2 px-6 text-xs font-medium text-slate-600 dark:text-zinc-400 text-center animate-in fade-in duration-200">
                     Click any highlighted field to edit inline · Changes sync to DB & PDF export
                 </div>
             )}

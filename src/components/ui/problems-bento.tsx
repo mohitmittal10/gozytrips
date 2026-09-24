@@ -63,18 +63,18 @@ function QuoteSpeedDemo() {
             initial={{ opacity: 0, x: -16 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
-            className="flex items-center gap-3 bg-white/[0.04] border border-white/[0.07] rounded-xl px-3 py-2"
+            className="flex items-center gap-3 bg-slate-100 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.07] rounded-xl px-3 py-2"
           >
             <div className="flex-1 min-w-0">
-              <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{d.day}</p>
-              <p className="text-xs font-semibold text-zinc-200 truncate">{d.label}</p>
+              <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-zinc-500">{d.day}</p>
+              <p className="text-xs font-semibold text-slate-800 dark:text-zinc-200 truncate">{d.label}</p>
             </div>
-            <Check className="size-3.5 text-emerald-400 shrink-0" />
+            <Check className="size-3.5 text-emerald-700 dark:text-emerald-500 dark:text-emerald-400 shrink-0" />
           </motion.div>
         ))}
       </AnimatePresence>
       {revealed === 0 && (
-        <p className="text-zinc-600 text-xs text-center py-4">Building itinerary…</p>
+        <p className="text-slate-500 dark:text-zinc-600 text-xs text-center py-4">Building itinerary…</p>
       )}
     </div>
   );
@@ -92,8 +92,8 @@ function MarkupDemo() {
     <div className="relative w-full h-full flex flex-col justify-end p-5 gap-3">
       <div className="absolute -top-12 right-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="flex items-center justify-between mb-1">
-        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Your markup</span>
-        <span className="text-emerald-400 font-black text-sm">{markup}%</span>
+        <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-zinc-500">Your markup</span>
+        <span className="text-emerald-600 dark:text-emerald-400 font-black text-sm">{markup}%</span>
       </div>
       <input
         type="range" min={5} max={40} value={markup}
@@ -106,13 +106,13 @@ function MarkupDemo() {
           { label: "Child", value: child },
           { label: "Infant", value: infant },
         ].map((r) => (
-          <div key={r.label} className="rounded-xl bg-white/[0.04] border border-white/[0.07] p-2.5 text-center">
-            <p className="text-[9px] uppercase tracking-widest text-zinc-500 mb-1">{r.label}</p>
-            <p className="text-xs font-black text-white">₹{r.value.toLocaleString("en-IN")}</p>
+          <div key={r.label} className="rounded-xl bg-slate-100 dark:bg-white/[0.04] border border-slate-200 dark:border-white/[0.07] p-2.5 text-center">
+            <p className="text-[9px] uppercase tracking-widest text-slate-500 dark:text-zinc-500 mb-1">{r.label}</p>
+            <p className="text-xs font-black text-slate-900 dark:text-white">₹{r.value.toLocaleString("en-IN")}</p>
           </div>
         ))}
       </div>
-      <p className="text-[10px] text-zinc-600 text-center mt-1">Base ₹{base.toLocaleString("en-IN")} · auto-split instant</p>
+      <p className="text-[10px] text-slate-500 dark:text-zinc-600 text-center mt-1">Base ₹{base.toLocaleString("en-IN")} · auto-split instant</p>
     </div>
   );
 }
@@ -137,7 +137,6 @@ function LiveEditDemo() {
       ([entry]) => {
         if (entry.isIntersecting && !doneRef.current) {
           doneRef.current = true;
-          // Single swap after a short delay so user can see the before state
           const t1 = setTimeout(() => {
             setSwapping(true);
             const t2 = setTimeout(() => {
@@ -158,8 +157,8 @@ function LiveEditDemo() {
   return (
     <div ref={containerRef} className="relative w-full h-full flex flex-col justify-end p-5 gap-2">
       <div className="absolute top-4 right-5 flex items-center gap-1.5 bg-indigo-500/10 border border-indigo-500/20 rounded-full px-3 py-1">
-        <RefreshCw className="size-3 text-indigo-400" />
-        <span className="text-[10px] font-bold text-indigo-300 tracking-wide">2-click swap</span>
+        <RefreshCw className="size-3 text-indigo-500 dark:text-indigo-400" />
+        <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-300 tracking-wide">2-click swap</span>
       </div>
       {items.map((item, i) => (
         <motion.div
@@ -168,15 +167,15 @@ function LiveEditDemo() {
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           className={cn(
             "flex items-center gap-3 rounded-xl px-3 py-2 border transition-colors duration-300",
-            swapping && i < 2 ? "border-indigo-500/30 bg-indigo-500/[0.06]" : "border-white/[0.07] bg-white/[0.03]"
+            swapping && i < 2 ? "border-indigo-500/30 bg-indigo-500/[0.06]" : "border-slate-200 dark:border-white/[0.07] bg-slate-100 dark:bg-white/[0.03]"
           )}
         >
-          <div className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-white/[0.05] text-[11px] font-black text-zinc-500">{i + 1}</div>
+          <div className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-slate-200 dark:bg-white/[0.05] text-[11px] font-black text-slate-700 dark:text-zinc-500">{i + 1}</div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-zinc-200 truncate">{item.label}</p>
-            <p className="text-[10px] text-zinc-500 truncate">{item.hotel}</p>
+            <p className="text-xs font-semibold text-slate-800 dark:text-zinc-200 truncate">{item.label}</p>
+            <p className="text-[10px] text-slate-500 dark:text-zinc-500 truncate">{item.hotel}</p>
           </div>
-          <ChevronRight className="size-3 text-zinc-700" />
+          <ChevronRight className="size-3 text-slate-600 dark:text-slate-400 dark:text-zinc-700" />
         </motion.div>
       ))}
     </div>
@@ -186,7 +185,7 @@ function LiveEditDemo() {
 /* ── 4. Proposal Quality chart ── */
 const proposalChartConfig = {
   wanderlabs: { label: "WanderLabs", color: "#a855f7" },
-  manual: { label: "Manual", color: "#3f3f46" },
+  manual: { label: "Manual", color: "#64748b" },
 } satisfies ChartConfig;
 
 const proposalChartData = [
@@ -203,12 +202,12 @@ function ProposalQualityDemo() {
     <div className="w-full h-full flex flex-col justify-end p-5 gap-3">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Client trust score</p>
-          <p className="text-2xl font-black text-white">4.9 <span className="text-sm font-normal text-zinc-500">/ 5.0</span></p>
+          <p className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-zinc-500">Client trust score</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-white">4.9 <span className="text-sm font-normal text-slate-500 dark:text-zinc-500">/ 5.0</span></p>
         </div>
         <div className="flex gap-0.5">
           {[1,2,3,4,5].map((s) => (
-            <Star key={s} className="size-4 fill-violet-400 text-violet-400" />
+            <Star key={s} className="size-4 fill-violet-500 dark:fill-violet-400 text-violet-500 dark:text-violet-400" />
           ))}
         </div>
       </div>
@@ -224,15 +223,15 @@ function ProposalQualityDemo() {
               <stop offset="70%" stopColor="var(--color-manual)" stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid vertical={false} stroke="rgba(255,255,255,0.04)" />
-          <ChartTooltip cursor={false} content={<ChartTooltipContent className="bg-zinc-900 border-zinc-800 text-zinc-300" />} />
+          <CartesianGrid vertical={false} stroke="rgba(148,163,184,0.15)" />
+          <ChartTooltip cursor={false} content={<ChartTooltipContent className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-300" />} />
           <Area dataKey="manual" type="monotone" fill="url(#fillM)" stroke="var(--color-manual)" strokeWidth={1.5} stackId="b" />
           <Area dataKey="wanderlabs" type="monotone" fill="url(#fillWL)" stroke="var(--color-wanderlabs)" strokeWidth={2} stackId="a" />
         </AreaChart>
       </ChartContainer>
-      <div className="flex items-center justify-between text-[10px] text-zinc-500">
-        <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-violet-400 inline-block" />WanderLabs</span>
-        <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-zinc-500 inline-block" />Manual</span>
+      <div className="flex items-center justify-between text-[10px] text-slate-500 dark:text-zinc-500">
+        <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-violet-500 dark:bg-violet-400 inline-block" />WanderLabs</span>
+        <span className="flex items-center gap-1"><span className="size-2 rounded-full bg-slate-400 dark:bg-zinc-500 inline-block" />Manual</span>
       </div>
     </div>
   );
@@ -272,18 +271,6 @@ export function ProblemsBento() {
     indigo: "hover:border-indigo-500/30",
     violet: "hover:border-violet-500/30",
   };
-  const accentGlow: Record<string, string> = {
-    orange: "from-orange-500/[0.07]",
-    emerald: "from-emerald-500/[0.07]",
-    indigo: "from-indigo-500/[0.07]",
-    violet: "from-violet-500/[0.07]",
-  };
-  const accentTopLine: Record<string, string> = {
-    orange: "via-orange-500/40",
-    emerald: "via-emerald-500/40",
-    indigo: "via-indigo-500/40",
-    violet: "via-violet-500/40",
-  };
 
   return (
     <section className="py-24 px-4 md:px-8 relative">
@@ -292,12 +279,12 @@ export function ProblemsBento() {
           initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }} className="text-center mb-14"
         >
-          <p className="text-[11px] font-black uppercase tracking-[0.3em] text-zinc-500 mb-3">4 Problems WanderLabs Kills</p>
-          <h2 className="text-3xl md:text-5xl font-black tracking-tight">
+          <p className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-500 dark:text-zinc-500 mb-3">4 Problems WanderLabs Kills</p>
+          <h2 className="text-3xl md:text-5xl font-black tracking-tight text-slate-900 dark:text-white">
             The things every travel agent{" "}
-            <span className="text-[#71717A]">loses sleep over</span>
+            <span className="text-slate-500 dark:text-[#71717A]">loses sleep over</span>
           </h2>
-          <p className="text-zinc-500 text-sm md:text-base mt-4 max-w-xl mx-auto">
+          <p className="text-slate-600 dark:text-zinc-500 text-sm md:text-base mt-4 max-w-xl mx-auto">
             Not just promises — each card shows exactly how WanderLabs fixes it live.
           </p>
         </motion.div>
@@ -309,7 +296,7 @@ export function ProblemsBento() {
               initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.45 }}
               className={cn(
-                "group relative rounded-3xl border border-white/[0.06] bg-white/[0.02] backdrop-blur-xl overflow-hidden",
+                "group relative rounded-3xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-white/[0.02] backdrop-blur-xl shadow-xl dark:shadow-none overflow-hidden",
                 "transition-all duration-500 hover:-translate-y-1 flex flex-col",
                 card.colSpan, card.rowHeight, accentBorder[card.accent]
               )}
@@ -319,10 +306,10 @@ export function ProblemsBento() {
 
               <div className="relative z-10 p-7 pb-3 flex flex-col gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">{card.tag}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-slate-500 dark:text-zinc-500">{card.tag}</span>
                 </div>
-                <h3 className="text-xl font-bold text-white leading-snug">{card.headline}</h3>
-                <p className="text-zinc-400 text-sm leading-relaxed font-light">{card.detail}</p>
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white leading-snug">{card.headline}</h3>
+                <p className="text-slate-600 dark:text-zinc-400 text-sm leading-relaxed font-light">{card.detail}</p>
               </div>
 
               <div className={cn("relative flex-1 overflow-hidden", card.demoHeight)}>

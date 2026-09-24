@@ -109,7 +109,7 @@ export const Header = () => {
             <h1 className="text-2xl md:text-7xl font-bold text-white pointer-events-auto">
                 Curated journeys <br /> that <span className="text-[#71717A]">inspire.</span>
             </h1>
-            <p className="max-w-2xl text-base md:text-xl mt-4 text-zinc-400">
+            <p className="max-w-2xl text-base md:text-xl mt-4 text-slate-600 dark:text-zinc-400">
                 We craft breathtaking itineraries with the most exquisite destinations and tailored experiences.
                 We are a team of passionate travel experts and local curators that love to build amazing adventures.
             </p>

@@ -82,7 +82,7 @@ export const BookingDetailSheet = ({
             case "bus": return <Bus className="w-5 h-5 text-green-400" />;
             case "train": return <Bus className="w-5 h-5 text-orange-400" />;
             case "hotel": return <Hotel className="w-5 h-5 text-purple-400" />;
-            default: return <FileText className="w-5 h-5 text-gray-400" />;
+            default: return <FileText className="w-5 h-5 text-slate-600 dark:text-gray-400" />;
         }
     };
 
@@ -178,12 +178,12 @@ export const BookingDetailSheet = ({
 
     return (
         <Sheet open={!!booking} onOpenChange={(open) => !open && onClose()}>
-            <SheetContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-white/10 text-white w-full sm:max-w-md overflow-y-auto shadow-2xl">
+            <SheetContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-slate-300 dark:border-white/10 text-slate-900 dark:text-white w-full sm:max-w-md overflow-y-auto shadow-2xl">
                 <SheetHeader className="mb-6">
-                    <SheetTitle className="text-xl font-bold text-white tracking-tight">
+                    <SheetTitle className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                         Booking Details
                     </SheetTitle>
-                    <SheetDescription className="text-zinc-400">
+                    <SheetDescription className="text-slate-600 dark:text-zinc-400">
                         Full details, invoice, and sharing options.
                     </SheetDescription>
                 </SheetHeader>
@@ -195,12 +195,12 @@ export const BookingDetailSheet = ({
                         <div className="p-5 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-white/5 rounded-xl border border-white/10">
+                                    <div className="p-2 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-300 dark:border-white/10">
                                         {getIcon(booking.service_type)}
                                     </div>
                                     <div>
-                                        <h4 className="text-lg font-bold text-white leading-tight">{booking.title}</h4>
-                                        <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">{booking.service_type}</p>
+                                        <h4 className="text-lg font-bold text-slate-900 dark:text-white leading-tight">{booking.title}</h4>
+                                        <p className="text-[10px] text-slate-600 dark:text-zinc-400 uppercase tracking-wider font-semibold">{booking.service_type}</p>
                                     </div>
                                 </div>
                                 <Badge variant="outline" className={cn("capitalize px-2.5 py-0.5 text-xs font-bold rounded-full", getStatusClasses(booking.status))}>
@@ -211,7 +211,7 @@ export const BookingDetailSheet = ({
 
                         {/* ── Client Details ── */}
                         <div className="p-5 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl">
-                            <h5 className="text-xs font-bold text-zinc-400 uppercase tracking-widest border-b border-white/5 pb-2 mb-4 flex items-center gap-2">
+                            <h5 className="text-xs font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-widest border-b border-white/5 pb-2 mb-4 flex items-center gap-2">
                                 <User className="w-3.5 h-3.5 text-primary" /> Client
                             </h5>
                             {client ? (
@@ -220,54 +220,54 @@ export const BookingDetailSheet = ({
                                         <div className={cn("w-8 h-8 rounded-full flex items-center justify-center text-xs shrink-0 font-bold", CRM_AVATAR_CLASS)}>
                                             {client.name.charAt(0).toUpperCase()}
                                         </div>
-                                        <p className="font-semibold text-white">{client.name}</p>
+                                        <p className="font-semibold text-slate-900 dark:text-white">{client.name}</p>
                                     </div>
                                     {client.email && (
                                         <div className="flex items-center gap-2 text-sm text-zinc-300">
-                                            <Mail className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                            <Mail className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400 shrink-0" />
                                             <span className="truncate">{client.email}</span>
                                         </div>
                                     )}
                                     {client.phone && (
                                         <div className="flex items-center gap-2 text-sm text-zinc-300">
-                                            <PhoneCall className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                            <PhoneCall className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400 shrink-0" />
                                             <span>{client.phone}</span>
                                         </div>
                                     )}
                                 </div>
                             ) : (
-                                <p className="text-sm text-zinc-400 italic">No client assigned to this booking.</p>
+                                <p className="text-sm text-slate-600 dark:text-zinc-400 italic">No client assigned to this booking.</p>
                             )}
                         </div>
 
                         {/* ── Financials ── */}
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl">
+                            <div className="p-4 bg-white/[0.03] border border-slate-300 dark:border-white/10 rounded-xl">
                                 <div className="flex items-center gap-2 mb-1">
                                     <DollarSign className="w-4 h-4 text-green-400" />
                                     <p className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Net Cost</p>
                                 </div>
-                                <p className="text-lg font-bold text-white">{formatMoney(netCost, booking?.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}</p>
+                                <p className="text-lg font-bold text-slate-900 dark:text-white">{formatMoney(netCost, booking?.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}</p>
                             </div>
-                            <div className="p-4 bg-white/[0.03] border border-white/10 rounded-xl">
+                            <div className="p-4 bg-white/[0.03] border border-slate-300 dark:border-white/10 rounded-xl">
                                 <div className="flex items-center gap-2 mb-1">
                                     <Percent className="w-4 h-4 text-blue-400" />
                                     <p className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Markup</p>
                                 </div>
-                                <p className="text-lg font-bold text-white">{markup}%</p>
+                                <p className="text-lg font-bold text-slate-900 dark:text-white">{markup}%</p>
                             </div>
                         </div>
 
                         <div className="p-4 bg-purple-500/5 border border-purple-500/20 rounded-xl">
                             <div className="flex items-center justify-between">
                                 <p className="text-sm font-medium text-purple-300">Total Gross Amount</p>
-                                <p className="text-xl font-black text-white">{formatMoney(grossCost, booking?.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}</p>
+                                <p className="text-xl font-black text-slate-900 dark:text-white">{formatMoney(grossCost, booking?.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}</p>
                             </div>
                         </div>
 
                         {/* ── Technical Details ── */}
-                        <div className="p-5 bg-white/[0.03] border border-white/10 rounded-xl space-y-4">
-                            <h5 className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2">Technical Details</h5>
+                        <div className="p-5 bg-white/[0.03] border border-slate-300 dark:border-white/10 rounded-xl space-y-4">
+                            <h5 className="text-xs font-semibold text-slate-600 dark:text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2">Technical Details</h5>
                             <div className="grid grid-cols-1 gap-3">
                                 <div className="flex items-start gap-3">
                                     <Hotel className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
@@ -295,23 +295,23 @@ export const BookingDetailSheet = ({
 
                         {/* ── Notes ── */}
                         {booking.booking_details?.notes && (
-                            <div className="p-5 bg-white/[0.03] border border-white/10 rounded-xl">
-                                <h5 className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2 mb-3">Notes</h5>
+                            <div className="p-5 bg-white/[0.03] border border-slate-300 dark:border-white/10 rounded-xl">
+                                <h5 className="text-xs font-semibold text-slate-600 dark:text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2 mb-3">Notes</h5>
                                 <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">{booking.booking_details.notes}</p>
                             </div>
                         )}
 
                         {/* ── Invoice Section ── */}
-                        <div className="p-5 bg-white/[0.03] border border-white/10 rounded-xl space-y-3">
-                            <h5 className="text-xs font-semibold text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2 flex items-center gap-2">
+                        <div className="p-5 bg-white/[0.03] border border-slate-300 dark:border-white/10 rounded-xl space-y-3">
+                            <h5 className="text-xs font-semibold text-slate-600 dark:text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2 flex items-center gap-2">
                                 <Receipt className="w-3.5 h-3.5" /> Invoice
                             </h5>
 
                             {invoiceUrl ? (
                                 <>
                                     {/* Invoice URL Display */}
-                                    <div className="flex items-center gap-2 bg-black/30 border border-white/10 rounded-lg p-2.5">
-                                        <p className="text-xs text-gray-400 truncate flex-1 font-mono">{invoiceUrl}</p>
+                                    <div className="flex items-center gap-2 bg-black/30 border border-slate-300 dark:border-white/10 rounded-lg p-2.5">
+                                        <p className="text-xs text-slate-600 dark:text-gray-400 truncate flex-1 font-mono">{invoiceUrl}</p>
                                     </div>
 
                                     {/* Invoice Actions */}
@@ -329,7 +329,7 @@ export const BookingDetailSheet = ({
                                             variant="outline"
                                             size="sm"
                                             className={cn(
-                                                "border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 h-9 transition-all",
+                                                "border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 h-9 transition-all",
                                                 copied && "border-green-500/30 bg-green-500/5 text-green-400"
                                             )}
                                             onClick={handleCopyLink}
@@ -403,7 +403,7 @@ export const BookingDetailSheet = ({
                             </Button>
                             <Button
                                 variant="outline"
-                                className="flex-1 border-white/10 bg-white/5 text-gray-300 hover:bg-white/10"
+                                className="flex-1 border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10"
                                 onClick={onClose}
                             >
                                 Close

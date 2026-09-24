@@ -113,7 +113,7 @@ export function StructuralControls({
                 title="Expand Structure Navigator"
                 className="fixed right-2 sm:right-4 top-20 z-[9990] bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800/90 rounded-xl px-3 py-2 sm:px-3.5 sm:py-2.5 cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-xl backdrop-blur-md transition-all duration-200 active:scale-95 group"
             >
-                <PanelRightOpen size={16} className="text-zinc-400 group-hover:text-white transition-colors" />
+                <PanelRightOpen size={16} className="text-slate-600 dark:text-zinc-400 group-hover:text-white transition-colors" />
                 <span>Structure Editor</span>
             </button>
         );
@@ -131,7 +131,7 @@ export function StructuralControls({
                         <h3 className="text-xs font-bold text-zinc-100 tracking-tight leading-none">
                             Structure Navigator
                         </h3>
-                        <p className="text-[10px] text-zinc-400 font-medium mt-0.5">
+                        <p className="text-[10px] text-slate-600 dark:text-zinc-400 font-medium mt-0.5">
                             Reorder days, activities & content
                         </p>
                     </div>
@@ -139,7 +139,7 @@ export function StructuralControls({
                 <button
                     onClick={() => setCollapsed(true)}
                     title="Collapse sidebar"
-                    className="text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-zinc-900 transition-colors"
+                    className="text-slate-600 dark:text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-zinc-900 transition-colors"
                 >
                     <PanelRightClose size={16} />
                 </button>
@@ -153,7 +153,7 @@ export function StructuralControls({
                         className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 ${
                             activeTab === "days"
                                 ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+                                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
                         }`}
                     >
                         <Calendar size={13} />
@@ -164,7 +164,7 @@ export function StructuralControls({
                         className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 ${
                             activeTab === "about"
                                 ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+                                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
                         }`}
                     >
                         <Globe size={13} />
@@ -175,7 +175,7 @@ export function StructuralControls({
                         className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 ${
                             activeTab === "lists"
                                 ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+                                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
                         }`}
                     >
                         <ListChecks size={13} />
@@ -196,7 +196,7 @@ export function StructuralControls({
                                 onClick={() => onOpenImagePicker("cover photo", "cover.imageUrl")}
                                 className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white border border-zinc-700/80 rounded-lg px-2.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95"
                             >
-                                <Camera size={13} className="text-zinc-400" /> Change
+                                <Camera size={13} className="text-slate-600 dark:text-zinc-400" /> Change
                             </button>
                         </div>
 
@@ -268,7 +268,7 @@ export function StructuralControls({
                                                 {/* At A Glance Summary Input */}
                                                 <div className="space-y-1">
                                                     <label className="text-[11px] font-semibold text-zinc-300 flex items-center gap-1.5">
-                                                        <Eye size={12} className="text-zinc-400" /> Day Summary (At a Glance)
+                                                        <Eye size={12} className="text-slate-600 dark:text-zinc-400" /> Day Summary (At a Glance)
                                                     </label>
                                                     <input
                                                         type="text"
@@ -281,7 +281,7 @@ export function StructuralControls({
 
                                                 {/* Day Hero Image Action */}
                                                 <div className="flex items-center justify-between pt-1">
-                                                    <span className="text-[11px] font-medium text-zinc-400">Day Photo</span>
+                                                    <span className="text-[11px] font-medium text-slate-600 dark:text-zinc-400">Day Photo</span>
                                                     <button
                                                         onClick={() => onOpenImagePicker(day.location || day.title || "destination", `days[${idx}].imageUrl`)}
                                                         className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 rounded-lg px-2.5 py-1 text-[11px] font-medium flex items-center gap-1.5 transition-all"
@@ -291,7 +291,7 @@ export function StructuralControls({
                                                 </div>
 
                                                 {/* Activities Header */}
-                                                <div className="text-[11px] font-semibold text-zinc-400 pt-1">
+                                                <div className="text-[11px] font-semibold text-slate-600 dark:text-zinc-400 pt-1">
                                                     Activities ({activities.length})
                                                 </div>
 
@@ -364,11 +364,11 @@ export function StructuralControls({
                     <div className="space-y-3">
                         <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3 space-y-3">
                             <div className="text-xs font-bold text-zinc-200 flex items-center gap-2">
-                                <Globe size={14} className="text-zinc-400" /> About Destination Overview
+                                <Globe size={14} className="text-slate-600 dark:text-zinc-400" /> About Destination Overview
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-[11px] font-medium text-zinc-400">Section Title</label>
+                                <label className="text-[11px] font-medium text-slate-600 dark:text-zinc-400">Section Title</label>
                                 <input
                                     type="text"
                                     value={aboutPlace.title || liveData.title || "About The Destination"}
@@ -379,7 +379,7 @@ export function StructuralControls({
                             </div>
 
                             <div className="space-y-1">
-                                <label className="text-[11px] font-medium text-zinc-400">Description</label>
+                                <label className="text-[11px] font-medium text-slate-600 dark:text-zinc-400">Description</label>
                                 <textarea
                                     rows={5}
                                     value={aboutPlace.description || aboutPlace.aboutText || liveData.overview || liveData.summary || ""}
@@ -394,7 +394,7 @@ export function StructuralControls({
                         <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3 space-y-3">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-bold text-zinc-200 flex items-center gap-2">
-                                    <Sparkles size={14} className="text-zinc-400" /> Destination Highlights ({highlights.length})
+                                    <Sparkles size={14} className="text-slate-600 dark:text-zinc-400" /> Destination Highlights ({highlights.length})
                                 </span>
                                 <button
                                     onClick={onAddHighlight}
@@ -433,7 +433,7 @@ export function StructuralControls({
                         <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3 space-y-2">
                             <div className="flex items-center justify-between">
                                 <span className="text-xs font-bold text-zinc-200 flex items-center gap-2">
-                                    <ListChecks size={14} className="text-emerald-400" /> Inclusions ({inclusions.length})
+                                    <ListChecks size={14} className="text-emerald-600 dark:text-emerald-400" /> Inclusions ({inclusions.length})
                                 </span>
                                 <button
                                     onClick={onAddInclusion}

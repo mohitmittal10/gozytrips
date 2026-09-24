@@ -104,7 +104,7 @@ const NoteLogCard = ({ log }: { log: NoteLog }) => {
         isExpanded
           ? isEmail
             ? "border-purple-500/30 bg-purple-500/[0.06]"
-            : "border-white/10 bg-white/[0.04]"
+            : "border-slate-300 dark:border-white/10 bg-white/[0.04]"
           : isEmail
           ? "border-purple-500/15 bg-purple-500/[0.03] hover:border-purple-500/25 hover:bg-purple-500/[0.06]"
           : "border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04]"
@@ -114,13 +114,13 @@ const NoteLogCard = ({ log }: { log: NoteLog }) => {
       <div className="flex items-center gap-3 px-4 py-3">
         <div className={cn(
           "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
-          isEmail ? "bg-purple-500/15 text-purple-400" : "bg-zinc-500/10 text-zinc-400"
+          isEmail ? "bg-purple-500/15 text-purple-400" : "bg-zinc-500/10 text-slate-600 dark:text-zinc-400"
         )}>
           {isEmail ? <Mail className="w-3.5 h-3.5" /> : <StickyNote className="w-3.5 h-3.5" />}
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-semibold text-white truncate">
+          <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">
             {isEmail ? log.subject : log.title}
           </p>
           <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
@@ -196,16 +196,16 @@ const SectionHeading = ({
 }) => (
   <div className="flex items-center justify-between mb-4">
     <div className="flex items-center gap-2.5">
-      <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center bg-white/5 border border-white/5", iconColor)}>
+      <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-white/5 border border-white/5", iconColor)}>
         <Icon className="w-3.5 h-3.5" />
       </div>
       <div>
-        <p className="text-sm font-semibold text-white">{label}</p>
+        <p className="text-sm font-semibold text-slate-900 dark:text-white">{label}</p>
         {sub && <p className="text-[10px] text-gray-500 mt-0.5">{sub}</p>}
       </div>
     </div>
     {badge !== undefined && (
-      <Badge variant="outline" className="text-[10px] border-white/10 text-gray-500 font-normal">
+      <Badge variant="outline" className="text-[10px] border-slate-300 dark:border-white/10 text-gray-500 font-normal">
         {badge}
       </Badge>
     )}
@@ -217,8 +217,8 @@ import { getStatusStyle, CRM_AVATAR_CLASS } from "../utils/crm-colors";
 // ── Trip Status Badge ──────────────────────────────────────────────────────────
 
 const statusConfig: Record<string, { color: string; bg: string; dot: string }> = {
-  booked:    { color: "text-emerald-400", bg: "bg-emerald-500/10", dot: "bg-emerald-400" },
-  confirmed: { color: "text-emerald-400", bg: "bg-emerald-500/10", dot: "bg-emerald-400" },
+  booked:    { color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", dot: "bg-emerald-600 dark:bg-emerald-400" },
+  confirmed: { color: "text-emerald-600 dark:text-emerald-400", bg: "bg-emerald-500/10", dot: "bg-emerald-600 dark:bg-emerald-400" },
   sent:      { color: "text-blue-400",    bg: "bg-blue-500/10",    dot: "bg-blue-400" },
   proposed:  { color: "text-amber-400",   bg: "bg-amber-500/10",   dot: "bg-amber-400" },
   draft:     { color: "text-zinc-300",    bg: "bg-zinc-500/10",    dot: "bg-zinc-400" },
@@ -267,10 +267,10 @@ export const ClientProfileSheet = ({
 
   return (
     <Sheet open={!!selectedClient} onOpenChange={(open) => !open && setSelectedClient(null)}>
-      <SheetContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-white/10 text-white w-full sm:max-w-2xl lg:max-w-3xl overflow-y-auto p-0 shadow-2xl">
+      <SheetContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-slate-300 dark:border-white/10 text-slate-900 dark:text-white w-full sm:max-w-2xl lg:max-w-3xl overflow-y-auto p-0 shadow-2xl">
 
         {/* ── Sticky Header ── */}
-        <div className="sticky top-0 z-10 bg-[#0c0c0e]/95 backdrop-blur-xl border-b border-white/10 px-6 pt-6 pb-4">
+        <div className="sticky top-0 z-10 bg-[#0c0c0e]/95 backdrop-blur-xl border-b border-slate-300 dark:border-white/10 px-6 pt-6 pb-4">
           <SheetHeader>
             <SheetTitle className="sr-only">Client Profile</SheetTitle>
             <SheetDescription className="sr-only">Client details and trip history</SheetDescription>
@@ -285,8 +285,8 @@ export const ClientProfileSheet = ({
                   {selectedClient.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-white">{selectedClient.name}</h2>
-                  <p className="text-[11px] text-zinc-400 mt-0.5">
+                  <h2 className="text-base font-bold text-slate-900 dark:text-white">{selectedClient.name}</h2>
+                  <p className="text-[11px] text-slate-600 dark:text-zinc-400 mt-0.5">
                     Client since {new Date(selectedClient.created_at).getFullYear()}
                     {selectedClient.allTrips?.length ? ` · ${selectedClient.allTrips.length} trip${selectedClient.allTrips.length > 1 ? "s" : ""}` : ""}
                   </p>
@@ -296,14 +296,14 @@ export const ClientProfileSheet = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 text-xs text-zinc-300 hover:text-white hover:bg-white/10 border border-white/10 rounded-xl"
+                  className="h-8 text-xs text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 rounded-xl"
                   onClick={() => { setEditingClient(selectedClient); setIsEditDialogOpen(true); }}
                 >
                   Edit Info
                 </Button>
                 <Button
                   size="sm"
-                  className="h-8 text-xs aurora-gradient text-white border-none rounded-xl font-bold hover:brightness-110"
+                  className="h-8 text-xs aurora-gradient text-slate-900 dark:text-white border-none rounded-xl font-bold hover:brightness-110"
                   onClick={() => window.open(`/the-lab?clientId=${selectedClient.id}`, "_blank")}
                 >
                   + New Itinerary
@@ -323,12 +323,12 @@ export const ClientProfileSheet = ({
                 { icon: Phone, label: "Phone", value: selectedClient.phone },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl p-3.5 flex items-center gap-3">
-                  <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-                    <Icon className="w-3.5 h-3.5 text-zinc-400" />
+                  <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 flex items-center justify-center shrink-0">
+                    <Icon className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400" />
                   </div>
                   <div className="min-w-0">
-                    <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">{label}</p>
-                    <p className="text-xs text-white font-medium truncate mt-0.5">{value || "—"}</p>
+                    <p className="text-[10px] text-slate-600 dark:text-zinc-400 uppercase tracking-wider font-semibold">{label}</p>
+                    <p className="text-xs text-slate-900 dark:text-white font-medium truncate mt-0.5">{value || "—"}</p>
                   </div>
                 </div>
               ))}
@@ -337,10 +337,10 @@ export const ClientProfileSheet = ({
             {/* Tags */}
             {selectedClient.tags && selectedClient.tags.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap">
-                <Tag className="w-3 h-3 text-zinc-400 shrink-0" />
+                <Tag className="w-3 h-3 text-slate-600 dark:text-zinc-400 shrink-0" />
                 {selectedClient.tags.map((tag: string, idx: number) => (
                   <Badge key={idx} variant="secondary"
-                    className="bg-primary/20 text-white border border-primary/40 font-bold px-2 py-0.5 text-[11px] rounded-full">
+                    className="bg-primary/20 text-slate-900 dark:text-white border border-primary/40 font-bold px-2 py-0.5 text-[11px] rounded-full">
                     {tag}
                   </Badge>
                 ))}
@@ -383,7 +383,7 @@ export const ClientProfileSheet = ({
                   />
                   <div className="space-y-0 relative">
                     {/* vertical line */}
-                    <div className="absolute left-[11px] top-3 bottom-3 w-px bg-white/10" />
+                    <div className="absolute left-[11px] top-3 bottom-3 w-px bg-slate-200 dark:bg-white/10" />
                     {statusHistory[selectedClient.latestTripId!]?.map((entry, idx) => {
                       const cfg = statusConfig[entry.status?.toLowerCase()] || statusConfig.draft;
                       return (
@@ -393,13 +393,13 @@ export const ClientProfileSheet = ({
                           </div>
                           <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
                             <div>
-                              <p className="text-xs text-white">
+                              <p className="text-xs text-slate-900 dark:text-white">
                                 Moved to{" "}
                                 <span className={cn("font-bold capitalize", cfg.color)}>{entry.status}</span>
                               </p>
-                              <p className="text-[10px] text-zinc-400 mt-0.5">by {entry.by}</p>
+                              <p className="text-[10px] text-slate-600 dark:text-zinc-400 mt-0.5">by {entry.by}</p>
                             </div>
-                            <span className="text-[10px] text-zinc-400 shrink-0">
+                            <span className="text-[10px] text-slate-600 dark:text-zinc-400 shrink-0">
                               {new Date(entry.timestamp).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" })}
                             </span>
                           </div>
@@ -454,7 +454,7 @@ export const ClientProfileSheet = ({
                             <div className="flex items-center gap-2 flex-wrap">
                               <div className="flex items-center gap-1.5">
                                 <MapPin className="w-3.5 h-3.5 text-primary shrink-0" />
-                                <p className="text-sm font-semibold text-white">{destLabel}</p>
+                                <p className="text-sm font-semibold text-slate-900 dark:text-white">{destLabel}</p>
                               </div>
                               {/* Status pill inline */}
                               <Select
@@ -468,7 +468,7 @@ export const ClientProfileSheet = ({
                                   <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", cfg.dot)} />
                                   <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white">
+                                <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-300 dark:border-white/10 text-slate-900 dark:text-white">
                                   {itineraryStatuses.length > 0
                                     ? itineraryStatuses.map(opt => (
                                         <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
@@ -484,11 +484,11 @@ export const ClientProfileSheet = ({
                             {/* Route */}
                             {trip.starting_location && (
                               <div className="flex items-center gap-1.5 mt-1">
-                                <p className="text-[11px] text-zinc-400 font-medium">
+                                <p className="text-[11px] text-slate-600 dark:text-zinc-400 font-medium">
                                   {trip.starting_location}
                                   {trip.ending_location && trip.ending_location !== trip.starting_location && (
                                     <span className="inline-flex items-center gap-1">
-                                      <ArrowRight className="w-2.5 h-2.5 mx-0.5 inline text-zinc-400" />
+                                      <ArrowRight className="w-2.5 h-2.5 mx-0.5 inline text-slate-600 dark:text-zinc-400" />
                                       {trip.ending_location}
                                     </span>
                                   )}
@@ -498,15 +498,15 @@ export const ClientProfileSheet = ({
 
                             {/* Meta chips */}
                             <div className="flex items-center gap-3 mt-2">
-                              <div className="flex items-center gap-1 text-[11px] text-zinc-400">
-                                <CalendarDays className="w-3 h-3 shrink-0 text-zinc-400" />
+                              <div className="flex items-center gap-1 text-[11px] text-slate-600 dark:text-zinc-400">
+                                <CalendarDays className="w-3 h-3 shrink-0 text-slate-600 dark:text-zinc-400" />
                                 <span>{start.toLocaleDateString("en-GB", { day: "2-digit", month: "short" })}</span>
                                 <span className="text-zinc-500">·</span>
-                                <span className="text-zinc-400">{diffDays}D/{diffDays - 1}N</span>
+                                <span className="text-slate-600 dark:text-zinc-400">{diffDays}D/{diffDays - 1}N</span>
                               </div>
                               {tripCost > 0 && (
-                                <div className="flex items-center gap-1 text-[11px] text-white font-bold">
-                                  <DollarSign className="w-3 h-3 shrink-0 text-emerald-400" />
+                                <div className="flex items-center gap-1 text-[11px] text-slate-900 dark:text-white font-bold">
+                                  <DollarSign className="w-3 h-3 shrink-0 text-emerald-600 dark:text-emerald-400" />
                                   {formatMoney(tripCost, (agencySettings?.default_currency as any) || DEFAULT_CURRENCY)}
                                 </div>
                               )}
@@ -516,7 +516,7 @@ export const ClientProfileSheet = ({
                                 </div>
                               )}
                               {daysLeft < 0 && (
-                                <div className="text-[10px] text-zinc-400">
+                                <div className="text-[10px] text-slate-600 dark:text-zinc-400">
                                   completed
                                 </div>
                               )}
@@ -527,7 +527,7 @@ export const ClientProfileSheet = ({
                           <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity shrink-0">
                             <Button
                               variant="ghost" size="icon"
-                              className="h-7 w-7 text-zinc-300 hover:text-white hover:bg-white/10 rounded-lg"
+                              className="h-7 w-7 text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg"
                               onClick={() => { setSelectedTripForModal(trip); setShowModal(true); }}
                               title="View itinerary"
                             >
@@ -535,7 +535,7 @@ export const ClientProfileSheet = ({
                             </Button>
                             <Button
                               variant="ghost" size="icon"
-                              className="h-7 w-7 text-zinc-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg"
+                              className="h-7 w-7 text-slate-600 dark:text-zinc-400 hover:text-red-400 hover:bg-red-400/10 rounded-lg"
                               onClick={() => handleDeleteTrip(trip.id)}
                               disabled={deleting === trip.id}
                               title="Delete"
@@ -550,9 +550,9 @@ export const ClientProfileSheet = ({
                 </div>
               ) : (
                 <div className="px-5 pb-5">
-                  <div className="text-center py-10 border border-dashed border-white/10 rounded-xl">
-                    <Plane className="w-7 h-7 text-zinc-400 mx-auto mb-2 opacity-50" />
-                    <p className="text-zinc-400 text-sm">No trips yet</p>
+                  <div className="text-center py-10 border border-dashed border-slate-300 dark:border-white/10 rounded-xl">
+                    <Plane className="w-7 h-7 text-slate-600 dark:text-zinc-400 mx-auto mb-2 opacity-50" />
+                    <p className="text-slate-600 dark:text-zinc-400 text-sm">No trips yet</p>
                     <Button
                       variant="ghost"
                       size="sm"

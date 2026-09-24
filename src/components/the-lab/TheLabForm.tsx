@@ -141,7 +141,7 @@ const StepDaywisePlan = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
           return (
             <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-2.5 bg-white/5 border border-white/10 rounded-xl hover:border-primary/30 transition-all duration-200">
               <div className="min-w-[80px] shrink-0">
-                <span className="text-[10px] font-bold text-zinc-400 block">DAY {index + 1}</span>
+                <span className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 block">DAY {index + 1}</span>
                 <span className="text-[9px] text-zinc-500 font-medium block mt-0.5">{formattedDate}</span>
               </div>
               <div className="flex-1 w-full min-w-0">
@@ -261,7 +261,7 @@ const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
           return (
             <div key={field.id} className="p-3 bg-white/5 border border-white/10 rounded-xl hover:border-primary/30 transition-all duration-200 space-y-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-0">
-                <span className="text-[10px] font-bold text-zinc-400">NIGHT {index + 1} ({formattedDate})</span>
+                <span className="text-[10px] font-bold text-slate-600 dark:text-zinc-400">NIGHT {index + 1} ({formattedDate})</span>
                 <div className="flex items-center gap-1">
                   <span className="text-[9px] text-zinc-500 mr-1">Rating:</span>
                   <StarRating 
@@ -456,7 +456,7 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
                       "px-3 py-1.5 rounded-lg border text-[11px] font-medium transition-all duration-200",
                       isSelected 
                         ? "bg-primary/20 border-primary/50 text-primary" 
-                        : "bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10"
+                        : "bg-white/5 border-white/10 text-slate-600 dark:text-zinc-400 hover:bg-white/10"
                     )}
                   >
                     {method}
@@ -560,7 +560,7 @@ const WizardInputSummary = ({ form, currentStep }: { form: UseFormReturn<TheLabF
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-zinc-400 hover:text-zinc-200 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 hover:text-zinc-200 transition-colors"
       >
         <span className="flex items-center gap-1.5">
           <Eye className="w-3.5 h-3.5 text-primary shrink-0" />

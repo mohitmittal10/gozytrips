@@ -419,9 +419,9 @@ export default function VendorEnquiry() {
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all duration-200 cursor-pointer
                   ${isActive
                     ? "bg-primary/20 border-primary/50 text-white"
-                    : "bg-white/5 border-white/10 text-zinc-400 hover:bg-white/10 hover:text-white"}`}
+                    : "bg-white/5 border-white/10 text-slate-600 dark:text-zinc-400 hover:bg-white/10 hover:text-white"}`}
               >
-                <Icon className={cn("w-4 h-4", isActive ? "text-primary" : "text-zinc-400")} />
+                <Icon className={cn("w-4 h-4", isActive ? "text-primary" : "text-slate-600 dark:text-zinc-400")} />
                 {type.label}
               </button>
             );
@@ -446,13 +446,13 @@ export default function VendorEnquiry() {
               </div>
               <CardTitle className="text-lg font-bold text-white">{activeType.label} Enquiry</CardTitle>
             </div>
-            <CardDescription className="text-zinc-400 text-xs">
+            <CardDescription className="text-slate-600 dark:text-zinc-400 text-xs">
               Fill in the details and let AI generate a professional enquiry email.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-5 pt-4">
             <div className="space-y-3">
-              <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Persistence & Context</p>
+              <p className="text-[10px] uppercase tracking-widest text-slate-600 dark:text-zinc-400 font-bold">Persistence & Context</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
                   <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Link to Client</Label>
@@ -487,7 +487,7 @@ export default function VendorEnquiry() {
 
             {/* Common Fields */}
             <div className="space-y-3 pt-3 border-t border-white/5">
-              <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">Trip Details</p>
+              <p className="text-[10px] uppercase tracking-widest text-slate-600 dark:text-zinc-400 font-bold">Trip Details</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField label="Destination" value={destination} onChange={setDestination} placeholder="e.g. Manali, Himachal Pradesh" required />
                 <FormField label="Travel Dates" value={travelDates} onChange={setTravelDates} placeholder="e.g. 15 Apr - 22 Apr 2026" required />
@@ -501,7 +501,7 @@ export default function VendorEnquiry() {
 
             {/* Type-Specific Fields */}
             <div className="space-y-3 pt-3 border-t border-white/5">
-              <p className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold">{activeType.label} Details</p>
+              <p className="text-[10px] uppercase tracking-widest text-slate-600 dark:text-zinc-400 font-bold">{activeType.label} Details</p>
 
               {enquiryType === "hotel" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -596,7 +596,7 @@ export default function VendorEnquiry() {
                 variant="outline"
                 className="flex-1 border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-white h-11 text-sm font-semibold rounded-xl gap-2 transition-all cursor-pointer"
               >
-                <Save className="w-4 h-4 text-zinc-400" />
+                <Save className="w-4 h-4 text-slate-600 dark:text-zinc-400" />
                 Save Draft
               </Button>
               <Button
@@ -628,7 +628,7 @@ export default function VendorEnquiry() {
                 <Sparkles className="w-7 h-7 text-primary" />
               </div>
               <h3 className="text-lg font-bold text-white mb-2">AI Email Preview</h3>
-              <p className="text-sm text-zinc-400 text-center max-w-xs leading-relaxed">
+              <p className="text-sm text-slate-600 dark:text-zinc-400 text-center max-w-xs leading-relaxed">
                 Fill in the enquiry details and click "Generate with AI" to construct a polished vendor outreach email.
               </p>
             </div>
@@ -639,7 +639,7 @@ export default function VendorEnquiry() {
                 <UniqueLoading variant="morph" size="md" className="relative z-10" />
               </div>
               <h3 className="text-lg font-bold text-white mb-2">Generating Email...</h3>
-              <p className="text-sm text-zinc-400 text-center">AI is crafting a professional enquiry email for your vendor.</p>
+              <p className="text-sm text-slate-600 dark:text-zinc-400 text-center">AI is crafting a professional enquiry email for your vendor.</p>
             </div>
           ) : (
             <Card className="border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-2xl rounded-2xl">
@@ -652,7 +652,7 @@ export default function VendorEnquiry() {
                   <div className="flex items-center gap-1">
                     <Button
                       variant="ghost" size="icon"
-                      className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                      className="h-8 w-8 text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       onClick={() => setIsEditing(!isEditing)}
                       title="Edit"
                     >
@@ -660,15 +660,15 @@ export default function VendorEnquiry() {
                     </Button>
                     <Button
                       variant="ghost" size="icon"
-                      className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                      className="h-8 w-8 text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       onClick={handleCopy}
                       title="Copy"
                     >
-                      {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copied ? <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                     </Button>
                     <Button
                       variant="ghost" size="icon"
-                      className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                      className="h-8 w-8 text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
                       onClick={handleReset}
                       title="Reset"
                     >
@@ -680,7 +680,7 @@ export default function VendorEnquiry() {
               <CardContent className="space-y-4 pt-4">
                 {/* TO field */}
                 <div className="flex items-center gap-2 text-sm bg-black/40 p-3 rounded-xl border border-white/10">
-                  <span className="text-zinc-400 font-semibold w-12 shrink-0">To:</span>
+                  <span className="text-slate-600 dark:text-zinc-400 font-semibold w-12 shrink-0">To:</span>
                   <span className="text-white font-semibold truncate">{vendorEmail || <span className="text-zinc-500 italic">No vendor email set</span>}</span>
                 </div>
 
@@ -688,7 +688,7 @@ export default function VendorEnquiry() {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-zinc-300 font-semibold text-xs uppercase tracking-wider">Subject:</span>
-                    <Badge variant="secondary" className={`text-[10px] px-2 py-0.5 rounded-full ${generatedSubject.length > 90 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"}`}>
+                    <Badge variant="secondary" className={`text-[10px] px-2 py-0.5 rounded-full ${generatedSubject.length > 90 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"}`}>
                       {generatedSubject.length}/100
                     </Badge>
                   </div>
@@ -710,7 +710,7 @@ export default function VendorEnquiry() {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <span className="text-zinc-300 font-semibold text-xs uppercase tracking-wider">Body:</span>
-                    <Badge variant="secondary" className={`text-[10px] px-2 py-0.5 rounded-full ${generatedBody.length > 1400 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"}`}>
+                    <Badge variant="secondary" className={`text-[10px] px-2 py-0.5 rounded-full ${generatedBody.length > 1400 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"}`}>
                       {generatedBody.length}/1500
                     </Badge>
                   </div>
@@ -732,7 +732,7 @@ export default function VendorEnquiry() {
                 <Button
                   onClick={handleSendGmail}
                   disabled={!generatedSubject || !generatedBody}
-                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold h-11 text-sm gap-2 shadow-lg shadow-emerald-500/20 rounded-xl transition-all active:scale-98 cursor-pointer disabled:opacity-50"
+                  className="w-full bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold h-11 text-sm gap-2 shadow-lg shadow-emerald-500/20 rounded-xl transition-all active:scale-98 cursor-pointer disabled:opacity-50"
                 >
                   <Send className="w-4 h-4" />
                   Open in Gmail

@@ -51,7 +51,7 @@ export const Timeline = ({ data, title, description }: TimelineProps) => {
                         </h2>
                     )}
                     {description && (
-                        <p className="text-zinc-400 text-lg md:text-xl max-w-2xl">
+                        <p className="text-slate-600 dark:text-zinc-400 text-lg md:text-xl max-w-2xl">
                             {description}
                         </p>
                     )}

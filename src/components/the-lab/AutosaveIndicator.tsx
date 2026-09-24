@@ -38,9 +38,9 @@ export const AutosaveIndicator = React.memo(function AutosaveIndicator({
       className={cn(
         "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium tracking-tight transition-all duration-300 select-none border backdrop-blur-xl shadow-sm",
         currentStatus === "saving" && "bg-white/[0.06] border-white/15 text-zinc-200 shadow-primary/5",
-        currentStatus === "saved" && "bg-emerald-500/10 border-emerald-500/20 text-emerald-400",
+        currentStatus === "saved" && "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400",
         currentStatus === "error" && "bg-rose-500/10 border-rose-500/20 text-rose-400",
-        currentStatus === "idle" && "bg-white/5 border-white/10 text-zinc-400",
+        currentStatus === "idle" && "bg-white/5 border-white/10 text-slate-600 dark:text-zinc-400",
         className
       )}
       role="status"
@@ -55,8 +55,8 @@ export const AutosaveIndicator = React.memo(function AutosaveIndicator({
 
       {currentStatus === "saved" && (
         <>
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-          <span className="font-semibold text-emerald-400">All changes saved</span>
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+          <span className="font-semibold text-emerald-600 dark:text-emerald-400">All changes saved</span>
         </>
       )}
 
@@ -79,7 +79,7 @@ export const AutosaveIndicator = React.memo(function AutosaveIndicator({
 
       {currentStatus === "idle" && (
         <>
-          <CheckCircle2 className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+          <CheckCircle2 className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400 shrink-0" />
           <span>Saved</span>
         </>
       )}

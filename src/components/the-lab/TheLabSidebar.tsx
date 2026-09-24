@@ -51,7 +51,7 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
             "group relative flex items-center transition-all duration-200 rounded-xl mb-4 cursor-pointer",
             isSidebarExpanded ? "w-full px-4 gap-3 h-12" : "justify-center w-10 h-10",
             activeLabTab === 'new'
-              ? 'bg-primary/20 text-white border border-primary/40 font-bold hover:bg-primary/25'
+              ? 'bg-primary/20 text-slate-900 dark:text-white border border-primary/40 font-bold hover:bg-primary/25'
               : 'text-primary hover:text-primary/90 hover:bg-primary/10'
           )}
           title={isSidebarExpanded ? undefined : "New Itinerary"}
@@ -91,12 +91,12 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
                 "relative group flex items-center rounded-xl transition-all duration-200 cursor-pointer",
                 isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10",
                 activeLabTab === item.id
-                  ? 'bg-primary/20 text-white font-bold border border-primary/40 hover:bg-primary/25'
-                  : 'text-zinc-400 hover:text-white hover:bg-white/[0.08]'
+                  ? 'bg-primary/20 text-slate-900 dark:text-white font-bold border border-primary/40 hover:bg-primary/25'
+                  : 'text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.08]'
               )}
               title={isSidebarExpanded ? undefined : item.label}
             >
-              <item.icon className={cn(isSidebarExpanded ? "w-4 h-4" : "w-[18px] h-[18px]", activeLabTab === item.id ? "text-primary" : "text-zinc-400")} />
+              <item.icon className={cn(isSidebarExpanded ? "w-4 h-4" : "w-[18px] h-[18px]", activeLabTab === item.id ? "text-primary" : "text-slate-600 dark:text-zinc-400")} />
               {isSidebarExpanded && <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>}
               {!isSidebarExpanded && (
                 <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0c0c0e]/95 backdrop-blur-2xl border border-white/10 rounded-xl text-xs font-semibold text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
@@ -115,7 +115,7 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
           <button
             onClick={() => setIsSidebarExpanded(!isSidebarExpanded)}
             className={cn(
-              "relative group flex items-center transition-all duration-200 text-zinc-400 hover:text-white hover:bg-white/[0.08] rounded-xl mt-1 cursor-pointer",
+              "relative group flex items-center transition-all duration-200 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/[0.08] rounded-xl mt-1 cursor-pointer",
               isSidebarExpanded ? "w-full px-4 gap-3 h-11" : "justify-center w-10 h-10"
             )}
             title={isSidebarExpanded ? "Collapse Sidebar" : "Expand Sidebar"}

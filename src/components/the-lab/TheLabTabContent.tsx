@@ -127,7 +127,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
       {/* Tab Content - Timeline */}
       <div className={activeLabTab !== 'itinerary' || !hasItinerary ? 'hidden' : undefined}>
         <ItineraryErrorBoundary onReset={() => setItinerary(null)} fallbackMessage="Timeline failed to render.">
-          <div className="relative rounded-xl sm:rounded-2xl border border-white/[0.06] p-2 sm:p-4 md:p-6 backdrop-blur-sm overflow-hidden bg-[#0A0A0B]/95">
+          <div className="relative rounded-xl sm:rounded-2xl border border-slate-300/60 dark:border-white/[0.06] p-2 sm:p-4 md:p-6 backdrop-blur-sm overflow-hidden bg-[#EFECE5]/95 dark:bg-[#0A0A0B]/95">
             <MemoizedItineraryTimeline
               itinerary={itinerary?.itinerary || []}
               isLoading={isGenerating}
@@ -232,9 +232,9 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
       <div className={activeLabTab !== 'new' ? 'hidden' : undefined}>
         <ItineraryErrorBoundary onReset={() => {}} fallbackMessage="Form failed to load.">
           <div className="mt-4 flex flex-col items-center animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="w-full max-w-3xl bg-[#0a0a0b]/80 border border-white/[0.08] backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 lg:p-12 shadow-[0_24px_48px_rgba(0,0,0,0.5)]">
+            <div className="w-full max-w-3xl bg-white/80 dark:bg-[#0a0a0b]/80 border border-slate-300/60 dark:border-white/[0.08] backdrop-blur-xl rounded-[2.5rem] p-6 sm:p-8 lg:p-12 shadow-[0_24px_48px_rgba(0,0,0,0.5)]">
               <div className="mb-10 text-center">
-                <h2 className="text-3xl font-bold text-white uppercase tracking-tight">Plan Your Escape</h2>
+                <h2 className="text-3xl font-bold text-slate-900 dark:text-white uppercase tracking-tight">Plan Your Escape</h2>
                 <p className="text-zinc-500 text-sm mt-3">Define the parameters of your next unforgettable journey.</p>
               </div>
               <TheLabForm 
@@ -253,10 +253,10 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
       {/* Tab Content - Empty/Welcome State (conditionally rendered — no state to preserve) */}
       {!hasItinerary && !isGenerating && activeLabTab !== 'history' && activeLabTab !== 'new' && (
         <div className="flex flex-col items-center justify-center py-24 text-center px-4 animate-in fade-in duration-1000">
-           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-emerald-500/20 flex items-center justify-center mb-8 border border-white/5 shadow-2xl">
+           <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-emerald-500/20 flex items-center justify-center mb-8 border border-slate-300/60 dark:border-white/5 shadow-2xl">
               <Sparkles className="w-10 h-10 text-purple-400 animate-pulse" />
            </div>
-           <h2 className="text-3xl font-bold text-white mb-4 uppercase tracking-wider">Wander Labs</h2>
+           <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4 uppercase tracking-wider">Wander Labs</h2>
            <p className="text-zinc-500 max-w-md mx-auto text-sm leading-relaxed mb-8">
              Select a trip from your history or click the Plus button to start designing your next journey.
            </p>

@@ -70,7 +70,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
 
                 {/* Navigation & Header */}
                 <div className="mb-12">
-                    <Button variant="ghost" className="mb-6 pl-0 text-slate-400 hover:text-white hover:bg-transparent transition-colors group" onClick={() => router.push('/clients')}>
+                    <Button variant="ghost" className="mb-6 pl-0 text-slate-600 dark:text-slate-400 hover:text-white hover:bg-transparent transition-colors group" onClick={() => router.push('/clients')}>
                         <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" /> Back to Clients
                     </Button>
 
@@ -103,7 +103,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                                 {client.email && (
                                     <div className="flex items-center gap-3 group">
                                         <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                                            <Mail className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+                                            <Mail className="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors" />
                                         </div>
                                         <a href={`mailto:${client.email}`} className="hover:text-primary transition-colors truncate">{client.email}</a>
                                     </div>
@@ -111,7 +111,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                                 {client.phone && (
                                     <div className="flex items-center gap-3 group">
                                         <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                                            <Phone className="w-4 h-4 text-slate-400 group-hover:text-primary transition-colors" />
+                                            <Phone className="w-4 h-4 text-slate-600 dark:text-slate-400 group-hover:text-primary transition-colors" />
                                         </div>
                                         <a href={`tel:${client.phone}`} className="hover:text-primary transition-colors">{client.phone}</a>
                                     </div>
@@ -119,7 +119,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                                 {client.notes && (
                                     <div className="flex items-start gap-3 mt-2 pt-3 border-t border-white/10">
                                         <FileIcon className="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
-                                        <p className="text-xs text-slate-400 italic line-clamp-3 leading-relaxed">{client.notes}</p>
+                                        <p className="text-xs text-slate-600 dark:text-slate-400 italic line-clamp-3 leading-relaxed">{client.notes}</p>
                                     </div>
                                 )}
                             </div>
@@ -148,7 +148,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                                     <MapPin className="w-12 h-12 text-slate-600" />
                                 </div>
                                 <h3 className="text-2xl font-bold text-white mb-3">No Proposals Found</h3>
-                                <p className="text-slate-400 max-w-md mx-auto mb-10">
+                                <p className="text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-10">
                                     This client does not have any attached quotes or itineraries yet. Create one in The Lab and link it to them.
                                 </p>
                                 <Button onClick={() => router.push('/the-lab')} className="bg-primary hover:bg-primary/90 text-white font-bold px-8 py-6 rounded-xl shadow-lg shadow-primary/20 transition-all">
@@ -162,12 +162,12 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                                 <table className="w-full text-left border-collapse min-w-[800px]">
                                     <thead>
                                         <tr className="border-b border-white/10 bg-white/[0.01]">
-                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Proposal Details</th>
-                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Destination</th>
-                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Travel Dates</th>
-                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</th>
-                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Budget</th>
-                                            <th className="p-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                            <th className="p-5 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Proposal Details</th>
+                                            <th className="p-5 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Destination</th>
+                                            <th className="p-5 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Travel Dates</th>
+                                            <th className="p-5 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Status</th>
+                                            <th className="p-5 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest">Budget</th>
+                                            <th className="p-5 text-[10px] font-black text-slate-600 dark:text-slate-400 uppercase tracking-widest text-right">Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
@@ -192,7 +192,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                                                         <span className="truncate max-w-[150px]">{trip.starting_location || 'TBD'}</span>
                                                     </div>
                                                 </td>
-                                                <td className="p-5 text-sm text-slate-400 font-medium">
+                                                <td className="p-5 text-sm text-slate-600 dark:text-slate-400 font-medium">
                                                     <div className="flex items-center gap-2">
                                                         <Calendar className="w-4 h-4 text-blue-400 shrink-0" />
                                                         <span className="whitespace-nowrap">
@@ -212,7 +212,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                                                 </td>
                                                 <td className="p-5">
                                                     {trip.budget ? (
-                                                        <div className="text-sm font-bold text-emerald-400">
+                                                        <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
                                                             <span>{getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}{trip.budget.toLocaleString()}</span>
                                                         </div>
                                                     ) : (
@@ -223,7 +223,7 @@ export default function ClientDetailsPage(props: { params: Promise<{ id: string 
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
-                                                        className="gap-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all transform group-hover:translate-x-0 translate-x-2 opacity-0 group-hover:opacity-100"
+                                                        className="gap-2 text-slate-600 dark:text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all transform group-hover:translate-x-0 translate-x-2 opacity-0 group-hover:opacity-100"
                                                     >
                                                         <Edit className="w-4 h-4" />
                                                         Review

@@ -133,7 +133,7 @@ function SortableActivity({
         )}
 
         <div className="flex-1 min-w-0">
-          <div className="p-2 sm:p-2.5 rounded-xl flex flex-col sm:flex-row gap-1.5 sm:gap-3 items-start sm:items-baseline group/card transition-all bg-white/[0.02] hover:bg-white/[0.04]">
+          <div className="p-2 sm:p-2.5 rounded-xl flex flex-col sm:flex-row gap-1.5 sm:gap-3 items-start sm:items-baseline group/card transition-all bg-slate-50/50 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-white/[0.04]">
             {showTimestamps !== false && (
               <div className="flex-shrink-0">
                 <InlineEdit
@@ -157,7 +157,7 @@ function SortableActivity({
                 value={step.details}
                 onSave={(v) => onUpdateStep("details", v)}
                 onEditStart={() => onEditingChange?.(true)}
-                className="text-zinc-300 text-xs leading-relaxed font-normal block"
+                className="text-slate-900 dark:text-zinc-300 text-xs leading-relaxed font-normal block"
                 inputClassName="text-xs font-normal"
                 multiline
                 placeholder="Activity description..."
@@ -588,7 +588,7 @@ const ItineraryTimeline = ({
             </div>
             <div>
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h3 className="text-sm font-bold text-white tracking-wide">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white tracking-wide">
                   Travelers &amp; Pax Composition
                 </h3>
                 <span className="text-[11px] font-semibold bg-primary/15 text-primary px-2.5 py-0.5 rounded-full font-mono">
@@ -599,19 +599,19 @@ const ItineraryTimeline = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 w-full lg:w-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 w-full lg:w-auto">
             {/* Adults */}
             <div className="space-y-1.5">
               <div className="flex items-baseline justify-between px-0.5">
                 <label className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Adults</label>
                 <span className="text-[9px] text-foreground/30 font-medium">12+ yrs</span>
               </div>
-              <div className="flex items-center justify-between bg-black/30 rounded-xl p-1 shadow-inner">
+              <div className="flex items-center justify-between bg-slate-200/50 dark:bg-black/30 rounded-xl p-1 shadow-inner">
                 <button
                   type="button"
                   onClick={() => handlePaxUpdate("adultPax", Math.max(1, currentAdultPax - 1))}
                   disabled={currentAdultPax <= 1}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100/50 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 active:scale-95 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
                   aria-label="Decrease Adults"
                 >
                   <Minus className="w-3.5 h-3.5" />
@@ -621,12 +621,12 @@ const ItineraryTimeline = ({
                   min={1}
                   value={currentAdultPax}
                   onChange={(e) => handlePaxUpdate("adultPax", Math.max(1, Number(e.target.value)))}
-                  className="w-8 text-center font-mono font-bold text-xs text-white bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-8 text-center font-mono font-bold text-xs text-slate-900 dark:text-white bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <button
                   type="button"
                   onClick={() => handlePaxUpdate("adultPax", currentAdultPax + 1)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white transition-all cursor-pointer"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100/50 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 active:scale-95 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
                   aria-label="Increase Adults"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -640,12 +640,12 @@ const ItineraryTimeline = ({
                 <label className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Children</label>
                 <span className="text-[9px] text-foreground/30 font-medium">2-11 yrs</span>
               </div>
-              <div className="flex items-center justify-between bg-black/30 rounded-xl p-1 shadow-inner">
+              <div className="flex items-center justify-between bg-slate-200/50 dark:bg-black/30 rounded-xl p-1 shadow-inner">
                 <button
                   type="button"
                   onClick={() => handlePaxUpdate("childPax", Math.max(0, currentChildPax - 1))}
                   disabled={currentChildPax <= 0}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100/50 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 active:scale-95 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
                   aria-label="Decrease Children"
                 >
                   <Minus className="w-3.5 h-3.5" />
@@ -655,12 +655,12 @@ const ItineraryTimeline = ({
                   min={0}
                   value={currentChildPax}
                   onChange={(e) => handlePaxUpdate("childPax", Math.max(0, Number(e.target.value)))}
-                  className="w-8 text-center font-mono font-bold text-xs text-white bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-8 text-center font-mono font-bold text-xs text-slate-900 dark:text-white bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <button
                   type="button"
                   onClick={() => handlePaxUpdate("childPax", currentChildPax + 1)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white transition-all cursor-pointer"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100/50 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 active:scale-95 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
                   aria-label="Increase Children"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -674,12 +674,12 @@ const ItineraryTimeline = ({
                 <label className="text-[10px] uppercase font-bold tracking-wider text-foreground/50">Infants</label>
                 <span className="text-[9px] text-foreground/30 font-medium">0-23 mos</span>
               </div>
-              <div className="flex items-center justify-between bg-black/30 rounded-xl p-1 shadow-inner">
+              <div className="flex items-center justify-between bg-slate-200/50 dark:bg-black/30 rounded-xl p-1 shadow-inner">
                 <button
                   type="button"
                   onClick={() => handlePaxUpdate("infantPax", Math.max(0, currentInfantPax - 1))}
                   disabled={currentInfantPax <= 0}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100/50 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 active:scale-95 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
                   aria-label="Decrease Infants"
                 >
                   <Minus className="w-3.5 h-3.5" />
@@ -689,12 +689,12 @@ const ItineraryTimeline = ({
                   min={0}
                   value={currentInfantPax}
                   onChange={(e) => handlePaxUpdate("infantPax", Math.max(0, Number(e.target.value)))}
-                  className="w-8 text-center font-mono font-bold text-xs text-white bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  className="w-8 text-center font-mono font-bold text-xs text-slate-900 dark:text-white bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
                 <button
                   type="button"
                   onClick={() => handlePaxUpdate("infantPax", currentInfantPax + 1)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 hover:bg-white/10 active:scale-95 text-white/80 hover:text-white transition-all cursor-pointer"
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-slate-100/50 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 active:scale-95 text-slate-700 dark:text-white/80 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
                   aria-label="Increase Infants"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -713,9 +713,9 @@ const ItineraryTimeline = ({
             onClick={() => {
               document.getElementById(`day-container-${dIdx}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }}
-            className="flex-shrink-0 liquid-glass p-2.5 sm:p-3 rounded-2xl w-48 text-left transition-all group hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/50 snap-start flex items-center gap-3 border border-white/5 bg-white/[0.02] hover:bg-white/[0.05]"
+            className="flex-shrink-0 liquid-glass p-2.5 sm:p-3 rounded-2xl w-48 text-left transition-all group hover:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/50 snap-start flex items-center gap-3 border border-slate-300/60 dark:border-white/5 bg-slate-50/50 dark:bg-white/[0.02] hover:bg-white/[0.05]"
           >
-            <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-zinc-900/60 border border-white/10 relative">
+            <div className="w-11 h-11 rounded-xl overflow-hidden flex-shrink-0 bg-zinc-900/60 border border-slate-300/60 dark:border-white/10 relative">
               <img
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 brightness-[0.85]"
                 src={day.imageUrl || getActivityFallbackUrl(dIdx, fallbackPhotos)}
@@ -730,14 +730,14 @@ const ItineraryTimeline = ({
               <p className="text-[10px] font-semibold text-primary uppercase tracking-wider mb-0.5 transition-colors">
                 Day {String(dIdx + 1).padStart(2, '0')}
               </p>
-              <p className="text-xs font-medium text-white/90 truncate">{day.areaFocus}</p>
+              <p className="text-xs font-medium text-slate-800 dark:text-white/90 truncate">{day.areaFocus}</p>
             </div>
           </button>
         ))}
         {editable && (
           <button
             onClick={addDay}
-            className="flex-shrink-0 p-3 rounded-2xl w-36 text-left transition-all border-2 border-dashed border-white/10 hover:border-primary/40 hover:bg-white/5 flex items-center justify-center gap-2 text-zinc-500 hover:text-primary snap-start"
+            className="flex-shrink-0 p-3 rounded-2xl w-36 text-left transition-all border-2 border-dashed border-slate-300/60 dark:border-white/10 hover:border-primary/40 hover:bg-slate-100/50 dark:bg-white/5 flex items-center justify-center gap-2 text-zinc-500 hover:text-primary snap-start"
           >
             <Plus className="w-5 h-5" />
             <span className="text-xs font-semibold uppercase tracking-wider">Add Day</span>
@@ -746,7 +746,7 @@ const ItineraryTimeline = ({
       </div>
 
       {editable && (
-        <div className="mb-6 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5 text-zinc-300 text-xs sm:text-sm flex items-center gap-2.5 animate-in fade-in duration-300">
+        <div className="mb-6 px-4 py-3 rounded-xl border border-primary/20 bg-primary/5 text-slate-900 dark:text-zinc-300 text-xs sm:text-sm flex items-center gap-2.5 animate-in fade-in duration-300">
           <span className="flex h-2 w-2 relative shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
@@ -779,7 +779,7 @@ const ItineraryTimeline = ({
 
                 <div className="flex-1">
                   <Card className={cn(
-                    "glass-panel rounded-2xl overflow-hidden transition-all shadow-xl border border-white/5",
+                    "glass-panel rounded-2xl overflow-hidden transition-all shadow-xl border border-slate-300/60 dark:border-white/5",
                     editable && "ring-1 ring-primary/20"
                   )}>
                     <CardHeader className="bg-obsidian-dark/40 py-4 px-4 sm:px-6">
@@ -787,7 +787,7 @@ const ItineraryTimeline = ({
                         {/* Photo and Heading Group */}
                         <div className="flex items-center gap-4 w-full sm:w-auto">
                           {/* Day Photo */}
-                          <div className="w-24 h-24 sm:w-32 sm:h-24 rounded-2xl overflow-hidden bg-zinc-900/60 border border-white/10 flex-shrink-0 relative group/dayphoto shadow-md">
+                          <div className="w-24 h-24 sm:w-32 sm:h-24 rounded-2xl overflow-hidden bg-zinc-900/60 border border-slate-300/60 dark:border-white/10 flex-shrink-0 relative group/dayphoto shadow-md">
                             <img
                               className="w-full h-full object-cover group-hover/dayphoto:scale-105 transition-transform duration-500 brightness-[0.85]"
                               src={day.imageUrl || getActivityFallbackUrl(dayIndex, fallbackPhotos)}
@@ -821,12 +821,12 @@ const ItineraryTimeline = ({
                                   {uploadingDayIndex === dayIndex ? (
                                     <div className="flex flex-col items-center gap-1.5">
                                       <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                                      <span className="text-[9px] text-white/90 font-medium tracking-wide">Updating…</span>
+                                      <span className="text-[9px] text-slate-800 dark:text-white/90 font-medium tracking-wide">Updating…</span>
                                     </div>
                                   ) : (
                                     <>
-                                      <Camera className="w-5 h-5 text-white drop-shadow" />
-                                      <span className="text-[10px] text-white font-medium mt-1">Change</span>
+                                      <Camera className="w-5 h-5 text-slate-900 dark:text-white drop-shadow" />
+                                      <span className="text-[10px] text-slate-900 dark:text-white font-medium mt-1">Change</span>
                                     </>
                                   )}
                                 </button>
@@ -842,18 +842,18 @@ const ItineraryTimeline = ({
                                   value={day.date}
                                   onSave={(v) => updateDayField(dayIndex, "date", v)}
                                   onEditStart={() => onEditingChange?.(true)}
-                                  className="text-[11px] font-normal text-zinc-400 uppercase tracking-wider block"
+                                  className="text-[11px] font-normal text-slate-600 dark:text-zinc-400 uppercase tracking-wider block"
                                   inputClassName="text-[11px] font-normal"
                                 />
                                 <div className="flex items-baseline gap-2 mt-0.5">
-                                  <span className="text-base font-semibold text-white tracking-tight flex-shrink-0">
+                                  <span className="text-base font-semibold text-slate-900 dark:text-white tracking-tight flex-shrink-0">
                                     Day {String(day.day).padStart(2, '0')}:
                                   </span>
                                   <InlineEdit
                                     value={day.areaFocus}
                                     onSave={(v) => updateDayField(dayIndex, "areaFocus", v)}
                                     onEditStart={() => onEditingChange?.(true)}
-                                    className="text-base font-semibold text-white tracking-tight block"
+                                    className="text-base font-semibold text-slate-900 dark:text-white tracking-tight block"
                                     inputClassName="text-base font-semibold"
                                     placeholder="Area focus..."
                                   />
@@ -861,11 +861,11 @@ const ItineraryTimeline = ({
                               </>
                             ) : (
                               <>
-                                <span className="text-[11px] font-normal text-zinc-400 uppercase tracking-wider block">
+                                <span className="text-[11px] font-normal text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">
                                   {day.date || `Day ${String(day.day).padStart(2, '0')}`}
                                 </span>
-                                <h3 className="text-base font-semibold text-white tracking-tight mt-0.5">
-                                  Day {String(day.day).padStart(2, '0')}: <span className="text-zinc-200 font-medium">{day.areaFocus}</span>
+                                <h3 className="text-base font-semibold text-slate-900 dark:text-white tracking-tight mt-0.5">
+                                  Day {String(day.day).padStart(2, '0')}: <span className="text-slate-800 dark:text-zinc-200 font-medium">{day.areaFocus}</span>
                                 </h3>
                               </>
                             )}
@@ -964,13 +964,13 @@ const ItineraryTimeline = ({
       )}
       {/* AI Day Regeneration Dialog */}
       <Dialog open={regeneratingDayIndex !== null} onOpenChange={(open) => { if (!open) setRegeneratingDayIndex(null); }}>
-        <DialogContent className="max-w-md w-full bg-[#0a0a0b]/95 border border-white/10 text-white p-6 rounded-2xl shadow-2xl backdrop-blur-xl">
+        <DialogContent className="max-w-md w-full bg-white/95 dark:bg-[#0a0a0b]/95 border border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-white p-6 rounded-2xl shadow-2xl backdrop-blur-xl">
           <DialogHeader>
             <DialogTitle className="text-xl font-bold flex items-center gap-2 text-purple-400">
               <Sparkles className="w-5 h-5 animate-pulse" />
               Regenerate Day {regeneratingDayIndex !== null ? regeneratingDayIndex + 1 : ""}
             </DialogTitle>
-            <DialogDescription className="text-zinc-400 text-xs mt-1">
+            <DialogDescription className="text-slate-600 dark:text-zinc-400 text-xs mt-1">
               Provide instructions to reshape this day's timeline. E.g. "include a scenic hike", "more outdoor adventure", "relaxed morning".
             </DialogDescription>
           </DialogHeader>
@@ -980,7 +980,7 @@ const ItineraryTimeline = ({
               placeholder="Type your prompt..."
               value={promptText}
               onChange={(e) => setPromptText(e.target.value)}
-              className="bg-black/40 border border-white/10 text-white placeholder-zinc-500 rounded-xl focus:border-purple-500 min-h-[80px] w-full p-3 text-sm resize-none"
+              className="bg-black/40 border border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-white placeholder-zinc-500 rounded-xl focus:border-purple-500 min-h-[80px] w-full p-3 text-sm resize-none"
               maxLength={200}
               disabled={isRegeneratingDay}
             />
@@ -1002,14 +1002,14 @@ const ItineraryTimeline = ({
               variant="ghost"
               onClick={() => setRegeneratingDayIndex(null)}
               disabled={isRegeneratingDay}
-              className="text-zinc-400 hover:text-white hover:bg-white/5 border border-white/10"
+              className="text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/50 dark:bg-white/5 border border-slate-300/60 dark:border-white/10"
             >
               Cancel
             </Button>
             <Button
               onClick={handleRegenerateDay}
               disabled={isRegeneratingDay || !promptText.trim() || isOverLimit}
-              className="bg-white/10 hover:bg-white/15 text-white border border-white/10 font-medium flex items-center gap-2 transition-all cursor-pointer"
+              className="bg-white/10 hover:bg-slate-300 dark:hover:bg-white/15 text-slate-900 dark:text-white border border-slate-300/60 dark:border-white/10 font-medium flex items-center gap-2 transition-all cursor-pointer"
             >
               {isRegeneratingDay ? (
                 <>

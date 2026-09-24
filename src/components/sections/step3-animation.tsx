@@ -61,7 +61,7 @@ export default function Step3Animation() {
                             transition={{ duration: 0.5 }}
                         >
                             <AnimatedLogo size="xs" />
-                            <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">Wander Labs</span>
+                            <span className="text-[10px] font-bold tracking-widest text-slate-600 dark:text-zinc-400 uppercase">Wander Labs</span>
                         </motion.div>
                     </div>
                     <div className="flex items-center justify-center gap-2">
@@ -70,7 +70,7 @@ export default function Step3Animation() {
                                 <div
                                     className={cn(
                                         "flex h-8 w-8 items-center justify-center rounded-full transition-all duration-700 ease-out",
-                                        index < phase && "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
+                                        index < phase && "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30",
                                         index === phase && "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.4)]",
                                         index > phase && "bg-zinc-800/50 text-zinc-500 border border-zinc-700",
                                     )}
@@ -80,7 +80,7 @@ export default function Step3Animation() {
                                 {index < phases.length - 1 && (
                                     <div className="relative h-[2px] w-6">
                                         <div className="absolute inset-0 bg-white/10 rounded-full" />
-                                        <div className="absolute inset-0 bg-emerald-500 transition-all duration-700 ease-out origin-left rounded-full" style={{ transform: `scaleX(${index < phase ? 1 : 0})` }} />
+                                        <div className="absolute inset-0 bg-emerald-600 dark:bg-emerald-500 transition-all duration-700 ease-out origin-left rounded-full" style={{ transform: `scaleX(${index < phase ? 1 : 0})` }} />
                                     </div>
                                 )}
                             </div>

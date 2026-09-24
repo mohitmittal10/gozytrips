@@ -17,15 +17,15 @@ import type { ClientEnquiryForm, ClientEnquiryResponse } from "@/types/enquiry";
 const STATUS_COLORS: Record<string, string> = {
   active:   "bg-green-500/10 text-green-400 border-green-500/20",
   draft:    "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
-  expired:  "bg-gray-500/10 text-gray-400 border-gray-500/20",
-  archived: "bg-gray-500/10 text-gray-400 border-gray-500/20",
+  expired:  "bg-gray-500/10 text-slate-600 dark:text-gray-400 border-gray-500/20",
+  archived: "bg-gray-500/10 text-slate-600 dark:text-gray-400 border-gray-500/20",
 };
 
 const RESPONSE_STATUS_COLORS: Record<string, string> = {
   pending:   "bg-amber-500/10 text-amber-400 border-amber-500/20",
   viewed:    "bg-blue-500/10 text-blue-400 border-blue-500/20",
   converted: "bg-green-500/10 text-green-400 border-green-500/20",
-  archived:  "bg-gray-500/10 text-gray-400 border-gray-500/20",
+  archived:  "bg-gray-500/10 text-slate-600 dark:text-gray-400 border-gray-500/20",
 };
 
 function CopiedButton({ url }: { url: string }) {
@@ -43,7 +43,7 @@ function CopiedButton({ url }: { url: string }) {
         "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all",
         copied
           ? "bg-green-500/10 text-green-400 border-green-500/20"
-          : "bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white"
+          : "bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 border-slate-300 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white"
       )}
       title="Copy link"
     >
@@ -103,7 +103,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
                 {isExpired ? "Expired" : form.status}
               </span>
               {form.response_count !== undefined && form.response_count > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/20 text-white border border-primary/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary/20 text-slate-900 dark:text-white border border-primary/30">
                   {form.response_count} response{form.response_count !== 1 ? "s" : ""}
                 </span>
               )}
@@ -124,12 +124,12 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
                   }}
                   disabled={renaming}
                   autoFocus
-                  className="flex-1 h-8 px-2.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white focus:outline-none focus:border-primary/50"
+                  className="flex-1 h-8 px-2.5 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-primary/50"
                 />
                 <button
                   onClick={handleRename}
                   disabled={renaming || !editTitleVal.trim() || editTitleVal.trim().length < 2}
-                  className="p-1 text-emerald-400 hover:text-emerald-300 disabled:opacity-40 transition-colors shrink-0 cursor-pointer"
+                  className="p-1 text-emerald-600 dark:text-emerald-400 hover:text-emerald-300 disabled:opacity-40 transition-colors shrink-0 cursor-pointer"
                   title="Save Title"
                 >
                   {renaming ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
@@ -140,7 +140,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
                     setIsEditingTitle(false);
                   }}
                   disabled={renaming}
-                  className="p-1 text-zinc-400 hover:text-white transition-colors shrink-0 cursor-pointer"
+                  className="p-1 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white transition-colors shrink-0 cursor-pointer"
                   title="Cancel"
                 >
                   <X className="w-3.5 h-3.5" />
@@ -148,10 +148,10 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
               </div>
             ) : (
               <div className="flex items-center gap-1.5 group/title mt-1 w-full">
-                <h3 className="text-sm font-bold text-white truncate max-w-[85%] group-hover/title:text-primary transition-colors">{form.title}</h3>
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white truncate max-w-[85%] group-hover/title:text-primary transition-colors">{form.title}</h3>
                 <button
                   onClick={() => setIsEditingTitle(true)}
-                  className="opacity-0 group-hover/title:opacity-100 p-0.5 text-zinc-400 hover:text-white hover:bg-white/5 rounded transition-all shrink-0 cursor-pointer"
+                  className="opacity-0 group-hover/title:opacity-100 p-0.5 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 rounded transition-all shrink-0 cursor-pointer"
                   title="Rename Form"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
@@ -160,12 +160,12 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
             )}
 
             {form.client_name && (
-              <p className="text-xs text-zinc-400 mt-0.5 flex items-center gap-1 font-medium">
+              <p className="text-xs text-slate-600 dark:text-zinc-400 mt-0.5 flex items-center gap-1 font-medium">
                 <Users className="w-3 h-3 text-primary" /> {form.client_name}
               </p>
             )}
             {form.description && (
-              <p className="text-xs text-zinc-400 mt-1 line-clamp-2 font-medium">{form.description}</p>
+              <p className="text-xs text-slate-600 dark:text-zinc-400 mt-1 line-clamp-2 font-medium">{form.description}</p>
             )}
           </div>
         </div>
@@ -174,7 +174,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
         <div className="mt-2.5 mb-1">
           <button
             onClick={() => setShowFields(!showFields)}
-            className="flex items-center gap-1 text-[11px] font-semibold text-zinc-300 hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-semibold text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
           >
             {showFields ? (
               <>
@@ -188,8 +188,8 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
           </button>
 
           {showFields && (
-            <div className="mt-2 p-3 bg-white/5 border border-white/10 rounded-xl space-y-1.5 text-[11px] text-zinc-300 animate-in fade-in duration-200">
-              <p className="font-semibold text-white border-b border-white/5 pb-1 mb-1.5">This form collects:</p>
+            <div className="mt-2 p-3 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl space-y-1.5 text-[11px] text-zinc-300 animate-in fade-in duration-200">
+              <p className="font-semibold text-slate-900 dark:text-white border-b border-white/5 pb-1 mb-1.5">This form collects:</p>
               <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
                 <div className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-primary shrink-0" /> <span>Start/End Locations</span></div>
                 <div className="flex items-center gap-1.5"><Compass className="w-3 h-3 text-primary shrink-0" /> <span>Destinations</span></div>
@@ -212,7 +212,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
           <CopiedButton url={shareUrl} />
           <button
             onClick={() => onViewResponses(form)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-white transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-zinc-200 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
           >
             <Inbox className="w-3 h-3 text-primary" /> Responses {form.response_count ? `(${form.response_count})` : ""}
           </button>
@@ -261,9 +261,9 @@ function FormsList({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {[1, 2, 3].map((i) => (
           <div key={i} className="bg-white/[0.02] border border-white/[0.06] rounded-2xl p-5 animate-pulse">
-            <div className="h-4 w-48 bg-white/10 rounded mb-3" />
-            <div className="h-3 w-32 bg-white/5 rounded mb-4" />
-            <div className="h-8 w-full bg-white/5 rounded-xl" />
+            <div className="h-4 w-48 bg-slate-200 dark:bg-white/10 rounded mb-3" />
+            <div className="h-3 w-32 bg-slate-100 dark:bg-white/5 rounded mb-4" />
+            <div className="h-8 w-full bg-slate-100 dark:bg-white/5 rounded-xl" />
           </div>
         ))}
       </div>
@@ -282,10 +282,10 @@ function FormsList({
   if (forms.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-5">
-          <Mail className="w-7 h-7 text-white" />
+        <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 flex items-center justify-center mx-auto mb-5">
+          <Mail className="w-7 h-7 text-slate-900 dark:text-white" />
         </div>
-        <h3 className="text-white font-semibold text-lg mb-2">No enquiry forms yet</h3>
+        <h3 className="text-slate-900 dark:text-white font-semibold text-lg mb-2">No enquiry forms yet</h3>
         <p className="text-gray-500 text-sm max-w-sm mb-6">
           Create a shareable form to collect travel preferences from your clients before generating itineraries.
         </p>
@@ -338,8 +338,8 @@ function ResponsesList({
       <div className="space-y-3">
         {[1, 2].map((i) => (
           <div key={i} className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 animate-pulse">
-            <div className="h-4 w-40 bg-white/10 rounded mb-2" />
-            <div className="h-3 w-60 bg-white/5 rounded" />
+            <div className="h-4 w-40 bg-slate-200 dark:bg-white/10 rounded mb-2" />
+            <div className="h-3 w-60 bg-slate-100 dark:bg-white/5 rounded" />
           </div>
         ))}
       </div>
@@ -380,7 +380,7 @@ function ResponsesList({
               </div>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="text-sm font-medium text-white">
+                  <p className="text-sm font-medium text-slate-900 dark:text-white">
                     {r.client_name || r.client_email}
                   </p>
                   <span className={cn("px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border", RESPONSE_STATUS_COLORS[r.status])}>
@@ -411,7 +411,7 @@ function ResponsesList({
                     <Zap className="w-3 h-3" /> Use
                   </span>
                 )}
-                <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-white transition-colors" />
+                <ChevronRight className="w-4 h-4 text-gray-600 group-hover:text-slate-900 dark:hover:text-white transition-colors" />
               </div>
             </div>
             <p className="text-[10px] text-gray-500 mt-2 ml-12">
@@ -489,7 +489,7 @@ export const ClientFormsView = () => {
             variant="outline"
             size="sm"
             onClick={fetchForms}
-            className="border-white/10 bg-white/5 text-gray-400 hover:bg-white/10 h-9 px-3 rounded-xl"
+            className="border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 hover:bg-slate-200 dark:hover:bg-white/10 h-9 px-3 rounded-xl"
           >
             <RefreshCw className="w-3.5 h-3.5" />
           </Button>
@@ -506,7 +506,7 @@ export const ClientFormsView = () => {
               variant="ghost"
               size="sm"
               onClick={() => { setSelectedForm(null); setActiveTab("forms"); }}
-              className="text-gray-500 hover:text-white h-9 text-xs"
+              className="text-gray-500 hover:text-slate-900 dark:hover:text-white h-9 text-xs"
             >
               ← Back to Forms
             </Button>

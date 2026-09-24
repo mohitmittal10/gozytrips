@@ -234,7 +234,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
           <form onSubmit={form.handleSubmit(handleSubmit, () => setHasFailedSubmit(true))} noValidate>
             <DialogHeader>
               <DialogTitle className="text-xl font-bold text-white">{client ? "Edit Client" : "Add New Client"}</DialogTitle>
-              <DialogDescription className="text-slate-400 text-sm">
+              <DialogDescription className="text-slate-600 dark:text-slate-400 text-sm">
                 {client
                   ? "Update the details for this client."
                   : "Enter the details for your new client or lead."}
@@ -277,7 +277,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                           />
                         </FormControl>
                         {showSuccess && (
-                          <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
+                          <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-700 dark:text-emerald-500" />
                         )}
                       </div>
                       <FormMessage className="text-xs text-rose-400 font-medium" aria-live="polite" />
@@ -310,7 +310,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                           />
                         </FormControl>
                         {showSuccess && (
-                          <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
+                          <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-700 dark:text-emerald-500" />
                         )}
                       </div>
                       {!fieldState.error && emailSuggestion && emailSuggestion !== field.value && (
@@ -364,10 +364,10 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                           />
                         </FormControl>
                         {showSuccess && (
-                          <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-500" />
+                          <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-700 dark:text-emerald-500" />
                         )}
                       </div>
-                      <FormDescription className="text-xs text-slate-400 leading-normal">
+                      <FormDescription className="text-xs text-slate-600 dark:text-slate-400 leading-normal">
                         International numbers are welcome. We keep your formatting while cleaning unsafe characters.
                       </FormDescription>
                       <FormMessage className="text-xs text-rose-400 font-medium" aria-live="polite" />
@@ -386,7 +386,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                   maxLength={30}
                   className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20"
                 />
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
                   Letters, numbers, spaces, hyphens only. Max 20 tags.
                 </p>
                 {tags.length > 0 && (
@@ -425,7 +425,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                         <FormLabel className="text-slate-300 text-sm font-medium">Notes</FormLabel>
                         <span
                           className={cn(
-                            "text-xs text-slate-400",
+                            "text-xs text-slate-600 dark:text-slate-400",
                             field.value.length > 900 && "text-amber-500"
                           )}
                         >
@@ -446,10 +446,10 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                           />
                         </FormControl>
                         {showSuccess && (
-                          <CheckCircle2 className="absolute right-3 top-4 h-4 w-4 text-emerald-500" />
+                          <CheckCircle2 className="absolute right-3 top-4 h-4 w-4 text-emerald-700 dark:text-emerald-500" />
                         )}
                       </div>
-                      <FormDescription className="text-xs text-slate-400 leading-normal">
+                      <FormDescription className="text-xs text-slate-600 dark:text-slate-400 leading-normal">
                         This field validates on blur and blocks script-like, database-style, and prompt-injection text.
                       </FormDescription>
                       <FormMessage className="text-xs text-rose-400 font-medium" aria-live="polite" />

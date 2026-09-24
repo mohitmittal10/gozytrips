@@ -45,7 +45,7 @@ const Header = () => {
 
   return (
     <nav className={cn(
-      "fixed top-0 w-full z-50 bg-[#020305]/80 backdrop-blur-2xl border-b border-white/5 transition-all duration-500 ease-in-out",
+      "fixed top-0 w-full z-50 bg-[#EFECE5]/80 dark:bg-[#020305]/80 backdrop-blur-2xl border-b border-slate-200/80 dark:border-white/5 transition-all duration-500 ease-in-out",
       scrolled ? "-translate-y-full opacity-0 pointer-events-none" : "translate-y-0 opacity-100",
       shouldBlurNavbar && "blur-[1px] opacity-40 pointer-events-none"
     )}>
@@ -60,7 +60,7 @@ const Header = () => {
                 "text-sm tracking-tight transition-colors font-medium",
                 pathname === item.url || (item.url !== "/" && pathname.startsWith(item.url))
                   ? "text-primary font-bold"
-                  : "text-slate-400 hover:text-white"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               )} 
               href={item.url}
             >
@@ -69,7 +69,8 @@ const Header = () => {
           ))}
         </div>
 
-        <div className="flex items-center space-x-4 sm:space-x-6">
+        <div className="flex items-center space-x-3 sm:space-x-4">
+          <ThemeToggle />
           {!loading && (
             <>
               {user ? (
@@ -77,29 +78,29 @@ const Header = () => {
                   <div>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="text-slate-300 text-xs sm:text-sm font-medium hover:text-white transition-colors flex items-center gap-1.5 px-2.5 sm:px-0 py-1.5 sm:py-0 bg-white/5 sm:bg-transparent rounded-xl sm:rounded-none border border-white/10 sm:border-none">
-                          <User className="w-4 h-4 text-purple-400 sm:text-slate-300" />
+                        <button className="text-slate-700 dark:text-slate-300 text-xs sm:text-sm font-medium hover:text-slate-900 dark:hover:text-white transition-colors flex items-center gap-1.5 px-2.5 sm:px-0 py-1.5 sm:py-0 bg-slate-100 dark:bg-white/5 sm:bg-transparent rounded-xl sm:rounded-none border border-slate-200 dark:border-white/10 sm:border-none">
+                          <User className="w-4 h-4 text-purple-500 dark:text-purple-400 sm:text-slate-600 sm:dark:text-slate-300" />
                           <span>Account</span>
                         </button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="bg-[#0A0A0B] border-white/10 w-56">
+                      <DropdownMenuContent align="end" className="bg-white dark:bg-[#0A0A0B] border-slate-200 dark:border-white/10 w-56">
                         <div className="px-2 py-1.5">
-                          <p className="text-sm font-medium text-white">{user.email}</p>
-                          <p className="text-xs text-slate-400">Logged in</p>
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">{user.email}</p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">Logged in</p>
                         </div>
-                        <DropdownMenuSeparator className="bg-white/10" />
+                        <DropdownMenuSeparator className="bg-slate-200 dark:bg-white/10" />
                         <DropdownMenuItem asChild>
-                          <Link href="/profile" className="cursor-pointer text-slate-300 hover:text-white hover:bg-white/5">
-                            <User className="w-4 h-4 mr-2 text-purple-400" /> Profile & Account
+                          <Link href="/profile" className="cursor-pointer text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 focus:bg-slate-200 dark:hover:bg-white/5 dark:focus:bg-white/5">
+                            <User className="w-4 h-4 mr-2 text-purple-500 dark:text-purple-400" /> Profile & Account
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
-                          <Link href="/clients" className="cursor-pointer text-slate-300 hover:text-white hover:bg-white/5">
-                            <Users className="w-4 h-4 mr-2 text-blue-400" /> Clients
+                          <Link href="/clients" className="cursor-pointer text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 focus:bg-slate-200 dark:hover:bg-white/5 dark:focus:bg-white/5">
+                            <Users className="w-4 h-4 mr-2 text-blue-500 dark:text-blue-400" /> Clients
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuSeparator className="bg-white/10" />
-                        <DropdownMenuItem onClick={signOut} className="cursor-pointer text-red-400 focus:bg-red-500/10 focus:text-red-400">
+                        <DropdownMenuSeparator className="bg-slate-200 dark:bg-white/10" />
+                        <DropdownMenuItem onClick={signOut} className="cursor-pointer text-red-500 dark:text-red-400 focus:bg-red-500/10 focus:text-red-500">
                           <LogOut className="w-4 h-4 mr-2" /> Sign Out
                         </DropdownMenuItem>
                       </DropdownMenuContent>
@@ -109,15 +110,15 @@ const Header = () => {
                   <div className="md:hidden">
                     <Sheet>
                       <SheetTrigger asChild>
-                        <button className="text-slate-300 hover:text-white p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all">
+                        <button className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 active:scale-95 transition-all">
                           <Menu className="h-5 w-5" />
                         </button>
                       </SheetTrigger>
-                      <SheetContent side="right" className="bg-[#020305]/95 backdrop-blur-2xl border-l border-white/10 p-0 w-72 flex flex-col">
+                      <SheetContent side="right" className="bg-white/95 dark:bg-[#020305]/95 backdrop-blur-2xl border-l border-slate-200 dark:border-white/10 p-0 w-72 flex flex-col">
                         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                         <SheetDescription className="sr-only">Main navigation and account options</SheetDescription>
                         <div className="flex flex-col h-full">
-                          <div className="p-6 border-b border-white/5">
+                          <div className="p-6 border-b border-slate-200 dark:border-white/5 flex items-center justify-between">
                             <Logo />
                           </div>
                           <nav className="flex-grow flex flex-col space-y-2 p-4">
@@ -130,14 +131,14 @@ const Header = () => {
                                   className={cn(
                                     "group px-4 py-3 rounded-2xl border border-transparent transition-all duration-300 flex items-center justify-between text-[15px] font-semibold",
                                     isActive
-                                      ? "bg-primary/10 border-primary/20 text-white shadow-md shadow-primary/5"
-                                      : "text-slate-400 hover:text-white hover:bg-white/5 hover:border-white/5"
+                                      ? "bg-primary/10 border-primary/20 text-primary shadow-md shadow-primary/5"
+                                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 hover:border-slate-200 dark:hover:border-white/5"
                                   )}
                                 >
                                   <div className="flex items-center gap-3.5">
                                     <item.icon className={cn(
                                       "w-5 h-5 transition-transform duration-300 group-hover:scale-110",
-                                      isActive ? "text-primary" : "text-slate-400 group-hover:text-primary"
+                                      isActive ? "text-primary" : "text-slate-600 dark:text-slate-400 group-hover:text-primary"
                                     )} />
                                     <span>{item.name}</span>
                                   </div>
@@ -146,32 +147,32 @@ const Header = () => {
                               );
                             })}
                           </nav>
-                          <div className="p-5 border-t border-white/5 space-y-4 bg-white/[0.01]">
-                            <Link href="/profile" className="flex items-center gap-3 group/user hover:bg-white/5 p-2 -mx-2 rounded-xl transition-colors">
-                              <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/20 flex items-center justify-center font-black text-xs text-white shadow-inner shrink-0">
+                          <div className="p-5 border-t border-slate-200 dark:border-white/5 space-y-4 bg-slate-50/50 dark:bg-white/[0.01]">
+                            <Link href="/profile" className="flex items-center gap-3 group/user hover:bg-slate-100 dark:hover:bg-white/5 p-2 -mx-2 rounded-xl transition-colors">
+                              <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/20 flex items-center justify-center font-black text-xs text-primary dark:text-white shadow-inner shrink-0">
                                 {user?.email ? user.email.slice(0, 2).toUpperCase() : "U"}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[8px] text-zinc-500 font-bold uppercase tracking-wider mb-0.5 flex items-center justify-between">
+                                <p className="text-[8px] text-slate-500 font-bold uppercase tracking-wider mb-0.5 flex items-center justify-between">
                                   <span>Signed In</span>
-                                  <span className="text-purple-400 group-hover/user:underline">View Account &rarr;</span>
+                                  <span className="text-purple-500 dark:text-purple-400 group-hover/user:underline">View Account &rarr;</span>
                                 </p>
-                                <p className="text-xs font-semibold text-white truncate">{user?.email}</p>
+                                <p className="text-xs font-semibold text-slate-900 dark:text-white truncate">{user?.email}</p>
                               </div>
                             </Link>
                             <div className="grid grid-cols-2 gap-2">
                               <Link href="/profile" className="w-full">
-                                <button className="w-full py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-slate-300 border border-white/5 transition-all flex items-center justify-center gap-1.5">
-                                  <User className="w-3.5 h-3.5 text-purple-400" /> Account
+                                <button className="w-full py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/5 transition-all flex items-center justify-center gap-1.5">
+                                  <User className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" /> Account
                                 </button>
                               </Link>
                               <Link href="/clients" className="w-full">
-                                <button className="w-full py-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-slate-300 border border-white/5 transition-all flex items-center justify-center gap-1.5">
-                                  <Users className="w-3.5 h-3.5 text-blue-400" /> Clients
+                                <button className="w-full py-2.5 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/5 transition-all flex items-center justify-center gap-1.5">
+                                  <Users className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" /> Clients
                                 </button>
                               </Link>
                             </div>
-                            <button onClick={signOut} className="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-xl text-xs font-bold border border-red-500/20 transition-all flex items-center justify-center gap-2">
+                            <button onClick={signOut} className="w-full py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 dark:text-red-400 rounded-xl text-xs font-bold border border-red-500/20 transition-all flex items-center justify-center gap-2">
                               <LogOut className="w-3.5 h-3.5" /> Sign Out
                             </button>
                           </div>
@@ -183,7 +184,7 @@ const Header = () => {
               ) : (
                 <>
                   <Link href="/auth/login" className="hidden sm:block">
-                    <button className="text-slate-300 text-sm font-medium hover:text-white transition-colors">
+                    <button className="text-slate-700 dark:text-slate-300 text-sm font-medium hover:text-slate-900 dark:hover:text-white transition-colors">
                       Sign In
                     </button>
                   </Link>
@@ -196,15 +197,15 @@ const Header = () => {
                   <div className="md:hidden">
                     <Sheet>
                       <SheetTrigger asChild>
-                        <button className="text-slate-300 hover:text-white p-2 rounded-xl hover:bg-white/5 active:scale-95 transition-all">
+                        <button className="text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 active:scale-95 transition-all">
                           <Menu className="h-5 w-5" />
                         </button>
                       </SheetTrigger>
-                      <SheetContent side="right" className="bg-[#020305]/95 backdrop-blur-2xl border-l border-white/10 p-0 w-72 flex flex-col">
+                      <SheetContent side="right" className="bg-white/95 dark:bg-[#020305]/95 backdrop-blur-2xl border-l border-slate-200 dark:border-white/10 p-0 w-72 flex flex-col">
                         <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                         <SheetDescription className="sr-only">Site navigation links</SheetDescription>
                         <div className="flex flex-col h-full">
-                          <div className="p-6 border-b border-white/5">
+                          <div className="p-6 border-b border-slate-200 dark:border-white/5">
                             <Logo />
                           </div>
                           <nav className="flex-grow flex flex-col space-y-2 p-4">
@@ -217,14 +218,14 @@ const Header = () => {
                                   className={cn(
                                     "group px-4 py-3 rounded-2xl border border-transparent transition-all duration-300 flex items-center justify-between text-[15px] font-semibold",
                                     isActive
-                                      ? "bg-primary/10 border-primary/20 text-white shadow-md shadow-primary/5"
-                                      : "text-slate-400 hover:text-white hover:bg-white/5 hover:border-white/5"
+                                      ? "bg-primary/10 border-primary/20 text-primary shadow-md shadow-primary/5"
+                                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 hover:border-slate-200 dark:hover:border-white/5"
                                   )}
                                 >
                                   <div className="flex items-center gap-3.5">
                                     <item.icon className={cn(
                                       "w-5 h-5 transition-transform duration-300 group-hover:scale-110",
-                                      isActive ? "text-primary" : "text-slate-400 group-hover:text-primary"
+                                      isActive ? "text-primary" : "text-slate-600 dark:text-slate-400 group-hover:text-primary"
                                     )} />
                                     <span>{item.name}</span>
                                   </div>
@@ -233,10 +234,10 @@ const Header = () => {
                               );
                             })}
                           </nav>
-                          <div className="p-5 border-t border-white/5 space-y-3 bg-white/[0.01]">
+                          <div className="p-5 border-t border-slate-200 dark:border-white/5 space-y-3 bg-slate-50/50 dark:bg-white/[0.01]">
                             <Link href="/auth/login" className="block w-full">
-                              <button className="w-full py-3 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-white border border-white/10 transition-all flex items-center justify-center gap-2">
-                                <User className="w-4 h-4 text-slate-400" /> Sign In
+                              <button className="w-full py-3 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 rounded-xl text-xs font-bold text-slate-800 dark:text-white border border-slate-200 dark:border-white/10 transition-all flex items-center justify-center gap-2">
+                                <User className="w-4 h-4 text-slate-600 dark:text-slate-400" /> Sign In
                               </button>
                             </Link>
                             <Link href="/auth/signup" className="block w-full">

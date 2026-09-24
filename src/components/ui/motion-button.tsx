@@ -22,7 +22,7 @@ const MotionButton: FC<Props> = ({ label, classes, ...props }) => {
     <button
       {...props}
       className={cn(
-        'group relative flex h-14 w-auto min-w-[14rem] items-center cursor-pointer rounded-full bg-[#020205] outline-none overflow-hidden transition-all duration-300',
+        'group relative flex h-14 w-auto min-w-[14rem] items-center cursor-pointer rounded-full bg-[#EFECE5] dark:bg-[#020205] border border-slate-200/80 dark:border-transparent outline-none overflow-hidden transition-all duration-300 shadow-sm dark:shadow-none',
         classes
       )}
     >
@@ -42,7 +42,7 @@ const MotionButton: FC<Props> = ({ label, classes, ...props }) => {
 
       {/* Label text — takes remaining space, right-padded to visually balance */}
       <span
-        className='relative z-10 flex-1 pr-5 text-center text-white group-hover:text-[#020205] font-manrope text-base sm:text-lg font-semibold tracking-tight whitespace-nowrap transition-colors duration-500'
+        className='relative z-10 flex-1 pr-5 text-center text-slate-900 dark:text-white group-hover:text-white dark:group-hover:text-[#020205] font-manrope text-base sm:text-lg font-semibold tracking-tight whitespace-nowrap transition-colors duration-500'
       >
         {label}
       </span>

@@ -183,7 +183,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
                   onClick={() => setIsEditingTitle(true)}
                   className="opacity-0 group-hover:opacity-100 p-1 hover:bg-white/10 rounded transition-all"
                 >
-                  <Edit className="w-4 h-4 text-gray-400" />
+                  <Edit className="w-4 h-4 text-slate-600 dark:text-gray-400" />
                 </button>
                 {isDirty && (
                   <span className="ml-2 text-xs font-normal text-amber-400 align-middle">
@@ -193,7 +193,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
               </DialogTitle>
             )}
           </div>
-          <div className="flex items-center gap-3 mt-1.5 text-sm text-gray-400">
+          <div className="flex items-center gap-3 mt-1.5 text-sm text-slate-600 dark:text-gray-400">
             <span className="flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5" /> {trip.starting_location}
             </span>
@@ -315,7 +315,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
               </TabsTrigger>
               <TabsTrigger
                 value="pricing"
-                className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white flex gap-2"
+                className="data-[state=active]:bg-emerald-600 dark:bg-emerald-500 data-[state=active]:text-white flex gap-2"
               >
                 <DollarSign className="w-4 h-4" /> Costing &amp; Markup
               </TabsTrigger>

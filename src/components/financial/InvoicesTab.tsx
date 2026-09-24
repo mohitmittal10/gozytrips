@@ -134,7 +134,7 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                 {/* Search & Header */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/[0.06] p-3 rounded-xl backdrop-blur-sm">
                     <div className="relative flex-1">
-                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <Search className="w-4 h-4 text-slate-600 dark:text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <Input
                             placeholder="Search invoices by client, email, or trip..."
                             value={searchQuery}
@@ -176,7 +176,7 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                             {fin.clientEmail && (
                                                 <p className="text-[11px] text-zinc-500 font-mono">{fin.clientEmail}</p>
                                             )}
-                                            <p className="text-xs text-zinc-400 mt-1">
+                                            <p className="text-xs text-slate-600 dark:text-zinc-400 mt-1">
                                                 {fin.tripTitle} <span className="text-zinc-500">·</span> <span className="text-zinc-300">{fin.destination}</span>
                                             </p>
                                             {fin.startDate && (
@@ -192,7 +192,7 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                             className={cn(
                                                 "text-[10px] font-bold border shrink-0 uppercase tracking-wider",
                                                 isFullyPaid
-                                                    ? "bg-emerald-500/15 text-emerald-400 border-emerald-500/30"
+                                                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
                                                     : totalPaid > 0
                                                     ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
                                                     : "bg-red-500/15 text-red-400 border-red-500/30"
@@ -205,12 +205,12 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                     {/* Progress Bar */}
                                     <div className="space-y-1.5">
                                         <div className="flex justify-between text-[11px]">
-                                            <span className="text-zinc-400">Collected: <strong className="text-emerald-400">{fm(totalPaid, fin.currency)}</strong></span>
-                                            <span className="text-zinc-400">Total: <strong className="text-white">{fm(fin.clientPrice, fin.currency)}</strong></span>
+                                            <span className="text-slate-600 dark:text-zinc-400">Collected: <strong className="text-emerald-600 dark:text-emerald-400">{fm(totalPaid, fin.currency)}</strong></span>
+                                            <span className="text-slate-600 dark:text-zinc-400">Total: <strong className="text-white">{fm(fin.clientPrice, fin.currency)}</strong></span>
                                         </div>
                                         <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
                                             <div
-                                                className={cn("h-full rounded-full transition-all duration-700", isFullyPaid ? "bg-emerald-500" : "bg-amber-500")}
+                                                className={cn("h-full rounded-full transition-all duration-700", isFullyPaid ? "bg-emerald-600 dark:bg-emerald-500" : "bg-amber-500")}
                                                 style={{ width: `${paidPct}%` }}
                                             />
                                         </div>
@@ -225,8 +225,8 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                     <div className="grid grid-cols-3 gap-2 text-center">
                                         {[
                                             { label: "Package", value: fm(fin.clientPrice, fin.currency), color: "text-white" },
-                                            { label: "Received", value: fm(totalPaid, fin.currency), color: "text-emerald-400" },
-                                            { label: "Outstanding", value: fm(Math.max(0, balance), fin.currency), color: balance > 0 ? "text-amber-400" : "text-emerald-400" },
+                                            { label: "Received", value: fm(totalPaid, fin.currency), color: "text-emerald-600 dark:text-emerald-400" },
+                                            { label: "Outstanding", value: fm(Math.max(0, balance), fin.currency), color: balance > 0 ? "text-amber-400" : "text-emerald-600 dark:text-emerald-400" },
                                         ].map(({ label, value, color }) => (
                                             <div key={label} className="p-2 bg-black/30 border border-white/5 rounded-xl">
                                                 <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold">{label}</p>
@@ -265,7 +265,7 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                     {filteredFinancials.length === 0 && (
                         <div className="col-span-full text-center py-16 bg-white/[0.01] border border-white/5 rounded-2xl space-y-2">
                             <FileText className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
-                            <p className="text-sm text-gray-400 font-medium">No invoices matched your search.</p>
+                            <p className="text-sm text-slate-600 dark:text-gray-400 font-medium">No invoices matched your search.</p>
                             <p className="text-xs text-gray-600">Try adjusting your search or add trips in The Lab.</p>
                         </div>
                     )}
@@ -282,7 +282,7 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                 <FileText className="w-4 h-4 text-indigo-400" />
                                 Professional Invoice
                             </DialogTitle>
-                            <DialogDescription className="text-xs text-zinc-400 mt-0.5">
+                            <DialogDescription className="text-xs text-slate-600 dark:text-zinc-400 mt-0.5">
                                 {selectedInvoiceFin?.clientName} · {selectedInvoiceFin?.tripTitle}
                             </DialogDescription>
                         </div>

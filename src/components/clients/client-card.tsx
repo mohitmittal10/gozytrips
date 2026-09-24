@@ -45,18 +45,18 @@ export function ClientCard({ client, onClick, onEdit, onDelete }: ClientCardProp
                     <DropdownMenu>
                         <div onClick={(e) => e.stopPropagation()}>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-10 w-10 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all relative z-10">
+                                <Button variant="ghost" size="icon" className="h-10 w-10 text-slate-600 dark:text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all relative z-10">
                                     <MoreHorizontal className="w-5 h-5" />
                                 </Button>
                             </DropdownMenuTrigger>
                         </div>
-                        <DropdownMenuContent align="end" className="bg-[#0A0B0E] border-white/10 text-slate-200 w-48 p-2 rounded-xl">
+                        <DropdownMenuContent align="end" className="bg-white dark:bg-[#0A0B0E] border-slate-200 dark:border-white/10 text-slate-900 dark:text-slate-200 w-48 p-2 rounded-xl shadow-xl">
                             <DropdownMenuLabel className="px-3 py-2 text-xs font-bold uppercase tracking-widest text-slate-500">Client Actions</DropdownMenuLabel>
-                            <DropdownMenuSeparator className="bg-white/5 mx-1" />
-                            <DropdownMenuItem onClick={() => onEdit(client)} className="cursor-pointer hover:bg-white/5 px-3 py-2.5 rounded-lg transition-colors flex items-center">
-                                <Edit className="w-4 h-4 mr-3 text-slate-400" /> Edit Profile
+                            <DropdownMenuSeparator className="bg-slate-200 dark:bg-white/5 mx-1" />
+                            <DropdownMenuItem onClick={() => onEdit(client)} className="cursor-pointer hover:bg-slate-200 focus:bg-slate-200 dark:hover:bg-white/5 dark:focus:bg-white/5 px-3 py-2.5 rounded-lg transition-colors flex items-center">
+                                <Edit className="w-4 h-4 mr-3 text-slate-600 dark:text-slate-400" /> Edit Profile
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => onDelete(client.id, client.name)} className="cursor-pointer text-red-400 hover:bg-red-400/10 hover:text-red-300 px-3 py-2.5 rounded-lg transition-colors flex items-center mt-1">
+                            <DropdownMenuItem onClick={() => onDelete(client.id, client.name)} className="cursor-pointer text-red-600 dark:text-red-400 hover:bg-red-500/10 focus:bg-red-500/10 hover:text-red-700 dark:hover:text-red-300 px-3 py-2.5 rounded-lg transition-colors flex items-center mt-1">
                                 <Trash2 className="w-4 h-4 mr-3" /> Delete Contact
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -68,7 +68,7 @@ export function ClientCard({ client, onClick, onEdit, onDelete }: ClientCardProp
                     {client.email && (
                         <div className="flex items-center gap-3 group/item">
                             <div className="p-1.5 bg-white/5 rounded-lg group-hover/item:bg-primary/10 transition-colors">
-                                <Mail className="w-3.5 h-3.5 text-slate-400 group-hover/item:text-primary" />
+                                <Mail className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400 group-hover/item:text-primary" />
                             </div>
                             <a href={`mailto:${client.email}`} className="hover:text-primary transition-colors truncate font-medium">{client.email}</a>
                         </div>
@@ -76,7 +76,7 @@ export function ClientCard({ client, onClick, onEdit, onDelete }: ClientCardProp
                     {client.phone && (
                         <div className="flex items-center gap-3 group/item">
                             <div className="p-1.5 bg-white/5 rounded-lg group-hover/item:bg-primary/10 transition-colors">
-                                <PhoneCall className="w-3.5 h-3.5 text-slate-400 group-hover/item:text-primary" />
+                                <PhoneCall className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400 group-hover/item:text-primary" />
                             </div>
                             <a href={`tel:${client.phone}`} className="hover:text-primary transition-colors font-medium">{client.phone}</a>
                         </div>
@@ -86,7 +86,7 @@ export function ClientCard({ client, onClick, onEdit, onDelete }: ClientCardProp
                             <div className="p-1.5 bg-white/5 rounded-lg mt-0.5">
                                 <File className="w-3.5 h-3.5 text-slate-500" />
                             </div>
-                            <p className="line-clamp-2 text-xs text-slate-400 leading-relaxed italic">"{client.notes}"</p>
+                            <p className="line-clamp-2 text-xs text-slate-600 dark:text-slate-400 leading-relaxed italic">"{client.notes}"</p>
                         </div>
                     )}
                 </div>
@@ -94,7 +94,7 @@ export function ClientCard({ client, onClick, onEdit, onDelete }: ClientCardProp
                 {client.tags && client.tags.length > 0 && (
                     <div className="flex flex-wrap gap-2 pt-2">
                         {client.tags.map((tag, i) => (
-                            <Badge key={i} variant="secondary" className="bg-white/5 hover:bg-white/10 text-slate-400 border-white/5 text-[10px] px-2.5 py-0.5 font-bold uppercase tracking-tight">
+                            <Badge key={i} variant="secondary" className="bg-white/5 hover:bg-white/10 text-slate-600 dark:text-slate-400 border-white/5 text-[10px] px-2.5 py-0.5 font-bold uppercase tracking-tight">
                                 {tag}
                             </Badge>
                         ))}

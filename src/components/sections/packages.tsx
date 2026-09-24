@@ -38,7 +38,7 @@ const Packages = () => {
                     <h2 className="text-3xl md:text-5xl font-bold tracking-tight text-white mb-4">
                         Signature <span className="text-purple-400">Journeys</span>
                     </h2>
-                    <p className="text-zinc-400 max-w-2xl mx-auto text-sm md:text-base font-light">
+                    <p className="text-slate-600 dark:text-zinc-400 max-w-2xl mx-auto text-sm md:text-base font-light">
                         Explore our curated collection of luxury travel packages, designed to inspire and enchant.
                     </p>
                 </div>
@@ -65,7 +65,7 @@ const Packages = () => {
                                 </CardHeader>
                                 <CardContent className="pt-6 flex-grow">
                                     <CardTitle className="text-xl font-bold text-white mb-3 group-hover:text-indigo-300 transition-colors duration-300">{pkg.title}</CardTitle>
-                                    <div className="flex items-center gap-4 mt-2 text-sm text-zinc-400">
+                                    <div className="flex items-center gap-4 mt-2 text-sm text-slate-600 dark:text-zinc-400">
                                         <span className="font-light">{pkg.duration}</span>
                                         <span className="text-zinc-600">&bull;</span>
                                         <span className="font-medium text-indigo-400">From {pkg.price}</span>

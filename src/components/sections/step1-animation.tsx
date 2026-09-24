@@ -210,7 +210,7 @@ export default function Step1Animation() {
                                 transition={{ duration: 0.5 }}
                             >
                                 <AnimatedLogo size="xs" />
-                                <span className="text-[10px] font-bold tracking-widest text-zinc-400 uppercase">Wander Labs</span>
+                                <span className="text-[10px] font-bold tracking-widest text-slate-600 dark:text-zinc-400 uppercase">Wander Labs</span>
                             </motion.div>
                         </div>
                         <div className="flex items-center justify-center gap-2">

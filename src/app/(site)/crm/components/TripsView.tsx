@@ -118,25 +118,25 @@ function SkeletonRows() {
     return (
         <>
             {Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b border-white/5">
+                <tr key={i} className="border-b border-slate-200 dark:border-white/5">
                     <td className="p-4">
-                        <div className="h-4 w-40 bg-white/10 rounded animate-pulse" />
-                        <div className="h-3 w-24 bg-white/5 rounded animate-pulse mt-1.5" />
+                        <div className="h-4 w-40 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                        <div className="h-3 w-24 bg-slate-100 dark:bg-white/5 rounded animate-pulse mt-1.5" />
                     </td>
                     <td className="p-4 hidden md:table-cell">
-                        <div className="h-4 w-32 bg-white/10 rounded animate-pulse" />
+                        <div className="h-4 w-32 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                     </td>
                     <td className="p-4 hidden lg:table-cell">
-                        <div className="h-4 w-20 bg-white/10 rounded animate-pulse" />
+                        <div className="h-4 w-20 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                     </td>
                     <td className="p-4 hidden lg:table-cell">
-                        <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
+                        <div className="h-4 w-24 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                     </td>
                     <td className="p-4">
-                        <div className="h-6 w-20 bg-white/10 rounded-full animate-pulse" />
+                        <div className="h-6 w-20 bg-slate-200 dark:bg-white/10 rounded-full animate-pulse" />
                     </td>
                     <td className="p-4">
-                        <div className="h-8 w-8 bg-white/10 rounded-lg animate-pulse" />
+                        <div className="h-8 w-8 bg-slate-200 dark:bg-white/10 rounded-lg animate-pulse" />
                     </td>
                 </tr>
             ))}
@@ -151,11 +151,11 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
     // We'll handle empty states inside the table body now to keep the header visible.
 
     return (
-        <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-2xl rounded-2xl overflow-hidden">
+        <div className="bg-white/40 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-300/60 dark:border-white/[0.08] shadow-sm dark:shadow-2xl rounded-2xl overflow-hidden">
             <div className="crm-table-wrapper">
                 <table className="w-full text-left border-collapse min-w-[640px]">
                     <thead>
-                        <tr className="border-b border-white/10 text-zinc-400 font-semibold text-xs">
+                        <tr className="border-b border-slate-200 dark:border-white/10 text-slate-600 dark:text-zinc-400 font-semibold text-xs">
                             <th className="p-4">Trip</th>
                             <th className="p-4 hidden md:table-cell">Destination</th>
                             <th className="p-4 hidden lg:table-cell">Dates</th>
@@ -165,12 +165,12 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                             <th className="p-4" />
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                         {!loading && trips.length === 0 ? (
                             <tr>
-                                <td colSpan={7} className="p-12 text-center text-zinc-400">
+                                <td colSpan={7} className="p-12 text-center text-slate-600 dark:text-zinc-400">
                                     <div className="flex flex-col items-center justify-center space-y-3">
-                                        <Plane className="w-10 h-10 text-zinc-500 opacity-40" />
+                                        <Plane className="w-10 h-10 text-slate-600 dark:text-slate-400 dark:text-zinc-500 opacity-40" />
                                         <p className="text-sm font-semibold">No trips found matching your filters.</p>
                                     </div>
                                 </td>
@@ -185,7 +185,7 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                                 return (
                                     <tr
                                         key={trip.id}
-                                        className="hover:bg-white/5 transition-colors group cursor-pointer"
+                                        className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
                                         onClick={() => onTripClick(trip)}
                                         role="button"
                                         tabIndex={0}
@@ -193,12 +193,12 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                                     >
                                         {/* Trip Name */}
                                         <td className="p-4">
-                                            <p className="font-bold text-white text-sm group-hover:text-primary transition-colors line-clamp-1">
+                                            <p className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-primary transition-colors line-clamp-1">
                                                 {trip.title}
                                             </p>
                                             {/* Show destination on mobile where separate column is hidden */}
                                             {trip.destinations && (
-                                                <p className="text-xs text-zinc-400 line-clamp-1 mt-0.5 md:hidden">
+                                                <p className="text-xs text-slate-600 dark:text-zinc-400 line-clamp-1 mt-0.5 md:hidden">
                                                     {trip.destinations}
                                                 </p>
                                             )}
@@ -209,23 +209,23 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                                             {trip.destinations ? (
                                                 <div className="flex items-center gap-1.5">
                                                     <Compass className="w-3.5 h-3.5 text-primary shrink-0" />
-                                                    <span className="text-sm text-zinc-200 font-medium line-clamp-1">
+                                                    <span className="text-sm text-slate-700 dark:text-zinc-200 font-medium line-clamp-1">
                                                         {trip.destinations}
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <span className="text-xs text-zinc-500 italic">—</span>
+                                                <span className="text-xs text-slate-600 dark:text-slate-400 dark:text-zinc-500 italic">—</span>
                                             )}
                                         </td>
 
                                         {/* Dates */}
                                         <td className="p-4 hidden lg:table-cell">
-                                            <div className="flex items-center gap-1 text-xs text-zinc-400 font-medium">
-                                                <CalendarDays className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                            <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-zinc-400 font-medium">
+                                                <CalendarDays className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400 dark:text-zinc-400 shrink-0" />
                                                 <span>{formatShortDate(trip.start_date)}</span>
                                                 {trip.end_date && (
                                                     <>
-                                                        <ArrowRight className="w-3 h-3 text-zinc-500" />
+                                                        <ArrowRight className="w-3 h-3 text-slate-600 dark:text-slate-400 dark:text-zinc-500" />
                                                         <span>{formatShortDate(trip.end_date)}</span>
                                                     </>
                                                 )}
@@ -236,13 +236,13 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                                         <td className="p-4 hidden lg:table-cell">
                                             {trip.clientName ? (
                                                 <div className="flex items-center gap-1.5">
-                                                    <Users className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
-                                                    <span className="text-xs text-zinc-300 font-semibold line-clamp-1">
+                                                    <Users className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400 dark:text-zinc-400 shrink-0" />
+                                                    <span className="text-xs text-slate-700 dark:text-zinc-300 font-semibold line-clamp-1">
                                                         {trip.clientName}
                                                     </span>
                                                 </div>
                                             ) : (
-                                                <span className="text-xs text-zinc-500 italic">—</span>
+                                                <span className="text-xs text-slate-600 dark:text-slate-400 dark:text-zinc-500 italic">—</span>
                                             )}
                                         </td>
 
@@ -260,7 +260,7 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
                                         </td>
 
                                         <td className="p-4 text-right">
-                                            <span className="text-sm font-semibold text-purple-300">
+                                            <span className="text-sm font-semibold text-purple-600 dark:text-purple-300">
                                                 {trip.tripCost > 0
                                                     ? formatMoney(trip.tripCost, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)
                                                     : "—"}
@@ -269,7 +269,7 @@ const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
 
                                         {/* Arrow */}
                                         <td className="p-4">
-                                            <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-purple-400 transition-colors" />
+                                            <ArrowRight className="w-4 h-4 text-slate-600 dark:text-slate-400 dark:text-gray-600 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
                                         </td>
                                     </tr>
                                 );
@@ -301,7 +301,7 @@ const TripsKanbanView = ({
                       .map((opt) => ({
                           key: opt.value,
                           label: opt.label,
-                          borderColor: opt.metadata?.borderColor || "border-white/10",
+                          borderColor: opt.metadata?.borderColor || "border-slate-200 dark:border-white/10",
                           dotColor: "bg-purple-400",
                       }))
                 : [
@@ -328,7 +328,7 @@ const TripsKanbanView = ({
                 <div
                     key={col.key}
                     className={cn(
-                        "bg-white/[0.02] border rounded-xl p-4 min-h-[300px] flex flex-col gap-3",
+                        "bg-white/60 dark:bg-white/[0.02] border rounded-xl p-4 min-h-[300px] flex flex-col gap-3",
                         col.borderColor
                     )}
                     onDragOver={(e) => e.preventDefault()}
@@ -342,9 +342,9 @@ const TripsKanbanView = ({
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <span className={cn("w-2 h-2 rounded-full", col.dotColor)} />
-                            <h3 className="text-sm font-semibold text-gray-300">{col.label}</h3>
+                            <h3 className="text-sm font-semibold text-slate-800 dark:text-gray-300">{col.label}</h3>
                         </div>
-                        <span className="text-xs bg-white/5 text-gray-500 px-2 py-0.5 rounded-full">
+                        <span className="text-xs bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-gray-500 px-2 py-0.5 rounded-full">
                             {col.trips.length}
                         </span>
                     </div>
@@ -361,34 +361,34 @@ const TripsKanbanView = ({
                                     draggable
                                     onDragStart={(e) => e.dataTransfer.setData("text/plain", trip.id)}
                                     onClick={() => onTripClick(trip)}
-                                    className="p-3 bg-white/[0.04] border border-white/5 rounded-lg hover:border-white/20 hover:bg-white/[0.07] transition-all cursor-pointer group"
+                                    className="p-3 bg-white/80 dark:bg-white/[0.04] border border-slate-200 dark:border-white/5 rounded-lg hover:border-slate-300 dark:hover:border-white/20 hover:bg-slate-100 dark:hover:bg-white/[0.07] transition-all cursor-pointer group shadow-sm dark:shadow-none"
                                     role="button"
                                     tabIndex={0}
                                     onKeyDown={(e) => e.key === "Enter" && onTripClick(trip)}
                                 >
                                     <div className="flex items-start gap-1.5 mb-1.5">
-                                        <GripVertical className="w-3 h-3 text-zinc-500 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
-                                        <p className="text-xs font-semibold text-white line-clamp-2 leading-snug group-hover:text-zinc-200 transition-colors">
+                                        <GripVertical className="w-3 h-3 text-slate-600 dark:text-slate-400 dark:text-zinc-500 mt-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                                        <p className="text-xs font-semibold text-slate-900 dark:text-white line-clamp-2 leading-snug group-hover:text-slate-700 dark:group-hover:text-zinc-200 transition-colors">
                                             {trip.title}
                                         </p>
                                     </div>
                                     {trip.destinations && (
-                                        <div className="flex items-center gap-1 text-[10px] text-gray-400 mb-1">
-                                            <Compass className="w-3 h-3 text-zinc-400 shrink-0" />
+                                        <div className="flex items-center gap-1 text-[10px] text-slate-600 dark:text-gray-400 mb-1">
+                                            <Compass className="w-3 h-3 text-slate-600 dark:text-slate-400 dark:text-zinc-400 shrink-0" />
                                             <span className="truncate">{trip.destinations}</span>
                                         </div>
                                     )}
                                     {trip.clientName && (
-                                        <div className="flex items-center gap-1 text-[10px] text-gray-400">
+                                        <div className="flex items-center gap-1 text-[10px] text-slate-600 dark:text-gray-400">
                                             <Users className="w-3 h-3 shrink-0" />
                                             <span className="truncate">{trip.clientName}</span>
                                         </div>
                                     )}
-                                        <p className="text-[10px] text-zinc-200 font-semibold mt-1.5">
+                                        <p className="text-[10px] text-slate-700 dark:text-zinc-200 font-semibold mt-1.5">
                                             {formatMoney(trip.tripCost, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}
                                         </p>
                                     {trip.start_date && (
-                                        <p className="text-[10px] text-gray-500 mt-0.5">
+                                        <p className="text-[10px] text-slate-500 dark:text-gray-500 mt-0.5">
                                             {formatShortDate(trip.start_date)}
                                         </p>
                                     )}
@@ -396,8 +396,8 @@ const TripsKanbanView = ({
                             );
                         })}
                         {col.trips.length === 0 && (
-                            <div className="flex items-center justify-center h-20 border-2 border-dashed border-white/5 rounded-lg">
-                                <p className="text-[10px] text-zinc-500">Drop here</p>
+                            <div className="flex items-center justify-center h-20 border-2 border-dashed border-slate-200 dark:border-white/5 rounded-lg">
+                                <p className="text-[10px] text-slate-600 dark:text-slate-400 dark:text-zinc-500">Drop here</p>
                             </div>
                         )}
                     </div>
@@ -484,7 +484,7 @@ export const TripsView = ({
     return (
         <div className="space-y-4">
             {/* Row count */}
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-slate-500 dark:text-gray-500">
                 {filteredTrips.length} trip{filteredTrips.length !== 1 ? "s" : ""}
             </p>
 

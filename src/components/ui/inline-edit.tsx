@@ -84,7 +84,7 @@ export function InlineEdit({
     return (
       <span
         className={cn(
-          "group/edit cursor-pointer inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-colors hover:bg-white/5",
+          "group/edit cursor-pointer inline-flex items-center gap-1.5 rounded px-1 -mx-1 transition-colors hover:bg-slate-200 dark:hover:bg-white/5",
           className
         )}
         onClick={() => {
@@ -112,7 +112,7 @@ export function InlineEdit({
     },
     onBlur: commit,
     className: cn(
-      "bg-white/10 border border-primary/30 rounded px-2 py-1 text-inherit focus:outline-none focus:ring-2 focus:ring-primary/50 w-full",
+      "bg-slate-50 dark:bg-white/10 border border-primary/30 rounded px-2 py-1 text-slate-900 dark:text-inherit focus:outline-none focus:ring-2 focus:ring-primary/50 w-full",
       inputClassName
     ),
     placeholder,

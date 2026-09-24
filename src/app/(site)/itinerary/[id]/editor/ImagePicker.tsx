@@ -90,7 +90,7 @@ export function ImagePicker({
                     </h3>
                     <button
                         onClick={onClose}
-                        className="text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-900 transition-colors"
+                        className="text-slate-600 dark:text-zinc-400 hover:text-white p-1 rounded-lg hover:bg-zinc-900 transition-colors"
                     >
                         <X size={18} />
                     </button>
@@ -103,7 +103,7 @@ export function ImagePicker({
                         className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
                             tab === "unsplash"
                                 ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+                                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
                         }`}
                     >
                         <Search size={14} /> Unsplash Photos
@@ -113,7 +113,7 @@ export function ImagePicker({
                         className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
                             tab === "upload"
                                 ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+                                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
                         }`}
                     >
                         <Upload size={14} /> Upload File
@@ -123,7 +123,7 @@ export function ImagePicker({
                         className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all ${
                             tab === "url"
                                 ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                                : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+                                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
                         }`}
                     >
                         <LinkIcon size={14} /> Custom URL
@@ -153,7 +153,7 @@ export function ImagePicker({
                             </div>
 
                             {loading ? (
-                                <div className="text-center py-12 text-zinc-400 text-xs font-medium">
+                                <div className="text-center py-12 text-slate-600 dark:text-zinc-400 text-xs font-medium">
                                     Fetching high-res Unsplash photos...
                                 </div>
                             ) : images.length > 0 ? (
@@ -249,7 +249,7 @@ export function ImagePicker({
                 <div className="px-5 py-3 border-t border-zinc-800 bg-zinc-950/80 flex justify-end gap-2.5">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 rounded-xl border border-zinc-800 text-zinc-400 hover:text-zinc-200 text-xs font-semibold hover:bg-zinc-900 transition-colors cursor-pointer"
+                        className="px-4 py-2 rounded-xl border border-zinc-800 text-slate-600 dark:text-zinc-400 hover:text-zinc-200 text-xs font-semibold hover:bg-zinc-900 transition-colors cursor-pointer"
                     >
                         Cancel
                     </button>

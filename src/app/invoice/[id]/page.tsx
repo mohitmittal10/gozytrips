@@ -107,7 +107,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                   <FileText className="w-6 h-6 text-zinc-600 dark:text-zinc-400" />
                 </div>
                 <p className="text-sm font-medium text-zinc-500">Invoice Reference</p>
-                <p className="text-xs text-zinc-400 uppercase">{itinerary.id.split('-')[0]}</p>
+                <p className="text-xs text-slate-600 dark:text-zinc-400 uppercase">{itinerary.id.split('-')[0]}</p>
               </div>
             </div>
 

@@ -36,7 +36,7 @@ import {
 
 const ACTION_ICON_MAP: Record<string, React.ReactNode> = {
   LOGIN: <LogIn className="w-4 h-4 text-green-400" />,
-  LOGOUT: <LogOut className="w-4 h-4 text-gray-400" />,
+  LOGOUT: <LogOut className="w-4 h-4 text-slate-600 dark:text-gray-400" />,
   CREATE_TRIP: <FileText className="w-4 h-4 text-blue-400" />,
   DELETE_TRIP: <Trash2 className="w-4 h-4 text-red-400" />,
   STATUS_CHANGE: <Activity className="w-4 h-4 text-yellow-400" />,
@@ -175,7 +175,7 @@ export default function SecurityPage() {
 
       <main className="flex-grow container mx-auto px-4 py-20 max-w-5xl">
         <Link href="/profile">
-          <Button variant="ghost" className="mb-6 gap-2 text-gray-400 hover:text-white">
+          <Button variant="ghost" className="mb-6 gap-2 text-slate-600 dark:text-gray-400 hover:text-white">
             <ArrowLeft className="w-4 h-4" />
             Back to Profile
           </Button>
@@ -191,7 +191,7 @@ export default function SecurityPage() {
               <h1 className="text-3xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-500">
                 Security & Trust Center
               </h1>
-              <p className="text-gray-400 mt-1">
+              <p className="text-slate-600 dark:text-gray-400 mt-1">
                 Your data protection status and activity history
               </p>
             </div>
@@ -207,7 +207,7 @@ export default function SecurityPage() {
                   <CheckCircle2 className="w-5 h-5 text-green-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">Security Status</p>
+                  <p className="text-sm text-slate-600 dark:text-gray-400">Security Status</p>
                   <p className="text-lg font-bold text-green-400">Protected</p>
                 </div>
               </div>
@@ -220,7 +220,7 @@ export default function SecurityPage() {
                   <LogIn className="w-5 h-5 text-blue-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">Last Login</p>
+                  <p className="text-sm text-slate-600 dark:text-gray-400">Last Login</p>
                   <p className="text-lg font-bold text-white">{lastLogin}</p>
                 </div>
               </div>
@@ -233,7 +233,7 @@ export default function SecurityPage() {
                   <Activity className="w-5 h-5 text-purple-400" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-400">Tracked Actions</p>
+                  <p className="text-sm text-slate-600 dark:text-gray-400">Tracked Actions</p>
                   <p className="text-lg font-bold text-white">{totalActions}</p>
                 </div>
               </div>
@@ -299,7 +299,7 @@ export default function SecurityPage() {
               variant="outline"
               size="sm"
               onClick={loadLogs}
-              className="border-white/10 text-gray-400 hover:text-white gap-2"
+              className="border-white/10 text-slate-600 dark:text-gray-400 hover:text-white gap-2"
             >
               <RefreshCw className="w-3 h-3" />
               Refresh
@@ -370,7 +370,7 @@ export default function SecurityPage() {
               </div>
               <div>
                 <h3 className="text-lg font-bold text-white mb-2">Our Security Promise</h3>
-                <ul className="space-y-1.5 text-sm text-gray-400">
+                <ul className="space-y-1.5 text-sm text-slate-600 dark:text-gray-400">
                   <li className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-green-400 shrink-0" />
                     <span><strong className="text-zinc-200">Your data is yours</strong> — We never sell or share your client data with third parties.</span>

@@ -38,10 +38,10 @@ const Contact = () => {
     };
 
     return (
-        <section id="contact" className="py-24 bg-black relative overflow-hidden">
+        <section id="contact" className="py-24 bg-slate-100/80 dark:bg-black relative overflow-hidden transition-colors duration-300">
             {/* Background Decorative Glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-purple-600/[0.03] rounded-full blur-[140px] pointer-events-none" />
-            <div className="absolute bottom-0 right-10 w-[400px] h-[400px] bg-indigo-600/[0.02] rounded-full blur-[100px] pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[700px] bg-purple-500/[0.05] dark:bg-purple-600/[0.03] rounded-full blur-[140px] pointer-events-none" />
+            <div className="absolute bottom-0 right-10 w-[400px] h-[400px] bg-indigo-500/[0.04] dark:bg-indigo-600/[0.02] rounded-full blur-[100px] pointer-events-none" />
 
             <div className="max-w-6xl mx-auto px-6 md:px-8 relative z-10">
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
@@ -49,13 +49,13 @@ const Contact = () => {
                     {/* Left Column: Heading & Tab Selection */}
                     <div className="lg:col-span-5 space-y-8">
                         <div className="space-y-4">
-                            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[#71717A]">
+                            <span className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-[#71717A]">
                                 Support &amp; Feedback
                             </span>
-                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-white leading-tight">
-                                Agent <span className="text-[#71717A]">Feedback Hub</span>
+                            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
+                                Agent <span className="text-slate-500 dark:text-[#71717A]">Feedback Hub</span>
                             </h2>
-                            <p className="text-zinc-400 font-light leading-relaxed">
+                            <p className="text-slate-600 dark:text-zinc-400 font-light leading-relaxed">
                                 Your voice shapes the future of Wander Labs. Share a glowing review of your travel planning successes, or report a bug or complaint directly to our engineering team. We read and resolve every request.
                             </p>
                         </div>
@@ -66,18 +66,18 @@ const Contact = () => {
                                 onClick={() => { setActiveTab("review"); handleReset(); }}
                                 className={`flex items-center gap-4 p-5 rounded-2xl border text-left transition-all duration-300 ${
                                     activeTab === "review"
-                                        ? "bg-white/[0.04] border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.1)]"
-                                        : "bg-white/[0.01] border-white/[0.04] hover:bg-white/[0.02] hover:border-white/[0.08]"
+                                        ? "bg-white dark:bg-white/[0.04] border-purple-500/40 shadow-md dark:shadow-[0_0_20px_rgba(168,85,247,0.1)]"
+                                        : "bg-slate-50 dark:bg-white/[0.01] border-slate-200 dark:border-white/[0.04] hover:bg-white dark:hover:bg-white/[0.02]"
                                 }`}
                             >
                                 <div className={`p-3 rounded-xl ${
-                                    activeTab === "review" ? "bg-purple-500/10 text-purple-400" : "bg-white/5 text-zinc-400"
+                                    activeTab === "review" ? "bg-purple-500/10 text-purple-600 dark:text-purple-400" : "bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-zinc-400"
                                 }`}>
                                     <Sparkles className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-white text-base">Share a Review</h4>
-                                    <p className="text-zinc-500 text-xs mt-0.5 font-light">Tell us what you love or how we can improve.</p>
+                                    <h4 className="font-bold text-slate-900 dark:text-white text-base">Share a Review</h4>
+                                    <p className="text-slate-500 dark:text-zinc-500 text-xs mt-0.5 font-light">Tell us what you love or how we can improve.</p>
                                 </div>
                             </button>
 
@@ -85,18 +85,18 @@ const Contact = () => {
                                 onClick={() => { setActiveTab("complaint"); handleReset(); }}
                                 className={`flex items-center gap-4 p-5 rounded-2xl border text-left transition-all duration-300 ${
                                     activeTab === "complaint"
-                                        ? "bg-white/[0.04] border-red-500/30 shadow-[0_0_20px_rgba(239,68,68,0.1)]"
-                                        : "bg-white/[0.01] border-white/[0.04] hover:bg-white/[0.02] hover:border-white/[0.08]"
+                                        ? "bg-white dark:bg-white/[0.04] border-red-500/40 shadow-md dark:shadow-[0_0_20px_rgba(239,68,68,0.1)]"
+                                        : "bg-slate-50 dark:bg-white/[0.01] border-slate-200 dark:border-white/[0.04] hover:bg-white dark:hover:bg-white/[0.02]"
                                 }`}
                             >
                                 <div className={`p-3 rounded-xl ${
-                                    activeTab === "complaint" ? "bg-red-500/10 text-red-400" : "bg-white/5 text-zinc-400"
+                                    activeTab === "complaint" ? "bg-red-500/10 text-red-600 dark:text-red-400" : "bg-slate-200 dark:bg-white/5 text-slate-600 dark:text-zinc-400"
                                 }`}>
                                     <LifeBuoy className="w-5 h-5" />
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-white text-base">Register Complaint / Bug</h4>
-                                    <p className="text-zinc-500 text-xs mt-0.5 font-light">Report issues, speed lags, or billing bugs.</p>
+                                    <h4 className="font-bold text-slate-900 dark:text-white text-base">Register Complaint / Bug</h4>
+                                    <p className="text-slate-500 dark:text-zinc-500 text-xs mt-0.5 font-light">Report issues, speed lags, or billing bugs.</p>
                                 </div>
                             </button>
                         </div>
@@ -104,8 +104,8 @@ const Contact = () => {
 
                     {/* Right Column: Dynamic Interactive Form */}
                     <div className="lg:col-span-7">
-                        <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white/[0.01] border border-white/[0.06] backdrop-blur-xl relative overflow-hidden group min-h-[500px] flex flex-col justify-center">
-                            <div className="absolute inset-0 bg-gradient-to-br from-white/[0.01] via-transparent to-transparent pointer-events-none" />
+                        <div className="p-8 sm:p-10 rounded-[2.5rem] bg-white dark:bg-white/[0.01] border border-slate-200 dark:border-white/[0.06] backdrop-blur-xl shadow-xl dark:shadow-none relative overflow-hidden group min-h-[500px] flex flex-col justify-center">
+                            <div className="absolute inset-0 bg-gradient-to-br from-slate-100/50 dark:from-white/[0.01] via-transparent to-transparent pointer-events-none" />
                             
                             <AnimatePresence mode="wait">
                                 {!isSubmitted ? (
@@ -119,7 +119,7 @@ const Contact = () => {
                                         <form onSubmit={handleSubmit} className="space-y-6">
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">Your Name</label>
+                                                    <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-wider">Your Name</label>
                                                     <input
                                                         type="text"
                                                         name="name"
@@ -127,11 +127,11 @@ const Contact = () => {
                                                         placeholder="e.g. Sarah Jenkins"
                                                         value={formData.name}
                                                         onChange={handleInputChange}
-                                                        className="w-full bg-white/[0.02] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/40 transition-colors duration-300"
+                                                        className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none focus:border-purple-500/40 transition-colors duration-300"
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                                    <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-wider">
                                                         {activeTab === "review" ? "Agency (Optional)" : "Email Address"}
                                                     </label>
                                                     <input
@@ -141,7 +141,7 @@ const Contact = () => {
                                                         placeholder={activeTab === "review" ? "e.g. Apex Travel Group" : "sarah@apex.travel"}
                                                         value={activeTab === "review" ? formData.agency : formData.email}
                                                         onChange={handleInputChange}
-                                                        className="w-full bg-white/[0.02] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/40 transition-colors duration-300"
+                                                        className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none focus:border-purple-500/40 transition-colors duration-300"
                                                     />
                                                 </div>
                                             </div>
@@ -150,7 +150,7 @@ const Contact = () => {
                                             {activeTab === "review" && (
                                                 <div className="space-y-4">
                                                     <div className="space-y-2">
-                                                        <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">Rating</label>
+                                                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">Rating</label>
                                                         <div className="flex items-center gap-2">
                                                             {[1, 2, 3, 4, 5].map((star) => (
                                                                 <button
@@ -165,12 +165,12 @@ const Contact = () => {
                                                                         className={`w-8 h-8 ${
                                                                             star <= (hoverRating || rating)
                                                                                 ? "fill-amber-400 text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)]"
-                                                                                : "text-zinc-600"
+                                                                                : "text-slate-300 dark:text-zinc-600"
                                                                         }`}
                                                                     />
                                                                 </button>
                                                             ))}
-                                                            <span className="text-sm font-medium text-amber-400 ml-2">
+                                                            <span className="text-sm font-medium text-amber-500 dark:text-amber-400 ml-2">
                                                                 {rating === 5 ? "Exceptional" : rating === 4 ? "Very Good" : rating === 3 ? "Average" : rating === 2 ? "Below Average" : "Needs Improvement"}
                                                             </span>
                                                         </div>
@@ -182,12 +182,12 @@ const Contact = () => {
                                             {activeTab === "complaint" && (
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                                     <div className="space-y-2">
-                                                        <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">Category</label>
+                                                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">Category</label>
                                                         <select
                                                             name="category"
                                                             value={category}
                                                             onChange={(e) => setCategory(e.target.value)}
-                                                            className="w-full bg-[#0d0d12] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-purple-500/40 transition-colors duration-300"
+                                                            className="w-full bg-white dark:bg-[#0d0d12] border border-slate-200 dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white focus:outline-none focus:border-purple-500/40 transition-colors duration-300"
                                                         >
                                                             <option value="itinerary">Itinerary Generation / AI Accuracy</option>
                                                             <option value="billing">Billing &amp; Subscription Issue</option>
@@ -198,7 +198,7 @@ const Contact = () => {
                                                         </select>
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider block">Severity Priority</label>
+                                                        <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-wider block">Severity Priority</label>
                                                         <div className="grid grid-cols-4 gap-2">
                                                             {(["low", "medium", "high", "urgent"] as const).map((p) => (
                                                                 <button
@@ -208,11 +208,11 @@ const Contact = () => {
                                                                     className={`py-2 px-1 text-xs font-semibold rounded-lg capitalize border transition-all duration-300 ${
                                                                         priority === p
                                                                             ? p === "urgent"
-                                                                                ? "bg-red-500/20 border-red-500/50 text-red-400"
+                                                                                ? "bg-red-500/20 border-red-500/50 text-red-500 dark:text-red-400"
                                                                                 : p === "high"
-                                                                                ? "bg-orange-500/20 border-orange-500/50 text-orange-400"
-                                                                                : "bg-indigo-500/20 border-indigo-500/50 text-indigo-400"
-                                                                            : "bg-white/[0.02] border-white/[0.04] text-zinc-500 hover:text-zinc-300 hover:border-white/[0.08]"
+                                                                                ? "bg-orange-500/20 border-orange-500/50 text-orange-500 dark:text-orange-400"
+                                                                                : "bg-indigo-500/20 border-indigo-500/50 text-indigo-600 dark:text-indigo-400"
+                                                                            : "bg-slate-100 dark:bg-white/[0.02] border-slate-200 dark:border-white/[0.04] text-slate-600 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-zinc-300 hover:border-slate-300 dark:hover:border-white/[0.08]"
                                                                     }`}
                                                                 >
                                                                     {p}
@@ -225,7 +225,7 @@ const Contact = () => {
 
                                             {/* Textarea message */}
                                             <div className="space-y-2">
-                                                <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
+                                                <label className="text-xs font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-wider">
                                                     {activeTab === "review" ? "Your Message & Feedback" : "Complaint Description & Details"}
                                                 </label>
                                                 <textarea
@@ -239,7 +239,7 @@ const Contact = () => {
                                                     }
                                                     value={formData.message}
                                                     onChange={handleInputChange}
-                                                    className="w-full bg-white/[0.02] border border-white/[0.08] rounded-xl px-4 py-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-purple-500/40 transition-colors duration-300 resize-none font-light leading-relaxed"
+                                                    className="w-full bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.08] rounded-xl px-4 py-3 text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-600 focus:outline-none focus:border-purple-500/40 transition-colors duration-300 resize-none font-light leading-relaxed"
                                                 />
                                             </div>
 
@@ -248,7 +248,7 @@ const Contact = () => {
                                                 type="submit"
                                                 className={`w-full rounded-2xl h-12 font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
                                                     activeTab === "review"
-                                                        ? "bg-white text-black hover:bg-zinc-200"
+                                                        ? "bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-zinc-200"
                                                         : "bg-red-500 text-white hover:bg-red-600 shadow-[0_0_15px_rgba(239,68,68,0.2)]"
                                                 }`}
                                             >
@@ -267,14 +267,14 @@ const Contact = () => {
                                         transition={{ duration: 0.3 }}
                                         className="text-center space-y-6"
                                     >
-                                        <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-400 animate-bounce">
+                                        <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center mx-auto text-emerald-600 dark:text-emerald-400 animate-bounce">
                                             <CheckCircle2 className="w-8 h-8" />
                                         </div>
                                         <div className="space-y-2">
                                             <h3 className="text-2xl font-bold text-white">
                                                 {activeTab === "review" ? "Thank You!" : "Ticket Registered"}
                                             </h3>
-                                            <p className="text-zinc-400 text-sm max-w-sm mx-auto font-light leading-relaxed">
+                                            <p className="text-slate-600 dark:text-zinc-400 text-sm max-w-sm mx-auto font-light leading-relaxed">
                                                 {activeTab === "review"
                                                     ? `Your rating of ${rating} stars was successfully registered. We highly appreciate your review!`
                                                     : `Your complaint about our ${category} system has been registered under ticket #WL-${Math.floor(1000 + Math.random() * 9000)}. Our support team will respond within 2 hours.`}
@@ -283,7 +283,7 @@ const Contact = () => {
                                         <Button
                                             onClick={handleReset}
                                             variant="outline"
-                                            className="border-white/10 text-zinc-400 hover:text-white rounded-xl"
+                                            className="border-white/10 text-slate-600 dark:text-zinc-400 hover:text-white rounded-xl"
                                         >
                                             Submit Another Response
                                         </Button>

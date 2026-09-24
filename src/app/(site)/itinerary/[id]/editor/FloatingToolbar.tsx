@@ -115,7 +115,7 @@ export function FloatingToolbar({
             <button
                 onClick={handleBold}
                 title="Bold (Ctrl+B)"
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-colors cursor-pointer flex items-center"
+                className="p-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-colors cursor-pointer flex items-center"
             >
                 <Bold size={14} />
             </button>
@@ -124,7 +124,7 @@ export function FloatingToolbar({
             <button
                 onClick={handleItalic}
                 title="Italic (Ctrl+I)"
-                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-colors cursor-pointer flex items-center"
+                className="p-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-colors cursor-pointer flex items-center"
             >
                 <Italic size={14} />
             </button>
@@ -143,7 +143,7 @@ export function FloatingToolbar({
                                 : "text-zinc-300 hover:text-white hover:bg-zinc-800/80"
                         }`}
                     >
-                        <Clock size={14} className="text-zinc-400" />
+                        <Clock size={14} className="text-slate-600 dark:text-zinc-400" />
                         <span>Time</span>
                     </button>
 
@@ -177,7 +177,7 @@ export function FloatingToolbar({
                     title="Replace Image"
                     className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
                 >
-                    <Camera size={14} className="text-zinc-400" />
+                    <Camera size={14} className="text-slate-600 dark:text-zinc-400" />
                     <span>Change Image</span>
                 </button>
             )}

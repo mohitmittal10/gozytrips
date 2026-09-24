@@ -174,7 +174,7 @@ export function PaymentsTab({
                 {/* Header with Search & Quick Filters */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/[0.06] p-3 rounded-xl backdrop-blur-sm">
                     <div className="relative flex-1">
-                        <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                        <Search className="w-4 h-4 text-slate-600 dark:text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <Input
                             placeholder="Search by client, trip title, or destination..."
                             value={searchQuery}
@@ -191,7 +191,7 @@ export function PaymentsTab({
                                     "px-3 py-1 text-xs font-medium rounded-md capitalize transition-all",
                                     statusFilter === st
                                         ? "bg-purple-600 text-white shadow-sm"
-                                        : "text-gray-400 hover:text-white hover:bg-white/5"
+                                        : "text-slate-600 dark:text-gray-400 hover:text-white hover:bg-white/5"
                                 )}
                             >
                                 {st === "all" ? "All Trips" : st}
@@ -229,7 +229,7 @@ export function PaymentsTab({
                                                 {fin.clientName}
                                             </span>
                                             {fin.clientEmail && (
-                                                <span className="text-xs text-gray-400 font-mono bg-white/5 px-2 py-0.5 rounded">
+                                                <span className="text-xs text-slate-600 dark:text-gray-400 font-mono bg-white/5 px-2 py-0.5 rounded">
                                                     {fin.clientEmail}
                                                 </span>
                                             )}
@@ -245,7 +245,7 @@ export function PaymentsTab({
                                                 {fin.status}
                                             </Badge>
                                         </div>
-                                        <p className="text-xs text-gray-400">
+                                        <p className="text-xs text-slate-600 dark:text-gray-400">
                                             {fin.tripTitle} · <span className="text-gray-300">{fin.destination}</span>
                                             {fin.startDate && (
                                                 <span className="ml-2 text-gray-500">
@@ -286,7 +286,7 @@ export function PaymentsTab({
 
                                 {/* Progress Bar */}
                                 <div className="space-y-1.5">
-                                    <div className="flex justify-between text-[11px] text-gray-400 font-medium">
+                                    <div className="flex justify-between text-[11px] text-slate-600 dark:text-gray-400 font-medium">
                                         <span>Collected: <strong className="text-green-400">{fm(totalPaid, fin.currency)}</strong></span>
                                         <span>Total: <strong className="text-white">{fm(fin.clientPrice, fin.currency)}</strong></span>
                                     </div>
@@ -309,7 +309,7 @@ export function PaymentsTab({
                                                 <Sparkles className="w-3.5 h-3.5 text-primary" />
                                                 <span>Payment Milestones (from The Lab)</span>
                                             </div>
-                                            <span className="text-[10px] text-zinc-400 font-medium">Click to record instant payment</span>
+                                            <span className="text-[10px] text-slate-600 dark:text-zinc-400 font-medium">Click to record instant payment</span>
                                         </div>
 
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
@@ -339,10 +339,10 @@ export function PaymentsTab({
                                                     >
                                                         <div>
                                                             <div className="flex items-center justify-between text-xs">
-                                                                <span className={cn("font-semibold", isRecorded ? "text-emerald-300" : "text-white")}>
+                                                                <span className={cn("font-semibold", isRecorded ? "text-emerald-700 dark:text-emerald-300" : "text-white")}>
                                                                     {m.label}
                                                                 </span>
-                                                                <span className={cn("font-bold text-[11px]", isRecorded ? "text-emerald-400" : "text-primary")}>
+                                                                <span className={cn("font-bold text-[11px]", isRecorded ? "text-emerald-600 dark:text-emerald-400" : "text-primary")}>
                                                                     {m.percentage}%
                                                                 </span>
                                                             </div>
@@ -350,14 +350,14 @@ export function PaymentsTab({
                                                                 {fm(milestoneAmt, fin.currency)}
                                                             </div>
                                                             {m.dueDate && (
-                                                                <p className="text-[10px] text-zinc-400 mt-0.5">
+                                                                <p className="text-[10px] text-slate-600 dark:text-zinc-400 mt-0.5">
                                                                     Due: {new Date(m.dueDate).toLocaleDateString()}
                                                                 </p>
                                                             )}
                                                         </div>
                                                         {isRecorded ? (
-                                                            <div className="h-6 text-[11px] bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold flex items-center justify-center w-full rounded-lg gap-1">
-                                                                <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                                                            <div className="h-6 text-[11px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30 font-bold flex items-center justify-center w-full rounded-lg gap-1">
+                                                                <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                                                                 <span>Recorded</span>
                                                             </div>
                                                         ) : (
@@ -381,7 +381,7 @@ export function PaymentsTab({
                                 {/* Recorded Payments List */}
                                 {fin.payments.length > 0 && (
                                     <div className="space-y-2">
-                                        <p className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                                        <p className="text-[11px] font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-wider">
                                             Recorded Transactions ({fin.payments.length})
                                         </p>
                                         <div className="grid grid-cols-1 gap-1.5">
@@ -398,26 +398,26 @@ export function PaymentsTab({
                                                             {p.method.replace("_", " ")}
                                                         </span>
                                                         {p.reference && (
-                                                            <span className="text-zinc-400 font-mono text-[11px]">
+                                                            <span className="text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
                                                                 Ref: #{p.reference}
                                                             </span>
                                                         )}
                                                         {p.notes && (
-                                                            <span className="text-zinc-400 italic text-[11px]">
+                                                            <span className="text-slate-600 dark:text-zinc-400 italic text-[11px]">
                                                                 "{p.notes}"
                                                             </span>
                                                         )}
                                                     </div>
                                                     <div className="flex items-center gap-3 shrink-0">
-                                                        <span className="text-emerald-400 font-bold">
+                                                        <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                                                             +{fm(p.amount, fin.currency)}
                                                         </span>
-                                                        <span className="text-zinc-400 text-[11px]">
+                                                        <span className="text-slate-600 dark:text-zinc-400 text-[11px]">
                                                             {new Date(p.date).toLocaleDateString()}
                                                         </span>
                                                         <button
                                                             onClick={() => deletePayment(fin.itineraryId, p.id)}
-                                                            className="text-zinc-400 hover:text-red-400 p-1 transition-colors"
+                                                            className="text-slate-600 dark:text-zinc-400 hover:text-red-400 p-1 transition-colors"
                                                             title="Delete Payment"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
@@ -443,7 +443,7 @@ export function PaymentsTab({
                                     >
                                         {isFullyPaid ? (
                                             <>
-                                                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-400" />
+                                                <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-600 dark:text-emerald-400" />
                                                 <span>Fully Paid</span>
                                             </>
                                         ) : (
@@ -475,7 +475,7 @@ export function PaymentsTab({
 
                     {filteredFinancials.length === 0 && (
                         <div className="text-center py-16 bg-white/[0.01] border border-white/5 rounded-2xl space-y-2">
-                            <p className="text-sm text-gray-400 font-medium">No trips matched your search filter.</p>
+                            <p className="text-sm text-slate-600 dark:text-gray-400 font-medium">No trips matched your search filter.</p>
                             <p className="text-xs text-gray-600">Try adjusting your search or add itineraries in The Lab.</p>
                         </div>
                     )}
@@ -490,7 +490,7 @@ export function PaymentsTab({
                             <CreditCard className="w-4 h-4 text-primary" />
                             Record Client Payment
                         </DialogTitle>
-                        <DialogDescription className="text-zinc-400 text-xs">
+                        <DialogDescription className="text-slate-600 dark:text-zinc-400 text-xs">
                             {selectedTripFin
                                 ? `${selectedTripFin.clientName} · ${selectedTripFin.tripTitle}`
                                 : "Autofilled from itinerary metadata"}
@@ -502,17 +502,17 @@ export function PaymentsTab({
                             {/* Summary strip */}
                             <div className="grid grid-cols-3 gap-2 bg-white/[0.03] border border-white/10 rounded-xl p-3 text-center text-xs">
                                 <div>
-                                    <p className="text-[10px] text-zinc-400 uppercase font-semibold">Package</p>
+                                    <p className="text-[10px] text-slate-600 dark:text-zinc-400 uppercase font-semibold">Package</p>
                                     <p className="font-bold text-white">{fm(selectedTripFin.clientPrice, selectedTripFin.currency)}</p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-zinc-400 uppercase font-semibold">Collected</p>
-                                    <p className="font-bold text-emerald-400">
+                                    <p className="text-[10px] text-slate-600 dark:text-zinc-400 uppercase font-semibold">Collected</p>
+                                    <p className="font-bold text-emerald-600 dark:text-emerald-400">
                                         {fm(selectedTripFin.payments.reduce((s, p) => s + p.amount, 0), selectedTripFin.currency)}
                                     </p>
                                 </div>
                                 <div>
-                                    <p className="text-[10px] text-zinc-400 uppercase font-semibold">Due</p>
+                                    <p className="text-[10px] text-slate-600 dark:text-zinc-400 uppercase font-semibold">Due</p>
                                     <p className="font-bold text-amber-400">
                                         {fm(
                                             Math.max(

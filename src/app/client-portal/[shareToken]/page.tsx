@@ -70,7 +70,7 @@ function AuthGate({
         </p>
         <h1 className="text-2xl sm:text-3xl font-bold text-white mt-1">{formMeta.title}</h1>
         {formMeta.description && (
-          <p className="text-gray-400 text-sm mt-2 max-w-md mx-auto">{formMeta.description}</p>
+          <p className="text-slate-600 dark:text-gray-400 text-sm mt-2 max-w-md mx-auto">{formMeta.description}</p>
         )}
       </div>
 
@@ -216,7 +216,7 @@ export default function ClientPortalPage({
               <AlertCircle className="w-8 h-8 text-red-400" />
             </div>
             <h2 className="text-white font-semibold text-lg mb-2">Form Unavailable</h2>
-            <p className="text-gray-400 text-sm max-w-sm">{loadError}</p>
+            <p className="text-slate-600 dark:text-gray-400 text-sm max-w-sm">{loadError}</p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3">
@@ -314,7 +314,7 @@ function AuthenticatedPortal({
           <CheckCircle2 className="w-10 h-10 text-green-400" />
         </div>
         <h1 className="text-3xl font-bold text-white mb-3">You&apos;re all set! 🎉</h1>
-        <p className="text-gray-400 text-base max-w-md mb-2">
+        <p className="text-slate-600 dark:text-gray-400 text-base max-w-md mb-2">
           Your travel preferences have been shared with{" "}
           <span className="text-[#FF5C33] font-medium">{formMeta.agent_brand_name}</span>.
         </p>
