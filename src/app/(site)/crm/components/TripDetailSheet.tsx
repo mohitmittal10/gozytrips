@@ -271,7 +271,7 @@ export const TripDetailSheet = ({
                                         {trip.clientName && (
                                             <div className="flex items-center gap-1.5 mt-1">
                                                 <User className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400 shrink-0" />
-                                                <p className="text-sm text-zinc-300 font-medium truncate">{trip.clientName}</p>
+                                                <p className="text-sm text-slate-700 dark:text-zinc-300 font-medium truncate">{trip.clientName}</p>
                                                 {trip.clientEmail && (
                                                     <p className="text-xs text-slate-600 dark:text-zinc-400 hidden sm:block truncate">
                                                         · {trip.clientEmail}
@@ -293,9 +293,9 @@ export const TripDetailSheet = ({
 
                                 {/* Destination */}
                                 {trip.destinations && (
-                                    <div className="flex items-center gap-2 pt-2 border-t border-white/5">
+                                    <div className="flex items-center gap-2 pt-2 border-t border-slate-200 dark:border-white/5">
                                         <Compass className="w-4 h-4 text-primary shrink-0" />
-                                        <p className="text-sm font-medium text-zinc-200">{trip.destinations}</p>
+                                        <p className="text-sm font-medium text-slate-700 dark:text-zinc-200">{trip.destinations}</p>
                                     </div>
                                 )}
                             </div>
@@ -382,7 +382,7 @@ export const TripDetailSheet = ({
                                     <SelectTrigger className="bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white h-10 rounded-xl">
                                         <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-300 dark:border-white/10 text-slate-900 dark:text-white">
+                                    <SelectContent className="bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-300 dark:border-white/10 text-slate-900 dark:text-white">
                                         {itineraryStatuses.length > 0 ? (
                                             itineraryStatuses.map((opt) => (
                                                 <SelectItem key={opt.value} value={opt.value}>
@@ -405,14 +405,14 @@ export const TripDetailSheet = ({
 
                             {/* --- Invoice Section --- */}
                             <div className="p-5 bg-white/60 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl space-y-3">
-                                <h5 className="text-xs font-semibold text-slate-600 dark:text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2 flex items-center gap-2">
+                                <h5 className="text-xs font-semibold text-slate-600 dark:text-gray-400 uppercase tracking-widest border-b border-slate-200 dark:border-white/5 pb-2 flex items-center gap-2">
                                     <Receipt className="w-3.5 h-3.5" /> Invoice
                                 </h5>
 
                                 {invoiceUrl ? (
                                     <>
                                         {/* Invoice URL Display */}
-                                        <div className="flex items-center gap-2 bg-black/30 border border-slate-300 dark:border-white/10 rounded-lg p-2.5">
+                                        <div className="flex items-center gap-2 bg-slate-100 dark:bg-black/30 border border-slate-300 dark:border-white/10 rounded-lg p-2.5">
                                             <p className="text-xs text-slate-600 dark:text-gray-400 truncate flex-1 font-mono">{invoiceUrl}</p>
                                         </div>
 
@@ -421,7 +421,7 @@ export const TripDetailSheet = ({
                                             <Button
                                                 variant="outline"
                                                 size="sm"
-                                                className="border-purple-500/30 bg-purple-500/5 text-purple-400 hover:bg-purple-500/10 h-9"
+                                                className="border-purple-500/30 bg-purple-500/5 text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 h-9"
                                                 onClick={handleViewInvoice}
                                             >
                                                 <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
@@ -431,8 +431,8 @@ export const TripDetailSheet = ({
                                                 variant="outline"
                                                 size="sm"
                                                 className={cn(
-                                                    "border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 h-9 transition-all",
-                                                    copied && "border-green-500/30 bg-green-500/5 text-green-400"
+                                                    "border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white h-9 transition-all",
+                                                    copied && "border-green-500/30 bg-green-500/5 text-green-600 dark:text-green-400"
                                                 )}
                                                 onClick={handleCopyLink}
                                             >
@@ -444,7 +444,7 @@ export const TripDetailSheet = ({
                                             </Button>
                                         </div>
 
-                                        <p className="text-[10px] text-gray-600 flex items-center gap-1">
+                                        <p className="text-[10px] text-slate-500 dark:text-gray-600 flex items-center gap-1">
                                             <AlertCircle className="w-3 h-3" />
                                             This link is accessible to you and the assigned client.
                                         </p>
@@ -453,7 +453,7 @@ export const TripDetailSheet = ({
                                         <button
                                             onClick={handleGenerateInvoice}
                                             disabled={isGenerating}
-                                            className="text-[11px] text-gray-600 hover:text-purple-400 transition-colors flex items-center gap-1"
+                                            className="text-[11px] text-slate-500 dark:text-gray-600 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-1"
                                         >
                                             <ChevronRight className="w-3 h-3" />
                                             {isGenerating ? "Regenerating..." : "Regenerate Invoice Link"}
@@ -461,9 +461,9 @@ export const TripDetailSheet = ({
                                     </>
                                 ) : (
                                     <>
-                                        <p className="text-xs text-gray-500">Generate a secure invoice link to share with your client.</p>
+                                        <p className="text-xs text-slate-500 dark:text-gray-500">Generate a secure invoice link to share with your client.</p>
                                         <Button
-                                            className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700/80 font-semibold h-10 rounded-lg"
+                                            className="w-full bg-slate-200 hover:bg-slate-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 border border-slate-300 dark:border-zinc-700/80 font-semibold h-10 rounded-lg"
                                             onClick={handleGenerateInvoice}
                                             disabled={isGenerating}
                                         >
@@ -480,7 +480,7 @@ export const TripDetailSheet = ({
                             {/* --- Actions --- */}
                             <div className="flex flex-col sm:flex-row gap-2 pt-1">
                                 <Button
-                                    className="flex-1 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/20 h-10"
+                                    className="flex-1 bg-purple-500/10 hover:bg-purple-500/20 text-purple-600 dark:text-purple-400 border border-purple-500/20 h-10"
                                     variant="outline"
                                     onClick={() => onViewItinerary(trip)}
                                 >
@@ -488,7 +488,7 @@ export const TripDetailSheet = ({
                                     View Itinerary
                                 </Button>
                                 <Button
-                                    className="flex-1 border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 h-10"
+                                    className="flex-1 border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white h-10"
                                     variant="outline"
                                     onClick={() => onDuplicate(trip)}
                                 >
@@ -515,14 +515,14 @@ export const TripDetailSheet = ({
                                 const days = trip.itinerary_data?.itinerary || trip.itinerary_data?.days || [];
                                 if (days.length === 0) {
                                     return (
-                                        <div className="text-center py-12 text-gray-500 bg-white/[0.02] border border-dashed border-slate-300 dark:border-white/10 rounded-xl space-y-3">
-                                            <Compass className="w-8 h-8 mx-auto text-gray-600 opacity-20" />
+                                        <div className="text-center py-12 text-slate-500 dark:text-gray-500 bg-slate-50 dark:bg-white/[0.02] border border-dashed border-slate-300 dark:border-white/10 rounded-xl space-y-3">
+                                            <Compass className="w-8 h-8 mx-auto text-slate-400 dark:text-gray-600 opacity-40" />
                                             <p className="text-sm">No day-by-day itinerary data found.</p>
                                         </div>
                                     );
                                 }
                                 return (
-                                    <div className="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-slate-200 dark:bg-white/10 pl-7 py-2">
+                                    <div className="space-y-6 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-px before:bg-slate-300 dark:before:bg-white/10 pl-7 py-2">
                                         {days.map((day: any, idx: number) => (
                                             <div key={idx} className="relative space-y-1.5">
                                                 <div className="absolute -left-[24px] top-1.5 w-2 h-2 rounded-full bg-purple-500 ring-4 ring-purple-500/20" />
@@ -538,7 +538,7 @@ export const TripDetailSheet = ({
                                                 {day.activities && day.activities.length > 0 && (
                                                     <div className="flex flex-wrap gap-1.5 pt-2">
                                                         {day.activities.map((act: any, actIdx: number) => (
-                                                            <Badge key={actIdx} variant="outline" className="text-[10px] bg-slate-100 dark:bg-white/5 border-white/5 text-gray-300 font-normal px-2 py-0.5">
+                                                            <Badge key={actIdx} variant="outline" className="text-[10px] bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-600 dark:text-gray-300 font-normal px-2 py-0.5">
                                                                 {typeof act === 'string' ? act : act.title}
                                                             </Badge>
                                                         ))}
@@ -561,8 +561,8 @@ export const TripDetailSheet = ({
 
                                 if (!hasLogistics) {
                                     return (
-                                        <div className="text-center py-12 text-gray-500 bg-white/[0.02] border border-dashed border-slate-300 dark:border-white/10 rounded-xl space-y-3">
-                                            <Hotel className="w-8 h-8 mx-auto text-gray-600 opacity-20" />
+                                        <div className="text-center py-12 text-slate-500 dark:text-gray-500 bg-slate-50 dark:bg-white/[0.02] border border-dashed border-slate-300 dark:border-white/10 rounded-xl space-y-3">
+                                            <Hotel className="w-8 h-8 mx-auto text-slate-400 dark:text-gray-600 opacity-40" />
                                             <p className="text-sm">No logistics added to this trip.</p>
                                         </div>
                                     );
@@ -577,11 +577,11 @@ export const TripDetailSheet = ({
                                                     <Hotel className="w-3.5 h-3.5" /> Accommodation ({hotels.length})
                                                 </h4>
                                                 {hotels.map((h: any) => (
-                                                    <div key={h.id} className="p-3.5 bg-white/[0.02] border border-slate-300 dark:border-white/10 rounded-xl space-y-2">
+                                                    <div key={h.id} className="p-3.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/10 rounded-xl space-y-2">
                                                         <div className="flex items-start justify-between gap-2">
                                                             <div>
                                                                 <p className="text-sm font-semibold text-slate-900 dark:text-white">{h.name || "Unnamed Hotel"}</p>
-                                                                {h.address && <p className="text-xs text-gray-500 mt-0.5">{h.address}</p>}
+                                                                {h.address && <p className="text-xs text-slate-500 dark:text-gray-500 mt-0.5">{h.address}</p>}
                                                             </div>
                                                             {h.starRating && (
                                                                 <div className="flex gap-0.5 shrink-0 pt-1">
@@ -591,11 +591,11 @@ export const TripDetailSheet = ({
                                                                 </div>
                                                             )}
                                                         </div>
-                                                        <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-gray-400 border-t border-white/5 pt-2 mt-1">
-                                                            <p>Check-in: <span className="text-zinc-200">{h.checkIn || "—"}</span></p>
-                                                            <p>Check-out: <span className="text-zinc-200">{h.checkOut || "—"}</span></p>
-                                                            {h.nights && <p>Nights: <span className="text-zinc-200">{h.nights}</span></p>}
-                                                            {h.bookingRef && <p>Booking Ref: <span className="text-zinc-200">{h.bookingRef}</span></p>}
+                                                        <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-gray-400 border-t border-slate-200 dark:border-white/5 pt-2 mt-1">
+                                                            <p>Check-in: <span className="text-slate-800 dark:text-zinc-200">{h.checkIn || "—"}</span></p>
+                                                            <p>Check-out: <span className="text-slate-800 dark:text-zinc-200">{h.checkOut || "—"}</span></p>
+                                                            {h.nights && <p>Nights: <span className="text-slate-800 dark:text-zinc-200">{h.nights}</span></p>}
+                                                            {h.bookingRef && <p>Booking Ref: <span className="text-slate-800 dark:text-zinc-200">{h.bookingRef}</span></p>}
                                                         </div>
                                                     </div>
                                                 ))}
@@ -609,25 +609,25 @@ export const TripDetailSheet = ({
                                                     <Plane className="w-3.5 h-3.5" /> Flights ({flights.length})
                                                 </h4>
                                                 {flights.map((f: any) => (
-                                                    <div key={f.id} className="p-3.5 bg-white/[0.02] border border-slate-300 dark:border-white/10 rounded-xl space-y-2.5">
+                                                    <div key={f.id} className="p-3.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/10 rounded-xl space-y-2.5">
                                                         <div className="flex items-center justify-between">
                                                             <p className="text-sm font-semibold text-slate-900 dark:text-white">{f.airline || "Airline"} {f.flightNumber || ""}</p>
                                                             {f.pnr && <Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">{f.pnr}</Badge>}
                                                         </div>
-                                                        <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-gray-400 border-t border-white/5 pt-2.5 mt-1">
+                                                        <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-gray-400 border-t border-slate-200 dark:border-white/5 pt-2.5 mt-1">
                                                             <div className="flex-1">
-                                                                <p className="text-[9px] text-gray-500 uppercase font-semibold">Departure</p>
-                                                                <p className="text-xs text-zinc-200 font-semibold">{f.departureAirport || "—"}</p>
+                                                                <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase font-semibold">Departure</p>
+                                                                <p className="text-xs text-slate-800 dark:text-zinc-200 font-semibold">{f.departureAirport || "—"}</p>
                                                                 <p className="text-[11px] text-slate-600 dark:text-gray-400">{f.departure || "—"}</p>
                                                             </div>
-                                                            <ArrowRight className="w-3.5 h-3.5 text-gray-600" />
+                                                            <ArrowRight className="w-3.5 h-3.5 text-slate-400 dark:text-gray-600" />
                                                             <div className="flex-1 text-right">
-                                                                <p className="text-[9px] text-gray-500 uppercase font-semibold">Arrival</p>
-                                                                <p className="text-xs text-zinc-200 font-semibold">{f.arrivalAirport || "—"}</p>
+                                                                <p className="text-[9px] text-slate-400 dark:text-gray-500 uppercase font-semibold">Arrival</p>
+                                                                <p className="text-xs text-slate-800 dark:text-zinc-200 font-semibold">{f.arrivalAirport || "—"}</p>
                                                                 <p className="text-[11px] text-slate-600 dark:text-gray-400">{f.arrival || "—"}</p>
                                                             </div>
                                                         </div>
-                                                        {f.terminal && <p className="text-[10px] text-gray-500 mt-1">Terminal: <span className="text-gray-300">{f.terminal}</span></p>}
+                                                        {f.terminal && <p className="text-[10px] text-slate-500 dark:text-gray-500 mt-1">Terminal: <span className="text-slate-800 dark:text-gray-300">{f.terminal}</span></p>}
                                                     </div>
                                                 ))}
                                             </div>
@@ -636,20 +636,20 @@ export const TripDetailSheet = ({
                                         {/* Cabs */}
                                         {cabs.length > 0 && (
                                             <div className="space-y-3">
-                                                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+                                                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-300 flex items-center gap-1.5">
                                                     <Car className="w-3.5 h-3.5" /> Cabs ({cabs.length})
                                                 </h4>
                                                 {cabs.map((c: any) => (
-                                                    <div key={c.id} className="p-3.5 bg-white/[0.02] border border-slate-300 dark:border-white/10 rounded-xl space-y-2">
+                                                    <div key={c.id} className="p-3.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/10 rounded-xl space-y-2">
                                                         <div className="flex items-center justify-between">
                                                             <p className="text-sm font-semibold text-slate-900 dark:text-white">{c.vehicleType || "Cab"}</p>
                                                             {c.pickupTime && <span className="text-xs text-slate-600 dark:text-gray-400">{c.pickupTime}</span>}
                                                         </div>
-                                                        {c.route && <p className="text-xs text-gray-300">{c.route}</p>}
+                                                        {c.route && <p className="text-xs text-slate-700 dark:text-gray-300">{c.route}</p>}
                                                         {(c.driverName || c.driverContact) && (
-                                                            <div className="text-[11px] text-gray-500 border-t border-white/5 pt-2 flex justify-between">
-                                                                <span>Driver: <span className="text-gray-300">{c.driverName || "TBD"}</span></span>
-                                                                {c.driverContact && <span>Contact: <span className="text-gray-300">{c.driverContact}</span></span>}
+                                                            <div className="text-[11px] text-slate-500 dark:text-gray-500 border-t border-slate-200 dark:border-white/5 pt-2 flex justify-between">
+                                                                <span>Driver: <span className="text-slate-800 dark:text-gray-300">{c.driverName || "TBD"}</span></span>
+                                                                {c.driverContact && <span>Contact: <span className="text-slate-800 dark:text-gray-300">{c.driverContact}</span></span>}
                                                             </div>
                                                         )}
                                                     </div>
@@ -664,15 +664,15 @@ export const TripDetailSheet = ({
                                                     <Bus className="w-3.5 h-3.5" /> Buses ({buses.length})
                                                 </h4>
                                                 {buses.map((b: any) => (
-                                                    <div key={b.id} className="p-3.5 bg-white/[0.02] border border-slate-300 dark:border-white/10 rounded-xl space-y-2">
+                                                    <div key={b.id} className="p-3.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/10 rounded-xl space-y-2">
                                                         <div className="flex items-center justify-between">
                                                             <p className="text-sm font-semibold text-slate-900 dark:text-white">{b.busType || "Bus"}</p>
                                                             {b.pnr && <Badge variant="outline" className="text-[10px] border-slate-300 dark:border-white/10 text-slate-600 dark:text-gray-400">{b.pnr}</Badge>}
                                                         </div>
-                                                        {b.route && <p className="text-xs text-gray-300">{b.route}</p>}
-                                                        <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-gray-400 border-t border-white/5 pt-2">
-                                                            <p>Report: <span className="text-zinc-200">{b.reportingTime || "—"}</span></p>
-                                                            <p>Depart: <span className="text-zinc-200">{b.departureTime || "—"}</span></p>
+                                                        {b.route && <p className="text-xs text-slate-700 dark:text-gray-300">{b.route}</p>}
+                                                        <div className="grid grid-cols-2 gap-2 text-xs text-slate-600 dark:text-gray-400 border-t border-slate-200 dark:border-white/5 pt-2">
+                                                            <p>Report: <span className="text-slate-800 dark:text-zinc-200">{b.reportingTime || "—"}</span></p>
+                                                            <p>Depart: <span className="text-slate-800 dark:text-zinc-200">{b.departureTime || "—"}</span></p>
                                                         </div>
                                                     </div>
                                                 ))}
@@ -686,8 +686,8 @@ export const TripDetailSheet = ({
                         <TabsContent value="finances" className="space-y-4 focus-visible:outline-none">
                             {pricingBreakdown ? (
                                 <div className="space-y-5">
-                                    <div className="p-4 bg-white/[0.02] border border-slate-300 dark:border-white/10 rounded-xl space-y-3">
-                                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-gray-400 flex items-center gap-1.5 border-b border-white/5 pb-2">
+                                    <div className="p-4 bg-slate-50 dark:bg-white/[0.02] border border-slate-300 dark:border-white/10 rounded-xl space-y-3">
+                                        <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-gray-400 flex items-center gap-1.5 border-b border-slate-200 dark:border-white/5 pb-2">
                                             <Receipt className="w-3.5 h-3.5 text-purple-400" /> Cost Summary
                                         </h4>
                                         <div className="space-y-2.5 text-sm">
@@ -703,19 +703,19 @@ export const TripDetailSheet = ({
                                             </div>
                                             <div className="flex justify-between">
                                                 <span className="text-slate-600 dark:text-gray-400">Markup ({pricingConfig.markupType === 'percentage' ? `${pricingConfig.markupValue}%` : 'Flat'})</span>
-                                                <span className="text-gray-300">
+                                                <span className="text-slate-700 dark:text-gray-300">
                                                     + {formatMoney(pricingBreakdown.markupAmount, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}
                                                 </span>
                                             </div>
                                             {pricingBreakdown.taxAmount > 0 && (
                                                 <div className="flex justify-between">
                                                     <span className="text-slate-600 dark:text-gray-400">Taxes ({pricingConfig.taxPercentage || 0}%)</span>
-                                                    <span className="text-gray-300">
+                                                    <span className="text-slate-700 dark:text-gray-300">
                                                         + {formatMoney(pricingBreakdown.taxAmount, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}
                                                     </span>
                                                 </div>
                                             )}
-                                            <div className="flex justify-between border-t border-white/5 pt-2.5 text-base">
+                                            <div className="flex justify-between border-t border-slate-200 dark:border-white/5 pt-2.5 text-base">
                                                 <span className="font-bold text-slate-900 dark:text-white">Client Price</span>
                                                 <span className="font-bold text-purple-400">
                                                     {formatMoney(pricingBreakdown.finalTotal, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}
@@ -725,8 +725,8 @@ export const TripDetailSheet = ({
                                     </div>
 
                                     {pricingBreakdown.milestoneAmounts && pricingBreakdown.milestoneAmounts.length > 0 && (
-                                        <div className="p-4 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl space-y-3">
-                                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 flex items-center gap-1.5 border-b border-white/5 pb-2">
+                                        <div className="p-4 bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] shadow-xl rounded-2xl space-y-3">
+                                            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-400 flex items-center gap-1.5 border-b border-slate-200 dark:border-white/5 pb-2">
                                                 <CreditCard className="w-3.5 h-3.5 text-primary" /> Payment Milestones
                                             </h4>
                                             <div className="space-y-3">
@@ -746,8 +746,8 @@ export const TripDetailSheet = ({
                                     )}
                                 </div>
                             ) : (
-                                <div className="text-center py-12 text-gray-500 bg-white/[0.02] border border-dashed border-slate-300 dark:border-white/10 rounded-xl space-y-3">
-                                    <Receipt className="w-8 h-8 mx-auto text-gray-600 opacity-20" />
+                                <div className="text-center py-12 text-slate-500 dark:text-gray-500 bg-slate-50 dark:bg-white/[0.02] border border-dashed border-slate-300 dark:border-white/10 rounded-xl space-y-3">
+                                    <Receipt className="w-8 h-8 mx-auto text-slate-400 dark:text-gray-600 opacity-40" />
                                     <p className="text-sm">No finance details configured.</p>
                                 </div>
                             )}
@@ -764,8 +764,8 @@ export const TripDetailSheet = ({
 
                                 if (!hasPolicies) {
                                     return (
-                                        <div className="text-center py-12 text-gray-500 bg-white/[0.02] border border-dashed border-slate-300 dark:border-white/10 rounded-xl space-y-3">
-                                            <ScrollText className="w-8 h-8 mx-auto text-gray-600 opacity-20" />
+                                        <div className="text-center py-12 text-slate-500 dark:text-gray-500 bg-slate-50 dark:bg-white/[0.02] border border-dashed border-slate-300 dark:border-white/10 rounded-xl space-y-3">
+                                            <ScrollText className="w-8 h-8 mx-auto text-slate-400 dark:text-gray-600 opacity-40" />
                                             <p className="text-sm">No inclusions or policy details configured.</p>
                                         </div>
                                     );
@@ -778,7 +778,7 @@ export const TripDetailSheet = ({
                                                 <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
                                                     <CheckCircle2 className="w-3.5 h-3.5" /> Inclusions
                                                 </h4>
-                                                <p className="text-xs text-emerald-200/95 whitespace-pre-wrap leading-relaxed">{inclusions}</p>
+                                                <p className="text-xs text-emerald-900 dark:text-emerald-200/95 whitespace-pre-wrap leading-relaxed">{inclusions}</p>
                                             </div>
                                         )}
                                         {exclusions && (
@@ -786,15 +786,15 @@ export const TripDetailSheet = ({
                                                 <h4 className="text-xs font-bold uppercase tracking-wider text-rose-400 flex items-center gap-1.5">
                                                     <XCircle className="w-3.5 h-3.5" /> Exclusions
                                                 </h4>
-                                                <p className="text-xs text-rose-200/95 whitespace-pre-wrap leading-relaxed">{exclusions}</p>
+                                                <p className="text-xs text-rose-900 dark:text-rose-200/95 whitespace-pre-wrap leading-relaxed">{exclusions}</p>
                                             </div>
                                         )}
                                         {cancellation && (
                                             <div className="p-4 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl space-y-1.5">
-                                                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-1.5">
+                                                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-zinc-300 flex items-center gap-1.5">
                                                     <AlertCircle className="w-3.5 h-3.5" /> Cancellation Policy
                                                 </h4>
-                                                <p className="text-xs text-zinc-300 whitespace-pre-wrap leading-relaxed">{cancellation}</p>
+                                                <p className="text-xs text-slate-700 dark:text-zinc-300 whitespace-pre-wrap leading-relaxed">{cancellation}</p>
                                             </div>
                                         )}
                                         {payment && (
@@ -802,7 +802,7 @@ export const TripDetailSheet = ({
                                                 <h4 className="text-xs font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
                                                     <CreditCard className="w-3.5 h-3.5" /> Payment Methods
                                                 </h4>
-                                                <p className="text-xs text-indigo-200/95 whitespace-pre-wrap leading-relaxed">{payment}</p>
+                                                <p className="text-xs text-indigo-900 dark:text-indigo-200/95 whitespace-pre-wrap leading-relaxed">{payment}</p>
                                             </div>
                                         )}
                                         {terms && (
@@ -810,7 +810,7 @@ export const TripDetailSheet = ({
                                                 <h4 className="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-1.5">
                                                     <ScrollText className="w-3.5 h-3.5" /> Terms & Conditions
                                                 </h4>
-                                                <p className="text-xs text-blue-200/95 whitespace-pre-wrap leading-relaxed">{terms}</p>
+                                                <p className="text-xs text-blue-900 dark:text-blue-200/95 whitespace-pre-wrap leading-relaxed">{terms}</p>
                                             </div>
                                         )}
                                     </div>

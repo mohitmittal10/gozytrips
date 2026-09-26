@@ -166,7 +166,7 @@ export function CrmModals() {
             />
 
             <Dialog open={showModal} onOpenChange={setShowModal}>
-                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-300 dark:border-white/10 text-slate-900 dark:text-white shadow-2xl">
+                <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-[#EFECE5]/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-300 dark:border-white/10 text-slate-900 dark:text-white shadow-2xl">
                     <DialogHeader>
                         <DialogTitle>{selectedTripForModal?.title}</DialogTitle>
                         <DialogDescription className="text-slate-600 dark:text-zinc-400">{selectedTripForModal?.description}</DialogDescription>
@@ -185,7 +185,7 @@ export function CrmModals() {
                                 <SelectTrigger className="w-[180px] bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white rounded-xl">
                                     <SelectValue placeholder="Select PDF Format" />
                                 </SelectTrigger>
-                                <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-300 dark:border-white/10 text-slate-900 dark:text-white">
+                                <SelectContent className="bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-300 dark:border-white/10 text-slate-900 dark:text-white">
                                     {pdfThemeOptions.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
                                 </SelectContent>
                             </Select>
@@ -252,8 +252,8 @@ export function CrmModals() {
             />
 
             <Sheet open={isActivitySheetOpen} onOpenChange={setIsActivitySheetOpen}>
-                <SheetContent className="w-[400px] sm:w-[540px] bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-slate-300 dark:border-white/10 text-slate-900 dark:text-white p-0 flex flex-col shadow-2xl">
-                    <SheetHeader className="p-6 border-b border-zinc-800">
+                <SheetContent className="w-[400px] sm:w-[540px] bg-[#EFECE5]/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-slate-300 dark:border-white/10 text-slate-900 dark:text-white p-0 flex flex-col shadow-2xl">
+                    <SheetHeader className="p-6 border-b border-slate-200 dark:border-zinc-800">
                         <SheetTitle className="text-xl flex items-center gap-2"><History className="w-5 h-5 text-slate-900 dark:text-white" />Activity Center</SheetTitle>
                         <SheetDescription className="text-slate-600 dark:text-zinc-400">A complete history of all your CRM events.</SheetDescription>
                         <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-none">
@@ -261,7 +261,7 @@ export function CrmModals() {
                                 <button
                                     key={filter}
                                     onClick={() => context.filters.setActivityFilter(filter)}
-                                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${context.filters.activityFilter === filter ? 'bg-zinc-800 text-zinc-100 border border-zinc-700 font-semibold' : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 border border-slate-300 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-zinc-200'}`}
+                                    className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${context.filters.activityFilter === filter ? 'bg-primary/10 dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-primary/20 dark:border-zinc-700 font-semibold' : 'bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-400 border border-slate-300 dark:border-white/10 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-zinc-200'}`}
                                 >
                                     {filter === 'all' && 'All Activity'}
                                     {filter === 'client_added' && 'New Clients'}
@@ -278,13 +278,13 @@ export function CrmModals() {
                             </div>
                         ) : (
                             data.data.recentActivity.filter(a => context.filters.activityFilter === 'all' || a.type === context.filters.activityFilter).map((event) => (
-                                <div key={event.id} className="flex items-start gap-3 p-3 rounded-xl bg-slate-100 dark:bg-white/5 border border-white/5 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors">
+                                <div key={event.id} className="flex items-start gap-3 p-3 rounded-xl bg-white/70 dark:bg-white/5 border border-slate-200/80 dark:border-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-colors">
                                     <div className={`p-2 rounded-lg shrink-0 ${event.icon === 'user' ? 'bg-purple-500/10 border border-purple-500/20' : event.icon === 'plane' ? 'bg-blue-500/10 border border-blue-500/20' : 'bg-green-500/10 border border-green-500/20'}`}>
-                                        {event.icon === 'user' ? <UserPlus className="w-4 h-4 text-purple-400" /> : event.icon === 'plane' ? <Plane className="w-4 h-4 text-blue-400" /> : <Activity className="w-4 h-4 text-amber-400" />}
+                                        {event.icon === 'user' ? <UserPlus className="w-4 h-4 text-purple-600 dark:text-purple-400" /> : event.icon === 'plane' ? <Plane className="w-4 h-4 text-blue-600 dark:text-blue-400" /> : <Activity className="w-4 h-4 text-amber-600 dark:text-amber-400" />}
                                     </div>
                                     <div className="min-w-0 flex-1 pt-0.5">
-                                        <p className="text-sm text-zinc-200 leading-snug">{event.label}</p>
-                                        <p className="text-[11px] text-gray-500 mt-1 flex items-center gap-1.5"><Clock className="w-3 h-3" />{event.time.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} at {event.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                                        <p className="text-sm text-slate-900 dark:text-zinc-100 font-semibold leading-snug">{event.label}</p>
+                                        <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1 flex items-center gap-1.5"><Clock className="w-3 h-3 text-slate-400 dark:text-zinc-400" />{event.time.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })} at {event.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                                     </div>
                                 </div>
                             ))

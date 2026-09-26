@@ -79,15 +79,15 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
     return (
         <div className="space-y-5">
             {/* Header & Export */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/[0.06] p-3 rounded-xl backdrop-blur-sm">
-                <div className="flex items-center gap-2 text-sm font-semibold text-white">
-                    <BarChart3 className="w-4 h-4 text-purple-400" />
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/60 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] p-3 rounded-xl backdrop-blur-sm shadow-sm">
+                <div className="flex items-center gap-2 text-sm font-semibold text-slate-900 dark:text-white">
+                    <BarChart3 className="w-4 h-4 text-primary" />
                     <span>Financial Analytics & Profitability</span>
                 </div>
                 <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 text-xs border-white/10 bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 gap-1.5"
+                    className="h-8 text-xs border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 gap-1.5 cursor-pointer rounded-xl font-semibold"
                     onClick={handleExportCSV}
                 >
                     <Download className="w-3.5 h-3.5" />
@@ -97,15 +97,15 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
 
             {/* KPI Summary Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 shadow-lg">
+                <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-4 shadow-xl">
                     <p className="text-[10px] text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Total Revenue</p>
-                    <p className="text-xl font-black mt-1 text-white">{fm(stats.totalRevenue)}</p>
-                    <p className="text-[11px] text-gray-500 mt-0.5">{financials.length} total active itineraries</p>
+                    <p className="text-xl font-black mt-1 text-slate-900 dark:text-white">{fm(stats.totalRevenue)}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-500 mt-0.5">{financials.length} total active itineraries</p>
                 </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 shadow-lg">
+                <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-4 shadow-xl">
                     <p className="text-[10px] text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Net Profit</p>
-                    <p className={cn("text-xl font-black mt-1", stats.netProfit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-400")}>
+                    <p className="text-xl font-black mt-1 text-slate-900 dark:text-white">
                         {fm(stats.netProfit)}
                     </p>
                     <p className="text-[11px] text-emerald-600 dark:text-emerald-400/80 mt-0.5 font-medium">
@@ -113,25 +113,25 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                     </p>
                 </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 shadow-lg">
+                <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-4 shadow-xl">
                     <p className="text-[10px] text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Collected Cash</p>
-                    <p className="text-xl font-black mt-1 text-blue-400">{fm(stats.totalPaid)}</p>
-                    <p className="text-[11px] text-gray-500 mt-0.5">
+                    <p className="text-xl font-black mt-1 text-slate-900 dark:text-white">{fm(stats.totalPaid)}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-500 mt-0.5">
                         {stats.totalRevenue > 0 ? ((stats.totalPaid / stats.totalRevenue) * 100).toFixed(0) : 0}% realization
                     </p>
                 </div>
 
-                <div className="bg-white/5 border border-white/10 rounded-2xl p-4 shadow-lg">
+                <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-4 shadow-xl">
                     <p className="text-[10px] text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Outstanding Receivable</p>
-                    <p className="text-xl font-black mt-1 text-amber-400">{fm(stats.totalPending)}</p>
-                    <p className="text-[11px] text-amber-400/80 mt-0.5">Pending client payments</p>
+                    <p className="text-xl font-black mt-1 text-slate-900 dark:text-white">{fm(stats.totalPending)}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-500 mt-0.5">Pending client payments</p>
                 </div>
             </div>
 
             {/* Monthly Bar Chart */}
-            <div className="bg-gradient-to-b from-white/[0.04] to-white/[0.01] border border-white/[0.08] rounded-2xl p-5 shadow-xl space-y-4">
+            <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 shadow-xl space-y-4">
                 <div className="flex items-center justify-between">
-                    <h4 className="text-sm font-semibold text-white">
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
                         Monthly Revenue & Expense Trends (Last 6 Months)
                     </h4>
                 </div>
@@ -179,30 +179,30 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                     })}
                 </div>
 
-                <div className="flex items-center gap-6 mt-3 justify-center border-t border-white/5 pt-3">
-                    <span className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-gray-400">
+                <div className="flex items-center gap-6 mt-3 justify-center border-t border-slate-200 dark:border-white/5 pt-3">
+                    <span className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-gray-400 font-medium">
                         <span className="w-2.5 h-2.5 rounded-sm bg-blue-500 inline-block" /> Revenue
                     </span>
-                    <span className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-gray-400">
+                    <span className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-gray-400 font-medium">
                         <span className="w-2.5 h-2.5 rounded-sm bg-red-500 inline-block" /> Vendor Expenses
                     </span>
-                    <span className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-gray-400">
+                    <span className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-gray-400 font-medium">
                         <span className="w-2.5 h-2.5 rounded-sm bg-emerald-600 dark:bg-emerald-500 inline-block" /> Collected Cash
                     </span>
                 </div>
             </div>
 
             {/* Per-Trip Profitability Table */}
-            <div className="bg-white/[0.02] border border-white/[0.08] rounded-2xl overflow-hidden shadow-xl space-y-3 p-5">
+            <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden shadow-xl space-y-3 p-5">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <h4 className="text-sm font-semibold text-white">Trip-by-Trip Profitability</h4>
+                    <h4 className="text-sm font-semibold text-slate-900 dark:text-white">Trip-by-Trip Profitability</h4>
                     <div className="relative w-full sm:w-64">
                         <Search className="w-3.5 h-3.5 text-slate-600 dark:text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                         <Input
                             placeholder="Filter trips..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-8 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-8 text-xs"
+                            className="pl-8 bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-gray-500 h-8 text-xs rounded-xl"
                         />
                     </div>
                 </div>
@@ -210,7 +210,7 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                 <div className="overflow-x-auto">
                     <table className="w-full text-xs">
                         <thead>
-                            <tr className="text-slate-600 dark:text-gray-400 border-b border-white/10 bg-white/[0.02]">
+                            <tr className="text-slate-700 dark:text-gray-400 border-b border-slate-200 dark:border-white/10 bg-slate-100/60 dark:bg-white/[0.02]">
                                 <th className="text-left p-3 font-semibold">Client / Trip</th>
                                 <th className="text-left p-3 font-semibold">Status</th>
                                 <th className="text-right p-3 font-semibold">Gross Revenue</th>
@@ -219,17 +219,17 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                                 <th className="text-right p-3 font-semibold">Margin</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                             {filteredFinancials.map((fin) => {
                                 const totalExp = fin.expenses.reduce((s, e) => s + e.amount, 0);
                                 const profit = fin.clientPrice - totalExp;
                                 const margin = fin.clientPrice > 0 ? (profit / fin.clientPrice) * 100 : 0;
 
                                 return (
-                                    <tr key={fin.itineraryId} className="hover:bg-white/[0.03] transition-colors">
+                                    <tr key={fin.itineraryId} className="hover:bg-slate-100/50 dark:hover:bg-white/[0.03] transition-colors">
                                         <td className="p-3">
-                                            <p className="font-semibold text-white">{fin.clientName}</p>
-                                            <p className="text-[11px] text-gray-500">{fin.tripTitle} · {fin.destination}</p>
+                                            <p className="font-semibold text-slate-900 dark:text-white">{fin.clientName}</p>
+                                            <p className="text-[11px] text-slate-500 dark:text-gray-500">{fin.tripTitle} · {fin.destination}</p>
                                         </td>
                                         <td className="p-3">
                                             <Badge
@@ -237,20 +237,20 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                                                 className={cn(
                                                     "text-[10px] capitalize font-semibold px-2 py-0.5",
                                                     fin.status === "booked" || fin.status === "confirmed"
-                                                        ? "bg-green-500/10 text-green-400 border-green-500/20"
-                                                        : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                                                        ? "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20"
+                                                        : "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
                                                 )}
                                             >
                                                 {fin.status}
                                             </Badge>
                                         </td>
-                                        <td className="p-3 text-right font-bold text-white">
+                                        <td className="p-3 text-right font-bold text-slate-900 dark:text-white">
                                             {fm(fin.clientPrice, fin.currency)}
                                         </td>
-                                        <td className="p-3 text-right font-semibold text-red-400">
+                                        <td className="p-3 text-right font-semibold text-red-500 dark:text-red-400">
                                             -{fm(totalExp, fin.currency)}
                                         </td>
-                                        <td className={cn("p-3 text-right font-bold", profit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-400")}>
+                                        <td className={cn("p-3 text-right font-bold", profit >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-500 dark:text-red-400")}>
                                             {fm(profit, fin.currency)}
                                         </td>
                                         <td className="p-3 text-right">
@@ -258,10 +258,10 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                                                 className={cn(
                                                     "px-2 py-0.5 rounded text-[11px] font-bold inline-block",
                                                     margin >= 25
-                                                        ? "bg-green-500/15 text-green-400 border border-green-500/30"
+                                                        ? "bg-green-500/15 text-green-700 dark:text-green-400 border border-green-500/30"
                                                         : margin > 0
-                                                        ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                                                        : "bg-red-500/15 text-red-400 border border-red-500/30"
+                                                        ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30"
+                                                        : "bg-red-500/15 text-red-700 dark:text-red-400 border border-red-500/30"
                                                 )}
                                             >
                                                 {margin.toFixed(1)}%
@@ -273,7 +273,7 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
 
                             {filteredFinancials.length === 0 && (
                                 <tr>
-                                    <td colSpan={6} className="text-center py-10 text-gray-500">
+                                    <td colSpan={6} className="text-center py-10 text-slate-500 dark:text-gray-500">
                                         No trips found.
                                     </td>
                                 </tr>

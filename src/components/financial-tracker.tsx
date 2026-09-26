@@ -59,38 +59,30 @@ export default function FinancialTracker({
                         label: "Total Gross Revenue",
                         value: fin.fm(fin.stats.totalRevenue),
                         subtext: `${fin.financials.length} itineraries tracked`,
-                        color: "text-white",
-                        badge: "bg-white/10 text-zinc-300",
-                        bg: "from-white/[0.06] to-white/[0.01] border-white/10",
+                        color: "text-slate-900 dark:text-white",
                     },
                     {
                         label: "Collected Cash",
                         value: fin.fm(fin.stats.totalPaid),
                         subtext: `${fin.stats.totalRevenue > 0 ? ((fin.stats.totalPaid / fin.stats.totalRevenue) * 100).toFixed(0) : 0}% realization`,
-                        color: "text-emerald-600 dark:text-emerald-400",
-                        badge: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30",
-                        bg: "from-emerald-950/30 to-emerald-900/10 border-emerald-500/20",
+                        color: "text-slate-900 dark:text-white",
                     },
                     {
                         label: "Outstanding Due",
                         value: fin.fm(fin.stats.totalPending),
                         subtext: "Pending client collections",
-                        color: "text-amber-400",
-                        badge: "bg-amber-500/15 text-amber-300 border border-amber-500/30",
-                        bg: "from-amber-950/30 to-amber-900/10 border-amber-500/20",
+                        color: "text-slate-900 dark:text-white",
                     },
                     {
                         label: "Net Profit Margin",
                         value: `${fin.stats.profitMargin.toFixed(1)}%`,
                         subtext: `${fin.fm(fin.stats.netProfit)} net profit`,
-                        color: "text-primary",
-                        badge: "bg-primary/20 text-primary border border-primary/30",
-                        bg: "from-primary/15 to-white/[0.01] border-primary/20",
+                        color: "text-slate-900 dark:text-white",
                     },
                 ].map((card, idx) => (
                     <div
                         key={idx}
-                        className={`p-4 rounded-2xl border bg-gradient-to-b ${card.bg} shadow-xl flex flex-col justify-between space-y-2`}
+                        className="p-4 rounded-2xl border bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border-slate-200 dark:border-white/[0.08] shadow-xl flex flex-col justify-between space-y-2"
                     >
                         <div className="flex items-center justify-between">
                             <p className="text-[10px] text-slate-600 dark:text-zinc-400 uppercase tracking-wider font-semibold">
@@ -106,7 +98,7 @@ export default function FinancialTracker({
             </div>
 
             {/* Tab Navigation */}
-            <div className="flex gap-1.5 bg-white/[0.03] border border-white/[0.08] p-1.5 rounded-2xl backdrop-blur-xl shadow-lg overflow-x-auto">
+            <div className="flex gap-1.5 bg-white/60 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] p-1.5 rounded-2xl backdrop-blur-xl shadow-lg overflow-x-auto">
                 {TABS.map((tab) => {
                     const Icon = tab.icon;
                     const isActive = activeFinTab === tab.key;
@@ -117,8 +109,8 @@ export default function FinancialTracker({
                             className={cn(
                                 "flex items-center justify-center gap-2 text-xs font-semibold py-2.5 px-4 rounded-xl transition-all whitespace-nowrap flex-1 shrink-0 border cursor-pointer",
                                 isActive
-                                    ? "bg-primary/20 text-white border-primary/40 font-bold"
-                                    : "border-transparent text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/5"
+                                    ? "bg-primary/10 dark:bg-primary/20 text-slate-900 dark:text-white border-primary/20 dark:border-primary/40 font-bold"
+                                    : "border-transparent text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5"
                             )}
                         >
                             <Icon className={cn("w-3.5 h-3.5", isActive ? "text-primary" : "text-slate-600 dark:text-zinc-400")} />

@@ -192,7 +192,7 @@ export const EditItineraryView = ({
     // ── Empty state ────────────────────────────────────────────────────────────
     if (!loading && !error && itineraries.length === 0) {
         return (
-            <div className="mt-4 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-16 text-center text-zinc-300 flex flex-col items-center justify-center gap-3">
+            <div className="mt-4 bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-16 text-center text-slate-700 dark:text-zinc-300 flex flex-col items-center justify-center gap-3">
                 <Compass className="w-12 h-12 text-slate-600 dark:text-zinc-400 opacity-60" />
                 <h3 className="text-xl font-bold text-slate-900 dark:text-white">No Itineraries Yet</h3>
                 <p className="text-sm text-slate-600 dark:text-zinc-400">Create a new itinerary in The Lab to get started.</p>
@@ -253,7 +253,7 @@ export const EditItineraryView = ({
                     size="sm"
                     onClick={() => fetchItineraries(true)}
                     disabled={isRefreshing || loading}
-                    className="h-10 px-3 border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-zinc-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white rounded-xl shrink-0"
+                    className="h-10 px-3 border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white rounded-xl shrink-0"
                     title="Refresh list"
                 >
                     <RefreshCw className={cn("w-4 h-4", (isRefreshing || loading) && "animate-spin")} />
@@ -292,7 +292,7 @@ export const EditItineraryView = ({
             )}
 
             {/* ── List ────────────────────────────────────────────────────────── */}
-            <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl overflow-hidden shadow-xl">
+            <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl overflow-hidden shadow-xl">
                 {loading ? (
                     /* Skeleton */
                     <div className="divide-y divide-white/5">
@@ -400,7 +400,7 @@ export const EditItineraryView = ({
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8 text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg"
+                                            className="h-8 w-8 text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg"
                                             title="Preview Itinerary"
                                             onClick={() => {
                                                 setSelectedTripForModal(trip);
@@ -415,7 +415,7 @@ export const EditItineraryView = ({
                                             <Button
                                                 variant="ghost"
                                                 size="icon"
-                                                className="h-8 w-8 text-zinc-300 hover:text-primary hover:bg-primary/10 rounded-lg"
+                                                className="h-8 w-8 text-slate-700 dark:text-zinc-300 hover:text-primary hover:bg-primary/10 rounded-lg"
                                                 title="Edit in The Lab"
                                             >
                                                 <Pencil className="w-3.5 h-3.5" />

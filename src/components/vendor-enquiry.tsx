@@ -416,10 +416,12 @@ export default function VendorEnquiry() {
               <button
                 key={type.value}
                 onClick={() => { setEnquiryType(type.value); handleReset(); }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all duration-200 cursor-pointer
-                  ${isActive
-                    ? "bg-primary/20 border-primary/50 text-white"
-                    : "bg-white/5 border-white/10 text-slate-600 dark:text-zinc-400 hover:bg-white/10 hover:text-white"}`}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-semibold transition-all duration-200 cursor-pointer",
+                  isActive
+                    ? "bg-primary/10 dark:bg-primary/20 border-primary/30 dark:border-primary/50 text-slate-900 dark:text-white font-bold"
+                    : "bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-zinc-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white"
+                )}
               >
                 <Icon className={cn("w-4 h-4", isActive ? "text-primary" : "text-slate-600 dark:text-zinc-400")} />
                 {type.label}
@@ -438,13 +440,13 @@ export default function VendorEnquiry() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Form */}
-        <Card className="border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-2xl rounded-2xl">
-          <CardHeader className="pb-4 border-b border-white/5">
+        <Card className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] shadow-xl rounded-2xl">
+          <CardHeader className="pb-4 border-b border-slate-200 dark:border-white/5">
             <div className="flex items-center gap-2.5">
               <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
                 {React.createElement(activeType.icon, { className: "w-5 h-5 text-primary" })}
               </div>
-              <CardTitle className="text-lg font-bold text-white">{activeType.label} Enquiry</CardTitle>
+              <CardTitle className="text-lg font-bold text-slate-900 dark:text-white">{activeType.label} Enquiry</CardTitle>
             </div>
             <CardDescription className="text-slate-600 dark:text-zinc-400 text-xs">
               Fill in the details and let AI generate a professional enquiry email.
@@ -455,12 +457,12 @@ export default function VendorEnquiry() {
               <p className="text-[10px] uppercase tracking-widest text-slate-600 dark:text-zinc-400 font-bold">Persistence & Context</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Link to Client</Label>
+                  <Label className="text-xs text-slate-700 dark:text-zinc-300 uppercase tracking-wider font-semibold">Link to Client</Label>
                   <Select value={clientId || "none"} onValueChange={(v) => setClientId(v === "none" ? null : v)}>
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 text-sm rounded-xl">
+                    <SelectTrigger className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-10 text-sm rounded-xl">
                       <SelectValue placeholder="Select client..." />
                     </SelectTrigger>
-                    <SelectContent className="bg-obsidian-dark border-white/10 text-white">
+                    <SelectContent className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                       <SelectItem value="none">No Client</SelectItem>
                       {clients.map(c => (
                         <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
@@ -469,12 +471,12 @@ export default function VendorEnquiry() {
                   </Select>
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Link to Itinerary</Label>
+                  <Label className="text-xs text-slate-700 dark:text-zinc-300 uppercase tracking-wider font-semibold">Link to Itinerary</Label>
                   <Select value={itineraryId || "none"} onValueChange={(v) => setItineraryId(v === "none" ? null : v)}>
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 text-sm rounded-xl">
+                    <SelectTrigger className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-10 text-sm rounded-xl">
                       <SelectValue placeholder="Select itinerary..." />
                     </SelectTrigger>
-                    <SelectContent className="bg-obsidian-dark border-white/10 text-white">
+                    <SelectContent className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                       <SelectItem value="none">No Itinerary</SelectItem>
                       {userItineraries.map(i => (
                         <SelectItem key={i.id} value={i.id}>{i.title}</SelectItem>
@@ -486,7 +488,7 @@ export default function VendorEnquiry() {
             </div>
 
             {/* Common Fields */}
-            <div className="space-y-3 pt-3 border-t border-white/5">
+            <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-white/5">
               <p className="text-[10px] uppercase tracking-widest text-slate-600 dark:text-zinc-400 font-bold">Trip Details</p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <FormField label="Destination" value={destination} onChange={setDestination} placeholder="e.g. Manali, Himachal Pradesh" required />
@@ -500,7 +502,7 @@ export default function VendorEnquiry() {
             </div>
 
             {/* Type-Specific Fields */}
-            <div className="space-y-3 pt-3 border-t border-white/5">
+            <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-white/5">
               <p className="text-[10px] uppercase tracking-widest text-slate-600 dark:text-zinc-400 font-bold">{activeType.label} Details</p>
 
               {enquiryType === "hotel" && (
@@ -509,12 +511,12 @@ export default function VendorEnquiry() {
                   <FormField label="Room Type" value={roomType} onChange={setRoomType} placeholder="e.g. Deluxe, Suite" />
                   <FormField label="No. of Rooms" value={numberOfRooms} onChange={setNumberOfRooms} type="number" />
                   <div className="space-y-1.5 sm:col-span-2">
-                    <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Meal Plan</Label>
+                    <Label className="text-xs text-slate-700 dark:text-zinc-300 uppercase tracking-wider font-semibold">Meal Plan</Label>
                     <Select value={mealPlan} onValueChange={setMealPlan}>
-                      <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 text-sm rounded-xl">
+                      <SelectTrigger className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-10 text-sm rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-obsidian-dark border-white/10 text-white">
+                      <SelectContent className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                         {mealPlans.map(mp => (
                           <SelectItem key={mp.value} value={mp.value}>{mp.label}</SelectItem>
                         ))}
@@ -527,12 +529,12 @@ export default function VendorEnquiry() {
               {enquiryType === "transport" && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="space-y-1.5 sm:col-span-2">
-                    <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Vehicle Type</Label>
+                    <Label className="text-xs text-slate-700 dark:text-zinc-300 uppercase tracking-wider font-semibold">Vehicle Type</Label>
                     <Select value={vehicleType} onValueChange={setVehicleType}>
-                      <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 text-sm rounded-xl">
+                      <SelectTrigger className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-10 text-sm rounded-xl">
                         <SelectValue placeholder="Select vehicle..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-obsidian-dark border-white/10 text-white">
+                      <SelectContent className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                         {vehicleTypes.map(vt => (
                           <SelectItem key={vt.value} value={vt.value}>{vt.label}</SelectItem>
                         ))}
@@ -557,12 +559,12 @@ export default function VendorEnquiry() {
 
               {enquiryType === "insurance" && (
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Coverage Type</Label>
+                  <Label className="text-xs text-slate-700 dark:text-zinc-300 uppercase tracking-wider font-semibold">Coverage Type</Label>
                   <Select value={coverageType} onValueChange={setCoverageType}>
-                    <SelectTrigger className="bg-white/5 border-white/10 text-white h-10 text-sm rounded-xl">
+                    <SelectTrigger className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-10 text-sm rounded-xl">
                       <SelectValue placeholder="Select coverage..." />
                     </SelectTrigger>
-                    <SelectContent className="bg-obsidian-dark border-white/10 text-white">
+                    <SelectContent className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                       {coverageTypes.map(ct => (
                         <SelectItem key={ct.value} value={ct.value}>{ct.label}</SelectItem>
                       ))}
@@ -573,15 +575,15 @@ export default function VendorEnquiry() {
             </div>
 
             {/* Vendor Email + Special Requests */}
-            <div className="space-y-3 pt-3 border-t border-white/5">
+            <div className="space-y-3 pt-3 border-t border-slate-200 dark:border-white/5">
               <FormField label="Vendor Email" value={vendorEmail} onChange={setVendorEmail} placeholder="e.g. reservations@tajhotels.com" />
               <div className="space-y-1.5">
-                <Label className="text-xs text-zinc-300 uppercase tracking-wider font-semibold">Special Requests</Label>
+                <Label className="text-xs text-slate-700 dark:text-zinc-300 uppercase tracking-wider font-semibold">Special Requests</Label>
                 <textarea
                   value={specialRequests}
                   onChange={(e) => setSpecialRequests(e.target.value)}
                   placeholder="Any special requirements, preferences, or notes..."
-                  className="w-full h-20 rounded-xl bg-white/5 border border-white/10 text-white text-sm p-3 placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 resize-none transition-all"
+                  className="w-full h-20 rounded-xl bg-white/60 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm p-3 placeholder:text-slate-500 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary/50 resize-none transition-all"
                 />
               </div>
             </div>
@@ -594,7 +596,7 @@ export default function VendorEnquiry() {
                   toast({ title: "Draft Saved", description: "Your enquiry details have been persisted." });
                 }}
                 variant="outline"
-                className="flex-1 border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-white h-11 text-sm font-semibold rounded-xl gap-2 transition-all cursor-pointer"
+                className="flex-1 border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-zinc-200 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white h-11 text-sm font-semibold rounded-xl gap-2 transition-all cursor-pointer"
               >
                 <Save className="w-4 h-4 text-slate-600 dark:text-zinc-400" />
                 Save Draft
@@ -602,7 +604,7 @@ export default function VendorEnquiry() {
               <Button
                 onClick={onGenerate}
                 disabled={isGenerating || !destination.trim() || !travelDates.trim()}
-                className="flex-[2] aurora-gradient text-white h-11 text-sm font-bold gap-2 rounded-xl transition-all hover:brightness-110 active:scale-98 cursor-pointer disabled:opacity-50 border-none"
+                className="flex-[2] aurora-gradient text-slate-900 dark:text-white h-11 text-sm font-bold gap-2 rounded-xl transition-all hover:brightness-110 active:scale-98 cursor-pointer disabled:opacity-50 border-none shadow-md"
               >
                 {isGenerating ? (
                   <>
@@ -623,36 +625,36 @@ export default function VendorEnquiry() {
         {/* Right: Email Preview */}
         <div className="space-y-4">
           {!hasGenerated && !isGenerating ? (
-            <div className="flex flex-col items-center justify-center h-full min-h-[420px] bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8 shadow-xl">
+            <div className="flex flex-col items-center justify-center h-full min-h-[420px] bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-8 shadow-xl">
               <div className="w-16 h-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4 text-primary shadow-inner">
                 <Sparkles className="w-7 h-7 text-primary" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">AI Email Preview</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">AI Email Preview</h3>
               <p className="text-sm text-slate-600 dark:text-zinc-400 text-center max-w-xs leading-relaxed">
                 Fill in the enquiry details and click "Generate with AI" to construct a polished vendor outreach email.
               </p>
             </div>
           ) : isGenerating ? (
-            <div className="flex flex-col items-center justify-center h-full min-h-[420px] bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-8 shadow-xl">
+            <div className="flex flex-col items-center justify-center h-full min-h-[420px] bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-8 shadow-xl">
               <div className="relative mb-6">
                 <div className="absolute -inset-4 bg-primary/20 rounded-full blur-xl opacity-50 animate-pulse" />
                 <UniqueLoading variant="morph" size="md" className="relative z-10" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">Generating Email...</h3>
+              <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">Generating Email...</h3>
               <p className="text-sm text-slate-600 dark:text-zinc-400 text-center">AI is crafting a professional enquiry email for your vendor.</p>
             </div>
           ) : (
-            <Card className="border-white/[0.08] bg-white/[0.03] backdrop-blur-xl shadow-2xl rounded-2xl">
-              <CardHeader className="pb-3 border-b border-white/5">
+            <Card className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] shadow-xl rounded-2xl">
+              <CardHeader className="pb-3 border-b border-slate-200 dark:border-white/5">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-bold text-white flex items-center gap-2">
+                  <CardTitle className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                     <Send className="w-5 h-5 text-primary" />
                     Email Preview
                   </CardTitle>
                   <div className="flex items-center gap-1">
                     <Button
                       variant="ghost" size="icon"
-                      className="h-8 w-8 text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                      className="h-8 w-8 text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
                       onClick={() => setIsEditing(!isEditing)}
                       title="Edit"
                     >
@@ -660,7 +662,7 @@ export default function VendorEnquiry() {
                     </Button>
                     <Button
                       variant="ghost" size="icon"
-                      className="h-8 w-8 text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                      className="h-8 w-8 text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
                       onClick={handleCopy}
                       title="Copy"
                     >
@@ -668,7 +670,7 @@ export default function VendorEnquiry() {
                     </Button>
                     <Button
                       variant="ghost" size="icon"
-                      className="h-8 w-8 text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                      className="h-8 w-8 text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg transition-colors cursor-pointer"
                       onClick={handleReset}
                       title="Reset"
                     >
@@ -679,16 +681,16 @@ export default function VendorEnquiry() {
               </CardHeader>
               <CardContent className="space-y-4 pt-4">
                 {/* TO field */}
-                <div className="flex items-center gap-2 text-sm bg-black/40 p-3 rounded-xl border border-white/10">
+                <div className="flex items-center gap-2 text-sm bg-slate-100 dark:bg-black/40 p-3 rounded-xl border border-slate-200 dark:border-white/10">
                   <span className="text-slate-600 dark:text-zinc-400 font-semibold w-12 shrink-0">To:</span>
-                  <span className="text-white font-semibold truncate">{vendorEmail || <span className="text-zinc-500 italic">No vendor email set</span>}</span>
+                  <span className="text-slate-900 dark:text-white font-semibold truncate">{vendorEmail || <span className="text-slate-400 dark:text-zinc-500 italic">No vendor email set</span>}</span>
                 </div>
 
                 {/* Subject */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-300 font-semibold text-xs uppercase tracking-wider">Subject:</span>
-                    <Badge variant="secondary" className={`text-[10px] px-2 py-0.5 rounded-full ${generatedSubject.length > 90 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"}`}>
+                    <span className="text-slate-700 dark:text-zinc-300 font-semibold text-xs uppercase tracking-wider">Subject:</span>
+                    <Badge variant="secondary" className={`text-[10px] px-2 py-0.5 rounded-full ${generatedSubject.length > 90 ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30" : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"}`}>
                       {generatedSubject.length}/100
                     </Badge>
                   </div>
@@ -696,11 +698,11 @@ export default function VendorEnquiry() {
                     <input
                       value={generatedSubject}
                       onChange={(e) => setGeneratedSubject(e.target.value)}
-                      className="w-full bg-black/50 border-white/10 text-white text-sm h-10 px-3 rounded-xl focus:outline-none focus:border-primary/50"
+                      className="w-full bg-white/60 dark:bg-black/50 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm h-10 px-3 rounded-xl focus:outline-none focus:border-primary/50"
                       maxLength={100}
                     />
                   ) : (
-                    <p className="text-sm font-semibold text-white bg-black/40 rounded-xl px-3.5 py-2.5 border border-white/10 leading-normal">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white bg-slate-100 dark:bg-black/40 rounded-xl px-3.5 py-2.5 border border-slate-200 dark:border-white/10 leading-normal">
                       {generatedSubject}
                     </p>
                   )}
@@ -709,8 +711,8 @@ export default function VendorEnquiry() {
                 {/* Body */}
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-zinc-300 font-semibold text-xs uppercase tracking-wider">Body:</span>
-                    <Badge variant="secondary" className={`text-[10px] px-2 py-0.5 rounded-full ${generatedBody.length > 1400 ? "bg-amber-500/20 text-amber-300 border border-amber-500/30" : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"}`}>
+                    <span className="text-slate-700 dark:text-zinc-300 font-semibold text-xs uppercase tracking-wider">Body:</span>
+                    <Badge variant="secondary" className={`text-[10px] px-2 py-0.5 rounded-full ${generatedBody.length > 1400 ? "bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30" : "bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30"}`}>
                       {generatedBody.length}/1500
                     </Badge>
                   </div>
@@ -718,11 +720,11 @@ export default function VendorEnquiry() {
                     <textarea
                       value={generatedBody}
                       onChange={(e) => setGeneratedBody(e.target.value.slice(0, 1500))}
-                      className="w-full h-64 rounded-xl bg-black/50 border border-white/10 text-white text-sm p-3 focus:outline-none focus:border-primary/50 resize-none font-sans leading-relaxed"
+                      className="w-full h-64 rounded-xl bg-white/60 dark:bg-black/50 border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white text-sm p-3 focus:outline-none focus:border-primary/50 resize-none font-sans leading-relaxed"
                     />
                   ) : (
-                    <div className="bg-black/40 rounded-xl border border-white/10 p-4 max-h-[340px] overflow-y-auto">
-                      <pre className="text-sm text-zinc-200 whitespace-pre-wrap font-sans leading-relaxed font-normal">
+                    <div className="bg-slate-100 dark:bg-black/40 rounded-xl border border-slate-200 dark:border-white/10 p-4 max-h-[340px] overflow-y-auto">
+                      <pre className="text-sm text-slate-900 dark:text-zinc-200 whitespace-pre-wrap font-sans leading-relaxed font-normal">
                         {generatedBody}
                       </pre>
                     </div>
@@ -732,7 +734,7 @@ export default function VendorEnquiry() {
                 <Button
                   onClick={handleSendGmail}
                   disabled={!generatedSubject || !generatedBody}
-                  className="w-full bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold h-11 text-sm gap-2 shadow-lg shadow-emerald-500/20 rounded-xl transition-all active:scale-98 cursor-pointer disabled:opacity-50"
+                  className="w-full bg-emerald-600 dark:bg-emerald-500 hover:brightness-110 text-white font-extrabold h-11 text-sm gap-2 shadow-lg shadow-emerald-500/20 rounded-xl transition-all active:scale-98 cursor-pointer disabled:opacity-50 border-none"
                 >
                   <Send className="w-4 h-4" />
                   Open in Gmail

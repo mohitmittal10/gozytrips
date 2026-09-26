@@ -170,8 +170,8 @@ const TheLabHeader = React.memo(function TheLabHeader({
                 className={cn(
                   "flex items-center justify-center w-9 h-9 rounded-xl border transition-all duration-200",
                   canUndoPrevious
-                    ? "border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:border-amber-400/60 cursor-pointer active:scale-95"
-                    : "border-white/5 bg-black/20 text-zinc-700 cursor-not-allowed opacity-40"
+                    ? "border-amber-500/40 bg-amber-500/10 text-amber-500 dark:text-amber-400 hover:bg-amber-500/20 hover:border-amber-400/60 cursor-pointer active:scale-95"
+                    : "border-slate-300/60 dark:border-white/5 bg-slate-100 dark:bg-black/20 text-slate-400 dark:text-zinc-700 cursor-not-allowed opacity-40"
                 )}
               >
                 <Undo2 className="w-3.5 h-3.5" />
@@ -184,8 +184,8 @@ const TheLabHeader = React.memo(function TheLabHeader({
                 className={cn(
                   "flex items-center justify-center w-9 h-9 rounded-xl border transition-all duration-200",
                   canRedoNext
-                    ? "border-amber-500/40 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:border-amber-400/60 cursor-pointer active:scale-95"
-                    : "border-white/5 bg-black/20 text-zinc-700 cursor-not-allowed opacity-40"
+                    ? "border-amber-500/40 bg-amber-500/10 text-amber-500 dark:text-amber-400 hover:bg-amber-500/20 hover:border-amber-400/60 cursor-pointer active:scale-95"
+                    : "border-slate-300/60 dark:border-white/5 bg-slate-100 dark:bg-black/20 text-slate-400 dark:text-zinc-700 cursor-not-allowed opacity-40"
                 )}
               >
                 <Redo2 className="w-3.5 h-3.5" />

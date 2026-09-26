@@ -44,28 +44,28 @@ function EditorToolbar({
     onThemeChange: (theme: PdfTheme) => void;
 }) {
     return (
-        <div className="fixed top-0 left-0 right-0 z-[9999] bg-zinc-950/95 border-b border-zinc-800/80 backdrop-blur-xl flex flex-wrap lg:flex-nowrap items-center justify-between px-3 sm:px-6 py-2 lg:py-0 min-h-[56px] lg:h-14 font-sans gap-2 sm:gap-4 overflow-x-auto hide-scrollbar">
+        <div className="fixed top-0 left-0 right-0 z-[9999] bg-white/90 dark:bg-zinc-950/95 border-b border-slate-200 dark:border-zinc-800/80 backdrop-blur-xl flex flex-wrap lg:flex-nowrap items-center justify-between px-3 sm:px-6 py-2 lg:py-0 min-h-[56px] lg:h-14 font-sans gap-2 sm:gap-4 overflow-x-auto hide-scrollbar">
             {/* Left: back + title */}
             <div className="flex items-center gap-2 sm:gap-3.5 min-w-0 shrink-0">
                 <button
                     onClick={onBack}
-                    className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white border border-zinc-800 rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer"
+                    className="bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-zinc-800 rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 cursor-pointer"
                 >
                     ← Back
                 </button>
-                <span className="text-xs font-medium text-slate-600 dark:text-zinc-400 border-l border-zinc-800 pl-2.5 sm:pl-3 truncate max-w-[110px] sm:max-w-[200px] md:max-w-xs">
+                <span className="text-xs font-medium text-slate-600 dark:text-zinc-400 border-l border-slate-200 dark:border-zinc-800 pl-2.5 sm:pl-3 truncate max-w-[110px] sm:max-w-[200px] md:max-w-xs">
                     {itineraryTitle || "Itinerary Editor"}
                 </span>
             </div>
 
             {/* Center: mode indicator badge */}
-            <div className="flex items-center bg-zinc-900/90 border border-zinc-800 rounded-xl p-0.5 sm:p-1 shadow-inner shrink-0 scale-95 sm:scale-100">
+            <div className="flex items-center bg-slate-100/90 dark:bg-zinc-900/90 border border-slate-300 dark:border-zinc-800 rounded-xl p-0.5 sm:p-1 shadow-inner shrink-0 scale-95 sm:scale-100">
                 <button
                     onClick={() => editMode && onToggleEdit()}
                     className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
                         !editMode
-                            ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                            : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200"
+                            ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm"
+                            : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200"
                     }`}
                 >
                     Preview
@@ -74,8 +74,8 @@ function EditorToolbar({
                     onClick={() => !editMode && onToggleEdit()}
                     className={`px-2.5 sm:px-3 py-1 rounded-lg text-xs font-semibold transition-all duration-200 cursor-pointer ${
                         editMode
-                            ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                            : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200"
+                            ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm"
+                            : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200"
                     }`}
                 >
                     ✏ Edit
@@ -92,14 +92,14 @@ function EditorToolbar({
                         value={selectedTheme}
                         onChange={(e) => onThemeChange(e.target.value as PdfTheme)}
                         title="Select PDF theme"
-                        className={`bg-zinc-900 border border-zinc-800 text-zinc-200 rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 text-xs font-semibold outline-none focus:border-zinc-600 transition-colors ${
+                        className={`bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 text-slate-900 dark:text-zinc-200 rounded-lg px-2 sm:px-2.5 py-1 sm:py-1.5 text-xs font-semibold outline-none focus:border-slate-400 dark:focus:border-zinc-600 transition-colors ${
                             saving
                                 ? "opacity-50 cursor-not-allowed"
-                                : "cursor-pointer hover:border-zinc-700"
+                                : "cursor-pointer hover:border-slate-400 dark:hover:border-zinc-700"
                         }`}
                     >
                         {DEFAULT_PDF_THEME_OPTIONS.map((opt) => (
-                            <option key={opt.value} value={opt.value} className="bg-zinc-950 text-zinc-200">
+                            <option key={opt.value} value={opt.value} className="bg-white dark:bg-zinc-950 text-slate-900 dark:text-zinc-200">
                                 {opt.label}
                             </option>
                         ))}
@@ -109,7 +109,7 @@ function EditorToolbar({
                 {editMode && (
                     <button
                         onClick={onAddDay}
-                        className="bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap"
+                        className="bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-700 dark:text-zinc-200 border border-slate-300 dark:border-zinc-800 rounded-lg px-2.5 sm:px-3 py-1.5 text-xs font-semibold transition-all duration-200 active:scale-95 cursor-pointer whitespace-nowrap"
                     >
                         + Day
                     </button>
@@ -119,7 +119,7 @@ function EditorToolbar({
                     onClick={onToggleEdit}
                     className={`px-2.5 sm:px-3.5 py-1.5 text-xs font-semibold rounded-lg border transition-all duration-200 cursor-pointer whitespace-nowrap ${
                         editMode
-                            ? "bg-zinc-800 hover:bg-zinc-700 border-zinc-700 text-zinc-100"
+                            ? "bg-slate-200 dark:bg-zinc-800 hover:bg-slate-300 dark:hover:bg-zinc-700 border-slate-300 dark:border-zinc-700 text-slate-900 dark:text-zinc-100"
                             : "bg-primary text-primary-foreground border-transparent hover:opacity-90 shadow-md"
                     }`}
                 >
@@ -127,12 +127,12 @@ function EditorToolbar({
                 </button>
 
                 {saving ? (
-                    <span className="text-[11px] sm:text-xs font-semibold text-sky-400 flex items-center gap-1 animate-pulse whitespace-nowrap">
+                    <span className="text-[11px] sm:text-xs font-semibold text-sky-500 dark:text-sky-400 flex items-center gap-1 animate-pulse whitespace-nowrap">
                         Saving…
                     </span>
                 ) : dirty ? (
                     <div className="flex items-center gap-1.5 sm:gap-2.5">
-                        <span className="hidden sm:inline-block text-xs font-medium text-amber-400 bg-amber-950/40 border border-amber-800/40 px-2 py-0.5 rounded-full">
+                        <span className="hidden sm:inline-block text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-100/80 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800/40 px-2 py-0.5 rounded-full">
                             Unsaved
                         </span>
                         <button
@@ -143,7 +143,7 @@ function EditorToolbar({
                         </button>
                     </div>
                 ) : (
-                    <span className="text-[11px] sm:text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-2 sm:px-2.5 py-1 rounded-full whitespace-nowrap">
+                    <span className="text-[11px] sm:text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800/50 px-2 sm:px-2.5 py-1 rounded-full whitespace-nowrap">
                         ✓ Saved
                     </span>
                 )}
@@ -1389,20 +1389,7 @@ export default function LuxuryEditorPage() {
     // ── Loading / error states ──────────────────────────────────
     if (loading) {
         return (
-            <div
-                style={{
-                    minHeight: "100vh",
-                    background: "#000000",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#71717A",
-                    fontSize: 13,
-                    fontWeight: 600,
-                    letterSpacing: "1px",
-                    textTransform: "uppercase",
-                }}
-            >
+            <div className="min-h-screen bg-[#EFECE5] dark:bg-black flex items-center justify-center text-slate-700 dark:text-zinc-400 text-xs font-semibold tracking-widest uppercase">
                 Loading itinerary…
             </div>
         );
@@ -1463,7 +1450,7 @@ export default function LuxuryEditorPage() {
 
             {/* Edit mode hint banner */}
             {editMode && (
-                <div className="fixed top-14 left-0 right-0 z-[9998] bg-zinc-950/80 border-b border-zinc-800/80 backdrop-blur-md py-2 px-6 text-xs font-medium text-slate-600 dark:text-zinc-400 text-center animate-in fade-in duration-200">
+                <div className="fixed top-14 left-0 right-0 z-[9998] bg-white/90 dark:bg-zinc-950/80 border-b border-slate-200 dark:border-zinc-800/80 backdrop-blur-md py-2 px-6 text-xs font-medium text-slate-600 dark:text-zinc-400 text-center animate-in fade-in duration-200">
                     Click any highlighted field to edit inline · Changes sync to DB & PDF export
                 </div>
             )}
@@ -1541,8 +1528,8 @@ export default function LuxuryEditorPage() {
             {/* Itinerary render — PdfTemplate renders the selected theme.
                 instrumentTheme() stamps data-field on all themes after mount. */}
             <div
-                style={{ paddingTop: editMode ? 80 : 64, paddingBottom: 48, background: "#05070a", minHeight: "100vh" }}
-                className="px-2 sm:px-4 transition-all duration-200 w-full overflow-x-auto"
+                style={{ paddingTop: editMode ? 80 : 64, paddingBottom: 48, minHeight: "100vh" }}
+                className="px-2 sm:px-4 transition-all duration-200 w-full overflow-x-auto bg-[#EFECE5] dark:bg-[#05070a]"
             >
                 <div ref={containerRef} className="max-w-5xl mx-auto overflow-x-auto min-w-0">
                     <PdfTemplate {...(themeProps as any)} theme={selectedTheme} />

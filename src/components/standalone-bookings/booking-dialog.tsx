@@ -189,10 +189,10 @@ export function StandaloneBookingDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="glass-main max-h-[90vh] max-w-2xl overflow-y-auto border-white/10">
+      <DialogContent className="bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl max-h-[90vh] max-w-2xl overflow-y-auto border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-2xl">
         <DialogHeader>
-          <DialogTitle>Add Standalone Booking</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">Add Standalone Booking</DialogTitle>
+          <DialogDescription className="text-slate-600 dark:text-zinc-400 text-sm font-medium">
             Book a specific service like a cab, bus, train, or flight independent of a full itinerary.
           </DialogDescription>
         </DialogHeader>
@@ -221,14 +221,14 @@ export function StandaloneBookingDialog({
                 name="serviceType"
                 render={({ field }) => (
                   <FormItem className="space-y-2">
-                    <FormLabel>Service Type</FormLabel>
+                    <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Service Type</FormLabel>
                     <Select value={field.value} onValueChange={(value) => field.onChange(value as BookingServiceType)}>
                       <FormControl>
-                        <SelectTrigger className="border-white/10 bg-white/5">
+                        <SelectTrigger className="border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                         {serviceTypes.length > 0 ? (
                           serviceTypes.map((serviceType) => (
                             <SelectItem key={serviceType.value} value={serviceType.value}>
@@ -260,20 +260,20 @@ export function StandaloneBookingDialog({
 
                   return (
                     <FormItem className="space-y-2">
-                      <FormLabel>Title</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Title</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
                             placeholder="e.g. Flight to NYC"
                             {...field}
-                            className={cn('border-white/10 bg-white/5', showSuccess && 'border-emerald-500/40 pr-10')}
+                            className={cn('border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary/50 focus:ring-primary/20', showSuccess && 'border-emerald-500/40 pr-10')}
                           />
                         </FormControl>
                         {showSuccess && (
                           <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" />
                         )}
                       </div>
-                      <FormMessage className="text-xs" aria-live="polite" />
+                      <FormMessage className="text-xs font-medium" aria-live="polite" />
                     </FormItem>
                   );
                 }}
@@ -284,14 +284,14 @@ export function StandaloneBookingDialog({
                 name="clientId"
                 render={({ field }) => (
                   <FormItem className="space-y-2">
-                    <FormLabel>Assign to Client</FormLabel>
+                    <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Assign to Client</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger className="border-white/10 bg-white/5">
+                        <SelectTrigger className="border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white">
                           <SelectValue placeholder="Select client..." />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                         <SelectItem value="none">No Client</SelectItem>
                         {clients.map((client) => (
                           <SelectItem key={client.id} value={client.id}>
@@ -314,7 +314,7 @@ export function StandaloneBookingDialog({
 
                   return (
                     <FormItem className="space-y-2">
-                      <FormLabel>Passengers</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Passengers</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
@@ -322,14 +322,14 @@ export function StandaloneBookingDialog({
                             min="1"
                             max="20"
                             {...field}
-                            className={cn('border-white/10 bg-white/5', showSuccess && 'border-emerald-500/40 pr-10')}
+                            className={cn('border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white focus:border-primary/50 focus:ring-primary/20', showSuccess && 'border-emerald-500/40 pr-10')}
                           />
                         </FormControl>
                         {showSuccess && (
                           <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" />
                         )}
                       </div>
-                      <FormMessage className="text-xs" aria-live="polite" />
+                      <FormMessage className="text-xs font-medium" aria-live="polite" />
                     </FormItem>
                   );
                 }}
@@ -344,20 +344,20 @@ export function StandaloneBookingDialog({
 
                   return (
                     <FormItem className="space-y-2">
-                      <FormLabel>Provider / Operator</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Provider / Operator</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
                             placeholder="e.g. Delta Airlines"
                             {...field}
-                            className={cn('border-white/10 bg-white/5', showSuccess && 'border-emerald-500/40 pr-10')}
+                            className={cn('border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary/50 focus:ring-primary/20', showSuccess && 'border-emerald-500/40 pr-10')}
                           />
                         </FormControl>
                         {showSuccess && (
                           <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" />
                         )}
                       </div>
-                      <FormMessage className="text-xs" aria-live="polite" />
+                      <FormMessage className="text-xs font-medium" aria-live="polite" />
                     </FormItem>
                   );
                 }}
@@ -372,23 +372,23 @@ export function StandaloneBookingDialog({
 
                   return (
                     <FormItem className="space-y-2">
-                      <FormLabel>PNR / Confirmation #</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">PNR / Confirmation #</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
                             placeholder="e.g. XY123AB"
                             {...field}
-                            className={cn('border-white/10 bg-white/5', showSuccess && 'border-emerald-500/40 pr-10')}
+                            className={cn('border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary/50 focus:ring-primary/20', showSuccess && 'border-emerald-500/40 pr-10')}
                           />
                         </FormControl>
                         {showSuccess && (
                           <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" />
                         )}
                       </div>
-                      <FormDescription className="text-xs">
+                      <FormDescription className="text-xs text-slate-600 dark:text-slate-400 font-medium">
                         This field blocks shell operators, path fragments, and command-style payloads.
                       </FormDescription>
-                      <FormMessage className="text-xs" aria-live="polite" />
+                      <FormMessage className="text-xs font-medium" aria-live="polite" />
                     </FormItem>
                   );
                 }}
@@ -403,7 +403,7 @@ export function StandaloneBookingDialog({
 
                   return (
                     <FormItem className="space-y-2">
-                      <FormLabel>Net Cost (Buy Price)</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Net Cost (Buy Price)</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
@@ -411,14 +411,14 @@ export function StandaloneBookingDialog({
                             step="0.01"
                             placeholder="0.00"
                             {...field}
-                            className={cn('border-white/10 bg-white/5', showSuccess && 'border-emerald-500/40 pr-10')}
+                            className={cn('border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary/50 focus:ring-primary/20', showSuccess && 'border-emerald-500/40 pr-10')}
                           />
                         </FormControl>
                         {showSuccess && (
                           <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" />
                         )}
                       </div>
-                      <FormMessage className="text-xs" aria-live="polite" />
+                      <FormMessage className="text-xs font-medium" aria-live="polite" />
                     </FormItem>
                   );
                 }}
@@ -433,7 +433,7 @@ export function StandaloneBookingDialog({
 
                   return (
                     <FormItem className="space-y-2">
-                      <FormLabel>Markup (%)</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Markup (%)</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
@@ -441,14 +441,14 @@ export function StandaloneBookingDialog({
                             step="0.1"
                             placeholder="10"
                             {...field}
-                            className={cn('border-white/10 bg-white/5', showSuccess && 'border-emerald-500/40 pr-10')}
+                            className={cn('border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary/50 focus:ring-primary/20', showSuccess && 'border-emerald-500/40 pr-10')}
                           />
                         </FormControl>
                         {showSuccess && (
                           <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-600 dark:text-emerald-400" />
                         )}
                       </div>
-                      <FormMessage className="text-xs" aria-live="polite" />
+                      <FormMessage className="text-xs font-medium" aria-live="polite" />
                     </FormItem>
                   );
                 }}
@@ -459,14 +459,14 @@ export function StandaloneBookingDialog({
                 name="currency"
                 render={({ field }) => (
                   <FormItem className="space-y-2">
-                    <FormLabel>Currency</FormLabel>
+                    <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Currency</FormLabel>
                     <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
-                        <SelectTrigger className="border-white/10 bg-white/5">
+                        <SelectTrigger className="border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                         {currencyOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
@@ -489,36 +489,36 @@ export function StandaloneBookingDialog({
 
                 return (
                   <FormItem className="space-y-2">
-                    <FormLabel>Additional Notes</FormLabel>
+                    <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Additional Notes</FormLabel>
                     <div className="relative">
                       <FormControl>
                         <Textarea
                           placeholder="Any specific requests, baggage limits, or pickup instructions..."
                           {...field}
-                          className={cn('min-h-[100px] border-white/10 bg-white/5', showSuccess && 'border-emerald-500/40 pr-10')}
+                          className={cn('min-h-[100px] border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary/50 focus:ring-primary/20', showSuccess && 'border-emerald-500/40 pr-10')}
                         />
                       </FormControl>
                       {showSuccess && (
                         <CheckCircle2 className="absolute right-3 top-4 h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                       )}
                     </div>
-                    <FormDescription className="text-xs">
+                    <FormDescription className="text-xs text-slate-600 dark:text-slate-400 font-medium">
                       Validates on blur and blocks script-like, path traversal, database-style, and prompt-injection input.
                     </FormDescription>
-                    <FormMessage className="text-xs" aria-live="polite" />
+                    <FormMessage className="text-xs font-medium" aria-live="polite" />
                   </FormItem>
                 );
               }}
             />
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose} className="glass-button">
+              <Button type="button" variant="outline" onClick={onClose} className="border-slate-300 dark:border-white/10 text-slate-700 dark:text-gray-300 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white cursor-pointer">
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={loading || (hasFailedSubmit && !form.formState.isValid)}
-                className="glass-button bg-white/10 hover:bg-white/15 text-white border border-white/10 font-semibold transition-all cursor-pointer"
+                className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-100 border border-slate-700 dark:border-zinc-700 font-semibold transition-all cursor-pointer shadow-sm"
               >
                 {loading ? 'Creating...' : 'Create Booking'}
               </Button>

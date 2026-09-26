@@ -15,6 +15,6 @@ export default function ClientPortalLayout({
   return (
     // Intentionally a minimal layout — no CRM sidebar, no nav.
     // The page itself renders the branding from the form's agent data.
-    <div className="min-h-screen bg-[#0A0A0B]">{children}</div>
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0A0A0B] text-slate-900 dark:text-white transition-colors duration-300">{children}</div>
   );
 }

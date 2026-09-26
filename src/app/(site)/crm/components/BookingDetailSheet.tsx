@@ -178,7 +178,7 @@ export const BookingDetailSheet = ({
 
     return (
         <Sheet open={!!booking} onOpenChange={(open) => !open && onClose()}>
-            <SheetContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-slate-300 dark:border-white/10 text-slate-900 dark:text-white w-full sm:max-w-md overflow-y-auto shadow-2xl">
+            <SheetContent className="bg-[#EFECE5]/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-slate-300 dark:border-white/10 text-slate-900 dark:text-white w-full sm:max-w-md overflow-y-auto shadow-2xl">
                 <SheetHeader className="mb-6">
                     <SheetTitle className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
                         Booking Details
@@ -192,7 +192,7 @@ export const BookingDetailSheet = ({
                     <div className="space-y-5">
 
                         {/* ── Header Info ── */}
-                        <div className="p-5 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl space-y-4">
+                        <div className="p-5 bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] shadow-xl rounded-2xl space-y-4">
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                     <div className="p-2 bg-slate-100 dark:bg-white/5 rounded-xl border border-slate-300 dark:border-white/10">
@@ -210,8 +210,8 @@ export const BookingDetailSheet = ({
                         </div>
 
                         {/* ── Client Details ── */}
-                        <div className="p-5 bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl">
-                            <h5 className="text-xs font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-widest border-b border-white/5 pb-2 mb-4 flex items-center gap-2">
+                        <div className="p-5 bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] shadow-xl rounded-2xl">
+                            <h5 className="text-xs font-bold text-slate-600 dark:text-zinc-400 uppercase tracking-widest border-b border-slate-200 dark:border-white/5 pb-2 mb-4 flex items-center gap-2">
                                 <User className="w-3.5 h-3.5 text-primary" /> Client
                             </h5>
                             {client ? (
@@ -223,13 +223,13 @@ export const BookingDetailSheet = ({
                                         <p className="font-semibold text-slate-900 dark:text-white">{client.name}</p>
                                     </div>
                                     {client.email && (
-                                        <div className="flex items-center gap-2 text-sm text-zinc-300">
+                                        <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-zinc-300">
                                             <Mail className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400 shrink-0" />
                                             <span className="truncate">{client.email}</span>
                                         </div>
                                     )}
                                     {client.phone && (
-                                        <div className="flex items-center gap-2 text-sm text-zinc-300">
+                                        <div className="flex items-center gap-2 text-sm text-slate-700 dark:text-zinc-300">
                                             <PhoneCall className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400 shrink-0" />
                                             <span>{client.phone}</span>
                                         </div>
@@ -242,17 +242,17 @@ export const BookingDetailSheet = ({
 
                         {/* ── Financials ── */}
                         <div className="grid grid-cols-2 gap-3">
-                            <div className="p-4 bg-white/[0.03] border border-slate-300 dark:border-white/10 rounded-xl">
+                            <div className="p-4 bg-white/60 dark:bg-white/[0.03] border border-slate-300 dark:border-white/10 rounded-xl">
                                 <div className="flex items-center gap-2 mb-1">
                                     <DollarSign className="w-4 h-4 text-green-400" />
-                                    <p className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Net Cost</p>
+                                    <p className="text-[10px] text-slate-500 dark:text-gray-500 uppercase tracking-wider font-medium">Net Cost</p>
                                 </div>
                                 <p className="text-lg font-bold text-slate-900 dark:text-white">{formatMoney(netCost, booking?.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}</p>
                             </div>
-                            <div className="p-4 bg-white/[0.03] border border-slate-300 dark:border-white/10 rounded-xl">
+                            <div className="p-4 bg-white/60 dark:bg-white/[0.03] border border-slate-300 dark:border-white/10 rounded-xl">
                                 <div className="flex items-center gap-2 mb-1">
                                     <Percent className="w-4 h-4 text-blue-400" />
-                                    <p className="text-[10px] text-gray-500 uppercase tracking-wider font-medium">Markup</p>
+                                    <p className="text-[10px] text-slate-500 dark:text-gray-500 uppercase tracking-wider font-medium">Markup</p>
                                 </div>
                                 <p className="text-lg font-bold text-slate-900 dark:text-white">{markup}%</p>
                             </div>
@@ -260,34 +260,34 @@ export const BookingDetailSheet = ({
 
                         <div className="p-4 bg-purple-500/5 border border-purple-500/20 rounded-xl">
                             <div className="flex items-center justify-between">
-                                <p className="text-sm font-medium text-purple-300">Total Gross Amount</p>
+                                <p className="text-sm font-medium text-purple-700 dark:text-purple-300">Total Gross Amount</p>
                                 <p className="text-xl font-black text-slate-900 dark:text-white">{formatMoney(grossCost, booking?.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)}</p>
                             </div>
                         </div>
 
                         {/* ── Technical Details ── */}
-                        <div className="p-5 bg-white/[0.03] border border-slate-300 dark:border-white/10 rounded-xl space-y-4">
-                            <h5 className="text-xs font-semibold text-slate-600 dark:text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2">Technical Details</h5>
+                        <div className="p-5 bg-white/60 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl space-y-4">
+                            <h5 className="text-xs font-semibold text-slate-600 dark:text-gray-400 uppercase tracking-widest border-b border-slate-200 dark:border-white/5 pb-2">Technical Details</h5>
                             <div className="grid grid-cols-1 gap-3">
                                 <div className="flex items-start gap-3">
                                     <Hotel className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
                                     <div>
-                                        <p className="text-[10px] text-gray-500 uppercase">Provider / Vendor</p>
-                                        <p className="text-sm font-medium text-zinc-200">{booking.booking_details?.provider || "N/A"}</p>
+                                        <p className="text-[10px] text-slate-500 dark:text-gray-500 uppercase">Provider / Vendor</p>
+                                        <p className="text-sm font-medium text-slate-800 dark:text-zinc-200">{booking.booking_details?.provider || "N/A"}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
                                     <Info className="w-4 h-4 text-gray-500 mr-2 shrink-0" />
                                     <div>
-                                        <p className="text-[10px] text-gray-500 uppercase">PNR / Confirmation</p>
-                                        <p className="text-sm font-medium text-zinc-200">{booking.booking_details?.pnr_or_confirmation || "N/A"}</p>
+                                        <p className="text-[10px] text-slate-500 dark:text-gray-500 uppercase">PNR / Confirmation</p>
+                                        <p className="text-sm font-medium text-slate-800 dark:text-zinc-200">{booking.booking_details?.pnr_or_confirmation || "N/A"}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start gap-3">
                                     <Users className="w-4 h-4 text-gray-500 mt-0.5 shrink-0" />
                                     <div>
-                                        <p className="text-[10px] text-gray-500 uppercase">Passengers / Pax</p>
-                                        <p className="text-sm font-medium text-zinc-200">{booking.booking_details?.passengers || 1} Person(s)</p>
+                                        <p className="text-[10px] text-slate-500 dark:text-gray-500 uppercase">Passengers / Pax</p>
+                                        <p className="text-sm font-medium text-slate-800 dark:text-zinc-200">{booking.booking_details?.passengers || 1} Person(s)</p>
                                     </div>
                                 </div>
                             </div>
@@ -295,22 +295,22 @@ export const BookingDetailSheet = ({
 
                         {/* ── Notes ── */}
                         {booking.booking_details?.notes && (
-                            <div className="p-5 bg-white/[0.03] border border-slate-300 dark:border-white/10 rounded-xl">
-                                <h5 className="text-xs font-semibold text-slate-600 dark:text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2 mb-3">Notes</h5>
-                                <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">{booking.booking_details.notes}</p>
+                            <div className="p-5 bg-white/60 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl">
+                                <h5 className="text-xs font-semibold text-slate-600 dark:text-gray-400 uppercase tracking-widest border-b border-slate-200 dark:border-white/5 pb-2 mb-3">Notes</h5>
+                                <p className="text-sm text-slate-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">{booking.booking_details.notes}</p>
                             </div>
                         )}
 
                         {/* ── Invoice Section ── */}
-                        <div className="p-5 bg-white/[0.03] border border-slate-300 dark:border-white/10 rounded-xl space-y-3">
-                            <h5 className="text-xs font-semibold text-slate-600 dark:text-gray-400 uppercase tracking-widest border-b border-white/5 pb-2 flex items-center gap-2">
+                        <div className="p-5 bg-white/60 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl space-y-3">
+                            <h5 className="text-xs font-semibold text-slate-600 dark:text-gray-400 uppercase tracking-widest border-b border-slate-200 dark:border-white/5 pb-2 flex items-center gap-2">
                                 <Receipt className="w-3.5 h-3.5" /> Invoice
                             </h5>
 
                             {invoiceUrl ? (
                                 <>
                                     {/* Invoice URL Display */}
-                                    <div className="flex items-center gap-2 bg-black/30 border border-slate-300 dark:border-white/10 rounded-lg p-2.5">
+                                    <div className="flex items-center gap-2 bg-slate-100 dark:bg-black/30 border border-slate-300 dark:border-white/10 rounded-lg p-2.5">
                                         <p className="text-xs text-slate-600 dark:text-gray-400 truncate flex-1 font-mono">{invoiceUrl}</p>
                                     </div>
 
@@ -319,7 +319,7 @@ export const BookingDetailSheet = ({
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="border-purple-500/30 bg-purple-500/5 text-purple-400 hover:bg-purple-500/10 h-9"
+                                            className="border-purple-500/30 bg-purple-500/5 text-purple-600 dark:text-purple-400 hover:bg-purple-500/10 h-9"
                                             onClick={handleViewInvoice}
                                         >
                                             <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
@@ -342,7 +342,7 @@ export const BookingDetailSheet = ({
                                         </Button>
                                     </div>
 
-                                    <p className="text-[10px] text-gray-600 flex items-center gap-1">
+                                    <p className="text-[10px] text-slate-500 dark:text-gray-600 flex items-center gap-1">
                                         <AlertCircle className="w-3 h-3" />
                                         This link is accessible to you and the assigned client.
                                     </p>
@@ -351,7 +351,7 @@ export const BookingDetailSheet = ({
                                     <button
                                         onClick={handleGenerateInvoice}
                                         disabled={isGenerating}
-                                        className="text-[11px] text-gray-600 hover:text-purple-400 transition-colors flex items-center gap-1"
+                                        className="text-[11px] text-slate-500 dark:text-gray-600 hover:text-purple-600 dark:hover:text-purple-400 transition-colors flex items-center gap-1"
                                     >
                                         <ChevronRight className="w-3 h-3" />
                                         {isGenerating ? "Regenerating..." : "Regenerate Invoice Link"}
@@ -359,9 +359,9 @@ export const BookingDetailSheet = ({
                                 </>
                             ) : (
                                 <>
-                                    <p className="text-xs text-gray-500">Generate a secure invoice link to share with your client.</p>
+                                    <p className="text-xs text-slate-500 dark:text-gray-500">Generate a secure invoice link to share with your client.</p>
                                     <Button
-                                        className="w-full bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700/80 font-semibold h-10 rounded-lg"
+                                        className="w-full bg-slate-200 hover:bg-slate-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-100 border border-slate-300 dark:border-zinc-700/80 font-semibold h-10 rounded-lg"
                                         onClick={handleGenerateInvoice}
                                         disabled={isGenerating}
                                     >
@@ -377,18 +377,18 @@ export const BookingDetailSheet = ({
 
                         {/* ── Metadata ── */}
                         <div className="px-1 flex flex-col gap-1.5">
-                            <div className="flex items-center gap-2 text-[10px] text-gray-600">
+                            <div className="flex items-center gap-2 text-[10px] text-slate-400 dark:text-gray-600">
                                 <Clock className="w-3 h-3" />
                                 <span>Created: {formatDate(booking.created_at)}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-[10px] text-gray-600">
+                            <div className="flex items-center gap-2 text-[10px] text-slate-400 dark:text-gray-600">
                                 <Calendar className="w-3 h-3" />
                                 <span>Last Updated: {formatDate(booking.updated_at)}</span>
                             </div>
                         </div>
 
                         {/* ── Danger Zone ── */}
-                        <div className="pt-2 flex gap-2 border-t border-white/5">
+                        <div className="pt-2 flex gap-2 border-t border-slate-200 dark:border-white/5">
                             <Button
                                 variant="destructive"
                                 className="flex-1 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20"
@@ -403,7 +403,7 @@ export const BookingDetailSheet = ({
                             </Button>
                             <Button
                                 variant="outline"
-                                className="flex-1 border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10"
+                                className="flex-1 border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900"
                                 onClick={onClose}
                             >
                                 Close

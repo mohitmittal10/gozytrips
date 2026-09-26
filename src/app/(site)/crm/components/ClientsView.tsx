@@ -199,14 +199,14 @@ export const ClientsView = (props: ClientsViewProps) => {
 
             {/* Bulk Actions Bar */}
             {selectedIds.size > 0 && (
-                <div className="flex items-center gap-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl animate-in fade-in slide-in-from-top-2">
-                    <span className="text-sm text-purple-300 font-medium">{selectedIds.size} selected</span>
+                <div className="flex items-center gap-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl animate-in fade-in slide-in-from-top-2 shadow-sm">
+                    <span className="text-sm text-purple-700 dark:text-purple-300 font-semibold">{selectedIds.size} selected</span>
                     <div className="h-4 w-px bg-purple-500/30" />
                     <Select onValueChange={(val) => handleBulkStatusChange(val)}>
-                        <SelectTrigger className="h-8 w-[140px] bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white text-xs">
+                        <SelectTrigger className="h-8 w-[140px] bg-white dark:bg-white/5 border-purple-500/30 dark:border-white/10 text-slate-900 dark:text-white text-xs font-medium">
                             <SelectValue placeholder="Set Status..." />
                         </SelectTrigger>
-                        <SelectContent className="bg-obsidian-dark border-slate-300 dark:border-white/10 text-slate-900 dark:text-white">
+                        <SelectContent className="bg-white dark:bg-[#0c0c0e] border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                             {itineraryStatuses.length > 0 ? (
                                 itineraryStatuses.map(opt => (
                                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
@@ -221,10 +221,10 @@ export const ClientsView = (props: ClientsViewProps) => {
                             )}
                         </SelectContent>
                     </Select>
-                    <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 text-xs" onClick={handleExportCSV}>
+                    <Button variant="outline" size="sm" className="h-8 border-purple-500/30 dark:border-white/10 bg-purple-500/10 dark:bg-white/5 text-purple-900 dark:text-purple-200 hover:bg-purple-500/20 dark:hover:bg-white/10 text-xs font-medium" onClick={handleExportCSV}>
                         <Download className="w-3.5 h-3.5 mr-1.5" /> Export
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs ml-auto" onClick={() => setSelectedIds(new Set())}>
+                    <Button variant="ghost" size="sm" className="h-8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs font-medium ml-auto" onClick={() => setSelectedIds(new Set())}>
                         Clear
                     </Button>
                 </div>
@@ -232,18 +232,18 @@ export const ClientsView = (props: ClientsViewProps) => {
 
             {/* Table Toolbar */}
             <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-500">{sortedClients.length} client{sortedClients.length !== 1 ? 's' : ''}</p>
+                <p className="text-xs text-slate-600 dark:text-gray-400 font-medium">{sortedClients.length} client{sortedClients.length !== 1 ? 's' : ''}</p>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 text-xs" onClick={handleExportCSV}>
+                    <Button variant="outline" size="sm" className="h-8 border-slate-300/80 dark:border-white/10 bg-white/70 dark:bg-white/5 text-slate-800 dark:text-gray-200 hover:bg-slate-200/80 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white text-xs font-medium" onClick={handleExportCSV}>
                         <Download className="w-3.5 h-3.5 mr-1.5" /> Export CSV
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 text-xs">
+                            <Button variant="outline" size="sm" className="h-8 border-slate-300/80 dark:border-white/10 bg-white/70 dark:bg-white/5 text-slate-800 dark:text-gray-200 hover:bg-slate-200/80 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white text-xs font-medium">
                                 <Columns3 className="w-3.5 h-3.5 mr-1.5" /> Columns
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-white dark:bg-[#1a1a2e] border-slate-300 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
+                        <DropdownMenuContent align="end" className="bg-white dark:bg-[#0c0c0e] border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                             <DropdownMenuLabel className="text-xs text-slate-600 dark:text-gray-400">Toggle Columns</DropdownMenuLabel>
                             <DropdownMenuSeparator className="bg-slate-200 dark:bg-white/10" />
                             <DropdownMenuCheckboxItem checked={visibleColumns.destination} onCheckedChange={() => toggleColumn('destination')} className="text-xs">Destination</DropdownMenuCheckboxItem>
@@ -254,7 +254,7 @@ export const ClientsView = (props: ClientsViewProps) => {
             </div>
 
             {/* Table */}
-            <div className="bg-white/[0.02] border border-slate-300 dark:border-white/10 rounded-xl overflow-hidden">
+            <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-300/60 dark:border-white/[0.08] shadow-xl rounded-2xl overflow-hidden">
                 <div className="crm-table-wrapper">
                     <table className="w-full text-left border-collapse min-w-[640px]">
                         <thead>
@@ -322,7 +322,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                                                     {client.tags && client.tags.length > 0 && (
                                                         <div className="flex flex-wrap gap-1 mt-1">
                                                             {client.tags.map((tag: string, idx: number) => (
-                                                                <Badge key={idx} variant="secondary" className="bg-zinc-900 text-zinc-300 border border-zinc-800 font-normal px-1.5 py-0 text-[10px] leading-4">
+                                                                <Badge key={idx} variant="secondary" className="bg-slate-100 dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 border border-slate-300 dark:border-zinc-800 font-normal px-1.5 py-0 text-[10px] leading-4">
                                                                     {tag}
                                                                 </Badge>
                                                             ))}
@@ -332,7 +332,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                                             </div>
                                         </td>
                                         {visibleColumns.destination && (
-                                            <td className="p-4 text-gray-300">
+                                            <td className="p-4 text-slate-600 dark:text-gray-300">
                                                 <div className="flex flex-col gap-1.5 py-1">
                                                     {client.bookedDestinations && client.bookedDestinations.length > 0 ? (
                                                         client.bookedDestinations.map((dest: any, idx: number) => (

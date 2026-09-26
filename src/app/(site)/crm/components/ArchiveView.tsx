@@ -21,9 +21,9 @@ export const ArchiveView = ({
             </div>
             
             {archivedClients.length === 0 ? (
-                <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl p-12 text-center text-slate-900 dark:text-white">
+                <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] shadow-xl rounded-2xl p-12 text-center text-slate-900 dark:text-white">
                     <Archive className="w-12 h-12 text-slate-600 dark:text-zinc-400 mx-auto mb-3 opacity-60" />
-                    <p className="text-zinc-300 font-medium">No completed trips yet.</p>
+                    <p className="text-slate-700 dark:text-zinc-300 font-medium">No completed trips yet.</p>
                     <p className="text-xs text-slate-600 dark:text-zinc-400 mt-1">
                         When a trip is marked as "Completed", it will appear here.
                     </p>
@@ -33,7 +33,7 @@ export const ArchiveView = ({
                     {archivedClients.map(client => (
                         <div
                             key={client.id}
-                            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-xl rounded-2xl p-4 hover:bg-white/[0.06] transition-all cursor-pointer group"
+                            className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] shadow-xl rounded-2xl p-4 hover:bg-white/[0.06] transition-all cursor-pointer group"
                             onClick={() => setSelectedClient(client)}
                         >
                             <div className="flex items-center gap-3 mb-3 text-slate-900 dark:text-white">

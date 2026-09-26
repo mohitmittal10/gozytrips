@@ -37,33 +37,33 @@ const STEPS = [
   { id: 4, label: "Budget" },
 ];
 
-const LabelClass = "block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2";
+const LabelClass = "block text-xs font-bold uppercase tracking-widest text-slate-700 dark:text-gray-500 mb-2";
 const InputClass =
-  "w-full h-11 px-4 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/60 text-sm transition-colors";
+  "w-full h-11 px-4 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-purple-500/60 text-sm transition-colors";
 
 function PaxCounter({
   label, sub, value, onChange,
 }: { label: string; sub: string; value: number; onChange: (v: number) => void }) {
   return (
-    <div className="flex items-center justify-between py-3 border-b border-white/5 last:border-0">
+    <div className="flex items-center justify-between py-3 border-b border-slate-200 dark:border-white/5 last:border-0">
       <div>
-        <p className="text-sm font-medium text-white">{label}</p>
-        <p className="text-xs text-gray-600">{sub}</p>
+        <p className="text-sm font-semibold text-slate-900 dark:text-white">{label}</p>
+        <p className="text-xs text-slate-600 dark:text-gray-600 font-medium">{sub}</p>
       </div>
       <div className="flex items-center gap-3">
         <button
           type="button"
           onClick={() => onChange(Math.max(0, value - 1))}
-          className="w-8 h-8 rounded-full border border-white/10 bg-white/5 text-white flex items-center justify-center hover:bg-white/10 transition-colors text-lg font-light disabled:opacity-30"
+          className="w-8 h-8 rounded-full border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-lg font-light disabled:opacity-30 cursor-pointer"
           disabled={value <= 0}
         >
           −
         </button>
-        <span className="text-white font-semibold w-4 text-center tabular-nums">{value}</span>
+        <span className="text-slate-900 dark:text-white font-semibold w-4 text-center tabular-nums">{value}</span>
         <button
           type="button"
           onClick={() => onChange(Math.min(99, value + 1))}
-          className="w-8 h-8 rounded-full border border-white/10 bg-white/5 text-white flex items-center justify-center hover:bg-white/10 transition-colors text-lg font-light"
+          className="w-8 h-8 rounded-full border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-white flex items-center justify-center hover:bg-slate-200 dark:hover:bg-white/10 transition-colors text-lg font-light cursor-pointer"
         >
           +
         </button>
@@ -228,7 +228,7 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
                   value={startDate}
                   min={new Date().toISOString().split("T")[0]}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className={cn(InputClass, "[color-scheme:dark]")}
+                  className={cn(InputClass, "[color-scheme:light] dark:[color-scheme:dark]")}
                 />
               </div>
               <div>
@@ -238,14 +238,14 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
                   value={endDate}
                   min={startDate || new Date().toISOString().split("T")[0]}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className={cn(InputClass, "[color-scheme:dark]")}
+                  className={cn(InputClass, "[color-scheme:light] dark:[color-scheme:dark]")}
                 />
               </div>
             </div>
 
             <div>
               <label className={LabelClass}><Users className="inline w-3 h-3 mr-1" />Travellers</label>
-              <div className="bg-black/30 border border-white/10 rounded-xl px-4 py-1">
+              <div className="bg-white/80 dark:bg-black/30 border border-slate-200 dark:border-white/10 rounded-xl px-4 py-1 shadow-sm">
                 <PaxCounter label="Adults" sub="Age 12+" value={adultPax} onChange={setAdultPax} />
                 <PaxCounter label="Children" sub="Age 2–11" value={childPax} onChange={setChildPax} />
                 <PaxCounter label="Infants" sub="Under 2" value={infantPax} onChange={setInfantPax} />
@@ -266,17 +266,17 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
                     type="button"
                     onClick={() => setTripType(t.value)}
                     className={cn(
-                      "flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all duration-200",
+                      "flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer",
                       tripType === t.value
-                        ? "bg-purple-500/20 border-purple-500/50 text-white shadow-[0_0_20px_rgba(168,85,247,0.15)]"
-                        : "bg-white/[0.03] border-white/[0.07] text-slate-600 dark:text-gray-400 hover:bg-white/[0.07] hover:text-white"
+                        ? "bg-purple-500/10 dark:bg-purple-500/20 border-purple-500/50 text-slate-900 dark:text-white shadow-md"
+                        : "bg-white/80 dark:bg-white/[0.03] border-slate-200 dark:border-white/[0.07] text-slate-700 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/[0.07] hover:text-slate-900 dark:hover:text-white"
                     )}
                   >
-                    <span className={cn("p-1.5 rounded-lg", tripType === t.value ? "bg-purple-500/30 text-purple-300" : "bg-white/5 text-gray-500")}>
+                    <span className={cn("p-1.5 rounded-lg", tripType === t.value ? "bg-purple-500/20 text-purple-700 dark:text-purple-300" : "bg-slate-200/60 dark:bg-white/5 text-slate-600 dark:text-gray-500")}>
                       {t.icon}
                     </span>
                     <span className="text-sm font-semibold">{t.label}</span>
-                    <span className="text-[10px] text-gray-600 leading-tight">{t.desc}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-gray-600 leading-tight font-medium">{t.desc}</span>
                   </button>
                 ))}
               </div>
@@ -291,10 +291,10 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
                     type="button"
                     onClick={() => toggleMethod(m.value)}
                     className={cn(
-                      "flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all duration-200",
+                      "flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium transition-all duration-200 cursor-pointer",
                       travelMethods.includes(m.value)
-                        ? "bg-purple-500/20 border-purple-500/40 text-purple-300"
-                        : "bg-white/5 border-white/10 text-slate-600 dark:text-gray-400 hover:bg-white/10 hover:text-white"
+                        ? "bg-purple-500/10 dark:bg-purple-500/20 border-purple-500/40 text-purple-700 dark:text-purple-300 font-semibold"
+                        : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-400 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white"
                     )}
                   >
                     {m.icon} {m.label}
@@ -311,7 +311,7 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
                   onChange={(e) => setMustInclude(e.target.value)}
                   placeholder="e.g. Eiffel Tower, Gondola ride…"
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/60 text-sm transition-colors resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-purple-500/60 text-sm transition-colors resize-none"
                 />
               </div>
               <div>
@@ -321,7 +321,7 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
                   onChange={(e) => setAvoid(e.target.value)}
                   placeholder="e.g. Long queues, spicy food…"
                   rows={3}
-                  className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/60 text-sm transition-colors resize-none"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-purple-500/60 text-sm transition-colors resize-none"
                 />
               </div>
             </div>
@@ -341,10 +341,10 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
                     type="button"
                     onClick={() => setTravelTimePreference(t.value as TravelTimePreference)}
                     className={cn(
-                      "py-2 px-3 rounded-xl border text-xs font-medium transition-all",
+                      "py-2 px-3 rounded-xl border text-xs font-medium transition-all cursor-pointer",
                       travelTimePreference === t.value
-                        ? "bg-purple-500/20 border-purple-500/40 text-purple-300"
-                        : "bg-white/5 border-white/10 text-gray-500 hover:text-white hover:bg-white/10"
+                        ? "bg-purple-500/10 dark:bg-purple-500/20 border-purple-500/40 text-purple-700 dark:text-purple-300 font-semibold"
+                        : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-600 dark:text-gray-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10"
                     )}
                   >
                     {t.label}
@@ -353,17 +353,17 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-4 bg-white/[0.03] border border-white/[0.07] rounded-xl">
+            <div className="flex items-center justify-between p-4 bg-white/80 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.07] rounded-xl shadow-sm">
               <div>
-                <p className="text-sm font-medium text-white">Include leisure time?</p>
-                <p className="text-xs text-gray-600 mt-0.5">A free day to explore on your own</p>
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">Include leisure time?</p>
+                <p className="text-xs text-slate-600 dark:text-gray-600 font-medium mt-0.5">A free day to explore on your own</p>
               </div>
               <button
                 type="button"
                 onClick={() => setLeisureTime(!leisureTime)}
                 className={cn(
-                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none",
-                  leisureTime ? "bg-purple-600" : "bg-white/10"
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none cursor-pointer",
+                  leisureTime ? "bg-purple-600" : "bg-slate-200 dark:bg-white/10"
                 )}
               >
                 <span
@@ -381,12 +381,12 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
         return (
           <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-400">
             <div>
-              <label className={LabelClass}><DollarSign className="inline w-3 h-3 mr-1" />Approximate Budget <span className="text-gray-600 font-normal normal-case tracking-normal">(optional)</span></label>
+              <label className={LabelClass}><DollarSign className="inline w-3 h-3 mr-1" />Approximate Budget <span className="text-slate-500 dark:text-gray-600 font-normal normal-case tracking-normal">(optional)</span></label>
               <div className="flex gap-2">
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
-                  className="h-11 px-3 rounded-xl bg-black/40 border border-white/10 text-white text-sm focus:outline-none focus:border-purple-500/60 transition-colors shrink-0"
+                  className="h-11 px-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white text-sm focus:outline-none focus:border-purple-500/60 transition-colors shrink-0"
                 >
                   {["INR", "USD", "EUR", "GBP", "AED", "SGD", "AUD"].map((c) => (
                     <option key={c} value={c}>{c}</option>
@@ -401,23 +401,23 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
                   className={cn(InputClass, "flex-1")}
                 />
               </div>
-              <p className="text-xs text-gray-600 mt-1.5 ml-1">Total budget for all travellers</p>
+              <p className="text-xs text-slate-600 dark:text-gray-600 mt-1.5 ml-1 font-medium">Total budget for all travellers</p>
             </div>
 
             <div>
-              <label className={LabelClass}><MessageSquare className="inline w-3 h-3 mr-1" />Special Requests <span className="text-gray-600 font-normal normal-case tracking-normal">(optional)</span></label>
+              <label className={LabelClass}><MessageSquare className="inline w-3 h-3 mr-1" />Special Requests <span className="text-slate-500 dark:text-gray-600 font-normal normal-case tracking-normal">(optional)</span></label>
               <textarea
                 value={specialRequests}
                 onChange={(e) => setSpecialRequests(e.target.value)}
                 placeholder="Any dietary requirements, accessibility needs, specific hotels, celebrations, or anything else you'd like us to know…"
                 rows={4}
-                className="w-full px-4 py-3 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-purple-500/60 text-sm transition-colors resize-none"
+                className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-purple-500/60 text-sm transition-colors resize-none"
               />
             </div>
 
             {/* Summary card */}
-            <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4 space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-widest text-purple-400 mb-3">Trip Summary</p>
+            <div className="bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/20 rounded-xl p-4 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-widest text-purple-600 dark:text-purple-400 mb-3">Trip Summary</p>
               {[
                 { label: "From", value: startingLocation },
                 { label: "To", value: destinations },
@@ -426,8 +426,8 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
                 { label: "Style", value: TRIP_TYPES.find((t) => t.value === tripType)?.label || tripType },
               ].map((item) => (
                 <div key={item.label} className="flex gap-2 text-sm">
-                  <span className="text-gray-500 w-20 shrink-0">{item.label}</span>
-                  <span className="text-zinc-200 font-medium truncate">{item.value}</span>
+                  <span className="text-slate-600 dark:text-gray-500 w-20 shrink-0 font-medium">{item.label}</span>
+                  <span className="text-slate-900 dark:text-zinc-200 font-semibold truncate">{item.value}</span>
                 </div>
               ))}
             </div>
@@ -449,17 +449,17 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-[#0A0A0B]/90 backdrop-blur-md border-b border-white/5 px-4 py-4">
+      <div className="sticky top-0 z-10 bg-white/90 dark:bg-[#0A0A0B]/90 backdrop-blur-md border-b border-slate-200 dark:border-white/5 px-4 py-4">
         <div className="max-w-xl mx-auto">
-          <p className="text-xs text-purple-400 font-semibold uppercase tracking-widest mb-0.5">
+          <p className="text-xs text-purple-600 dark:text-purple-400 font-semibold uppercase tracking-widest mb-0.5">
             {formMeta.agent_brand_name}
           </p>
-          <h1 className="text-sm font-semibold text-white truncate">{formMeta.title}</h1>
+          <h1 className="text-sm font-semibold text-slate-900 dark:text-white truncate">{formMeta.title}</h1>
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="bg-[#0A0A0B] border-b border-white/5 px-4 py-3">
+      <div className="bg-slate-50 dark:bg-[#0A0A0B] border-b border-slate-200 dark:border-white/5 px-4 py-3">
         <div className="max-w-xl mx-auto">
           <div className="flex items-center justify-between mb-2">
             {STEPS.map((s, i) => (
@@ -468,18 +468,18 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
                   className={cn(
                     "flex items-center justify-center w-6 h-6 rounded-full text-[10px] font-bold transition-all duration-300",
                     i < step
-                      ? "bg-purple-500 text-white"
+                      ? "bg-purple-600 text-white"
                       : i === step
-                      ? "bg-white text-black"
-                      : "bg-white/10 text-gray-600"
+                      ? "bg-slate-900 dark:bg-white text-white dark:text-black shadow-sm"
+                      : "bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-600"
                   )}
                 >
                   {i < step ? <Check className="w-3 h-3" strokeWidth={3} /> : s.id}
                 </div>
                 {i < STEPS.length - 1 && (
-                  <div className="h-[1px] w-8 sm:w-16 mx-1 overflow-hidden bg-white/10">
+                  <div className="h-[1px] w-8 sm:w-16 mx-1 overflow-hidden bg-slate-200 dark:bg-white/10">
                     <div
-                      className="h-full bg-purple-500 transition-all duration-500"
+                      className="h-full bg-purple-600 transition-all duration-500"
                       style={{ width: i < step ? "100%" : "0%" }}
                     />
                   </div>
@@ -487,7 +487,7 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
               </div>
             ))}
           </div>
-          <p className="text-xs text-gray-500">Step {step + 1} of {STEPS.length} — {STEPS[step].label}</p>
+          <p className="text-xs text-slate-600 dark:text-gray-500 font-medium">Step {step + 1} of {STEPS.length} — {STEPS[step].label}</p>
         </div>
       </div>
 
@@ -499,13 +499,13 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
       </div>
 
       {/* Nav footer */}
-      <div className="sticky bottom-0 bg-[#0A0A0B]/95 backdrop-blur-md border-t border-white/5 px-4 py-4">
+      <div className="sticky bottom-0 bg-white/95 dark:bg-[#0A0A0B]/95 backdrop-blur-md border-t border-slate-200 dark:border-white/5 px-4 py-4">
         <div className="max-w-xl mx-auto flex gap-3">
           {step > 0 && (
             <button
               type="button"
               onClick={() => setStep(step - 1)}
-              className="h-12 px-5 rounded-xl border border-white/10 bg-white/5 text-gray-300 hover:bg-white/10 transition-colors flex items-center gap-2 text-sm font-medium"
+              className="h-12 px-5 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors flex items-center gap-2 text-sm font-medium cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" /> Back
             </button>

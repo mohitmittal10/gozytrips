@@ -19,7 +19,7 @@ export function EnquiryHistory({ enquiries, isLoading, onLoad, onDelete }: Enqui
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" className="border-white/10 text-zinc-300 hover:text-white bg-white/5 hover:bg-white/10 gap-2 h-10 rounded-xl font-semibold transition-all">
+        <Button variant="outline" className="border-slate-200 dark:border-white/10 text-slate-900 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-white/10 gap-2 h-10 rounded-xl font-semibold transition-all cursor-pointer">
           <History className="w-4 h-4 text-primary" />
           History {enquiries.length > 0 && (
             <Badge variant="secondary" className="ml-1 bg-primary/20 text-primary border-none">
@@ -28,9 +28,9 @@ export function EnquiryHistory({ enquiries, isLoading, onLoad, onDelete }: Enqui
           )}
         </Button>
       </SheetTrigger>
-      <SheetContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white w-[400px] sm:w-[540px]">
+      <SheetContent className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-slate-200 dark:border-white/10 text-slate-900 dark:text-white w-[400px] sm:w-[540px] shadow-2xl">
         <SheetHeader>
-          <SheetTitle className="text-white flex items-center gap-2 font-bold text-lg">
+          <SheetTitle className="text-slate-900 dark:text-white flex items-center gap-2 font-bold text-lg">
             <History className="w-5 h-5 text-primary" />
             Recent Enquiries
           </SheetTitle>
@@ -51,7 +51,7 @@ export function EnquiryHistory({ enquiries, isLoading, onLoad, onDelete }: Enqui
             enquiries.map((enq) => (
               <div
                 key={enq.id}
-                className="group relative bg-white/[0.03] border border-white/[0.08] rounded-xl p-4 hover:border-primary/40 transition-all duration-200 shadow-md"
+                className="group relative bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.08] rounded-xl p-4 hover:border-primary/40 transition-all duration-200 shadow-md"
               >
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
@@ -66,7 +66,7 @@ export function EnquiryHistory({ enquiries, isLoading, onLoad, onDelete }: Enqui
                       className={`capitalize text-[10px] font-semibold ${
                         enq.status === "sent"
                           ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
-                          : "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                          : "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30"
                       }`}
                     >
                       {enq.status}
@@ -76,7 +76,7 @@ export function EnquiryHistory({ enquiries, isLoading, onLoad, onDelete }: Enqui
                     {new Date(enq.updated_at).toLocaleDateString()}
                   </span>
                 </div>
-                <h4 className="text-sm font-bold text-zinc-100 truncate pr-8">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-zinc-100 truncate pr-8">
                   {enq.payload.destination}
                 </h4>
                 <p className="text-xs text-slate-600 dark:text-zinc-400 truncate mb-3">
@@ -85,7 +85,7 @@ export function EnquiryHistory({ enquiries, isLoading, onLoad, onDelete }: Enqui
                 <div className="flex items-center gap-2">
                   <Button
                     size="sm"
-                    className="h-8 text-xs aurora-gradient text-white border-none flex-1 font-bold rounded-lg shadow-sm"
+                    className="h-8 text-xs aurora-gradient text-slate-900 dark:text-white border-none flex-1 font-bold rounded-lg shadow-sm cursor-pointer hover:brightness-110"
                     onClick={() => onLoad(enq)}
                   >
                     Resume
@@ -93,7 +93,7 @@ export function EnquiryHistory({ enquiries, isLoading, onLoad, onDelete }: Enqui
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-8 w-8 p-0 border-white/10 text-slate-600 dark:text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
+                    className="h-8 w-8 p-0 border-slate-200 dark:border-white/10 text-slate-600 dark:text-zinc-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                     onClick={() => onDelete(enq.id)}
                   >
                     <Trash2 className="w-3.5 h-3.5" />

@@ -111,24 +111,24 @@ export function StructuralControls({
             <button
                 onClick={() => setCollapsed(false)}
                 title="Expand Structure Navigator"
-                className="fixed right-2 sm:right-4 top-20 z-[9990] bg-zinc-900/90 hover:bg-zinc-800 text-zinc-200 hover:text-white border border-zinc-800/90 rounded-xl px-3 py-2 sm:px-3.5 sm:py-2.5 cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-xl backdrop-blur-md transition-all duration-200 active:scale-95 group"
+                className="fixed right-2 sm:right-4 top-20 z-[9990] bg-white/90 dark:bg-zinc-900/90 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-200 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-zinc-800/90 rounded-xl px-3 py-2 sm:px-3.5 sm:py-2.5 cursor-pointer flex items-center gap-2 text-xs font-semibold shadow-xl backdrop-blur-md transition-all duration-200 active:scale-95 group"
             >
-                <PanelRightOpen size={16} className="text-slate-600 dark:text-zinc-400 group-hover:text-white transition-colors" />
+                <PanelRightOpen size={16} className="text-slate-600 dark:text-zinc-400 group-hover:text-slate-900 dark:group-hover:text-white transition-colors" />
                 <span>Structure Editor</span>
             </button>
         );
     }
 
     return (
-        <aside className="fixed right-2 sm:right-4 top-20 bottom-4 sm:bottom-6 w-[calc(100vw-16px)] sm:w-[350px] max-w-[360px] z-[9990] bg-zinc-950/95 border border-zinc-800/80 rounded-2xl flex flex-col shadow-2xl backdrop-blur-2xl font-sans overflow-hidden transition-all duration-300 ease-out animate-in fade-in slide-in-from-right-4">
+        <aside className="fixed right-2 sm:right-4 top-20 bottom-4 sm:bottom-6 w-[calc(100vw-16px)] sm:w-[350px] max-w-[360px] z-[9990] bg-white dark:bg-zinc-950/95 border border-slate-300 dark:border-zinc-800/80 rounded-2xl flex flex-col shadow-2xl backdrop-blur-2xl font-sans overflow-hidden transition-all duration-300 ease-out animate-in fade-in slide-in-from-right-4">
             {/* Header */}
-            <div className="px-4 py-3.5 border-b border-zinc-800/80 flex items-center justify-between bg-zinc-950/80">
+            <div className="px-4 py-3.5 border-b border-slate-200 dark:border-zinc-800/80 flex items-center justify-between bg-slate-50/80 dark:bg-zinc-950/80">
                 <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-200">
+                    <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 flex items-center justify-center text-slate-700 dark:text-zinc-200">
                         <Calendar size={14} />
                     </div>
                     <div>
-                        <h3 className="text-xs font-bold text-zinc-100 tracking-tight leading-none">
+                        <h3 className="text-xs font-bold text-slate-900 dark:text-zinc-100 tracking-tight leading-none">
                             Structure Navigator
                         </h3>
                         <p className="text-[10px] text-slate-600 dark:text-zinc-400 font-medium mt-0.5">
@@ -139,21 +139,21 @@ export function StructuralControls({
                 <button
                     onClick={() => setCollapsed(true)}
                     title="Collapse sidebar"
-                    className="text-slate-600 dark:text-zinc-400 hover:text-zinc-200 p-1.5 rounded-lg hover:bg-zinc-900 transition-colors"
+                    className="text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-zinc-900 transition-colors"
                 >
                     <PanelRightClose size={16} />
                 </button>
             </div>
 
             {/* Segmented Tab Pill Navigation */}
-            <div className="p-2 border-b border-zinc-800/80 bg-zinc-950/50">
-                <div className="grid grid-cols-3 gap-1 bg-zinc-900/80 p-1 rounded-xl border border-zinc-800/60">
+            <div className="p-2 border-b border-slate-200 dark:border-zinc-800/80 bg-slate-50/50 dark:bg-zinc-950/50">
+                <div className="grid grid-cols-3 gap-1 bg-slate-200/80 dark:bg-zinc-900/80 p-1 rounded-xl border border-slate-300/60 dark:border-zinc-800/60">
                     <button
                         onClick={() => setActiveTab("days")}
                         className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 ${
                             activeTab === "days"
-                                ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+                                ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm"
+                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-100/50 dark:hover:bg-zinc-800/40"
                         }`}
                     >
                         <Calendar size={13} />
@@ -163,8 +163,8 @@ export function StructuralControls({
                         onClick={() => setActiveTab("about")}
                         className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 ${
                             activeTab === "about"
-                                ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+                                ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm"
+                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-100/50 dark:hover:bg-zinc-800/40"
                         }`}
                     >
                         <Globe size={13} />
@@ -174,8 +174,8 @@ export function StructuralControls({
                         onClick={() => setActiveTab("lists")}
                         className={`py-1.5 px-2 rounded-lg text-xs font-semibold transition-all duration-200 flex items-center justify-center gap-1.5 ${
                             activeTab === "lists"
-                                ? "bg-zinc-800 text-zinc-100 shadow-sm"
-                                : "text-slate-600 dark:text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40"
+                                ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm"
+                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-100/50 dark:hover:bg-zinc-800/40"
                         }`}
                     >
                         <ListChecks size={13} />
@@ -190,11 +190,11 @@ export function StructuralControls({
                 {activeTab === "days" && (
                     <div className="space-y-3">
                         {/* Cover Image Action */}
-                        <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-3 flex items-center justify-between hover:border-zinc-700/80 transition-colors">
-                            <span className="text-xs font-medium text-zinc-300">Cover Hero Photo</span>
+                        <div className="bg-slate-100/70 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800/80 rounded-xl p-3 flex items-center justify-between hover:border-slate-300 dark:hover:border-zinc-700/80 transition-colors">
+                            <span className="text-xs font-medium text-slate-800 dark:text-zinc-300">Cover Hero Photo</span>
                             <button
                                 onClick={() => onOpenImagePicker("cover photo", "cover.imageUrl")}
-                                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 hover:text-white border border-zinc-700/80 rounded-lg px-2.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95"
+                                className="bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700/80 rounded-lg px-2.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
                             >
                                 <Camera size={13} className="text-slate-600 dark:text-zinc-400" /> Change
                             </button>
@@ -215,10 +215,10 @@ export function StructuralControls({
                                 return (
                                     <div
                                         key={idx}
-                                        className={`bg-zinc-900/70 border rounded-xl overflow-hidden transition-all duration-200 ${
+                                        className={`bg-slate-100/70 dark:bg-zinc-900/70 border rounded-xl overflow-hidden transition-all duration-200 ${
                                             isExpanded
-                                                ? "border-zinc-700 bg-zinc-900/90 shadow-lg"
-                                                : "border-zinc-800/80 hover:border-zinc-700/60"
+                                                ? "border-slate-300 dark:border-zinc-700 bg-slate-100/90 dark:bg-zinc-900/90 shadow-md"
+                                                : "border-slate-200 dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700/60"
                                         }`}
                                     >
                                         {/* Day Header Row */}
@@ -227,10 +227,10 @@ export function StructuralControls({
                                             className="px-3 py-2.5 flex items-center justify-between cursor-pointer select-none group"
                                         >
                                             <div className="flex items-center gap-2 min-w-0 pr-2">
-                                                <div className="text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                                                <div className="text-slate-500 dark:text-zinc-500 group-hover:text-slate-800 dark:group-hover:text-zinc-300 transition-colors">
                                                     {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                                                 </div>
-                                                <span className="text-xs font-semibold text-zinc-200 group-hover:text-white truncate">
+                                                <span className="text-xs font-semibold text-slate-800 dark:text-zinc-200 group-hover:text-slate-950 dark:group-hover:text-white truncate">
                                                     Day {idx + 1}: {day.title || day.location || "Untitled"}
                                                 </span>
                                             </div>
@@ -240,7 +240,7 @@ export function StructuralControls({
                                                     disabled={idx === 0}
                                                     onClick={() => onReorderDays(idx, idx - 1)}
                                                     title="Move day up"
-                                                    className="p-1 rounded-md text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                                                    className="p-1 rounded-md text-slate-500 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
                                                 >
                                                     <ChevronUp size={14} />
                                                 </button>
@@ -248,14 +248,14 @@ export function StructuralControls({
                                                     disabled={idx === days.length - 1}
                                                     onClick={() => onReorderDays(idx, idx + 1)}
                                                     title="Move day down"
-                                                    className="p-1 rounded-md text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                                                    className="p-1 rounded-md text-slate-500 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-zinc-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors cursor-pointer"
                                                 >
                                                     <ChevronDown size={14} />
                                                 </button>
                                                 <button
                                                     onClick={() => onDeleteDay(idx)}
                                                     title="Delete Day"
-                                                    className="p-1 rounded-md text-zinc-500 hover:text-red-400 hover:bg-red-950/40 transition-colors ml-0.5"
+                                                    className="p-1 rounded-md text-slate-500 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors ml-0.5 cursor-pointer"
                                                 >
                                                     <Trash2 size={13} />
                                                 </button>
@@ -264,10 +264,10 @@ export function StructuralControls({
 
                                         {/* Expanded Day Details */}
                                         {isExpanded && (
-                                            <div className="px-3 pb-3 pt-2 border-t border-zinc-800/80 space-y-3 bg-zinc-950/40 animate-in fade-in duration-150">
+                                            <div className="px-3 pb-3 pt-2 border-t border-slate-200 dark:border-zinc-800/80 space-y-3 bg-white/50 dark:bg-zinc-950/40 animate-in fade-in duration-150">
                                                 {/* At A Glance Summary Input */}
                                                 <div className="space-y-1">
-                                                    <label className="text-[11px] font-semibold text-zinc-300 flex items-center gap-1.5">
+                                                    <label className="text-[11px] font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-1.5">
                                                         <Eye size={12} className="text-slate-600 dark:text-zinc-400" /> Day Summary (At a Glance)
                                                     </label>
                                                     <input
@@ -275,7 +275,7 @@ export function StructuralControls({
                                                         value={currentSummary}
                                                         onChange={(e) => onUpdateDaySummary(idx, e.target.value)}
                                                         placeholder="Short 1-sentence summary e.g. Arrival & Sunset Beach Dinner"
-                                                        className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+                                                        className="w-full bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-zinc-200 placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-slate-400 dark:focus:border-zinc-600 transition-colors"
                                                     />
                                                 </div>
 
@@ -284,9 +284,9 @@ export function StructuralControls({
                                                     <span className="text-[11px] font-medium text-slate-600 dark:text-zinc-400">Day Photo</span>
                                                     <button
                                                         onClick={() => onOpenImagePicker(day.location || day.title || "destination", `days[${idx}].imageUrl`)}
-                                                        className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-zinc-800 rounded-lg px-2.5 py-1 text-[11px] font-medium flex items-center gap-1.5 transition-all"
+                                                        className="bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-300 border border-slate-300 dark:border-zinc-800 rounded-lg px-2.5 py-1 text-[11px] font-medium flex items-center gap-1.5 transition-all cursor-pointer"
                                                     >
-                                                        <Camera size={12} className="text-zinc-500" /> Change Photo
+                                                        <Camera size={12} className="text-slate-500 dark:text-zinc-500" /> Change Photo
                                                     </button>
                                                 </div>
 
@@ -302,9 +302,9 @@ export function StructuralControls({
                                                         return (
                                                             <div
                                                                 key={aIdx}
-                                                                className="bg-zinc-900 border border-zinc-800/80 rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2 group hover:border-zinc-700/60 transition-colors"
+                                                                className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800/80 rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-2 group hover:border-slate-300 dark:hover:border-zinc-700/60 transition-colors"
                                                             >
-                                                                <span className="text-[11px] text-zinc-300 truncate flex-1" title={title}>
+                                                                <span className="text-[11px] text-slate-800 dark:text-zinc-300 truncate flex-1" title={title}>
                                                                     {aIdx + 1}. {title.replace(/<[^>]*>?/gm, "")}
                                                                 </span>
 
@@ -312,21 +312,21 @@ export function StructuralControls({
                                                                     <button
                                                                         disabled={aIdx === 0}
                                                                         onClick={() => onMoveActivity(idx, aIdx, "up")}
-                                                                        className="p-1 text-zinc-500 hover:text-zinc-200 disabled:opacity-25 transition-colors"
+                                                                        className="p-1 text-slate-500 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-zinc-200 disabled:opacity-25 transition-colors cursor-pointer"
                                                                     >
                                                                         <ChevronUp size={12} />
                                                                     </button>
                                                                     <button
                                                                         disabled={aIdx === activities.length - 1}
                                                                         onClick={() => onMoveActivity(idx, aIdx, "down")}
-                                                                        className="p-1 text-zinc-500 hover:text-zinc-200 disabled:opacity-25 transition-colors"
+                                                                        className="p-1 text-slate-500 dark:text-zinc-500 hover:text-slate-900 dark:hover:text-zinc-200 disabled:opacity-25 transition-colors cursor-pointer"
                                                                     >
                                                                         <ChevronDown size={12} />
                                                                     </button>
                                                                     <button
                                                                         onClick={() => onDeleteActivity(idx, aIdx)}
                                                                         title="Delete activity"
-                                                                        className="p-1 text-zinc-500 hover:text-red-400 transition-colors ml-0.5"
+                                                                        className="p-1 text-slate-500 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 transition-colors ml-0.5 cursor-pointer"
                                                                     >
                                                                         <Trash2 size={12} />
                                                                     </button>
@@ -338,9 +338,9 @@ export function StructuralControls({
 
                                                 <button
                                                     onClick={() => onAddActivity(idx)}
-                                                    className="w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-300 border border-dashed border-zinc-800 hover:border-zinc-700 rounded-lg py-1.5 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                                                    className="w-full bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-300 border border-dashed border-slate-300 dark:border-zinc-800 hover:border-slate-400 dark:hover:border-zinc-700 rounded-lg py-1.5 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                                                 >
-                                                    <Plus size={13} className="text-zinc-500" /> Add Activity
+                                                    <Plus size={13} className="text-slate-500 dark:text-zinc-500" /> Add Activity
                                                 </button>
                                             </div>
                                         )}
@@ -352,7 +352,7 @@ export function StructuralControls({
                         {/* Add Day Button */}
                         <button
                             onClick={onAddDay}
-                            className="w-full bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border border-zinc-800 rounded-xl py-2.5 text-xs font-semibold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99]"
+                            className="w-full bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-900 dark:text-zinc-100 border border-slate-300 dark:border-zinc-800 rounded-xl py-2.5 text-xs font-semibold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.99] cursor-pointer"
                         >
                             <Plus size={15} /> Add New Day
                         </button>
@@ -362,8 +362,8 @@ export function StructuralControls({
                 {/* DESTINATION OVERVIEW TAB */}
                 {activeTab === "about" && (
                     <div className="space-y-3">
-                        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3 space-y-3">
-                            <div className="text-xs font-bold text-zinc-200 flex items-center gap-2">
+                        <div className="bg-slate-100/70 dark:bg-zinc-900/70 border border-slate-200 dark:border-zinc-800/80 rounded-xl p-3 space-y-3">
+                            <div className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-2">
                                 <Globe size={14} className="text-slate-600 dark:text-zinc-400" /> About Destination Overview
                             </div>
 
@@ -374,7 +374,7 @@ export function StructuralControls({
                                     value={aboutPlace.title || liveData.title || "About The Destination"}
                                     onChange={(e) => onUpdateAboutTitle(e.target.value)}
                                     placeholder="e.g. Discovering Tropical Bali"
-                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:border-zinc-600 transition-colors"
+                                    className="w-full bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-zinc-200 placeholder:text-slate-400 dark:placeholder:text-zinc-600 focus:outline-none focus:border-slate-400 dark:focus:border-zinc-600 transition-colors"
                                 />
                             </div>
 
@@ -385,20 +385,20 @@ export function StructuralControls({
                                     value={aboutPlace.description || aboutPlace.aboutText || liveData.overview || liveData.summary || ""}
                                     onChange={(e) => onUpdateAboutDescription(e.target.value)}
                                     placeholder="Enter a rich summary of the destination..."
-                                    className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-200 placeholder:text-zinc-600 leading-relaxed focus:outline-none focus:border-zinc-600 transition-colors resize-y"
+                                    className="w-full bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-lg p-2.5 text-xs text-slate-900 dark:text-zinc-200 placeholder:text-slate-400 dark:placeholder:text-zinc-600 leading-relaxed focus:outline-none focus:border-slate-400 dark:focus:border-zinc-600 transition-colors resize-y"
                                 />
                             </div>
                         </div>
 
                         {/* Destination Highlights */}
-                        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3 space-y-3">
+                        <div className="bg-slate-100/70 dark:bg-zinc-900/70 border border-slate-200 dark:border-zinc-800/80 rounded-xl p-3 space-y-3">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-zinc-200 flex items-center gap-2">
+                                <span className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-2">
                                     <Sparkles size={14} className="text-slate-600 dark:text-zinc-400" /> Destination Highlights ({highlights.length})
                                 </span>
                                 <button
                                     onClick={onAddHighlight}
-                                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/80 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all"
+                                    className="bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700/80 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all cursor-pointer"
                                 >
                                     + Add Highlight
                                 </button>
@@ -411,11 +411,11 @@ export function StructuralControls({
                                             type="text"
                                             value={hl}
                                             onChange={(e) => onUpdateHighlight(idx, e.target.value)}
-                                            className="flex-1 bg-zinc-950 border border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 focus:outline-none focus:border-zinc-600 transition-colors"
+                                            className="flex-1 bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-zinc-200 focus:outline-none focus:border-slate-400 dark:focus:border-zinc-600 transition-colors"
                                         />
                                         <button
                                             onClick={() => onDeleteHighlight(idx)}
-                                            className="p-1.5 text-zinc-500 hover:text-red-400 transition-colors"
+                                            className="p-1.5 text-slate-500 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 transition-colors cursor-pointer"
                                         >
                                             <Trash2 size={13} />
                                         </button>
@@ -430,25 +430,25 @@ export function StructuralControls({
                 {activeTab === "lists" && (
                     <div className="space-y-3">
                         {/* Inclusions */}
-                        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3 space-y-2">
+                        <div className="bg-slate-100/70 dark:bg-zinc-900/70 border border-slate-200 dark:border-zinc-800/80 rounded-xl p-3 space-y-2">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-zinc-200 flex items-center gap-2">
+                                <span className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-2">
                                     <ListChecks size={14} className="text-emerald-600 dark:text-emerald-400" /> Inclusions ({inclusions.length})
                                 </span>
                                 <button
                                     onClick={onAddInclusion}
-                                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/80 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all"
+                                    className="bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700/80 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all cursor-pointer"
                                 >
                                     + Add
                                 </button>
                             </div>
                             <div className="space-y-1.5 pt-1">
                                 {inclusions.map((item: string, idx: number) => (
-                                    <div key={idx} className="flex items-center justify-between py-1 px-2 bg-zinc-950/60 rounded-lg border border-zinc-800/60">
-                                        <span className="text-xs text-zinc-300 truncate flex-1">
+                                    <div key={idx} className="flex items-center justify-between py-1 px-2 bg-white dark:bg-zinc-950/60 rounded-lg border border-slate-200 dark:border-zinc-800/60">
+                                        <span className="text-xs text-slate-800 dark:text-zinc-300 truncate flex-1">
                                             • {item}
                                         </span>
-                                        <button onClick={() => onDeleteInclusion(idx)} className="text-zinc-500 hover:text-red-400 p-1 transition-colors">
+                                        <button onClick={() => onDeleteInclusion(idx)} className="text-slate-500 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 p-1 transition-colors cursor-pointer">
                                             <Trash2 size={12} />
                                         </button>
                                     </div>
@@ -457,25 +457,25 @@ export function StructuralControls({
                         </div>
 
                         {/* Exclusions */}
-                        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3 space-y-2">
+                        <div className="bg-slate-100/70 dark:bg-zinc-900/70 border border-slate-200 dark:border-zinc-800/80 rounded-xl p-3 space-y-2">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-zinc-200 flex items-center gap-2">
-                                    <ShieldAlert size={14} className="text-rose-400" /> Exclusions ({exclusions.length})
+                                <span className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-2">
+                                    <ShieldAlert size={14} className="text-rose-500 dark:text-rose-400" /> Exclusions ({exclusions.length})
                                 </span>
                                 <button
                                     onClick={onAddExclusion}
-                                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/80 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all"
+                                    className="bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700/80 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all cursor-pointer"
                                 >
                                     + Add
                                 </button>
                             </div>
                             <div className="space-y-1.5 pt-1">
                                 {exclusions.map((item: string, idx: number) => (
-                                    <div key={idx} className="flex items-center justify-between py-1 px-2 bg-zinc-950/60 rounded-lg border border-zinc-800/60">
-                                        <span className="text-xs text-zinc-300 truncate flex-1">
+                                    <div key={idx} className="flex items-center justify-between py-1 px-2 bg-white dark:bg-zinc-950/60 rounded-lg border border-slate-200 dark:border-zinc-800/60">
+                                        <span className="text-xs text-slate-800 dark:text-zinc-300 truncate flex-1">
                                             • {item}
                                         </span>
-                                        <button onClick={() => onDeleteExclusion(idx)} className="text-zinc-500 hover:text-red-400 p-1 transition-colors">
+                                        <button onClick={() => onDeleteExclusion(idx)} className="text-slate-500 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 p-1 transition-colors cursor-pointer">
                                             <Trash2 size={12} />
                                         </button>
                                     </div>
@@ -484,25 +484,25 @@ export function StructuralControls({
                         </div>
 
                         {/* Terms & Conditions */}
-                        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3 space-y-2">
+                        <div className="bg-slate-100/70 dark:bg-zinc-900/70 border border-slate-200 dark:border-zinc-800/80 rounded-xl p-3 space-y-2">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-zinc-200 flex items-center gap-2">
-                                    <FileText size={14} className="text-amber-400" /> Terms & Conditions ({terms.length})
+                                <span className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-2">
+                                    <FileText size={14} className="text-amber-500 dark:text-amber-400" /> Terms & Conditions ({terms.length})
                                 </span>
                                 <button
                                     onClick={onAddTerm}
-                                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/80 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all"
+                                    className="bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700/80 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all cursor-pointer"
                                 >
                                     + Add
                                 </button>
                             </div>
                             <div className="space-y-1.5 pt-1">
                                 {terms.map((item: string, idx: number) => (
-                                    <div key={idx} className="flex items-center justify-between py-1 px-2 bg-zinc-950/60 rounded-lg border border-zinc-800/60">
-                                        <span className="text-xs text-zinc-300 truncate flex-1">
+                                    <div key={idx} className="flex items-center justify-between py-1 px-2 bg-white dark:bg-zinc-950/60 rounded-lg border border-slate-200 dark:border-zinc-800/60">
+                                        <span className="text-xs text-slate-800 dark:text-zinc-300 truncate flex-1">
                                             • {item}
                                         </span>
-                                        <button onClick={() => onDeleteTerm(idx)} className="text-zinc-500 hover:text-red-400 p-1 transition-colors">
+                                        <button onClick={() => onDeleteTerm(idx)} className="text-slate-500 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 p-1 transition-colors cursor-pointer">
                                             <Trash2 size={12} />
                                         </button>
                                     </div>
@@ -511,25 +511,25 @@ export function StructuralControls({
                         </div>
 
                         {/* Payment Methods */}
-                        <div className="bg-zinc-900/70 border border-zinc-800/80 rounded-xl p-3 space-y-2">
+                        <div className="bg-slate-100/70 dark:bg-zinc-900/70 border border-slate-200 dark:border-zinc-800/80 rounded-xl p-3 space-y-2">
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-zinc-200 flex items-center gap-2">
-                                    <CreditCard size={14} className="text-purple-400" /> Payment Methods ({payments.length})
+                                <span className="text-xs font-bold text-slate-900 dark:text-zinc-200 flex items-center gap-2">
+                                    <CreditCard size={14} className="text-purple-600 dark:text-purple-400" /> Payment Methods ({payments.length})
                                 </span>
                                 <button
                                     onClick={onAddPayment}
-                                    className="bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/80 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all"
+                                    className="bg-white dark:bg-zinc-800 hover:bg-slate-100 dark:hover:bg-zinc-700 text-slate-800 dark:text-zinc-200 border border-slate-300 dark:border-zinc-700/80 rounded-lg px-2 py-1 text-[11px] font-semibold transition-all cursor-pointer"
                                 >
                                     + Add
                                 </button>
                             </div>
                             <div className="space-y-1.5 pt-1">
                                 {payments.map((item: string, idx: number) => (
-                                    <div key={idx} className="flex items-center justify-between py-1 px-2 bg-zinc-950/60 rounded-lg border border-zinc-800/60">
-                                        <span className="text-xs text-zinc-300 truncate flex-1">
+                                    <div key={idx} className="flex items-center justify-between py-1 px-2 bg-white dark:bg-zinc-950/60 rounded-lg border border-slate-200 dark:border-zinc-800/60">
+                                        <span className="text-xs text-slate-800 dark:text-zinc-300 truncate flex-1">
                                             • {item}
                                         </span>
-                                        <button onClick={() => onDeletePayment(idx)} className="text-zinc-500 hover:text-red-400 p-1 transition-colors">
+                                        <button onClick={() => onDeletePayment(idx)} className="text-slate-500 dark:text-zinc-500 hover:text-red-500 dark:hover:text-red-400 p-1 transition-colors cursor-pointer">
                                             <Trash2 size={12} />
                                         </button>
                                     </div>

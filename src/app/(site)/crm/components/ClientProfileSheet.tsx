@@ -104,10 +104,10 @@ const NoteLogCard = ({ log }: { log: NoteLog }) => {
         isExpanded
           ? isEmail
             ? "border-purple-500/30 bg-purple-500/[0.06]"
-            : "border-slate-300 dark:border-white/10 bg-white/[0.04]"
+            : "border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/[0.04]"
           : isEmail
           ? "border-purple-500/15 bg-purple-500/[0.03] hover:border-purple-500/25 hover:bg-purple-500/[0.06]"
-          : "border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/[0.04]"
+          : "border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/[0.02] hover:border-slate-300 dark:hover:border-white/10 hover:bg-slate-100 dark:hover:bg-white/[0.04]"
       )}
     >
       {/* Header row */}
@@ -155,15 +155,15 @@ const NoteLogCard = ({ log }: { log: NoteLog }) => {
       {isExpanded && (
         <div className={cn(
           "px-4 pb-4 border-t space-y-2",
-          isEmail ? "border-purple-500/10" : "border-white/5"
+          isEmail ? "border-purple-500/10" : "border-slate-200 dark:border-white/5"
         )}>
           {isEmail && log.subject && (
             <div className="pt-3 pb-2 border-b border-white/[0.04]">
               <p className="text-[10px] text-gray-600 uppercase tracking-wider font-semibold mb-0.5">Subject</p>
-              <p className="text-xs text-zinc-200 font-medium">{log.subject}</p>
+              <p className="text-xs text-slate-800 dark:text-zinc-200 font-medium">{log.subject}</p>
             </div>
           )}
-          <p className="text-[11px] text-gray-300 leading-relaxed whitespace-pre-wrap font-light pt-1">
+          <p className="text-[11px] text-slate-600 dark:text-gray-300 leading-relaxed whitespace-pre-wrap font-light pt-1">
             {log.body}
           </p>
         </div>
@@ -172,7 +172,7 @@ const NoteLogCard = ({ log }: { log: NoteLog }) => {
       {/* Preview line when collapsed */}
       {!isExpanded && (
         <div className="px-4 pb-3 -mt-1">
-          <p className="text-[11px] text-gray-600 truncate">{log.body}</p>
+          <p className="text-[11px] text-slate-400 dark:text-gray-600 truncate">{log.body}</p>
         </div>
       )}
     </div>
@@ -267,10 +267,10 @@ export const ClientProfileSheet = ({
 
   return (
     <Sheet open={!!selectedClient} onOpenChange={(open) => !open && setSelectedClient(null)}>
-      <SheetContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-slate-300 dark:border-white/10 text-slate-900 dark:text-white w-full sm:max-w-2xl lg:max-w-3xl overflow-y-auto p-0 shadow-2xl">
+      <SheetContent className="bg-[#EFECE5]/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-l border-slate-300 dark:border-white/10 text-slate-900 dark:text-white w-full sm:max-w-2xl lg:max-w-3xl overflow-y-auto p-0 shadow-2xl">
 
         {/* ── Sticky Header ── */}
-        <div className="sticky top-0 z-10 bg-[#0c0c0e]/95 backdrop-blur-xl border-b border-slate-300 dark:border-white/10 px-6 pt-6 pb-4">
+        <div className="sticky top-0 z-10 bg-[#EFECE5]/95 dark:bg-[#0c0c0e]/95 backdrop-blur-xl border-b border-slate-200 dark:border-white/10 px-6 pt-6 pb-4">
           <SheetHeader>
             <SheetTitle className="sr-only">Client Profile</SheetTitle>
             <SheetDescription className="sr-only">Client details and trip history</SheetDescription>
@@ -296,7 +296,7 @@ export const ClientProfileSheet = ({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 text-xs text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 rounded-xl"
+                  className="h-8 text-xs text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-300 dark:border-white/10 rounded-xl"
                   onClick={() => { setEditingClient(selectedClient); setIsEditDialogOpen(true); }}
                 >
                   Edit Info
@@ -322,7 +322,7 @@ export const ClientProfileSheet = ({
                 { icon: AtSign, label: "Email", value: selectedClient.email },
                 { icon: Phone, label: "Phone", value: selectedClient.phone },
               ].map(({ icon: Icon, label, value }) => (
-                <div key={label} className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl p-3.5 flex items-center gap-3">
+                <div key={label} className="rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl p-3.5 flex items-center gap-3">
                   <div className="w-7 h-7 rounded-lg bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 flex items-center justify-center shrink-0">
                     <Icon className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400" />
                   </div>
@@ -352,7 +352,7 @@ export const ClientProfileSheet = ({
               const logs = parseClientNotes(selectedClient.notes);
               if (logs.length === 0) return null;
               return (
-                <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl overflow-hidden shadow-xl">
+                <div className="rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl overflow-hidden shadow-xl">
                   <div className="px-5 pt-5 pb-3">
                     <SectionHeading
                       icon={Mail}
@@ -373,7 +373,7 @@ export const ClientProfileSheet = ({
 
             {/* ── Status Audit Trail ── */}
             {selectedClient.latestTripId && (statusHistory[selectedClient.latestTripId]?.length ?? 0) > 0 && (
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl overflow-hidden shadow-xl">
+              <div className="rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl overflow-hidden shadow-xl">
                 <div className="px-5 pt-5 pb-4">
                   <SectionHeading
                     icon={TrendingUp}
@@ -388,7 +388,7 @@ export const ClientProfileSheet = ({
                       const cfg = statusConfig[entry.status?.toLowerCase()] || statusConfig.draft;
                       return (
                         <div key={idx} className="flex items-start gap-4 relative py-2.5">
-                          <div className={cn("w-5 h-5 rounded-full border-2 border-[#0c0c0e] flex items-center justify-center shrink-0 z-10 mt-0.5", cfg.bg)}>
+                          <div className={cn("w-5 h-5 rounded-full border-2 border-[#EFECE5] dark:border-[#0c0c0e] flex items-center justify-center shrink-0 z-10 mt-0.5", cfg.bg)}>
                             <div className={cn("w-2 h-2 rounded-full", cfg.dot)} />
                           </div>
                           <div className="flex-1 min-w-0 flex items-center justify-between gap-4">
@@ -412,7 +412,7 @@ export const ClientProfileSheet = ({
             )}
 
             {/* ── Trip History ── */}
-            <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-xl overflow-hidden shadow-xl">
+            <div className="rounded-2xl border border-slate-200 dark:border-white/[0.08] bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl overflow-hidden shadow-xl">
               <div className="px-5 pt-5 pb-2">
                 <SectionHeading
                   icon={Plane}
@@ -447,7 +447,7 @@ export const ClientProfileSheet = ({
                     const cfg = statusConfig[statusKey] || statusConfig.draft;
 
                     return (
-                      <div key={trip.id} className="px-5 py-4 hover:bg-white/[0.04] transition-colors group">
+                      <div key={trip.id} className="px-5 py-4 hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors group">
                         <div className="flex items-start gap-3">
                           {/* Destination + status */}
                           <div className="flex-1 min-w-0">
@@ -468,7 +468,7 @@ export const ClientProfileSheet = ({
                                   <div className={cn("w-1.5 h-1.5 rounded-full shrink-0", cfg.dot)} />
                                   <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-300 dark:border-white/10 text-slate-900 dark:text-white">
+                                <SelectContent className="bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-300 dark:border-white/10 text-slate-900 dark:text-white">
                                   {itineraryStatuses.length > 0
                                     ? itineraryStatuses.map(opt => (
                                         <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
@@ -527,7 +527,7 @@ export const ClientProfileSheet = ({
                           <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity shrink-0">
                             <Button
                               variant="ghost" size="icon"
-                              className="h-7 w-7 text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg"
+                              className="h-7 w-7 text-slate-600 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg"
                               onClick={() => { setSelectedTripForModal(trip); setShowModal(true); }}
                               title="View itinerary"
                             >

@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
     Compass,
     CalendarDays,
@@ -10,13 +8,36 @@ import {
     Users,
     ArrowRight,
     DollarSign,
+    Download,
+    Columns3,
+    ChevronLeft,
+    ChevronRight,
+    X,
+    User,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import {
+    DropdownMenu,
+    DropdownMenuCheckboxItem,
+    DropdownMenuContent,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { getCurrencySymbol, formatMoney } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 import { useAuth } from "@/contexts/auth-context";
-import { getStatusBadgeClasses } from "../utils/crm-colors";
+import { getStatusBadgeClasses, CRM_AVATAR_CLASS } from "../utils/crm-colors";
 import type { EnrichedClient } from "../utils/metrics-utils";
 import type { FlatTrip } from "./TripDetailSheet";
 
@@ -24,6 +45,8 @@ interface TripsListViewProps {
     trips: FlatTrip[];
     loading: boolean;
     onTripClick: (trip: FlatTrip) => void;
+    itineraryStatuses?: { value: string; label: string; metadata?: any }[];
+    onStatusChange?: (tripId: string, newStatus: string) => void;
 }
 
 interface TripsKanbanViewProps {
@@ -118,25 +141,36 @@ function SkeletonRows() {
     return (
         <>
             {Array.from({ length: 5 }).map((_, i) => (
-                <tr key={i} className="border-b border-slate-200 dark:border-white/5">
+                <tr key={i} className="border-b border-white/5">
+                    <td className="p-4 w-10">
+                        <div className="h-4 w-4 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                    </td>
                     <td className="p-4">
-                        <div className="h-4 w-40 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
-                        <div className="h-3 w-24 bg-slate-100 dark:bg-white/5 rounded animate-pulse mt-1.5" />
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-white/10 animate-pulse" />
+                            <div>
+                                <div className="h-4 w-32 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                                <div className="h-3 w-40 bg-slate-100 dark:bg-white/5 rounded animate-pulse mt-1.5" />
+                            </div>
+                        </div>
                     </td>
-                    <td className="p-4 hidden md:table-cell">
-                        <div className="h-4 w-32 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                    <td className="p-4">
+                        <div className="h-4 w-24 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                     </td>
-                    <td className="p-4 hidden lg:table-cell">
+                    <td className="p-4">
                         <div className="h-4 w-20 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                     </td>
-                    <td className="p-4 hidden lg:table-cell">
-                        <div className="h-4 w-24 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                    <td className="p-4">
+                        <div className="h-4 w-20 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                     </td>
                     <td className="p-4">
                         <div className="h-6 w-20 bg-slate-200 dark:bg-white/10 rounded-full animate-pulse" />
                     </td>
                     <td className="p-4">
-                        <div className="h-8 w-8 bg-slate-200 dark:bg-white/10 rounded-lg animate-pulse" />
+                        <div className="h-4 w-16 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
+                    </td>
+                    <td className="p-4">
+                        <div className="h-4 w-4 bg-slate-200 dark:bg-white/10 rounded animate-pulse ml-auto" />
                     </td>
                 </tr>
             ))}
@@ -144,139 +178,377 @@ function SkeletonRows() {
     );
 }
 
-/** List/table view for trips */
-const TripsListView = ({ trips, loading, onTripClick }: TripsListViewProps) => {
+/** List/table view for trips matching ClientsView layout */
+const TripsListView = ({ trips, loading, onTripClick, itineraryStatuses = [], onStatusChange }: TripsListViewProps) => {
     const { agencySettings } = useAuth();
+    const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [visibleColumns, setVisibleColumns] = useState({
+        destination: true,
+        dates: true,
+        client: true,
+        status: true,
+        cost: true,
+    });
 
-    // We'll handle empty states inside the table body now to keep the header visible.
+    const toggleColumn = (col: keyof typeof visibleColumns) => {
+        setVisibleColumns(prev => ({ ...prev, [col]: !prev[col] }));
+    };
+
+    const handleSort = (key: string) => {
+        setSortConfig(current => {
+            if (current?.key === key) {
+                return current.direction === 'asc' ? { key, direction: 'desc' } : null;
+            }
+            return { key, direction: 'asc' };
+        });
+    };
+
+    const SortIcon = ({ col }: { col: string }) => {
+        if (sortConfig?.key !== col) return null;
+        return <span className="ml-1 text-[10px]">{sortConfig.direction === 'asc' ? '▲' : '▼'}</span>;
+    };
+
+    const sortedTrips = useMemo(() => {
+        let items = [...trips];
+        if (sortConfig) {
+            items.sort((a, b) => {
+                let aVal: any = a[sortConfig.key as keyof FlatTrip] ?? "";
+                let bVal: any = b[sortConfig.key as keyof FlatTrip] ?? "";
+                if (sortConfig.key === 'dates') {
+                    aVal = a.start_date || "";
+                    bVal = b.start_date || "";
+                }
+                if (typeof aVal === 'string') {
+                    aVal = aVal.toLowerCase();
+                    bVal = (bVal as string).toLowerCase();
+                }
+                if (aVal < bVal) return sortConfig.direction === 'asc' ? -1 : 1;
+                if (aVal > bVal) return sortConfig.direction === 'asc' ? 1 : -1;
+                return 0;
+            });
+        }
+        return items;
+    }, [trips, sortConfig]);
+
+    const ITEMS_PER_PAGE = 10;
+    const totalPages = Math.ceil(sortedTrips.length / ITEMS_PER_PAGE) || 1;
+    const paginatedTrips = useMemo(() => {
+        return sortedTrips.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+    }, [sortedTrips, currentPage]);
+
+    const toggleSelectAll = () => {
+        if (paginatedTrips.length > 0 && selectedIds.size === paginatedTrips.length) {
+            setSelectedIds(new Set());
+        } else {
+            setSelectedIds(new Set(paginatedTrips.map(t => t.id)));
+        }
+    };
+
+    const toggleSelectOne = (id: string) => {
+        const next = new Set(selectedIds);
+        if (next.has(id)) next.delete(id);
+        else next.add(id);
+        setSelectedIds(next);
+    };
+
+    const handleBulkStatusChange = (status: string) => {
+        if (onStatusChange) {
+            selectedIds.forEach(id => onStatusChange(id, status));
+        }
+        setSelectedIds(new Set());
+    };
+
+    const handleExportCSV = () => {
+        const exportItems = selectedIds.size > 0 
+            ? sortedTrips.filter(t => selectedIds.has(t.id))
+            : sortedTrips;
+        if (!exportItems.length) return;
+        const headers = ["Trip Title", "Client Name", "Client Email", "Destination", "Start Date", "End Date", "Status", "Cost", "Currency"];
+        const rows = exportItems.map(t => [
+            `"${(t.title || "").replace(/"/g, '""')}"`,
+            `"${(t.clientName || "").replace(/"/g, '""')}"`,
+            `"${(t.clientEmail || "").replace(/"/g, '""')}"`,
+            `"${(t.destinations || "").replace(/"/g, '""')}"`,
+            `"${t.start_date || ""}"`,
+            `"${t.end_date || ""}"`,
+            `"${t.status || ""}"`,
+            t.tripCost || 0,
+            `"${t.currency || ""}"`
+        ]);
+        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `crm_trips_${new Date().toISOString().slice(0, 10)}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
 
     return (
-        <div className="bg-white/40 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-300/60 dark:border-white/[0.08] shadow-sm dark:shadow-2xl rounded-2xl overflow-hidden">
-            <div className="crm-table-wrapper">
-                <table className="w-full text-left border-collapse min-w-[640px]">
-                    <thead>
-                        <tr className="border-b border-slate-200 dark:border-white/10 text-slate-600 dark:text-zinc-400 font-semibold text-xs">
-                            <th className="p-4">Trip</th>
-                            <th className="p-4 hidden md:table-cell">Destination</th>
-                            <th className="p-4 hidden lg:table-cell">Dates</th>
-                            <th className="p-4 hidden lg:table-cell">Client</th>
-                            <th className="p-4">Status</th>
-                            <th className="p-4 text-right">Cost</th>
-                            <th className="p-4" />
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-white/5">
-                        {!loading && trips.length === 0 ? (
-                            <tr>
-                                <td colSpan={7} className="p-12 text-center text-slate-600 dark:text-zinc-400">
-                                    <div className="flex flex-col items-center justify-center space-y-3">
-                                        <Plane className="w-10 h-10 text-slate-600 dark:text-slate-400 dark:text-zinc-500 opacity-40" />
-                                        <p className="text-sm font-semibold">No trips found matching your filters.</p>
-                                    </div>
-                                </td>
+        <div className="mt-4 space-y-4">
+            {/* Bulk Actions Bar */}
+            {selectedIds.size > 0 && (
+                <div className="flex items-center gap-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl animate-in fade-in slide-in-from-top-2 shadow-sm">
+                    <span className="text-sm text-purple-700 dark:text-purple-300 font-semibold">{selectedIds.size} selected</span>
+                    <div className="h-4 w-px bg-purple-500/30" />
+                    <Select onValueChange={(val) => handleBulkStatusChange(val)}>
+                        <SelectTrigger className="h-8 w-[140px] bg-white dark:bg-white/5 border-purple-500/30 dark:border-white/10 text-slate-900 dark:text-white text-xs font-medium">
+                            <SelectValue placeholder="Set Status..." />
+                        </SelectTrigger>
+                        <SelectContent className="bg-white dark:bg-[#0c0c0e] border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
+                            {itineraryStatuses.length > 0 ? (
+                                itineraryStatuses.map(opt => (
+                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                                ))
+                            ) : (
+                                <>
+                                    <SelectItem value="draft">Draft</SelectItem>
+                                    <SelectItem value="proposed">Proposed</SelectItem>
+                                    <SelectItem value="sent">Sent</SelectItem>
+                                    <SelectItem value="booked">Booked</SelectItem>
+                                </>
+                            )}
+                        </SelectContent>
+                    </Select>
+                    <Button variant="outline" size="sm" className="h-8 border-purple-500/30 dark:border-white/10 bg-purple-500/10 dark:bg-white/5 text-purple-900 dark:text-purple-200 hover:bg-purple-500/20 dark:hover:bg-white/10 text-xs font-medium" onClick={handleExportCSV}>
+                        <Download className="w-3.5 h-3.5 mr-1.5" /> Export
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs font-medium ml-auto" onClick={() => setSelectedIds(new Set())}>
+                        Clear
+                    </Button>
+                </div>
+            )}
+
+            {/* Table Toolbar */}
+            <div className="flex items-center justify-between">
+                <p className="text-xs text-slate-600 dark:text-gray-400 font-medium">{sortedTrips.length} trip{sortedTrips.length !== 1 ? 's' : ''}</p>
+                <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" className="h-8 border-slate-300/80 dark:border-white/10 bg-white/70 dark:bg-white/5 text-slate-800 dark:text-gray-200 hover:bg-slate-200/80 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white text-xs font-medium" onClick={handleExportCSV}>
+                        <Download className="w-3.5 h-3.5 mr-1.5" /> Export CSV
+                    </Button>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="h-8 border-slate-300/80 dark:border-white/10 bg-white/70 dark:bg-white/5 text-slate-800 dark:text-gray-200 hover:bg-slate-200/80 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white text-xs font-medium">
+                                <Columns3 className="w-3.5 h-3.5 mr-1.5" /> Columns
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="bg-white dark:bg-[#0c0c0e] border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
+                            <DropdownMenuLabel className="text-xs text-slate-600 dark:text-gray-400">Toggle Columns</DropdownMenuLabel>
+                            <DropdownMenuSeparator className="bg-slate-200 dark:bg-white/10" />
+                            <DropdownMenuCheckboxItem checked={visibleColumns.destination} onCheckedChange={() => toggleColumn('destination')} className="text-xs">Destination</DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem checked={visibleColumns.dates} onCheckedChange={() => toggleColumn('dates')} className="text-xs">Dates</DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem checked={visibleColumns.client} onCheckedChange={() => toggleColumn('client')} className="text-xs">Client</DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem checked={visibleColumns.status} onCheckedChange={() => toggleColumn('status')} className="text-xs">Status</DropdownMenuCheckboxItem>
+                            <DropdownMenuCheckboxItem checked={visibleColumns.cost} onCheckedChange={() => toggleColumn('cost')} className="text-xs">Cost</DropdownMenuCheckboxItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+
+            {/* Table */}
+            <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-300/60 dark:border-white/[0.08] shadow-xl rounded-2xl overflow-hidden">
+                <div className="crm-table-wrapper">
+                    <table className="w-full text-left border-collapse min-w-[640px]">
+                        <thead>
+                            <tr className="border-b border-slate-300 dark:border-white/10 text-[11px] uppercase tracking-wider text-gray-500 font-semibold bg-white/[0.02]">
+                                <th className="p-4 w-10">
+                                    <Checkbox
+                                        checked={paginatedTrips.length > 0 && selectedIds.size === paginatedTrips.length}
+                                        onCheckedChange={toggleSelectAll}
+                                        className="border-slate-300 dark:border-white/20 data-[state=checked]:bg-purple-500 data-[state=checked]:border-purple-500"
+                                    />
+                                </th>
+                                <th className="p-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('title')}>
+                                    <span className="inline-flex items-center">Trip Info <SortIcon col="title" /></span>
+                                </th>
+                                {visibleColumns.destination && (
+                                    <th className="p-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('destinations')}>
+                                        <span className="inline-flex items-center">Destination <SortIcon col="destinations" /></span>
+                                    </th>
+                                )}
+                                {visibleColumns.dates && (
+                                    <th className="p-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('dates')}>
+                                        <span className="inline-flex items-center">Dates <SortIcon col="dates" /></span>
+                                    </th>
+                                )}
+                                {visibleColumns.client && (
+                                    <th className="p-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('clientName')}>
+                                        <span className="inline-flex items-center">Client <SortIcon col="clientName" /></span>
+                                    </th>
+                                )}
+                                {visibleColumns.status && (
+                                    <th className="p-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('status')}>
+                                        <span className="inline-flex items-center">Status <SortIcon col="status" /></span>
+                                    </th>
+                                )}
+                                {visibleColumns.cost && (
+                                    <th className="p-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('tripCost')}>
+                                        <span className="inline-flex items-center">Cost <SortIcon col="tripCost" /></span>
+                                    </th>
+                                )}
+                                <th className="p-4"></th>
                             </tr>
-                        ) : loading ? (
-                            <SkeletonRows />
-                        ) : (
-                            trips.map((trip) => {
-                                const currencySymbol = getCurrencySymbol(
-                                    trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY
-                                );
-                                return (
-                                    <tr
-                                        key={trip.id}
-                                        className="hover:bg-slate-50 dark:hover:bg-white/5 transition-colors group cursor-pointer"
+                        </thead>
+                        <tbody className="divide-y divide-white/5">
+                            {loading ? (
+                                <SkeletonRows />
+                            ) : paginatedTrips.length === 0 ? (
+                                <tr>
+                                    <td colSpan={8} className="p-8 text-center text-gray-500 bg-slate-100 dark:bg-white/5">
+                                        <div className="flex flex-col items-center justify-center py-6">
+                                            <Plane className="w-12 h-12 text-gray-600 mb-3 opacity-40" />
+                                            <p>No trips found matching your criteria.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ) : (
+                                paginatedTrips.map((trip) => (
+                                    <tr 
+                                        key={trip.id} 
+                                        className={cn(
+                                            "border-b border-white/5 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer group",
+                                            selectedIds.has(trip.id) && "bg-slate-100 dark:bg-white/5"
+                                        )}
                                         onClick={() => onTripClick(trip)}
-                                        role="button"
-                                        tabIndex={0}
-                                        onKeyDown={(e) => e.key === "Enter" && onTripClick(trip)}
                                     >
-                                        {/* Trip Name */}
+                                        <td className="p-4 w-10" onClick={(e) => e.stopPropagation()}>
+                                            <Checkbox
+                                                checked={selectedIds.has(trip.id)}
+                                                onCheckedChange={() => toggleSelectOne(trip.id)}
+                                                className="border-slate-300 dark:border-white/20 data-[state=checked]:bg-zinc-700 data-[state=checked]:text-slate-900 dark:text-white data-[state=checked]:border-zinc-600"
+                                            />
+                                        </td>
                                         <td className="p-4">
-                                            <p className="font-bold text-slate-900 dark:text-white text-sm group-hover:text-primary transition-colors line-clamp-1">
-                                                {trip.title}
-                                            </p>
-                                            {/* Show destination on mobile where separate column is hidden */}
-                                            {trip.destinations && (
-                                                <p className="text-xs text-slate-600 dark:text-zinc-400 line-clamp-1 mt-0.5 md:hidden">
-                                                    {trip.destinations}
-                                                </p>
-                                            )}
-                                        </td>
-
-                                        {/* Destination */}
-                                        <td className="p-4 hidden md:table-cell">
-                                            {trip.destinations ? (
-                                                <div className="flex items-center gap-1.5">
-                                                    <Compass className="w-3.5 h-3.5 text-primary shrink-0" />
-                                                    <span className="text-sm text-slate-700 dark:text-zinc-200 font-medium line-clamp-1">
-                                                        {trip.destinations}
-                                                    </span>
+                                            <div className="flex items-center gap-3">
+                                                <div className={cn("inline-flex w-8 h-8 rounded-full items-center justify-center text-xs shrink-0", CRM_AVATAR_CLASS)}>
+                                                    <Plane className="w-4 h-4 text-slate-800 dark:text-zinc-200" />
                                                 </div>
-                                            ) : (
-                                                <span className="text-xs text-slate-600 dark:text-slate-400 dark:text-zinc-500 italic">—</span>
-                                            )}
-                                        </td>
-
-                                        {/* Dates */}
-                                        <td className="p-4 hidden lg:table-cell">
-                                            <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-zinc-400 font-medium">
-                                                <CalendarDays className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400 dark:text-zinc-400 shrink-0" />
-                                                <span>{formatShortDate(trip.start_date)}</span>
-                                                {trip.end_date && (
-                                                    <>
-                                                        <ArrowRight className="w-3 h-3 text-slate-600 dark:text-slate-400 dark:text-zinc-500" />
-                                                        <span>{formatShortDate(trip.end_date)}</span>
-                                                    </>
-                                                )}
+                                                <div>
+                                                    <p className="font-medium text-slate-900 dark:text-white text-sm group-hover:text-slate-900 dark:hover:text-white transition-colors">
+                                                        {trip.title}
+                                                    </p>
+                                                    <p className="text-xs text-gray-500">{trip.destinations || 'No destination'}</p>
+                                                </div>
                                             </div>
                                         </td>
-
-                                        {/* Client */}
-                                        <td className="p-4 hidden lg:table-cell">
-                                            {trip.clientName ? (
-                                                <div className="flex items-center gap-1.5">
-                                                    <Users className="w-3.5 h-3.5 text-slate-600 dark:text-slate-400 dark:text-zinc-400 shrink-0" />
-                                                    <span className="text-xs text-slate-700 dark:text-zinc-300 font-semibold line-clamp-1">
-                                                        {trip.clientName}
+                                        {visibleColumns.destination && (
+                                            <td className="p-4 text-slate-600 dark:text-gray-300">
+                                                <div className="flex items-center gap-2 group/dest">
+                                                    <Compass className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400 group-hover/dest:text-slate-900 dark:hover:text-white transition-colors shrink-0" />
+                                                    <span className="truncate max-w-[180px] text-xs font-medium text-slate-800 dark:text-zinc-200 group-hover/dest:text-slate-900 dark:hover:text-white transition-colors">
+                                                        {trip.destinations || "—"}
                                                     </span>
                                                 </div>
-                                            ) : (
-                                                <span className="text-xs text-slate-600 dark:text-slate-400 dark:text-zinc-500 italic">—</span>
-                                            )}
-                                        </td>
-
-                                        {/* Status */}
-                                        <td className="p-4">
-                                            <Badge
-                                                variant="outline"
-                                                className={cn(
-                                                    "capitalize text-[10px] font-semibold px-2 py-0.5",
-                                                    statusClasses(trip.status)
-                                                )}
-                                            >
-                                                {trip.status}
-                                            </Badge>
-                                        </td>
-
-                                        <td className="p-4 text-right">
-                                            <span className="text-sm font-semibold text-purple-600 dark:text-purple-300">
+                                            </td>
+                                        )}
+                                        {visibleColumns.dates && (
+                                            <td className="p-4 text-xs text-gray-500">
+                                                <div className="flex items-center gap-1.5">
+                                                    <CalendarDays className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
+                                                    <span>{formatShortDate(trip.start_date)}</span>
+                                                    {trip.end_date && (
+                                                        <>
+                                                            <ArrowRight className="w-3 h-3 text-slate-500 dark:text-zinc-500" />
+                                                            <span>{formatShortDate(trip.end_date)}</span>
+                                                        </>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        )}
+                                        {visibleColumns.client && (
+                                            <td className="p-4 text-xs text-slate-600 dark:text-gray-300">
+                                                <div className="flex items-center gap-1.5">
+                                                    <User className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400" />
+                                                    <span className="font-medium text-slate-800 dark:text-zinc-200">
+                                                        {trip.clientName || "—"}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                        )}
+                                        {visibleColumns.status && (
+                                            <td className="p-4">
+                                                <Badge
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "capitalize text-[10px] font-semibold px-2 py-0.5",
+                                                        statusClasses(trip.status)
+                                                    )}
+                                                >
+                                                    {trip.status}
+                                                </Badge>
+                                            </td>
+                                        )}
+                                        {visibleColumns.cost && (
+                                            <td className="p-4 text-xs font-bold text-slate-900 dark:text-white">
                                                 {trip.tripCost > 0
                                                     ? formatMoney(trip.tripCost, trip.currency || agencySettings?.default_currency || DEFAULT_CURRENCY)
                                                     : "—"}
-                                            </span>
-                                        </td>
-
-                                        {/* Arrow */}
+                                            </td>
+                                        )}
                                         <td className="p-4">
-                                            <ArrowRight className="w-4 h-4 text-slate-600 dark:text-slate-400 dark:text-gray-600 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors" />
+                                            <ArrowRight className="w-4 h-4 text-gray-600 group-hover:text-slate-900 dark:hover:text-white transition-colors ml-auto" />
                                         </td>
                                     </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                    <div className="flex items-center justify-between p-4 border-t border-slate-300 dark:border-white/10">
+                        <p className="text-xs text-gray-500">
+                            Page {currentPage} of {totalPages} ({sortedTrips.length} total)
+                        </p>
+                        <div className="flex items-center gap-1">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30"
+                                disabled={currentPage === 1}
+                                onClick={() => setCurrentPage(p => p - 1)}
+                            >
+                                <ChevronLeft className="w-4 h-4" />
+                            </Button>
+                            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                                let page: number;
+                                if (totalPages <= 5) {
+                                    page = i + 1;
+                                } else if (currentPage <= 3) {
+                                    page = i + 1;
+                                } else if (currentPage >= totalPages - 2) {
+                                    page = totalPages - 4 + i;
+                                } else {
+                                    page = currentPage - 2 + i;
+                                }
+                                return (
+                                    <Button
+                                        key={page}
+                                        variant="ghost"
+                                        size="icon"
+                                        className={cn("h-8 w-8 text-xs", page === currentPage ? "bg-purple-500/20 text-purple-400" : "text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white")}
+                                        onClick={() => setCurrentPage(page)}
+                                    >
+                                        {page}
+                                    </Button>
                                 );
-                            })
-                        )}
-                    </tbody>
-                </table>
+                            })}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white disabled:opacity-30"
+                                disabled={currentPage === totalPages}
+                                onClick={() => setCurrentPage(p => p + 1)}
+                            >
+                                <ChevronRight className="w-4 h-4" />
+                            </Button>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -483,23 +755,25 @@ export const TripsView = ({
 
     return (
         <div className="space-y-4">
-            {/* Row count */}
-            <p className="text-xs text-slate-500 dark:text-gray-500">
-                {filteredTrips.length} trip{filteredTrips.length !== 1 ? "s" : ""}
-            </p>
-
             {viewMode === "kanban" ? (
-                <TripsKanbanView
-                    trips={filteredTrips}
-                    itineraryStatuses={itineraryStatuses}
-                    onStatusChange={onStatusChange}
-                    onTripClick={onTripClick}
-                />
+                <>
+                    <p className="text-xs text-slate-500 dark:text-gray-500">
+                        {filteredTrips.length} trip{filteredTrips.length !== 1 ? "s" : ""}
+                    </p>
+                    <TripsKanbanView
+                        trips={filteredTrips}
+                        itineraryStatuses={itineraryStatuses}
+                        onStatusChange={onStatusChange}
+                        onTripClick={onTripClick}
+                    />
+                </>
             ) : (
                 <TripsListView
                     trips={filteredTrips}
                     loading={loading}
                     onTripClick={onTripClick}
+                    itineraryStatuses={itineraryStatuses}
+                    onStatusChange={onStatusChange}
                 />
             )}
         </div>

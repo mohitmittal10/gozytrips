@@ -520,31 +520,31 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
         )}
 
         <Dialog open={isOpen} onOpenChange={onOpenChange}>
-          <DialogContent className="max-w-[96vw] w-full max-h-[96vh] md:max-w-[92vw] md:max-h-[92vh] h-full p-0 flex flex-col bg-zinc-950 border border-zinc-800/80 rounded-xl md:rounded-2xl overflow-hidden shadow-2xl shadow-black/90">
+          <DialogContent className="max-w-[96vw] w-full max-h-[96vh] md:max-w-[92vw] md:max-h-[92vh] h-full p-0 flex flex-col bg-slate-100 dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800/80 rounded-xl md:rounded-2xl overflow-hidden shadow-2xl">
             <DialogTitle className="sr-only">PDF Preview & Editor</DialogTitle>
 
             {/* ─── Toolbar ──────────────────────────────────────────────────── */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-4 py-3 border-b border-zinc-800/80 bg-zinc-950/60 backdrop-blur-xl flex-shrink-0">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 px-4 py-3 border-b border-slate-200 dark:border-zinc-800/80 bg-white/90 dark:bg-zinc-950/60 backdrop-blur-xl flex-shrink-0">
               {/* Row 1 / Left: Title & Theme Select */}
               <div className="flex items-center justify-between md:justify-start gap-4 pr-8 md:pr-0">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-indigo-500 animate-pulse shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                  <span className="text-xs font-bold text-zinc-300 uppercase tracking-wider">
+                  <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 uppercase tracking-wider">
                     PDF Preview
                   </span>
                 </div>
 
                 <div className="flex items-center gap-1.5">
                   <Select value={theme} onValueChange={(v) => handleThemeChange(v as PdfTheme)}>
-                    <SelectTrigger className="w-[125px] h-8 bg-zinc-900/65 border-zinc-800 hover:border-zinc-700 text-zinc-100 text-xs transition-all rounded-lg focus:ring-1 focus:ring-indigo-500/50 shadow-inner">
+                    <SelectTrigger className="w-[125px] h-8 bg-white dark:bg-zinc-900/65 border-slate-300 dark:border-zinc-800 hover:border-slate-400 dark:hover:border-zinc-700 text-slate-900 dark:text-zinc-100 text-xs transition-all rounded-lg focus:ring-1 focus:ring-indigo-500/50 shadow-inner">
                       <SelectValue placeholder="Theme" />
                     </SelectTrigger>
-                    <SelectContent className="bg-zinc-900 border-zinc-800 text-zinc-200">
+                    <SelectContent className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-zinc-200">
                       {pdfThemeOptions.map((opt) => (
                         <SelectItem
                           key={opt.value}
                           value={opt.value}
-                          className="hover:bg-zinc-800 focus:bg-zinc-800 text-xs cursor-pointer"
+                          className="hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-zinc-800 dark:focus:bg-zinc-800 text-xs cursor-pointer"
                         >
                           {opt.label}
                           {themePagesCache.current[opt.value as PdfTheme] && (
@@ -567,10 +567,10 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
               {/* Row 2 / Right: Zoom, Refresh, Download */}
               <div className="flex items-center justify-between md:justify-end gap-3 flex-wrap md:flex-nowrap">
                 {/* Zoom controls */}
-                <div className="flex items-center gap-1 bg-zinc-900/40 border border-zinc-800/80 rounded-lg p-0.5 text-zinc-300">
+                <div className="flex items-center gap-1 bg-white/80 dark:bg-zinc-900/40 border border-slate-300 dark:border-zinc-800/80 rounded-lg p-0.5 text-slate-700 dark:text-zinc-300">
                   <button
                     onClick={() => setZoom((z) => Math.max(20, z - 10))}
-                    className="hover:text-white transition-colors p-1 hover:bg-zinc-800/50 rounded-md cursor-pointer"
+                    className="hover:text-slate-900 dark:hover:text-white transition-colors p-1 hover:bg-slate-200/60 dark:hover:bg-zinc-800/50 rounded-md cursor-pointer"
                     title="Zoom Out"
                   >
                     <Minus className="w-3.5 h-3.5" />
@@ -589,7 +589,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
 
                   <button
                     onClick={() => setZoom((z) => Math.min(150, z + 10))}
-                    className="hover:text-white transition-colors p-1 hover:bg-zinc-800/50 rounded-md cursor-pointer"
+                    className="hover:text-slate-900 dark:hover:text-white transition-colors p-1 hover:bg-slate-200/60 dark:hover:bg-zinc-800/50 rounded-md cursor-pointer"
                     title="Zoom In"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -599,14 +599,14 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
                     {zoom}%
                   </span>
 
-                  <div className="h-3.5 w-px bg-zinc-800 mx-0.5" />
+                  <div className="h-3.5 w-px bg-slate-300 dark:bg-zinc-800 mx-0.5" />
 
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleZoomToFit}
                     disabled={!currentCanvas || currentCanvas.width === 0 || isRendering}
-                    className="h-6 text-[10px] text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-zinc-800/50 gap-1 px-1.5 rounded-md"
+                    className="h-6 text-[10px] text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-zinc-800/50 gap-1 px-1.5 rounded-md"
                     title="Fit to Screen"
                   >
                     <ZoomIn className="w-3 h-3" />
@@ -621,7 +621,7 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
                     variant="ghost"
                     size="sm"
                     disabled={isRendering || isDownloading}
-                    className="h-8 bg-zinc-900/50 hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 text-zinc-300 hover:text-white text-xs rounded-lg transition-all font-medium gap-1.5 flex items-center justify-center"
+                    className="h-8 bg-white hover:bg-slate-100 dark:bg-zinc-900/50 dark:hover:bg-zinc-900 border border-slate-300 dark:border-zinc-800 hover:border-slate-400 dark:hover:border-zinc-700 text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white text-xs rounded-lg transition-all font-medium gap-1.5 flex items-center justify-center"
                     onClick={handleRefresh}
                   >
                     <RotateCw className={`w-3.5 h-3.5 ${isRendering ? "animate-spin" : ""}`} />
@@ -662,18 +662,9 @@ export const PdfPreviewEditor = forwardRef<PdfPreviewEditorRef, PdfPreviewEditor
               {/* Preview Area */}
               <div
                 ref={previewContainerRef}
-                className={`flex-1 flex items-start justify-center p-4 md:p-8 relative selection:bg-indigo-500/30 ${
+                className={`flex-1 flex items-start justify-center p-4 md:p-8 relative selection:bg-indigo-500/30 bg-slate-200/80 dark:bg-zinc-950 ${
                   isRendering ? "overflow-hidden" : "overflow-auto"
                 }`}
-                style={{
-                  backgroundColor: "rgb(9, 9, 11)",
-                  backgroundImage: `
-                    radial-gradient(ellipse at top, rgba(39, 39, 42, 0.15), rgba(9, 9, 11, 0.95), rgb(0, 0, 0)),
-                    linear-gradient(rgba(255, 255, 255, 0.007) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255, 255, 255, 0.007) 1px, transparent 1px)
-                  `,
-                  backgroundSize: "100% 100%, 24px 24px, 24px 24px",
-                }}
               >
 
                 {currentCanvas ? (

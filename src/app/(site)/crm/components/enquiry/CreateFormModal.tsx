@@ -63,7 +63,7 @@ export function CreateFormModal({ onClose, onCreated, createForm }: CreateFormMo
       />
 
       {/* Modal */}
-      <div className="relative w-full max-w-md bg-[#0c0c0e]/95 backdrop-blur-2xl border border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-md bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border border-slate-200 dark:border-white/[0.08] rounded-2xl shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-white/5">
           <div>
@@ -79,7 +79,7 @@ export function CreateFormModal({ onClose, onCreated, createForm }: CreateFormMo
           {!createdForm ? (
             <>
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-zinc-300 mb-2">
                   Form Title
                 </label>
                 <input
@@ -92,7 +92,7 @@ export function CreateFormModal({ onClose, onCreated, createForm }: CreateFormMo
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-zinc-300 mb-2">
                   Description <span className="text-slate-600 dark:text-zinc-400 font-normal normal-case tracking-normal">(optional)</span>
                 </label>
                 <textarea
@@ -105,7 +105,7 @@ export function CreateFormModal({ onClose, onCreated, createForm }: CreateFormMo
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-zinc-300 mb-2">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-zinc-300 mb-2">
                   <Calendar className="inline w-3.5 h-3.5 mr-1 text-primary" />
                   Expiry Date <span className="text-slate-600 dark:text-zinc-400 font-normal normal-case tracking-normal">(optional)</span>
                 </label>
@@ -122,7 +122,7 @@ export function CreateFormModal({ onClose, onCreated, createForm }: CreateFormMo
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-600 dark:text-zinc-400 mb-2">
                   Form Fields Included
                 </label>
-                <div className="grid grid-cols-2 gap-x-3 gap-y-2 p-3.5 bg-white/[0.03] border border-white/[0.08] rounded-xl text-xs text-zinc-300">
+                <div className="grid grid-cols-2 gap-x-3 gap-y-2 p-3.5 bg-white/60 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.06] rounded-xl text-xs text-slate-700 dark:text-zinc-300">
                   <div className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-primary shrink-0" /> <span>Start/End Locations</span></div>
                   <div className="flex items-center gap-1.5"><Compass className="w-3.5 h-3.5 text-primary shrink-0" /> <span>Destinations</span></div>
                   <div className="flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-primary shrink-0" /> <span>Travel Dates</span></div>
@@ -179,7 +179,7 @@ export function CreateFormModal({ onClose, onCreated, createForm }: CreateFormMo
 
               <button
                 onClick={onClose}
-                className="w-full h-11 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-zinc-200 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-colors text-sm font-semibold cursor-pointer"
+                className="w-full h-11 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-colors text-sm font-semibold cursor-pointer"
               >
                 Done
               </button>

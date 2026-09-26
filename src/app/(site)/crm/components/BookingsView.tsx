@@ -43,11 +43,11 @@ export const BookingsView = ({
             {bookingsLoading ? (
                 <div className="crm-booking-grid">
                     {[1, 2, 3].map((i) => (
-                        <div key={i} className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-6 h-32 animate-pulse" />
+                        <div key={i} className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-6 h-32 animate-pulse" />
                     ))}
                 </div>
             ) : bookings.length === 0 ? (
-                <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-16 text-center text-slate-600 dark:text-zinc-400 flex flex-col items-center justify-center shadow-xl">
+                <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-16 text-center text-slate-600 dark:text-zinc-400 flex flex-col items-center justify-center shadow-xl">
                     <FileText className="w-12 h-12 text-zinc-500 mb-4" />
                     <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">No Standalone Bookings</h3>
                     <p className="mb-5 text-sm text-slate-600 dark:text-zinc-400 font-medium">Create a quick booking for a cab, flight, or hotel independent of a full trip.</p>
@@ -62,7 +62,7 @@ export const BookingsView = ({
                         <div 
                             key={booking.id} 
                             onClick={() => setSelectedBooking(booking)}
-                            className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5 hover:border-primary/40 transition-all group relative overflow-hidden cursor-pointer shadow-xl"
+                            className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 hover:border-primary/40 transition-all group relative overflow-hidden cursor-pointer shadow-xl"
                         >
                             <div className="flex items-center justify-between mb-3 relative">
                                 <div className="flex items-center gap-3">

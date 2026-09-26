@@ -108,14 +108,14 @@ export function FloatingToolbar({
                 top: coords.top,
                 left: coords.left,
             }}
-            className="z-[9999] bg-zinc-950/95 border border-zinc-800 rounded-xl p-1 shadow-2xl flex items-center gap-1 backdrop-blur-xl font-sans animate-in fade-in zoom-in-95 duration-150"
+            className="z-[9999] bg-white dark:bg-zinc-950/95 border border-slate-300 dark:border-zinc-800 rounded-xl p-1 shadow-2xl flex items-center gap-1 backdrop-blur-xl font-sans animate-in fade-in zoom-in-95 duration-150"
             onMouseDown={(e) => e.preventDefault()} // Keep focus on contenteditable
         >
             {/* Bold */}
             <button
                 onClick={handleBold}
                 title="Bold (Ctrl+B)"
-                className="p-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-colors cursor-pointer flex items-center"
+                className="p-1.5 rounded-lg text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer flex items-center"
             >
                 <Bold size={14} />
             </button>
@@ -124,12 +124,12 @@ export function FloatingToolbar({
             <button
                 onClick={handleItalic}
                 title="Italic (Ctrl+I)"
-                className="p-1.5 rounded-lg text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-zinc-800/80 transition-colors cursor-pointer flex items-center"
+                className="p-1.5 rounded-lg text-slate-700 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer flex items-center"
             >
                 <Italic size={14} />
             </button>
 
-            <div className="w-[1px] h-4 bg-zinc-800 mx-0.5" />
+            <div className="w-[1px] h-4 bg-slate-200 dark:bg-zinc-800 mx-0.5" />
 
             {/* Time Edit Button for Activities */}
             {actMatch && (
@@ -139,8 +139,8 @@ export function FloatingToolbar({
                         title="Edit Activity Time"
                         className={`px-2 py-1 rounded-lg text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors ${
                             showTimePicker
-                                ? "bg-zinc-800 text-white"
-                                : "text-zinc-300 hover:text-white hover:bg-zinc-800/80"
+                                ? "bg-slate-200 dark:bg-zinc-800 text-slate-900 dark:text-white"
+                                : "text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-zinc-800/80"
                         }`}
                     >
                         <Clock size={14} className="text-slate-600 dark:text-zinc-400" />
@@ -148,13 +148,13 @@ export function FloatingToolbar({
                     </button>
 
                     {showTimePicker && (
-                        <div className="absolute top-full left-0 mt-2 bg-zinc-950 border border-zinc-800 rounded-xl p-2 flex items-center gap-2 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+                        <div className="absolute top-full left-0 mt-2 bg-white dark:bg-zinc-950 border border-slate-300 dark:border-zinc-800 rounded-xl p-2 flex items-center gap-2 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
                             <input
                                 type="text"
                                 value={timeValue}
                                 onChange={(e) => setTimeValue(e.target.value)}
                                 placeholder="09:00 AM"
-                                className="w-20 bg-zinc-900 border border-zinc-800 rounded-lg px-2 py-1 text-xs text-zinc-100 focus:outline-none focus:border-zinc-600 transition-colors"
+                                className="w-20 bg-slate-50 dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-lg px-2 py-1 text-xs text-slate-900 dark:text-zinc-100 focus:outline-none focus:border-slate-400 dark:focus:border-zinc-600 transition-colors"
                             />
                             <button
                                 onClick={handleConfirmTime}
@@ -175,7 +175,7 @@ export function FloatingToolbar({
                         onOpenImagePicker("destination photo", target);
                     }}
                     title="Replace Image"
-                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border border-zinc-800 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
+                    className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-200 border border-slate-300 dark:border-zinc-800 flex items-center gap-1.5 transition-all active:scale-95 cursor-pointer"
                 >
                     <Camera size={14} className="text-slate-600 dark:text-zinc-400" />
                     <span>Change Image</span>

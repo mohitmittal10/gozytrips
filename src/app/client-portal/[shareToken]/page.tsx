@@ -58,7 +58,7 @@ function AuthGate({
           <img
             src={formMeta.agent_avatar_url}
             alt="Agent"
-            className="w-14 h-14 rounded-full mx-auto mb-3 border-2 border-white/10 object-cover"
+            className="w-14 h-14 rounded-full mx-auto mb-3 border-2 border-slate-200 dark:border-white/10 object-cover"
           />
         ) : (
           <div className="w-14 h-14 rounded-full mx-auto mb-3 bg-gradient-to-br from-[#FF5C33] to-[#EC4899] flex items-center justify-center">
@@ -68,18 +68,18 @@ function AuthGate({
         <p className="text-xs uppercase tracking-widest text-[#FF5C33] font-semibold mb-1">
           {formMeta.agent_brand_name}
         </p>
-        <h1 className="text-2xl sm:text-3xl font-bold text-white mt-1">{formMeta.title}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mt-1">{formMeta.title}</h1>
         {formMeta.description && (
-          <p className="text-slate-600 dark:text-gray-400 text-sm mt-2 max-w-md mx-auto">{formMeta.description}</p>
+          <p className="text-slate-600 dark:text-gray-400 text-sm mt-2 max-w-md mx-auto font-medium">{formMeta.description}</p>
         )}
       </div>
 
       {/* Auth card */}
-      <div className="w-full max-w-md bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl">
-        <h2 className="text-lg font-semibold text-white mb-1">
+      <div className="w-full max-w-md bg-white/80 dark:bg-white/[0.04] backdrop-blur-xl border border-slate-200 dark:border-white/10 rounded-2xl p-8 shadow-2xl">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white mb-1">
           {mode === "signup" ? "Create your account" : "Welcome back"}
         </h2>
-        <p className="text-sm text-gray-500 mb-6">
+        <p className="text-sm text-slate-600 dark:text-gray-500 mb-6 font-medium">
           {mode === "signup"
             ? "Sign up to fill in your travel preferences securely."
             : "Sign in to access your trip dashboard."}
@@ -88,7 +88,7 @@ function AuthGate({
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "signup" && (
             <div>
-              <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">
+              <label className="block text-xs font-semibold uppercase tracking-widest text-slate-600 dark:text-gray-500 mb-1.5">
                 Your Name
               </label>
               <input
@@ -97,13 +97,13 @@ function AuthGate({
                 placeholder="e.g. Rahul Sharma"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="w-full h-11 px-4 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-[#FF5C33]/60 text-sm transition-colors"
+                className="w-full h-11 px-4 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-[#FF5C33]/60 text-sm transition-colors"
               />
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-widest text-slate-600 dark:text-gray-500 mb-1.5">
               Email Address
             </label>
             <input
@@ -112,12 +112,12 @@ function AuthGate({
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full h-11 px-4 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-[#FF5C33]/60 text-sm transition-colors"
+              className="w-full h-11 px-4 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-[#FF5C33]/60 text-sm transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-widest text-gray-500 mb-1.5">
+            <label className="block text-xs font-semibold uppercase tracking-widest text-slate-600 dark:text-gray-500 mb-1.5">
               Password
             </label>
             <input
@@ -127,7 +127,7 @@ function AuthGate({
               placeholder="Min 6 characters"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full h-11 px-4 rounded-xl bg-black/40 border border-white/10 text-white placeholder:text-gray-600 focus:outline-none focus:border-[#FF5C33]/60 text-sm transition-colors"
+              className="w-full h-11 px-4 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-[#FF5C33]/60 text-sm transition-colors"
             />
           </div>
 
@@ -215,7 +215,7 @@ export default function ClientPortalPage({
             <div className="w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mx-auto mb-4">
               <AlertCircle className="w-8 h-8 text-red-400" />
             </div>
-            <h2 className="text-white font-semibold text-lg mb-2">Form Unavailable</h2>
+            <h2 className="text-slate-900 dark:text-white font-semibold text-lg mb-2">Form Unavailable</h2>
             <p className="text-slate-600 dark:text-gray-400 text-sm max-w-sm">{loadError}</p>
           </div>
         ) : (
@@ -311,10 +311,10 @@ function AuthenticatedPortal({
     return (
       <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center">
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 flex items-center justify-center mx-auto mb-6 animate-in zoom-in duration-500">
-          <CheckCircle2 className="w-10 h-10 text-green-400" />
+          <CheckCircle2 className="w-10 h-10 text-green-500 dark:text-green-400" />
         </div>
-        <h1 className="text-3xl font-bold text-white mb-3">You&apos;re all set! 🎉</h1>
-        <p className="text-slate-600 dark:text-gray-400 text-base max-w-md mb-2">
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">You&apos;re all set! 🎉</h1>
+        <p className="text-slate-600 dark:text-gray-400 text-base max-w-md mb-2 font-medium">
           Your travel preferences have been shared with{" "}
           <span className="text-[#FF5C33] font-medium">{formMeta.agent_brand_name}</span>.
         </p>

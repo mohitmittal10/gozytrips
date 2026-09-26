@@ -119,19 +119,19 @@ export function ExpensesTab({
         <>
             <div className="space-y-5">
                 {/* Header & Search Bar */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/[0.06] p-3 rounded-xl backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/60 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] p-3 rounded-xl backdrop-blur-sm shadow-sm">
                     <div className="relative flex-1">
                         <Search className="w-4 h-4 text-slate-600 dark:text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <Input
                             placeholder="Search by client, trip, or vendor..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-9 text-xs"
+                            className="pl-9 bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-gray-500 h-9 text-xs"
                         />
                     </div>
-                    <div className="flex items-center gap-2 text-xs text-slate-600 dark:text-gray-400 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 shrink-0">
+                    <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-gray-400 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 shrink-0">
                         <span>Total Tracked Expenses:</span>
-                        <strong className="text-red-400 font-bold">{fm(totalExpenses)}</strong>
+                        <strong className="text-red-500 dark:text-red-400 font-bold">{fm(totalExpenses)}</strong>
                     </div>
                 </div>
 
@@ -145,13 +145,13 @@ export function ExpensesTab({
                         return (
                             <div
                                 key={fin.tripId || fin.itineraryId}
-                                className="bg-gradient-to-b from-white/[0.04] to-white/[0.01] border border-white/[0.08] hover:border-white/[0.15] transition-all rounded-2xl p-5 space-y-4 shadow-xl"
+                                className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] hover:border-primary/40 dark:hover:border-white/[0.15] transition-all rounded-2xl p-5 space-y-4 shadow-xl"
                             >
                                 {/* Header */}
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-white/[0.06] pb-3">
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="text-sm font-semibold text-white tracking-wide">
+                                            <span className="text-sm font-semibold text-slate-900 dark:text-white tracking-wide">
                                                 {fin.clientName}
                                             </span>
                                             <span className="text-xs text-slate-600 dark:text-gray-400">· {fin.tripTitle}</span>
@@ -160,15 +160,15 @@ export function ExpensesTab({
                                                 className={cn(
                                                     "text-[10px] uppercase font-semibold tracking-wider px-2 py-0.5",
                                                     fin.status === "booked" || fin.status === "confirmed"
-                                                        ? "bg-green-500/10 text-green-400 border-green-500/20"
-                                                        : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                                                        ? "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20"
+                                                        : "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
                                                 )}
                                             >
                                                 {fin.status}
                                             </Badge>
                                         </div>
-                                        <p className="text-xs text-gray-500">
-                                            Destination: <span className="text-gray-300">{fin.destination}</span>
+                                        <p className="text-xs text-slate-500 dark:text-gray-500">
+                                            Destination: <span className="text-slate-700 dark:text-gray-300 font-medium">{fin.destination}</span>
                                             {fin.startDate && (
                                                 <span className="ml-2">({new Date(fin.startDate).toLocaleDateString()})</span>
                                             )}
@@ -178,16 +178,16 @@ export function ExpensesTab({
                                     {/* Financial Summary Strip */}
                                     <div className="flex items-center gap-4 text-xs text-right">
                                         <div>
-                                            <p className="text-[10px] text-gray-500 uppercase">Client Price</p>
-                                            <p className="font-bold text-white">{fm(fin.clientPrice, fin.currency)}</p>
+                                            <p className="text-[10px] text-slate-500 uppercase font-semibold">Client Price</p>
+                                            <p className="font-bold text-slate-900 dark:text-white">{fm(fin.clientPrice, fin.currency)}</p>
                                         </div>
                                         <div>
-                                            <p className="text-[10px] text-gray-500 uppercase">Vendor Costs</p>
-                                            <p className="font-bold text-red-400">-{fm(totalExp, fin.currency)}</p>
+                                            <p className="text-[10px] text-slate-500 uppercase font-semibold">Vendor Costs</p>
+                                            <p className="font-bold text-red-500 dark:text-red-400">-{fm(totalExp, fin.currency)}</p>
                                         </div>
-                                        <div className="border-l border-white/10 pl-4">
-                                            <p className="text-[10px] text-gray-500 uppercase">Net Margin</p>
-                                            <p className={cn("font-bold", margin >= 20 ? "text-emerald-600 dark:text-emerald-400" : margin > 0 ? "text-amber-400" : "text-red-400")}>
+                                        <div className="border-l border-slate-200 dark:border-white/10 pl-4">
+                                            <p className="text-[10px] text-slate-500 uppercase font-semibold">Net Margin</p>
+                                            <p className={cn("font-bold", margin >= 20 ? "text-emerald-600 dark:text-emerald-400" : margin > 0 ? "text-amber-600 dark:text-amber-400" : "text-red-500 dark:text-red-400")}>
                                                 {margin.toFixed(0)}% ({fm(netProfit, fin.currency)})
                                             </p>
                                         </div>
@@ -204,38 +204,38 @@ export function ExpensesTab({
                                             {fin.expenses.map((e) => (
                                                 <div
                                                     key={e.id}
-                                                    className="flex items-center justify-between px-3.5 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-xl text-xs hover:bg-white/[0.04] transition-colors"
+                                                    className="flex items-center justify-between px-3.5 py-2.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] rounded-xl text-xs hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
                                                 >
                                                     <div className="flex items-center gap-2.5 flex-wrap">
-                                                        <Badge variant="secondary" className="bg-white/5 text-zinc-300 border border-white/10 text-[10px] capitalize font-medium flex items-center gap-1">
+                                                        <Badge variant="secondary" className="bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-white/10 text-[10px] capitalize font-medium flex items-center gap-1">
                                                             {getCategoryIcon(e.category)}
                                                             <span>{e.category}</span>
                                                         </Badge>
-                                                        <span className="text-zinc-200 font-medium">{e.vendor}</span>
+                                                        <span className="text-slate-800 dark:text-zinc-200 font-semibold">{e.vendor}</span>
                                                         {e.description && (
                                                             <span className="text-slate-600 dark:text-gray-400">· {e.description}</span>
                                                         )}
                                                         {e.isAuto ? (
-                                                            <Badge variant="outline" className="bg-blue-500/10 text-blue-300 border-blue-500/20 text-[9px] font-semibold">
+                                                            <Badge variant="outline" className="bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/20 text-[9px] font-semibold">
                                                                 Auto-synced
                                                             </Badge>
                                                         ) : (
-                                                            <Badge variant="outline" className="bg-purple-500/10 text-purple-300 border-purple-500/20 text-[9px] font-semibold">
+                                                            <Badge variant="outline" className="bg-purple-500/10 text-purple-700 dark:text-purple-300 border-purple-500/20 text-[9px] font-semibold">
                                                                 Custom
                                                             </Badge>
                                                         )}
                                                     </div>
                                                     <div className="flex items-center gap-3 shrink-0">
-                                                        <span className="text-red-400 font-bold">
+                                                        <span className="text-red-500 dark:text-red-400 font-bold">
                                                             -{fm(e.amount, fin.currency)}
                                                         </span>
-                                                        <span className="text-gray-500 text-[11px]">
+                                                        <span className="text-slate-500 dark:text-gray-500 text-[11px]">
                                                             {new Date(e.date).toLocaleDateString()}
                                                         </span>
                                                         {!e.isAuto && (
                                                             <button
                                                                 onClick={() => deleteExpense(fin.itineraryId, e.id)}
-                                                                className="text-gray-500 hover:text-red-400 p-1 transition-colors"
+                                                                className="text-slate-500 hover:text-red-500 p-1 transition-colors cursor-pointer"
                                                                 title="Delete Expense"
                                                             >
                                                                 <Trash2 className="w-3.5 h-3.5" />
@@ -247,7 +247,7 @@ export function ExpensesTab({
                                         </div>
                                     </div>
                                 ) : (
-                                    <div className="text-xs text-gray-500 italic py-1">
+                                    <div className="text-xs text-slate-500 dark:text-gray-500 italic py-1">
                                         No expenses recorded yet. Click &quot;Add Custom Expense&quot; below to add one manually.
                                     </div>
                                 )}
@@ -257,7 +257,7 @@ export function ExpensesTab({
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="h-8 text-xs border-white/10 bg-white/5 text-zinc-200 hover:bg-white/10 hover:text-white w-full"
+                                        className="h-8 text-xs border-slate-200 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-900 dark:text-zinc-200 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white w-full cursor-pointer rounded-xl font-semibold"
                                         onClick={() => handleOpen(fin)}
                                     >
                                         <Plus className="w-3.5 h-3.5 mr-1.5" />
@@ -269,9 +269,9 @@ export function ExpensesTab({
                     })}
 
                     {filteredFinancials.length === 0 && (
-                        <div className="text-center py-16 bg-white/[0.01] border border-white/5 rounded-2xl space-y-2">
+                        <div className="text-center py-16 bg-white/60 dark:bg-white/[0.01] border border-slate-200 dark:border-white/5 rounded-2xl space-y-2">
                             <p className="text-sm text-slate-600 dark:text-gray-400 font-medium">No trips matched your search filter.</p>
-                            <p className="text-xs text-gray-600">Try searching a different client or itinerary name.</p>
+                            <p className="text-xs text-slate-500 dark:text-gray-600">Try searching a different client or itinerary name.</p>
                         </div>
                     )}
                 </div>
@@ -279,9 +279,9 @@ export function ExpensesTab({
 
             {/* Smart Add Expense Dialog */}
             <Dialog open={showAddExpense} onOpenChange={setShowAddExpense}>
-                <DialogContent className="bg-[#0D0D10] border border-white/15 text-white sm:max-w-[440px] shadow-2xl">
+                <DialogContent className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white sm:max-w-[440px] shadow-2xl rounded-2xl">
                     <DialogHeader>
-                        <DialogTitle className="text-base font-bold">Add Custom Expense</DialogTitle>
+                        <DialogTitle className="text-base font-bold text-slate-900 dark:text-white">Add Custom Expense</DialogTitle>
                         <DialogDescription className="text-slate-600 dark:text-gray-400 text-xs">
                             {selectedTripFin
                                 ? `${selectedTripFin.clientName} · ${selectedTripFin.tripTitle}`
@@ -293,24 +293,24 @@ export function ExpensesTab({
                         <div className="space-y-4 py-2">
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <Label className="text-xs text-gray-300 mb-1.5 block">
+                                    <Label className="text-xs text-slate-700 dark:text-gray-300 font-semibold mb-1.5 block">
                                         Amount ({cs(selectedTripFin.currency)})
                                     </Label>
                                     <Input
                                         type="number"
                                         value={expAmt}
                                         onChange={(e) => setExpAmt(e.target.value)}
-                                        className="bg-white/5 border-white/10 text-white h-9 text-sm focus-visible:border-purple-500"
+                                        className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-9 text-sm focus-visible:ring-primary/50 rounded-xl"
                                         placeholder="0.00"
                                     />
                                 </div>
                                 <div>
-                                    <Label className="text-xs text-gray-300 mb-1.5 block">Category</Label>
+                                    <Label className="text-xs text-slate-700 dark:text-gray-300 font-semibold mb-1.5 block">Category</Label>
                                     <Select value={expCat} onValueChange={setExpCat}>
-                                        <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-xs">
+                                        <SelectTrigger className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-9 text-xs rounded-xl">
                                             <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-[#141418] border-white/10 text-white">
+                                        <SelectContent className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                                             {expenseCategories.map((ec) => (
                                                 <SelectItem key={ec.value} value={ec.value} className="text-xs">
                                                     {ec.label}
@@ -322,32 +322,32 @@ export function ExpensesTab({
                             </div>
 
                             <div>
-                                <Label className="text-xs text-gray-300 mb-1.5 block">Vendor / Supplier Name</Label>
+                                <Label className="text-xs text-slate-700 dark:text-gray-300 font-semibold mb-1.5 block">Vendor / Supplier Name</Label>
                                 <Input
                                     value={expVendor}
                                     onChange={(e) => setExpVendor(e.target.value)}
-                                    className="bg-white/5 border-white/10 text-white h-9 text-xs"
+                                    className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-9 text-xs rounded-xl"
                                     placeholder="e.g. Tour Guide, Local Driver, Activity Vendor"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-xs text-gray-300 mb-1.5 block">Description / Details</Label>
+                                <Label className="text-xs text-slate-700 dark:text-gray-300 font-semibold mb-1.5 block">Description / Details</Label>
                                 <Input
                                     value={expDesc}
                                     onChange={(e) => setExpDesc(e.target.value)}
-                                    className="bg-white/5 border-white/10 text-white h-9 text-xs"
+                                    className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-9 text-xs rounded-xl"
                                     placeholder="e.g. Full day guide allowance, Extra permits, Tips"
                                 />
                             </div>
 
                             <div>
-                                <Label className="text-xs text-gray-300 mb-1.5 block">Expense Date</Label>
+                                <Label className="text-xs text-slate-700 dark:text-gray-300 font-semibold mb-1.5 block">Expense Date</Label>
                                 <Input
                                     type="date"
                                     value={expDate}
                                     onChange={(e) => setExpDate(e.target.value)}
-                                    className="bg-white/5 border-white/10 text-white h-9 text-xs"
+                                    className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-9 text-xs rounded-xl"
                                 />
                             </div>
                         </div>
@@ -356,13 +356,13 @@ export function ExpensesTab({
                     <DialogFooter className="gap-2">
                         <Button
                             variant="outline"
-                            className="border-white/10 text-slate-600 dark:text-gray-400 hover:bg-white/10 text-xs h-9"
+                            className="border-slate-200 dark:border-white/10 text-slate-700 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/10 text-xs h-9 rounded-xl cursor-pointer"
                             onClick={() => setShowAddExpense(false)}
                         >
                             Cancel
                         </Button>
                         <Button
-                            className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-9 font-semibold"
+                            className="aurora-gradient text-slate-900 dark:text-white text-xs h-9 font-bold rounded-xl border-none shadow-md hover:brightness-110 cursor-pointer"
                             onClick={handleSubmit}
                         >
                             <Check className="w-3.5 h-3.5 mr-1" />

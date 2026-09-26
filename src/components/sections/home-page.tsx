@@ -741,30 +741,30 @@ export default function HomePage() {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <Card className="rounded-3xl border border-slate-200 dark:border-0 bg-white dark:bg-zinc-900/40 backdrop-blur-xl shadow-xl dark:shadow-none overflow-hidden relative h-full flex flex-col justify-between">
+              <div className="rounded-3xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-zinc-900/40 backdrop-blur-xl shadow-xl dark:shadow-none overflow-hidden relative h-full flex flex-col justify-between">
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-zinc-700/40 to-transparent" />
-                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-40 bg-slate-200/50 dark:bg-zinc-800/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-40 bg-slate-100 dark:bg-zinc-800/10 rounded-full blur-3xl pointer-events-none" />
                 
                 <div>
-                  <CardHeader className="p-8 pb-5">
+                  <div className="p-8 pb-5">
                     <div className="flex items-center justify-between gap-2">
-                      <CardTitle className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                         Without WanderLabs
-                      </CardTitle>
+                      </h3>
                       <span className="text-slate-500 dark:text-zinc-500 text-xs font-bold uppercase tracking-wider">
                         STRESSFUL DAY
                       </span>
                     </div>
-                    <CardDescription className="text-slate-600 dark:text-zinc-400 text-xs mt-2.5">
+                    <p className="text-slate-600 dark:text-zinc-400 text-xs mt-2.5">
                       Common friction points travel agents encounter with manual Word, Canva & Excel.
-                    </CardDescription>
-                  </CardHeader>
+                    </p>
+                  </div>
 
                   <div className="px-8">
                     <Separator className="bg-slate-200 dark:bg-zinc-800" />
                   </div>
 
-                  <CardContent className="p-8 pt-5 pb-6">
+                  <div className="p-8 pt-5 pb-6">
                     <ul className="space-y-3.5">
                       {WITHOUT_ITEMS.map((item, i) => (
                         <motion.li
@@ -782,10 +782,10 @@ export default function HomePage() {
                         </motion.li>
                       ))}
                     </ul>
-                  </CardContent>
+                  </div>
                 </div>
 
-                <CardFooter className="p-8 pt-0 border-t border-slate-200 dark:border-zinc-800 flex flex-col items-start bg-slate-50/50 dark:bg-zinc-900/20">
+                <div className="p-8 pt-0 border-t border-slate-200 dark:border-zinc-800 flex flex-col items-start bg-slate-50/80 dark:bg-zinc-900/20">
                   <div className="pt-4 w-full">
                     <p className="text-slate-800 dark:text-zinc-300 text-sm font-semibold flex items-center gap-2">
                       <Timer className="size-4 text-slate-600 dark:text-zinc-400 shrink-0" />
@@ -795,8 +795,8 @@ export default function HomePage() {
                       If you handle 5 clients a week, that&apos;s 20 hours gone — every single week.
                     </p>
                   </div>
-                </CardFooter>
-              </Card>
+                </div>
+              </div>
             </motion.div>
 
             {/* WITH */}
@@ -806,30 +806,30 @@ export default function HomePage() {
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <Card className="rounded-3xl border border-slate-200 dark:border-0 bg-white dark:bg-zinc-900/40 backdrop-blur-xl shadow-xl dark:shadow-none overflow-hidden relative h-full flex flex-col justify-between">
+              <div className="rounded-3xl border border-slate-200 dark:border-white/[0.06] bg-white dark:bg-zinc-900/40 backdrop-blur-xl shadow-xl dark:shadow-none overflow-hidden relative h-full flex flex-col justify-between">
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-slate-200 dark:via-zinc-700/40 to-transparent" />
-                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-40 bg-slate-200/50 dark:bg-zinc-800/10 rounded-full blur-3xl pointer-events-none" />
+                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-60 h-40 bg-slate-100 dark:bg-zinc-800/10 rounded-full blur-3xl pointer-events-none" />
                 
                 <div>
-                  <CardHeader className="p-8 pb-5">
+                  <div className="p-8 pb-5">
                     <div className="flex items-center justify-between gap-2">
-                      <CardTitle className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3">
                         <span>With WanderLabs</span>
-                      </CardTitle>
+                      </h3>
                       <span className="text-slate-500 dark:text-[#71717A] text-xs font-black uppercase tracking-wider">
                         RECOMMENDED
                       </span>
                     </div>
-                    <CardDescription className="text-slate-600 dark:text-zinc-400 text-xs mt-2.5">
+                    <p className="text-slate-600 dark:text-zinc-400 text-xs mt-2.5">
                       Everything your agency needs to create and close quotes in seconds.
-                    </CardDescription>
-                  </CardHeader>
+                    </p>
+                  </div>
 
                   <div className="px-8">
                     <Separator className="bg-slate-200 dark:bg-zinc-800" />
                   </div>
 
-                  <CardContent className="p-8 pt-5 pb-6">
+                  <div className="p-8 pt-5 pb-6">
                     <ul className="space-y-3.5">
                       {WITH_ITEMS.map((item, i) => (
                         <motion.li
@@ -847,10 +847,10 @@ export default function HomePage() {
                         </motion.li>
                       ))}
                     </ul>
-                  </CardContent>
+                  </div>
                 </div>
 
-                <CardFooter className="p-8 pt-0 border-t border-slate-200 dark:border-zinc-800 flex flex-col items-start bg-slate-50/50 dark:bg-zinc-900/20">
+                <div className="p-8 pt-0 border-t border-slate-200 dark:border-zinc-800 flex flex-col items-start bg-slate-50/80 dark:bg-zinc-900/20">
                   <div className="pt-4 w-full">
                     <p className="text-slate-800 dark:text-zinc-300 text-sm font-semibold flex items-center gap-2">
                       <Sparkles className="size-4 text-slate-600 dark:text-zinc-400 shrink-0" />
@@ -860,8 +860,8 @@ export default function HomePage() {
                       Use that time to call more clients, close more trips, and grow your agency.
                     </p>
                   </div>
-                </CardFooter>
-              </Card>
+                </div>
+              </div>
             </motion.div>
           </div>
         </div>

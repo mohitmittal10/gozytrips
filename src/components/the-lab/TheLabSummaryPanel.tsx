@@ -524,7 +524,7 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
                           value={editForm.leisureDay}
                           onChange={(e) => setEditForm(prev => ({ ...prev, leisureDay: e.target.value }))}
                           placeholder="e.g. 3"
-                          className="w-14 bg-slate-50 dark:bg-slate-100/50 dark:bg-white/5 border border-slate-300/60 dark:border-slate-300/60 dark:border-white/10 rounded-md px-2 py-0.5 text-xs text-white text-center focus:outline-none focus:border-primary"
+                          className="w-14 bg-slate-50 dark:bg-white/5 border border-slate-300/60 dark:border-white/10 rounded-md px-2 py-0.5 text-xs text-slate-900 dark:text-white text-center focus:outline-none focus:border-primary"
                         />
                       </div>
                     )}
@@ -583,7 +583,7 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
                   </div>
 
                   <div>
-                    <label className="text-[9px] text-rose-400 font-bold block mb-1 uppercase tracking-wider">Must Exclude / Avoid</label>
+                    <label className="text-[9px] text-rose-600 dark:text-rose-400 font-bold block mb-1 uppercase tracking-wider">Must Exclude / Avoid</label>
                     <textarea
                       rows={2}
                       value={editForm.avoid}
@@ -595,10 +595,10 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
                 </div>
 
                 {/* AI Regeneration Custom Prompt Instructions */}
-                <div className="p-2.5 rounded-xl bg-gradient-to-r from-purple-900/20 to-indigo-900/20 border border-purple-500/30 space-y-1.5">
+                <div className="p-2.5 rounded-xl bg-gradient-to-r from-purple-100/60 to-indigo-100/60 dark:from-purple-900/20 dark:to-indigo-900/20 border border-purple-400/40 dark:border-purple-500/30 space-y-1.5">
                   <div className="flex items-center justify-between">
-                    <label className="text-[9px] text-purple-300 font-black uppercase tracking-widest flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-amber-300" /> AI Regeneration Instructions
+                    <label className="text-[9px] text-purple-600 dark:text-purple-300 font-black uppercase tracking-widest flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-amber-500 dark:text-amber-300" /> AI Regeneration Instructions
                     </label>
                     <span className={cn(
                       "text-[10px] font-semibold",
@@ -629,7 +629,7 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
                   <button
                     type="button"
                     onClick={() => setIsEditingRequirements(false)}
-                    className="w-full sm:w-auto px-3 py-1.5 rounded-lg border border-slate-300/60 dark:border-white/10 text-slate-600 dark:text-zinc-400 hover:text-white hover:bg-slate-100 dark:hover:bg-slate-100/50 dark:bg-white/5 font-semibold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
+                    className="w-full sm:w-auto px-3 py-1.5 rounded-lg border border-slate-300 dark:border-white/10 text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 font-semibold text-xs transition-colors flex items-center justify-center gap-1 cursor-pointer"
                   >
                     <X className="w-3.5 h-3.5" /> Cancel
                   </button>
@@ -639,9 +639,9 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
                       <button
                         type="button"
                         onClick={() => handleSaveEditForm(false)}
-                        className="w-full sm:w-auto px-3 py-1.5 rounded-lg border border-slate-300/60 dark:border-white/10 bg-slate-100/50 dark:bg-white/5 hover:bg-white/10 text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        className="w-full sm:w-auto px-3 py-1.5 rounded-lg border border-slate-300 dark:border-white/10 bg-slate-100 hover:bg-slate-200 dark:bg-white/5 dark:hover:bg-white/10 text-slate-700 dark:text-white font-semibold text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <Save className="w-3.5 h-3.5 text-zinc-300" /> Save Only
+                        <Save className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-300" /> Save Only
                       </button>
                     )}
 
@@ -650,7 +650,7 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
                         type="button"
                         disabled={isGenerating || isFeedbackPromptOverLimit}
                         onClick={() => handleSaveEditForm(true)}
-                        className="w-full sm:w-auto bg-gradient-to-r from-purple-600 via-indigo-600 to-primary text-slate-900 dark:text-white font-bold px-4 py-1.5 h-auto rounded-lg border border-purple-400/40 shadow-md shadow-purple-900/40 hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2 text-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full sm:w-auto bg-gradient-to-r from-purple-600 via-indigo-600 to-primary text-white font-bold px-4 py-1.5 h-auto rounded-lg border border-purple-400/40 shadow-md shadow-purple-900/40 hover:shadow-purple-500/30 transition-all flex items-center justify-center gap-2 text-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isGenerating ? (
                           <>

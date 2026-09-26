@@ -132,17 +132,17 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
         <>
             <div className="space-y-5">
                 {/* Search & Header */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/[0.06] p-3 rounded-xl backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/60 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] p-3 rounded-xl backdrop-blur-sm shadow-sm">
                     <div className="relative flex-1">
                         <Search className="w-4 h-4 text-slate-600 dark:text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <Input
                             placeholder="Search invoices by client, email, or trip..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-9 text-xs"
+                            className="pl-9 bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-gray-500 h-9 text-xs"
                         />
                     </div>
-                    <div className="text-xs text-zinc-500 shrink-0 font-medium">
+                    <div className="text-xs text-slate-600 dark:text-zinc-500 shrink-0 font-medium">
                         {filteredFinancials.length} invoice{filteredFinancials.length !== 1 ? "s" : ""}
                     </div>
                 </div>
@@ -158,7 +158,7 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                         return (
                             <div
                                 key={fin.tripId || fin.itineraryId}
-                                className="bg-gradient-to-b from-white/[0.04] to-white/[0.01] border border-white/[0.08] hover:border-white/[0.15] transition-all rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between"
+                                className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] hover:border-primary/40 dark:hover:border-white/[0.15] transition-all rounded-2xl overflow-hidden shadow-xl flex flex-col justify-between"
                             >
                                 {/* Card Top accent */}
                                 <div className={cn(
@@ -171,16 +171,16 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                     <div className="flex items-start justify-between gap-2">
                                         <div className="space-y-0.5">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <p className="text-sm font-bold text-white">{fin.clientName}</p>
+                                                <p className="text-sm font-bold text-slate-900 dark:text-white">{fin.clientName}</p>
                                             </div>
                                             {fin.clientEmail && (
-                                                <p className="text-[11px] text-zinc-500 font-mono">{fin.clientEmail}</p>
+                                                <p className="text-[11px] text-slate-500 dark:text-zinc-500 font-mono">{fin.clientEmail}</p>
                                             )}
-                                            <p className="text-xs text-slate-600 dark:text-zinc-400 mt-1">
-                                                {fin.tripTitle} <span className="text-zinc-500">·</span> <span className="text-zinc-300">{fin.destination}</span>
+                                            <p className="text-xs text-slate-700 dark:text-zinc-300 mt-1 font-medium">
+                                                {fin.tripTitle} <span className="text-slate-400 dark:text-zinc-500">·</span> <span className="text-slate-800 dark:text-zinc-300">{fin.destination}</span>
                                             </p>
                                             {fin.startDate && (
-                                                <p className="text-[11px] text-zinc-500 flex items-center gap-1 mt-0.5">
+                                                <p className="text-[11px] text-slate-500 dark:text-zinc-500 flex items-center gap-1 mt-0.5">
                                                     <Calendar className="w-3 h-3" />
                                                     {new Date(fin.startDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
                                                     {fin.endDate && ` – ${new Date(fin.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}`}
@@ -192,10 +192,10 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                             className={cn(
                                                 "text-[10px] font-bold border shrink-0 uppercase tracking-wider",
                                                 isFullyPaid
-                                                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                                    ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
                                                     : totalPaid > 0
-                                                    ? "bg-amber-500/15 text-amber-400 border-amber-500/30"
-                                                    : "bg-red-500/15 text-red-400 border-red-500/30"
+                                                    ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/30"
+                                                    : "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30"
                                             )}
                                         >
                                             {isFullyPaid ? "Paid ✓" : totalPaid > 0 ? "Partial" : "Unpaid"}
@@ -206,16 +206,16 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                     <div className="space-y-1.5">
                                         <div className="flex justify-between text-[11px]">
                                             <span className="text-slate-600 dark:text-zinc-400">Collected: <strong className="text-emerald-600 dark:text-emerald-400">{fm(totalPaid, fin.currency)}</strong></span>
-                                            <span className="text-slate-600 dark:text-zinc-400">Total: <strong className="text-white">{fm(fin.clientPrice, fin.currency)}</strong></span>
+                                            <span className="text-slate-600 dark:text-zinc-400">Total: <strong className="text-slate-900 dark:text-white">{fm(fin.clientPrice, fin.currency)}</strong></span>
                                         </div>
-                                        <div className="h-1.5 bg-white/5 rounded-full overflow-hidden border border-white/5">
+                                        <div className="h-1.5 bg-slate-200 dark:bg-white/5 rounded-full overflow-hidden border border-slate-300 dark:border-white/5">
                                             <div
                                                 className={cn("h-full rounded-full transition-all duration-700", isFullyPaid ? "bg-emerald-600 dark:bg-emerald-500" : "bg-amber-500")}
                                                 style={{ width: `${paidPct}%` }}
                                             />
                                         </div>
                                         {!isFullyPaid && balance > 0 && (
-                                            <p className="text-[11px] text-amber-400 font-semibold text-right">
+                                            <p className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold text-right">
                                                 {fm(Math.max(0, balance), fin.currency)} outstanding
                                             </p>
                                         )}
@@ -224,12 +224,12 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                     {/* Financial Breakdown */}
                                     <div className="grid grid-cols-3 gap-2 text-center">
                                         {[
-                                            { label: "Package", value: fm(fin.clientPrice, fin.currency), color: "text-white" },
+                                            { label: "Package", value: fm(fin.clientPrice, fin.currency), color: "text-slate-900 dark:text-white" },
                                             { label: "Received", value: fm(totalPaid, fin.currency), color: "text-emerald-600 dark:text-emerald-400" },
-                                            { label: "Outstanding", value: fm(Math.max(0, balance), fin.currency), color: balance > 0 ? "text-amber-400" : "text-emerald-600 dark:text-emerald-400" },
+                                            { label: "Outstanding", value: fm(Math.max(0, balance), fin.currency), color: balance > 0 ? "text-amber-600 dark:text-amber-400" : "text-emerald-600 dark:text-emerald-400" },
                                         ].map(({ label, value, color }) => (
-                                            <div key={label} className="p-2 bg-black/30 border border-white/5 rounded-xl">
-                                                <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-bold">{label}</p>
+                                            <div key={label} className="p-2 bg-slate-100 dark:bg-black/30 border border-slate-200 dark:border-white/5 rounded-xl">
+                                                <p className="text-[9px] text-slate-500 dark:text-zinc-500 uppercase tracking-wider font-bold">{label}</p>
                                                 <p className={cn("text-xs font-bold mt-0.5", color)}>{value}</p>
                                             </div>
                                         ))}
@@ -241,7 +241,7 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                     <Button
                                         variant="secondary"
                                         size="sm"
-                                        className="h-9 text-xs bg-white/10 hover:bg-white/20 text-white border border-white/15 flex-1 transition-all font-semibold rounded-xl cursor-pointer"
+                                        className="h-9 text-xs bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/20 text-slate-900 dark:text-white border border-slate-200 dark:border-white/15 flex-1 transition-all font-semibold rounded-xl cursor-pointer"
                                         onClick={() => handleOpenInvoicePreview(fin)}
                                     >
                                         <Eye className="w-3.5 h-3.5 mr-1.5" />
@@ -251,7 +251,7 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                     <Button
                                         variant="secondary"
                                         size="sm"
-                                        className="h-9 text-xs bg-indigo-600/20 hover:bg-indigo-600 text-indigo-200 hover:text-white border border-indigo-500/30 transition-all font-semibold rounded-xl cursor-pointer px-3"
+                                        className="h-9 text-xs bg-primary/15 hover:bg-primary text-primary hover:text-slate-900 dark:hover:text-white border border-primary/30 transition-all font-semibold rounded-xl cursor-pointer px-3"
                                         onClick={() => handleDirectPrint(fin)}
                                         title="Print / Save as PDF"
                                     >
@@ -263,10 +263,10 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                     })}
 
                     {filteredFinancials.length === 0 && (
-                        <div className="col-span-full text-center py-16 bg-white/[0.01] border border-white/5 rounded-2xl space-y-2">
-                            <FileText className="w-10 h-10 text-zinc-600 mx-auto mb-3" />
+                        <div className="col-span-full text-center py-16 bg-white/60 dark:bg-white/[0.01] border border-slate-200 dark:border-white/5 rounded-2xl space-y-2">
+                            <FileText className="w-10 h-10 text-slate-400 dark:text-zinc-600 mx-auto mb-3" />
                             <p className="text-sm text-slate-600 dark:text-gray-400 font-medium">No invoices matched your search.</p>
-                            <p className="text-xs text-gray-600">Try adjusting your search or add trips in The Lab.</p>
+                            <p className="text-xs text-slate-500 dark:text-gray-600">Try adjusting your search or add trips in The Lab.</p>
                         </div>
                     )}
                 </div>
@@ -274,12 +274,12 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
 
             {/* Professional Invoice Preview Modal */}
             <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
-                <DialogContent className="bg-[#0c0c0e]/98 backdrop-blur-2xl border border-white/10 text-white w-full sm:max-w-[860px] max-h-[90vh] overflow-y-auto shadow-2xl p-0">
+                <DialogContent className="bg-white dark:bg-[#0c0c0e]/98 backdrop-blur-2xl border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white w-full sm:max-w-[860px] max-h-[90vh] overflow-y-auto shadow-2xl p-0 rounded-2xl">
                     {/* Modal Header */}
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 sticky top-0 bg-[#0c0c0e]/95 backdrop-blur-xl z-10">
+                    <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-white/10 sticky top-0 bg-white/95 dark:bg-[#0c0c0e]/95 backdrop-blur-xl z-10">
                         <div>
-                            <DialogTitle className="text-base font-bold flex items-center gap-2">
-                                <FileText className="w-4 h-4 text-indigo-400" />
+                            <DialogTitle className="text-base font-bold flex items-center gap-2 text-slate-900 dark:text-white">
+                                <FileText className="w-4 h-4 text-primary" />
                                 Professional Invoice
                             </DialogTitle>
                             <DialogDescription className="text-xs text-slate-600 dark:text-zinc-400 mt-0.5">
@@ -287,7 +287,7 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                             </DialogDescription>
                         </div>
                         <Button
-                            className="aurora-gradient text-white text-xs h-9 font-bold rounded-xl border-none hover:brightness-110 cursor-pointer flex items-center gap-2 px-4"
+                            className="aurora-gradient text-slate-900 dark:text-white text-xs h-9 font-bold rounded-xl border-none hover:brightness-110 cursor-pointer flex items-center gap-2 px-4"
                             onClick={handlePrintInvoice}
                         >
                             <Printer className="w-3.5 h-3.5" />
@@ -299,7 +299,7 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                     <div className="p-6">
                         {/* Paper shadow wrapper */}
                         <div style={{
-                            boxShadow: "0 20px 60px rgba(0,0,0,0.5), 0 4px 16px rgba(0,0,0,0.3)",
+                            boxShadow: "0 20px 60px rgba(0,0,0,0.15), 0 4px 16px rgba(0,0,0,0.1)",
                             borderRadius: "4px",
                             overflow: "hidden",
                         }}>

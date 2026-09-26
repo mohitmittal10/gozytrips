@@ -172,26 +172,26 @@ export function PaymentsTab({
         <>
             <div className="space-y-5">
                 {/* Header with Search & Quick Filters */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/[0.02] border border-white/[0.06] p-3 rounded-xl backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white/60 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] p-3 rounded-xl backdrop-blur-sm shadow-sm">
                     <div className="relative flex-1">
                         <Search className="w-4 h-4 text-slate-600 dark:text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
                         <Input
                             placeholder="Search by client, trip title, or destination..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="pl-9 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-9 text-xs"
+                            className="pl-9 bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-500 dark:placeholder:text-gray-500 h-9 text-xs"
                         />
                     </div>
-                    <div className="flex items-center gap-1 bg-white/5 p-1 rounded-lg border border-white/10 shrink-0">
+                    <div className="flex items-center gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-lg border border-slate-200 dark:border-white/10 shrink-0">
                         {(["all", "pending", "paid"] as const).map((st) => (
                             <button
                                 key={st}
                                 onClick={() => setStatusFilter(st)}
                                 className={cn(
-                                    "px-3 py-1 text-xs font-medium rounded-md capitalize transition-all",
+                                    "px-3 py-1 text-xs font-medium rounded-md capitalize transition-all cursor-pointer",
                                     statusFilter === st
-                                        ? "bg-purple-600 text-white shadow-sm"
-                                        : "text-slate-600 dark:text-gray-400 hover:text-white hover:bg-white/5"
+                                        ? "bg-primary/20 dark:bg-primary/30 text-slate-900 dark:text-white border border-primary/30 font-bold shadow-sm"
+                                        : "text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/5"
                                 )}
                             >
                                 {st === "all" ? "All Trips" : st}
@@ -219,17 +219,17 @@ export function PaymentsTab({
                         return (
                             <div
                                 key={fin.tripId || fin.itineraryId}
-                                className="bg-gradient-to-b from-white/[0.04] to-white/[0.01] border border-white/[0.08] hover:border-white/[0.15] transition-all rounded-2xl p-5 space-y-4 shadow-xl"
+                                className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] hover:border-primary/40 dark:hover:border-white/[0.15] transition-all rounded-2xl p-5 space-y-4 shadow-xl"
                             >
                                 {/* Trip Header */}
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.06] pb-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-white/[0.06] pb-3">
                                     <div className="space-y-1">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                            <span className="text-sm font-semibold text-white tracking-wide">
+                                            <span className="text-sm font-semibold text-slate-900 dark:text-white tracking-wide">
                                                 {fin.clientName}
                                             </span>
                                             {fin.clientEmail && (
-                                                <span className="text-xs text-slate-600 dark:text-gray-400 font-mono bg-white/5 px-2 py-0.5 rounded">
+                                                <span className="text-xs text-slate-600 dark:text-gray-400 font-mono bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 px-2 py-0.5 rounded">
                                                     {fin.clientEmail}
                                                 </span>
                                             )}
@@ -238,17 +238,17 @@ export function PaymentsTab({
                                                 className={cn(
                                                     "text-[10px] uppercase font-semibold tracking-wider px-2 py-0.5",
                                                     fin.status === "booked" || fin.status === "confirmed"
-                                                        ? "bg-green-500/10 text-green-400 border-green-500/20"
-                                                        : "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                                                        ? "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20"
+                                                        : "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20"
                                                 )}
                                             >
                                                 {fin.status}
                                             </Badge>
                                         </div>
                                         <p className="text-xs text-slate-600 dark:text-gray-400">
-                                            {fin.tripTitle} · <span className="text-gray-300">{fin.destination}</span>
+                                            {fin.tripTitle} · <span className="text-slate-800 dark:text-gray-300 font-medium">{fin.destination}</span>
                                             {fin.startDate && (
-                                                <span className="ml-2 text-gray-500">
+                                                <span className="ml-2 text-slate-500 dark:text-gray-500">
                                                     (Travel: {new Date(fin.startDate).toLocaleDateString()})
                                                 </span>
                                             )}
@@ -256,7 +256,7 @@ export function PaymentsTab({
                                     </div>
 
                                     <div className="text-left sm:text-right flex sm:flex-col items-baseline sm:items-end justify-between gap-1">
-                                        <div className="text-base font-bold text-white tracking-tight">
+                                        <div className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
                                             {fm(fin.clientPrice, fin.currency)}
                                         </div>
                                         <div className="flex items-center gap-1.5">
@@ -264,10 +264,10 @@ export function PaymentsTab({
                                                 className={cn(
                                                     "text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1",
                                                     isFullyPaid
-                                                        ? "bg-green-500/15 text-green-400 border border-green-500/30"
+                                                        ? "bg-green-500/15 text-green-700 dark:text-green-400 border border-green-500/30"
                                                         : paidPct > 0
-                                                        ? "bg-amber-500/15 text-amber-400 border border-amber-500/30"
-                                                        : "bg-red-500/15 text-red-400 border border-red-500/30"
+                                                        ? "bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30"
+                                                        : "bg-red-500/15 text-red-700 dark:text-red-400 border border-red-500/30"
                                                 )}
                                             >
                                                 {isFullyPaid ? (
@@ -287,10 +287,10 @@ export function PaymentsTab({
                                 {/* Progress Bar */}
                                 <div className="space-y-1.5">
                                     <div className="flex justify-between text-[11px] text-slate-600 dark:text-gray-400 font-medium">
-                                        <span>Collected: <strong className="text-green-400">{fm(totalPaid, fin.currency)}</strong></span>
-                                        <span>Total: <strong className="text-white">{fm(fin.clientPrice, fin.currency)}</strong></span>
+                                        <span>Collected: <strong className="text-emerald-600 dark:text-green-400">{fm(totalPaid, fin.currency)}</strong></span>
+                                        <span>Total: <strong className="text-slate-900 dark:text-white">{fm(fin.clientPrice, fin.currency)}</strong></span>
                                     </div>
-                                    <div className="h-2 bg-black/40 rounded-full overflow-hidden p-0.5 border border-white/5">
+                                    <div className="h-2 bg-slate-200 dark:bg-black/40 rounded-full overflow-hidden p-0.5 border border-slate-300 dark:border-white/5">
                                         <div
                                             className={cn(
                                                 "h-full rounded-full transition-all duration-700",
@@ -305,7 +305,7 @@ export function PaymentsTab({
                                 {effectiveMilestones.length > 0 && (
                                     <div className="bg-primary/10 border border-primary/20 rounded-xl p-3 space-y-2.5">
                                         <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-1.5 text-xs font-bold text-white">
+                                            <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900 dark:text-white">
                                                 <Sparkles className="w-3.5 h-3.5 text-primary" />
                                                 <span>Payment Milestones (from The Lab)</span>
                                             </div>
@@ -333,20 +333,20 @@ export function PaymentsTab({
                                                         className={cn(
                                                             "rounded-xl p-2.5 flex flex-col justify-between gap-2 transition-all group border",
                                                             isRecorded
-                                                                ? "bg-emerald-950/20 border-emerald-500/30"
-                                                                : "bg-black/40 border-primary/20 hover:border-primary/50"
+                                                                ? "bg-emerald-500/10 dark:bg-emerald-950/20 border-emerald-500/30"
+                                                                : "bg-white/60 dark:bg-black/40 border-slate-200 dark:border-primary/20 hover:border-primary/50"
                                                         )}
                                                     >
                                                         <div>
                                                             <div className="flex items-center justify-between text-xs">
-                                                                <span className={cn("font-semibold", isRecorded ? "text-emerald-700 dark:text-emerald-300" : "text-white")}>
+                                                                <span className={cn("font-semibold", isRecorded ? "text-emerald-700 dark:text-emerald-300" : "text-slate-900 dark:text-white")}>
                                                                     {m.label}
                                                                 </span>
                                                                 <span className={cn("font-bold text-[11px]", isRecorded ? "text-emerald-600 dark:text-emerald-400" : "text-primary")}>
                                                                     {m.percentage}%
                                                                 </span>
                                                             </div>
-                                                            <div className={cn("text-sm font-bold mt-0.5", isRecorded ? "text-emerald-200" : "text-white")}>
+                                                            <div className={cn("text-sm font-bold mt-0.5", isRecorded ? "text-emerald-700 dark:text-emerald-200" : "text-slate-900 dark:text-white")}>
                                                                 {fm(milestoneAmt, fin.currency)}
                                                             </div>
                                                             {m.dueDate && (
@@ -364,7 +364,7 @@ export function PaymentsTab({
                                                             <Button
                                                                 size="sm"
                                                                 variant="secondary"
-                                                                className="h-6 text-[11px] bg-primary/20 hover:bg-primary text-white border border-primary/40 font-bold transition-all justify-center w-full rounded-lg cursor-pointer"
+                                                                className="h-6 text-[11px] bg-primary/20 hover:bg-primary text-slate-900 dark:text-white border border-primary/40 font-bold transition-all justify-center w-full rounded-lg cursor-pointer"
                                                                 onClick={() => handleRecordMilestone(fin, m)}
                                                             >
                                                                 <span>Record {fm(milestoneAmt, fin.currency)}</span>
@@ -388,13 +388,13 @@ export function PaymentsTab({
                                             {fin.payments.map((p) => (
                                                 <div
                                                     key={p.id}
-                                                    className="flex items-center justify-between px-3.5 py-2.5 bg-white/[0.02] border border-white/[0.05] rounded-xl text-xs hover:bg-white/[0.04] transition-colors"
+                                                    className="flex items-center justify-between px-3.5 py-2.5 bg-slate-50 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.05] rounded-xl text-xs hover:bg-slate-100 dark:hover:bg-white/[0.04] transition-colors"
                                                 >
                                                     <div className="flex items-center gap-2.5 flex-wrap">
-                                                        <Badge variant="secondary" className="bg-primary/20 text-white border border-primary/30 text-[10px] capitalize font-bold">
+                                                        <Badge variant="secondary" className="bg-primary/15 text-primary border border-primary/30 text-[10px] capitalize font-bold">
                                                             {p.type}
                                                         </Badge>
-                                                        <span className="text-zinc-200 font-semibold capitalize">
+                                                        <span className="text-slate-800 dark:text-zinc-200 font-semibold capitalize">
                                                             {p.method.replace("_", " ")}
                                                         </span>
                                                         {p.reference && (
@@ -417,7 +417,7 @@ export function PaymentsTab({
                                                         </span>
                                                         <button
                                                             onClick={() => deletePayment(fin.itineraryId, p.id)}
-                                                            className="text-slate-600 dark:text-zinc-400 hover:text-red-400 p-1 transition-colors"
+                                                            className="text-slate-600 dark:text-zinc-400 hover:text-red-400 p-1 transition-colors cursor-pointer"
                                                             title="Delete Payment"
                                                         >
                                                             <Trash2 className="w-3.5 h-3.5" />
@@ -435,8 +435,8 @@ export function PaymentsTab({
                                         variant="outline"
                                         size="sm"
                                         className={cn(
-                                            "h-8 text-xs border-white/20 bg-white/10 text-white font-bold flex-1 shadow-sm transition-all rounded-xl",
-                                            isFullyPaid ? "opacity-60 cursor-not-allowed hover:bg-white/10" : "hover:bg-white/20 cursor-pointer"
+                                            "h-8 text-xs border-slate-200 dark:border-white/20 bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white font-bold flex-1 shadow-sm transition-all rounded-xl",
+                                            isFullyPaid ? "opacity-60 cursor-not-allowed hover:bg-slate-100 dark:hover:bg-white/10" : "hover:bg-slate-200 dark:hover:bg-white/20 cursor-pointer"
                                         )}
                                         disabled={isFullyPaid}
                                         onClick={() => handleOpen(fin)}
@@ -448,7 +448,7 @@ export function PaymentsTab({
                                             </>
                                         ) : (
                                             <>
-                                                <Plus className="w-3.5 h-3.5 mr-1.5 text-white" />
+                                                <Plus className="w-3.5 h-3.5 mr-1.5 text-slate-900 dark:text-white" />
                                                 <span>Record Payment</span>
                                             </>
                                         )}
@@ -457,7 +457,7 @@ export function PaymentsTab({
                                     {!isFullyPaid && balance > 0 && (
                                         <Button
                                             size="sm"
-                                            className="h-8 text-xs bg-emerald-500/20 hover:bg-emerald-600 text-white font-bold border border-emerald-500/40 transition-all shrink-0 rounded-xl cursor-pointer"
+                                            className="h-8 text-xs bg-emerald-500/20 hover:bg-emerald-600 text-emerald-800 dark:text-white font-bold border border-emerald-500/40 transition-all shrink-0 rounded-xl cursor-pointer"
                                             onClick={() => handleOpen(fin, {
                                                 prefillAmount: balance,
                                                 prefillType: "final",
@@ -474,9 +474,9 @@ export function PaymentsTab({
                     })}
 
                     {filteredFinancials.length === 0 && (
-                        <div className="text-center py-16 bg-white/[0.01] border border-white/5 rounded-2xl space-y-2">
+                        <div className="text-center py-16 bg-white/60 dark:bg-white/[0.01] border border-slate-200 dark:border-white/5 rounded-2xl space-y-2">
                             <p className="text-sm text-slate-600 dark:text-gray-400 font-medium">No trips matched your search filter.</p>
-                            <p className="text-xs text-gray-600">Try adjusting your search or add itineraries in The Lab.</p>
+                            <p className="text-xs text-slate-500 dark:text-gray-600">Try adjusting your search or add itineraries in The Lab.</p>
                         </div>
                     )}
                 </div>
@@ -484,9 +484,9 @@ export function PaymentsTab({
 
             {/* Smart Add Payment Dialog */}
             <Dialog open={showAddPayment} onOpenChange={setShowAddPayment}>
-                <DialogContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border border-white/10 text-white sm:max-w-[460px] shadow-2xl rounded-2xl">
+                <DialogContent className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border border-slate-200 dark:border-white/10 text-slate-900 dark:text-white sm:max-w-[460px] shadow-2xl rounded-2xl">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 text-base font-bold text-white">
+                        <DialogTitle className="flex items-center gap-2 text-base font-bold text-slate-900 dark:text-white">
                             <CreditCard className="w-4 h-4 text-primary" />
                             Record Client Payment
                         </DialogTitle>
@@ -500,10 +500,10 @@ export function PaymentsTab({
                     {selectedTripFin && (
                         <div className="space-y-4 py-2">
                             {/* Summary strip */}
-                            <div className="grid grid-cols-3 gap-2 bg-white/[0.03] border border-white/10 rounded-xl p-3 text-center text-xs">
+                            <div className="grid grid-cols-3 gap-2 bg-slate-50 dark:bg-white/[0.03] border border-slate-200 dark:border-white/10 rounded-xl p-3 text-center text-xs">
                                 <div>
                                     <p className="text-[10px] text-slate-600 dark:text-zinc-400 uppercase font-semibold">Package</p>
-                                    <p className="font-bold text-white">{fm(selectedTripFin.clientPrice, selectedTripFin.currency)}</p>
+                                    <p className="font-bold text-slate-900 dark:text-white">{fm(selectedTripFin.clientPrice, selectedTripFin.currency)}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] text-slate-600 dark:text-zinc-400 uppercase font-semibold">Collected</p>
@@ -513,7 +513,7 @@ export function PaymentsTab({
                                 </div>
                                 <div>
                                     <p className="text-[10px] text-slate-600 dark:text-zinc-400 uppercase font-semibold">Due</p>
-                                    <p className="font-bold text-amber-400">
+                                    <p className="font-bold text-amber-600 dark:text-amber-400">
                                         {fm(
                                             Math.max(
                                                 0,
@@ -528,24 +528,24 @@ export function PaymentsTab({
                             {/* Amount & Type */}
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <Label className="text-xs text-zinc-300 font-semibold mb-1.5 block">
+                                    <Label className="text-xs text-slate-700 dark:text-zinc-300 font-semibold mb-1.5 block">
                                         Amount ({cs(selectedTripFin.currency)})
                                     </Label>
                                     <Input
                                         type="number"
                                         value={payAmt}
                                         onChange={(e) => setPayAmt(e.target.value)}
-                                        className="bg-white/5 border-white/10 text-white h-9 text-sm focus-visible:ring-primary/50 rounded-xl"
+                                        className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-9 text-sm focus-visible:ring-primary/50 rounded-xl"
                                         placeholder="0.00"
                                     />
                                 </div>
                                 <div>
-                                    <Label className="text-xs text-zinc-300 font-semibold mb-1.5 block">Payment Type</Label>
+                                    <Label className="text-xs text-slate-700 dark:text-zinc-300 font-semibold mb-1.5 block">Payment Type</Label>
                                     <Select value={payType} onValueChange={setPayType}>
-                                        <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-xs rounded-xl">
+                                        <SelectTrigger className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-9 text-xs rounded-xl">
                                             <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white">
+                                        <SelectContent className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                                             {paymentTypes.map((pt) => (
                                                 <SelectItem key={pt.value} value={pt.value} className="text-xs">
                                                     {pt.label}
@@ -559,12 +559,12 @@ export function PaymentsTab({
                             {/* Method & Date */}
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <Label className="text-xs text-zinc-300 font-semibold mb-1.5 block">Payment Method</Label>
+                                    <Label className="text-xs text-slate-700 dark:text-zinc-300 font-semibold mb-1.5 block">Payment Method</Label>
                                     <Select value={payMethod} onValueChange={setPayMethod}>
-                                        <SelectTrigger className="bg-white/5 border-white/10 text-white h-9 text-xs rounded-xl">
+                                        <SelectTrigger className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-9 text-xs rounded-xl">
                                             <SelectValue />
                                         </SelectTrigger>
-                                        <SelectContent className="bg-[#0c0c0e]/95 backdrop-blur-2xl border-white/10 text-white">
+                                        <SelectContent className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                                             {paymentMethods.map((pm) => (
                                                 <SelectItem key={pm.value} value={pm.value} className="text-xs">
                                                     {pm.label}
@@ -574,34 +574,34 @@ export function PaymentsTab({
                                     </Select>
                                 </div>
                                 <div>
-                                    <Label className="text-xs text-zinc-300 font-semibold mb-1.5 block">Payment Date</Label>
+                                    <Label className="text-xs text-slate-700 dark:text-zinc-300 font-semibold mb-1.5 block">Payment Date</Label>
                                     <Input
                                         type="date"
                                         value={payDate}
                                         onChange={(e) => setPayDate(e.target.value)}
-                                        className="bg-white/5 border-white/10 text-white h-9 text-xs rounded-xl"
+                                        className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-9 text-xs rounded-xl"
                                     />
                                 </div>
                             </div>
 
                             {/* Reference # */}
                             <div>
-                                <Label className="text-xs text-zinc-300 font-semibold mb-1.5 block">Reference / Transaction ID</Label>
+                                <Label className="text-xs text-slate-700 dark:text-zinc-300 font-semibold mb-1.5 block">Reference / Transaction ID</Label>
                                 <Input
                                     value={payRef}
                                     onChange={(e) => setPayRef(e.target.value)}
-                                    className="bg-white/5 border-white/10 text-white h-9 text-xs rounded-xl"
+                                    className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-9 text-xs rounded-xl"
                                     placeholder="e.g. UPI Ref / Bank UTR / Receipt #"
                                 />
                             </div>
 
                             {/* Notes */}
                             <div>
-                                <Label className="text-xs text-zinc-300 font-semibold mb-1.5 block">Notes / Description</Label>
+                                <Label className="text-xs text-slate-700 dark:text-zinc-300 font-semibold mb-1.5 block">Notes / Description</Label>
                                 <Input
                                     value={payNotes}
                                     onChange={(e) => setPayNotes(e.target.value)}
-                                    className="bg-white/5 border-white/10 text-white h-9 text-xs rounded-xl"
+                                    className="bg-white/60 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white h-9 text-xs rounded-xl"
                                     placeholder="Optional notes or milestone description"
                                 />
                             </div>
@@ -611,13 +611,13 @@ export function PaymentsTab({
                     <DialogFooter className="gap-2">
                         <Button
                             variant="outline"
-                            className="border-white/10 text-zinc-300 hover:bg-white/10 text-xs h-9 rounded-xl"
+                            className="border-slate-200 dark:border-white/10 text-slate-700 dark:text-zinc-300 hover:bg-slate-100 dark:hover:bg-white/10 text-xs h-9 rounded-xl cursor-pointer"
                             onClick={() => setShowAddPayment(false)}
                         >
                             Cancel
                         </Button>
                         <Button
-                            className="aurora-gradient text-white text-xs h-9 font-bold rounded-xl border-none shadow-md hover:brightness-110 cursor-pointer"
+                            className="aurora-gradient text-slate-900 dark:text-white text-xs h-9 font-bold rounded-xl border-none shadow-md hover:brightness-110 cursor-pointer"
                             onClick={handleSubmit}
                         >
                             <Check className="w-3.5 h-3.5 mr-1" />

@@ -44,7 +44,7 @@ interface MetricCardProps {
 }
 
 const MetricCard = ({ title, value, subtext, icon: Icon, iconBg = "bg-primary/10 border-primary/20", iconColor = "text-primary", loading, badge }: MetricCardProps) => (
-    <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5 relative overflow-hidden group hover:border-primary/40 shadow-xl transition-all duration-300">
+    <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 relative overflow-hidden group hover:border-primary/40 shadow-xl transition-all duration-300">
         <div className="flex items-center justify-between relative z-10">
             <div className="min-w-0 flex-1 pr-3">
                 <div className="flex items-center gap-1.5 mb-1.5">
@@ -246,7 +246,7 @@ export const DashboardView = (props: DashboardViewProps) => {
 
             {/* Business Insights Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-                <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] shadow-xl rounded-2xl">
+                <Card className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border-slate-200 dark:border-white/[0.08] shadow-xl rounded-2xl">
                     <CardHeader>
                         <CardTitle className="text-slate-900 dark:text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
                             <Activity className="w-4 h-4 text-primary" />
@@ -258,24 +258,24 @@ export const DashboardView = (props: DashboardViewProps) => {
                             <AreaChart data={revenueByMonth || []}>
                                 <defs>
                                     <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#ffffff" stopOpacity={0.15} />
-                                        <stop offset="95%" stopColor="#ffffff" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#ff5c33" stopOpacity={0.4} />
+                                        <stop offset="95%" stopColor="#ff5c33" stopOpacity={0.02} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff05" vertical={false} />
-                                <XAxis dataKey="month" stroke="#a1a1aa" fontSize={10} axisLine={false} tickLine={false} />
-                                <YAxis stroke="#a1a1aa" fontSize={10} axisLine={false} tickLine={false} tickFormatter={(val) => `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${val / 1000}k`} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#94a3b8" strokeOpacity={0.2} vertical={false} />
+                                <XAxis dataKey="month" stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} />
+                                <YAxis stroke="#64748b" fontSize={10} axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 10 }} tickFormatter={(val) => `${getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}${val / 1000}k`} />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#0c0c0e', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', color: '#fff', fontSize: '12px' }}
-                                    itemStyle={{ color: '#fff' }}
+                                    contentStyle={{ backgroundColor: '#0c0c0e', border: '1px solid rgba(255,92,51,0.3)', borderRadius: '12px', color: '#fff', fontSize: '12px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.4)' }}
+                                    itemStyle={{ color: '#ff5c33', fontWeight: 600 }}
                                 />
-                                <Area type="monotone" dataKey="revenue" stroke="#e4e4e7" strokeWidth={2} fillOpacity={1} fill="url(#colorRev)" />
+                                <Area type="monotone" dataKey="revenue" stroke="#ff5c33" strokeWidth={2.5} fillOpacity={1} fill="url(#colorRev)" />
                             </AreaChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] shadow-xl rounded-2xl">
+                <Card className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border-slate-200 dark:border-white/[0.08] shadow-xl rounded-2xl">
                     <CardHeader>
                         <CardTitle className="text-slate-900 dark:text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
                             <LayoutDashboard className="w-4 h-4 text-primary" /> Revenue Mix
@@ -284,7 +284,7 @@ export const DashboardView = (props: DashboardViewProps) => {
                     <CardContent className="space-y-8 py-6">
                         <div className="space-y-3">
                             <div className="flex justify-between text-xs">
-                                <span className="text-zinc-300 font-semibold">Packages</span>
+                                <span className="text-slate-700 dark:text-zinc-300 font-semibold">Packages</span>
                                 <span className="text-slate-900 dark:text-white font-bold">{formatCurrency(packageVsStandaloneMix.packageRev)} ({packageVsStandaloneMix.packagePct}%)</span>
                             </div>
                             <div className="h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
@@ -293,7 +293,7 @@ export const DashboardView = (props: DashboardViewProps) => {
                         </div>
                         <div className="space-y-3">
                             <div className="flex justify-between text-xs">
-                                <span className="text-zinc-300 font-semibold">Standalone</span>
+                                <span className="text-slate-700 dark:text-zinc-300 font-semibold">Standalone</span>
                                 <span className="text-slate-900 dark:text-white font-bold">{formatCurrency(packageVsStandaloneMix.standaloneRev)} ({packageVsStandaloneMix.standalonePct}%)</span>
                             </div>
                             <div className="h-1.5 bg-slate-100 dark:bg-white/5 rounded-full overflow-hidden">
@@ -306,7 +306,7 @@ export const DashboardView = (props: DashboardViewProps) => {
 
             {/* Pipeline Funnel + Upcoming Departures Row */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] shadow-xl lg:col-span-2 rounded-2xl">
+                <Card className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border-slate-200 dark:border-white/[0.08] shadow-xl lg:col-span-2 rounded-2xl">
                     <CardHeader>
                         <CardTitle className="text-slate-900 dark:text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
                             <TrendingUp className="w-4 h-4 text-primary" /> Pipeline Funnel
@@ -317,7 +317,7 @@ export const DashboardView = (props: DashboardViewProps) => {
                             <div key={stage.stage} className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <span className="text-xs font-bold text-zinc-200">{stage.stage}</span>
+                                        <span className="text-xs font-bold text-slate-800 dark:text-zinc-200">{stage.stage}</span>
                                         <span className="text-[10px] text-slate-600 dark:text-zinc-400 font-semibold">{stage.pct}%</span>
                                     </div>
                                     <span className="text-sm font-black text-slate-900 dark:text-white">{stage.count}</span>
@@ -341,7 +341,7 @@ export const DashboardView = (props: DashboardViewProps) => {
                     </CardContent>
                 </Card>
 
-                <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] shadow-xl rounded-2xl">
+                <Card className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border-slate-200 dark:border-white/[0.08] shadow-xl rounded-2xl">
                     <CardHeader>
                         <CardTitle className="text-slate-900 dark:text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
                             <CalendarDays className="w-4 h-4 text-primary" /> Upcoming Departures
@@ -358,7 +358,7 @@ export const DashboardView = (props: DashboardViewProps) => {
                                 <p className="text-3xl font-black text-slate-900 dark:text-white tracking-tighter">{departureCalendarStats.nextMonth}</p>
                             </div>
                         </div>
-                        <div className="pt-4 border-t border-white/5 space-y-3">
+                        <div className="pt-4 border-t border-slate-200 dark:border-white/5 space-y-3">
                             <p className="text-[9px] text-slate-600 dark:text-zinc-400 uppercase tracking-widest font-bold">Seasonality</p>
                             <div className="h-[130px]">
                                 <ResponsiveContainer width="100%" height="100%">
@@ -378,12 +378,12 @@ export const DashboardView = (props: DashboardViewProps) => {
             </div>
 
             {/* Recent Activity */}
-            <Card className="bg-white/[0.03] backdrop-blur-xl border-white/[0.08] shadow-xl rounded-2xl">
+            <Card className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border-slate-200 dark:border-white/[0.08] shadow-xl rounded-2xl">
                 <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-slate-900 dark:text-white text-[11px] flex items-center gap-2 font-bold uppercase tracking-widest">
                         <Activity className="w-4 h-4 text-primary" /> Recent Activity
                         {unreadActivitiesCount > 0 && (
-                            <span className="ml-2 text-[9px] bg-primary/20 text-slate-900 dark:text-white px-2 py-0.5 rounded-full font-bold border border-primary/30">
+                            <span className="ml-2 text-[9px] bg-primary/10 text-primary dark:text-primary px-2.5 py-0.5 rounded-full font-bold border border-primary/20">
                                 {unreadActivitiesCount} new
                             </span>
                         )}
@@ -400,7 +400,7 @@ export const DashboardView = (props: DashboardViewProps) => {
                     ) : (
                         <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
                             {recentActivity.slice(0, 10).map((activity) => (
-                                <div key={activity.id} className="flex items-start gap-4 p-3 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-all border border-transparent hover:border-white/10">
+                                <div key={activity.id} className="flex items-start gap-4 p-3 rounded-xl bg-slate-50/60 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-white/[0.06] transition-all border border-slate-200/60 dark:border-white/[0.06]">
                                     <div className="p-2 rounded-xl shrink-0 border border-primary/20 bg-primary/10">
                                         {activity.icon === 'user' ? (
                                             <User className="w-3.5 h-3.5 text-primary" />
@@ -409,9 +409,9 @@ export const DashboardView = (props: DashboardViewProps) => {
                                         )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-[13px] text-zinc-200 font-semibold truncate">{activity.label}</p>
+                                        <p className="text-[13px] text-slate-900 dark:text-zinc-100 font-semibold truncate">{activity.label}</p>
                                         <p className="text-[10px] text-slate-600 dark:text-zinc-400 flex items-center gap-1.5 mt-1 font-medium">
-                                            <Clock className="w-3 h-3 text-slate-600 dark:text-zinc-400" />
+                                            <Clock className="w-3 h-3 text-slate-500 dark:text-zinc-400" />
                                             {activity.time instanceof Date ? activity.time.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : 'Unknown'}
                                         </p>
                                     </div>

@@ -98,13 +98,13 @@ export function PdfRenderOverlay({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Blurred background veil */}
       <div
-        className="absolute inset-0 bg-zinc-950/80 backdrop-blur-md transition-opacity duration-300"
+        className="absolute inset-0 bg-slate-900/40 dark:bg-zinc-950/80 backdrop-blur-md transition-opacity duration-300"
         style={{ zIndex: 1 }}
       />
 
       {/* Radial ambient glow */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none opacity-50 dark:opacity-100"
         style={{
           background:
             "radial-gradient(ellipse at center, rgba(69, 104, 255, 0.15) 0%, transparent 70%)",
@@ -114,7 +114,7 @@ export function PdfRenderOverlay({
 
       {/* Main modal container with continuous ProgressBar loading state */}
       <div
-        className="relative w-full max-w-md p-6 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-2xl backdrop-blur-xl transition-all"
+        className="relative w-full max-w-md p-6 rounded-2xl bg-white dark:bg-zinc-900/90 border border-slate-200 dark:border-zinc-800 shadow-2xl backdrop-blur-xl transition-all"
         style={{ zIndex: 10 }}
       >
         <ProgressBar

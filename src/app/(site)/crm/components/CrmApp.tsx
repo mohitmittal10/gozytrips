@@ -263,94 +263,94 @@ export function CrmApp() {
 
                                         <div className="h-px w-full bg-slate-200 dark:bg-white/10 my-4" />
 
-                                        <div className="flex flex-col xl:flex-row justify-between gap-4 relative z-10 w-full pb-1">
-                                            <div className="flex-1 overflow-hidden min-w-0 flex items-center gap-4">
-                                                {activeTab === 'clients' && dataHook.data.uniqueTags.length > 0 && (
-                                                    <div className="flex gap-2 overflow-x-auto no-scrollbar items-center py-1 flex-1" style={{ WebkitMaskImage: 'linear-gradient(to right, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%)', maskImage: 'gradient(to right, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%)' }}>
-                                                        <span className="text-xs text-gray-500 uppercase tracking-wider mr-2 font-medium shrink-0 flex items-center"><Filter className="w-3 h-3 mr-1" /> Tags</span>
-                                                        <button onClick={(e) => { filters.setClientsTagFilter('all'); e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }} className={cn("px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap shrink-0", filters.clientsTagFilter === 'all' ? "bg-zinc-800 text-zinc-100 border-zinc-700 font-semibold" : "bg-slate-100 dark:bg-white/5 border-white/5 text-slate-600 dark:text-gray-400 hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-white/10")}>All</button>
-                                                        {dataHook.data.uniqueTags.map((tag: string) => (
-                                                            <button key={tag} onClick={(e) => { filters.setClientsTagFilter(tag); e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }} className={cn("px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap shrink-0", filters.clientsTagFilter === tag ? "bg-zinc-800 text-zinc-100 border-zinc-700 font-semibold" : "bg-slate-100 dark:bg-white/5 border-white/5 text-slate-600 dark:text-gray-400 hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-white/10")}>{tag}</button>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                                {(activeTab === 'clients' || activeTab === 'trips' || activeTab === 'archive') && (
-                                                    <span className={cn(
-                                                        "text-xs text-gray-500 uppercase tracking-wider font-medium flex items-center shrink-0",
-                                                        activeTab === 'clients' && dataHook.data.uniqueTags.length > 0 ? "border-l border-slate-300 dark:border-white/10 pl-4" : ""
-                                                    )}>
-                                                        <Sliders className="w-3 h-3 mr-1" /> Advanced Filters
-                                                    </span>
-                                                )}
-                                            </div>
+                                         <div className="flex flex-col xl:flex-row justify-between gap-4 relative z-10 w-full pb-1">
+                                             <div className="flex-1 overflow-hidden min-w-0 flex items-center gap-4">
+                                                 {activeTab === 'clients' && dataHook.data.uniqueTags.length > 0 && (
+                                                     <div className="flex gap-2 overflow-x-auto no-scrollbar items-center py-1 flex-1" style={{ WebkitMaskImage: 'linear-gradient(to right, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%)', maskImage: 'gradient(to right, transparent 0px, black 16px, black calc(100% - 16px), transparent 100%)' }}>
+                                                         <span className="text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider mr-2 font-medium shrink-0 flex items-center"><Filter className="w-3 h-3 mr-1 text-primary" /> Tags</span>
+                                                         <button onClick={(e) => { filters.setClientsTagFilter('all'); e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }} className={cn("px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap shrink-0", filters.clientsTagFilter === 'all' ? "bg-slate-900 text-white dark:bg-zinc-800 dark:text-zinc-100 border-slate-900 dark:border-zinc-700 font-semibold" : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-white/10")}>All</button>
+                                                         {dataHook.data.uniqueTags.map((tag: string) => (
+                                                             <button key={tag} onClick={(e) => { filters.setClientsTagFilter(tag); e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); }} className={cn("px-3.5 py-1.5 rounded-lg text-xs font-medium border transition-all whitespace-nowrap shrink-0", filters.clientsTagFilter === tag ? "bg-slate-900 text-white dark:bg-zinc-800 dark:text-zinc-100 border-slate-900 dark:border-zinc-700 font-semibold" : "bg-slate-100 dark:bg-white/5 border-slate-200 dark:border-white/5 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-200 dark:hover:bg-white/10")}>{tag}</button>
+                                                         ))}
+                                                     </div>
+                                                 )}
+                                                 {(activeTab === 'clients' || activeTab === 'trips' || activeTab === 'archive') && (
+                                                     <span className={cn(
+                                                         "text-xs text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold flex items-center shrink-0",
+                                                         activeTab === 'clients' && dataHook.data.uniqueTags.length > 0 ? "border-l border-slate-300 dark:border-white/10 pl-4" : ""
+                                                     )}>
+                                                         <Sliders className="w-3.5 h-3.5 mr-1.5 text-primary" /> Advanced Filters
+                                                     </span>
+                                                 )}
+                                             </div>
 
-                                            <div className="flex flex-wrap items-center gap-4 xl:gap-3 shrink-0">
-                                                <div className="flex items-center bg-slate-200 dark:bg-black/40 border border-slate-300 dark:border-white/10 rounded-lg h-9 px-1">
-                                                    <Calendar className="w-3.5 h-3.5 text-gray-500 ml-2 mr-1" />
-                                                    <input type="date" value={filters.dateFrom} onChange={e => filters.setDateFrom(e.target.value)} className="h-full px-2 text-[11px] sm:text-xs bg-transparent text-gray-300 focus:outline-none placeholder-gray-600 [&::-webkit-calendar-picker-indicator]:invert-[0.6] w-[110px]" />
-                                                    <span className="text-gray-600 text-[10px] mx-1">to</span>
-                                                    <input type="date" value={filters.dateTo} onChange={e => filters.setDateTo(e.target.value)} className="h-full px-2 text-[11px] sm:text-xs bg-transparent text-gray-300 focus:outline-none placeholder-gray-600 [&::-webkit-calendar-picker-indicator]:invert-[0.6] w-[110px]" />
-                                                </div>
+                                             <div className="flex flex-wrap items-center gap-4 xl:gap-3 shrink-0">
+                                                 <div className="flex items-center bg-slate-100 dark:bg-black/40 border border-slate-300/80 dark:border-white/10 rounded-lg h-9 px-1">
+                                                     <Calendar className="w-3.5 h-3.5 text-slate-500 dark:text-gray-400 ml-2 mr-1" />
+                                                     <input type="date" value={filters.dateFrom} onChange={e => filters.setDateFrom(e.target.value)} className="h-full px-2 text-[11px] sm:text-xs bg-transparent text-slate-900 dark:text-gray-200 focus:outline-none placeholder-slate-400 dark:placeholder-gray-600 dark:[&::-webkit-calendar-picker-indicator]:invert-[0.6] w-[110px]" />
+                                                     <span className="text-slate-500 dark:text-gray-400 text-[10px] mx-1 font-medium">to</span>
+                                                     <input type="date" value={filters.dateTo} onChange={e => filters.setDateTo(e.target.value)} className="h-full px-2 text-[11px] sm:text-xs bg-transparent text-slate-900 dark:text-gray-200 focus:outline-none placeholder-slate-400 dark:placeholder-gray-600 dark:[&::-webkit-calendar-picker-indicator]:invert-[0.6] w-[110px]" />
+                                                 </div>
 
-                                                <div className="flex items-center bg-slate-200 dark:bg-black/40 border border-slate-300 dark:border-white/10 rounded-lg h-9 px-1">
-                                                    <DollarSign className="w-3.5 h-3.5 text-gray-500 ml-2 mr-1" />
-                                                    <input type="number" placeholder="Min Budget" value={filters.budgetMin} onChange={e => filters.setBudgetMin(e.target.value)} className="w-[75px] h-full px-1 text-[11px] sm:text-xs bg-transparent text-gray-300 placeholder:text-gray-600 focus:outline-none text-right" />
-                                                    <span className="text-gray-600 text-[12px] mx-1.5">-</span>
-                                                    <input type="number" placeholder="Max" value={filters.budgetMax} onChange={e => filters.setBudgetMax(e.target.value)} className="w-[60px] h-full px-1 text-[11px] sm:text-xs bg-transparent text-gray-300 placeholder:text-gray-600 focus:outline-none" />
-                                                </div>
+                                                 <div className="flex items-center bg-slate-100 dark:bg-black/40 border border-slate-300/80 dark:border-white/10 rounded-lg h-9 px-1">
+                                                     <DollarSign className="w-3.5 h-3.5 text-slate-500 dark:text-gray-400 ml-2 mr-1" />
+                                                     <input type="number" placeholder="Min Budget" value={filters.budgetMin} onChange={e => filters.setBudgetMin(e.target.value)} className="w-[75px] h-full px-1 text-[11px] sm:text-xs bg-transparent text-slate-900 dark:text-gray-200 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none text-right font-medium" />
+                                                     <span className="text-slate-500 dark:text-gray-400 text-[12px] mx-1.5 font-medium">-</span>
+                                                     <input type="number" placeholder="Max" value={filters.budgetMax} onChange={e => filters.setBudgetMax(e.target.value)} className="w-[60px] h-full px-1 text-[11px] sm:text-xs bg-transparent text-slate-900 dark:text-gray-200 placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none font-medium" />
+                                                 </div>
 
-                                                <div className="flex items-center gap-2">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" size="sm" className="h-9 border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white px-3 rounded-lg">
-                                                                <Save className="w-3.5 h-3.5 mr-1.5 text-zinc-300" />
-                                                                Presets {filters.savedPresets.length > 0 && <span className="ml-1 bg-slate-200 dark:bg-white/10 text-slate-900 dark:text-white text-[10px] px-1.5 rounded-full">{filters.savedPresets.length}</span>}
-                                                            </Button>
-                                                        </DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end" className="bg-white dark:bg-[#0c0c0e] border-slate-300 dark:border-white/10 text-slate-900 dark:text-white w-64 p-1 rounded-xl shadow-2xl overflow-hidden">
-                                                            <DropdownMenuLabel className="text-xs font-semibold text-slate-600 dark:text-gray-400 px-2 py-1.5 uppercase tracking-wider">Saved Filters</DropdownMenuLabel>
-                                                            <div className="h-px bg-slate-200 dark:bg-white/10 my-1 mx-2" />
-                                                            {filters.savedPresets.length === 0 ? (
-                                                                <div className="px-3 py-4 text-center text-xs text-gray-500">No saved presets</div>
-                                                            ) : (
-                                                                <div className="max-h-48 overflow-y-auto no-scrollbar space-y-0.5 px-1">
-                                                                    {filters.savedPresets.map((p, idx) => (
-                                                                        <div key={idx} className="flex items-center justify-between px-2 py-2 hover:bg-slate-200 focus:bg-slate-200 dark:hover:bg-white/5 dark:focus:bg-white/5 rounded-lg cursor-pointer group transition-colors">
-                                                                            <button onClick={() => applyPreset(p)} className="text-xs text-slate-800 dark:text-zinc-200 flex-1 text-left truncate pr-2 font-medium">{p.name}</button>
-                                                                            <button onClick={(e) => { e.stopPropagation(); filters.deletePreset(idx); }} className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-400 transition-opacity p-1 bg-transparent hover:bg-red-400/10 rounded">
-                                                                                <X className="w-3.5 h-3.5" />
-                                                                            </button>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            )}
-                                                            <div className="h-px bg-slate-200 dark:bg-white/10 my-1 mx-2" />
-                                                            {filters.showPresetSave ? (
-                                                                <div className="p-2 pt-1 flex flex-col gap-2">
-                                                                    <div className="flex gap-1">
-                                                                        <input type="text" placeholder="Preset name..." value={filters.presetName} onChange={e => filters.setPresetName(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveCurrentPreset()} className="flex-1 h-8 px-2.5 text-xs bg-white dark:bg-black border border-slate-300 dark:border-white/10 rounded-md text-slate-900 dark:text-white placeholder:text-gray-500 focus:outline-none focus:border-zinc-600" autoFocus />
-                                                                        <Button size="sm" className="h-8 px-3 text-xs bg-zinc-800 text-zinc-100 hover:bg-zinc-700 border border-zinc-700 rounded-md font-semibold" onClick={saveCurrentPreset}>Save</Button>
-                                                                    </div>
-                                                                    <Button variant="ghost" size="sm" className="h-6 text-[10px] text-gray-500 hover:text-gray-300" onClick={() => filters.setShowPresetSave(false)}>Cancel</Button>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="p-1">
-                                                                    <button onClick={() => filters.setShowPresetSave(true)} className="w-full text-left px-2 py-2 text-xs text-slate-800 dark:text-zinc-300 hover:bg-slate-200 focus:bg-slate-200 dark:hover:bg-white/5 dark:focus:bg-white/5 rounded-lg font-medium flex items-center transition-colors">
-                                                                        <Plus className="w-3.5 h-3.5 mr-1" /> Save current filters
-                                                                    </button>
-                                                                </div>
-                                                            )}
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                 <div className="flex items-center gap-2">
+                                                     <DropdownMenu>
+                                                         <DropdownMenuTrigger asChild>
+                                                             <Button variant="ghost" size="sm" className="h-9 border border-slate-300/80 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-800 dark:text-gray-200 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white px-3 rounded-lg font-medium">
+                                                                 <Save className="w-3.5 h-3.5 mr-1.5 text-slate-600 dark:text-zinc-300" />
+                                                                 Presets {filters.savedPresets.length > 0 && <span className="ml-1 bg-slate-200 dark:bg-white/10 text-slate-900 dark:text-white text-[10px] px-1.5 rounded-full font-bold">{filters.savedPresets.length}</span>}
+                                                             </Button>
+                                                         </DropdownMenuTrigger>
+                                                         <DropdownMenuContent align="end" className="bg-white dark:bg-[#0c0c0e] border-slate-300 dark:border-white/10 text-slate-900 dark:text-white w-64 p-1 rounded-xl shadow-2xl overflow-hidden">
+                                                             <DropdownMenuLabel className="text-xs font-semibold text-slate-600 dark:text-gray-400 px-2 py-1.5 uppercase tracking-wider">Saved Filters</DropdownMenuLabel>
+                                                             <div className="h-px bg-slate-200 dark:bg-white/10 my-1 mx-2" />
+                                                             {filters.savedPresets.length === 0 ? (
+                                                                 <div className="px-3 py-4 text-center text-xs text-slate-500 dark:text-gray-400">No saved presets</div>
+                                                             ) : (
+                                                                 <div className="max-h-48 overflow-y-auto no-scrollbar space-y-0.5 px-1">
+                                                                     {filters.savedPresets.map((p, idx) => (
+                                                                         <div key={idx} className="flex items-center justify-between px-2 py-2 hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-white/5 dark:focus:bg-white/5 rounded-lg cursor-pointer group transition-colors">
+                                                                             <button onClick={() => applyPreset(p)} className="text-xs text-slate-800 dark:text-zinc-200 flex-1 text-left truncate pr-2 font-medium">{p.name}</button>
+                                                                             <button onClick={(e) => { e.stopPropagation(); filters.deletePreset(idx); }} className="opacity-0 group-hover:opacity-100 text-slate-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-500/10 transition-opacity p-1 rounded">
+                                                                                 <X className="w-3.5 h-3.5" />
+                                                                             </button>
+                                                                         </div>
+                                                                     ))}
+                                                                 </div>
+                                                             )}
+                                                             <div className="h-px bg-slate-200 dark:bg-white/10 my-1 mx-2" />
+                                                             {filters.showPresetSave ? (
+                                                                 <div className="p-2 pt-1 flex flex-col gap-2">
+                                                                     <div className="flex gap-1">
+                                                                         <input type="text" placeholder="Preset name..." value={filters.presetName} onChange={e => filters.setPresetName(e.target.value)} onKeyDown={e => e.key === 'Enter' && saveCurrentPreset()} className="flex-1 h-8 px-2.5 text-xs bg-slate-50 dark:bg-black border border-slate-300 dark:border-white/10 rounded-md text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-500 focus:outline-none focus:border-slate-400 dark:focus:border-zinc-600" autoFocus />
+                                                                         <Button size="sm" className="h-8 px-3 text-xs bg-slate-900 text-white dark:bg-zinc-800 dark:text-zinc-100 hover:bg-slate-800 dark:hover:bg-zinc-700 rounded-md font-semibold" onClick={saveCurrentPreset}>Save</Button>
+                                                                     </div>
+                                                                     <Button variant="ghost" size="sm" className="h-6 text-[10px] text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-gray-200" onClick={() => filters.setShowPresetSave(false)}>Cancel</Button>
+                                                                 </div>
+                                                             ) : (
+                                                                 <div className="p-1">
+                                                                     <button onClick={() => filters.setShowPresetSave(true)} className="w-full text-left px-2 py-2 text-xs text-slate-800 dark:text-zinc-300 hover:bg-slate-100 focus:bg-slate-100 dark:hover:bg-white/5 dark:focus:bg-white/5 rounded-lg font-medium flex items-center transition-colors">
+                                                                         <Plus className="w-3.5 h-3.5 mr-1 text-primary" /> Save current filters
+                                                                     </button>
+                                                                 </div>
+                                                             )}
+                                                         </DropdownMenuContent>
+                                                     </DropdownMenu>
 
-                                                    {filters.hasActiveFilters && (
-                                                        <Button variant="ghost" size="sm" className="h-9 px-3 border border-red-500/20 bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs rounded-lg transition-colors" onClick={filters.clearAllFilters}>
-                                                            <X className="w-3.5 h-3.5 mr-1" /> Clear
-                                                        </Button>
-                                                    )}
-                                                </div>
-                                            </div>
-                                        </div>
+                                                     {filters.hasActiveFilters && (
+                                                         <Button variant="ghost" size="sm" className="h-9 px-3 border border-red-500/30 bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 text-xs rounded-lg font-semibold transition-colors" onClick={filters.clearAllFilters}>
+                                                             <X className="w-3.5 h-3.5 mr-1" /> Clear
+                                                         </Button>
+                                                     )}
+                                                 </div>
+                                             </div>
+                                         </div>
                                     </div>
                                     )}
 

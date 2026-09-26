@@ -229,12 +229,12 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-[#0c0c0e] border-zinc-800 text-white sm:max-w-[425px] max-h-[90vh] overflow-y-auto shadow-2xl">
+      <DialogContent className="bg-white dark:bg-[#0c0c0e] border-slate-200 dark:border-zinc-800 text-slate-900 dark:text-white sm:max-w-[425px] max-h-[90vh] overflow-y-auto shadow-2xl">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit, () => setHasFailedSubmit(true))} noValidate>
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold text-white">{client ? "Edit Client" : "Add New Client"}</DialogTitle>
-              <DialogDescription className="text-slate-600 dark:text-slate-400 text-sm">
+              <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">{client ? "Edit Client" : "Add New Client"}</DialogTitle>
+              <DialogDescription className="text-slate-600 dark:text-zinc-400 text-sm font-medium">
                 {client
                   ? "Update the details for this client."
                   : "Enter the details for your new client or lead."}
@@ -263,7 +263,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
 
                   return (
                     <FormItem className="space-y-1.5">
-                      <FormLabel className="text-slate-300 text-sm font-medium">Name *</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Name *</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
@@ -271,7 +271,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                             maxLength={100}
                             {...field}
                             className={cn(
-                              "bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20",
+                              "bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary/50 focus:ring-primary/20",
                               showSuccess && "border-emerald-500/40 pr-10"
                             )}
                           />
@@ -295,7 +295,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
 
                   return (
                     <FormItem className="space-y-1.5">
-                      <FormLabel className="text-slate-300 text-sm font-medium">Email</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Email</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
@@ -304,7 +304,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                             maxLength={254}
                             {...field}
                             className={cn(
-                              "bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20",
+                              "bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary/50 focus:ring-primary/20",
                               showSuccess && "border-emerald-500/40 pr-10"
                             )}
                           />
@@ -346,7 +346,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
 
                   return (
                     <FormItem className="space-y-1.5">
-                      <FormLabel className="text-slate-300 text-sm font-medium">Phone</FormLabel>
+                      <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Phone</FormLabel>
                       <div className="relative">
                         <FormControl>
                           <Input
@@ -358,7 +358,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                               field.onChange(formatPhoneInput(event.target.value))
                             }
                             className={cn(
-                              "bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20",
+                              "bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary/50 focus:ring-primary/20",
                               showSuccess && "border-emerald-500/40 pr-10"
                             )}
                           />
@@ -367,7 +367,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                           <CheckCircle2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-emerald-700 dark:text-emerald-500" />
                         )}
                       </div>
-                      <FormDescription className="text-xs text-slate-600 dark:text-slate-400 leading-normal">
+                      <FormDescription className="text-xs text-slate-600 dark:text-slate-400 leading-normal font-medium">
                         International numbers are welcome. We keep your formatting while cleaning unsafe characters.
                       </FormDescription>
                       <FormMessage className="text-xs text-rose-400 font-medium" aria-live="polite" />
@@ -377,16 +377,16 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
               />
 
               <div className="space-y-1.5">
-                <FormLabel className="text-slate-300 text-sm font-medium">Tags</FormLabel>
+                <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Tags</FormLabel>
                 <Input
                   value={tagInput}
                   onChange={(event) => setTagInput(event.target.value.slice(0, 30))}
                   onKeyDown={handleAddTag}
                   placeholder="Type and press Enter or comma to add"
                   maxLength={30}
-                  className="bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20"
+                  className="bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary/50 focus:ring-primary/20"
                 />
-                <p className="text-xs text-slate-600 dark:text-slate-400">
+                <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
                   Letters, numbers, spaces, hyphens only. Max 20 tags.
                 </p>
                 {tags.length > 0 && (
@@ -422,10 +422,10 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                   return (
                     <FormItem className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <FormLabel className="text-slate-300 text-sm font-medium">Notes</FormLabel>
+                        <FormLabel className="text-slate-700 dark:text-slate-300 text-sm font-semibold">Notes</FormLabel>
                         <span
                           className={cn(
-                            "text-xs text-slate-600 dark:text-slate-400",
+                            "text-xs text-slate-600 dark:text-slate-400 font-medium",
                             field.value.length > 900 && "text-amber-500"
                           )}
                         >
@@ -440,7 +440,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                             maxLength={1000}
                             {...field}
                             className={cn(
-                              "bg-white/5 border-white/10 text-white placeholder:text-slate-500 focus:border-purple-500/50 focus:ring-purple-500/20",
+                              "bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-primary/50 focus:ring-primary/20",
                               showSuccess && "border-emerald-500/40 pr-10"
                             )}
                           />
@@ -449,7 +449,7 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                           <CheckCircle2 className="absolute right-3 top-4 h-4 w-4 text-emerald-700 dark:text-emerald-500" />
                         )}
                       </div>
-                      <FormDescription className="text-xs text-slate-600 dark:text-slate-400 leading-normal">
+                      <FormDescription className="text-xs text-slate-600 dark:text-slate-400 leading-normal font-medium">
                         This field validates on blur and blocks script-like, database-style, and prompt-injection text.
                       </FormDescription>
                       <FormMessage className="text-xs text-rose-400 font-medium" aria-live="polite" />
@@ -464,14 +464,14 @@ export function ClientDialog({ isOpen, onOpenChange, client, onSave }: ClientDia
                 type="button"
                 variant="outline"
                 onClick={() => onOpenChange(false)}
-                className="border-white/10 text-gray-300 hover:bg-white/10 hover:text-white"
+                className="border-slate-300 dark:border-white/10 text-slate-700 dark:text-gray-300 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white cursor-pointer"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={form.formState.isSubmitting || (hasFailedSubmit && !form.formState.isValid)}
-                className="bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 font-semibold"
+                className="bg-slate-900 hover:bg-slate-800 text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-100 border border-slate-700 dark:border-zinc-700 font-semibold cursor-pointer shadow-sm"
               >
                 {form.formState.isSubmitting ? "Saving..." : "Save Client"}
               </Button>

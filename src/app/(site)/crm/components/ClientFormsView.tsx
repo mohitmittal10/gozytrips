@@ -93,7 +93,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
   };
 
   return (
-    <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl p-5 hover:border-primary/40 transition-all group flex flex-col justify-between shadow-xl">
+    <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-5 hover:border-primary/40 transition-all group flex flex-col justify-between shadow-xl">
       <div>
         {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-3">
@@ -174,7 +174,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
         <div className="mt-2.5 mb-1">
           <button
             onClick={() => setShowFields(!showFields)}
-            className="flex items-center gap-1 text-[11px] font-semibold text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-semibold text-slate-700 dark:text-zinc-300 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
           >
             {showFields ? (
               <>
@@ -188,7 +188,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
           </button>
 
           {showFields && (
-            <div className="mt-2 p-3 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl space-y-1.5 text-[11px] text-zinc-300 animate-in fade-in duration-200">
+            <div className="mt-2 p-3 bg-slate-100 dark:bg-white/5 border border-slate-300 dark:border-white/10 rounded-xl space-y-1.5 text-[11px] text-slate-700 dark:text-zinc-300 animate-in fade-in duration-200">
               <p className="font-semibold text-slate-900 dark:text-white border-b border-white/5 pb-1 mb-1.5">This form collects:</p>
               <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
                 <div className="flex items-center gap-1.5"><MapPin className="w-3 h-3 text-primary shrink-0" /> <span>Start/End Locations</span></div>
@@ -212,7 +212,7 @@ function FormCard({ form, shareUrl, isExpired, onViewResponses, onDelete, onRena
           <CopiedButton url={shareUrl} />
           <button
             onClick={() => onViewResponses(form)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-zinc-200 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 dark:border-white/10 bg-slate-100 dark:bg-white/5 text-slate-700 dark:text-zinc-200 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
           >
             <Inbox className="w-3 h-3 text-primary" /> Responses {form.response_count ? `(${form.response_count})` : ""}
           </button>
@@ -291,7 +291,7 @@ function FormsList({
         </p>
         <Button
           onClick={onCreateNew}
-          className="px-6 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2 h-10"
+          className="px-6 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-100 border border-slate-700 dark:border-zinc-700 rounded-xl text-sm font-semibold transition-all shadow-sm flex items-center gap-2 h-10"
         >
           <Plus className="w-4 h-4" /> Create First Form
         </Button>
@@ -372,10 +372,10 @@ function ResponsesList({
           <div
             key={r.id}
             onClick={() => onViewResponse(r)}
-            className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-4 hover:bg-white/[0.04] hover:border-white/10 transition-all cursor-pointer group"
+            className="bg-white/60 dark:bg-white/[0.02] border border-slate-200 dark:border-white/[0.06] rounded-xl p-4 hover:bg-slate-100 dark:hover:bg-white/[0.04] hover:border-slate-300 dark:hover:border-white/10 transition-all cursor-pointer group shadow-sm"
           >
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center shrink-0 text-zinc-200 font-bold text-sm">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-zinc-800 border border-slate-300 dark:border-zinc-700 flex items-center justify-center shrink-0 text-slate-900 dark:text-zinc-200 font-bold text-sm">
                 {(r.client_name || r.client_email).charAt(0).toUpperCase()}
               </div>
               <div className="flex-1 min-w-0">
@@ -407,7 +407,7 @@ function ResponsesList({
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 {r.status !== "converted" && (
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] text-zinc-300 font-semibold">
+                  <span className="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 text-[10px] text-slate-700 dark:text-zinc-300 font-semibold">
                     <Zap className="w-3 h-3" /> Use
                   </span>
                 )}
@@ -461,7 +461,7 @@ export const ClientFormsView = () => {
     <div className="mt-4 space-y-5">
       {/* Tab bar */}
       <div className="flex items-center gap-2">
-        <div className="flex bg-white/[0.03] border border-white/[0.07] rounded-xl p-1 gap-1">
+        <div className="flex bg-slate-100 dark:bg-white/[0.03] border border-slate-200 dark:border-white/[0.07] rounded-xl p-1 gap-1">
           {(["forms", "responses"] as const).map((tab) => (
             <button
               key={tab}
@@ -469,8 +469,8 @@ export const ClientFormsView = () => {
               className={cn(
                 "px-4 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all border",
                 activeTab === tab
-                  ? "bg-zinc-800 text-zinc-100 border-zinc-700 font-semibold shadow-sm"
-                  : "border-transparent text-gray-500 hover:text-gray-300"
+                  ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 border-slate-200 dark:border-zinc-700 shadow-sm font-semibold"
+                  : "border-transparent text-slate-600 dark:text-gray-500 hover:text-slate-900 dark:hover:text-gray-300"
               )}
             >
               {tab === "forms" ? (
@@ -496,7 +496,7 @@ export const ClientFormsView = () => {
           {activeTab === "forms" && (
             <Button
               onClick={() => setShowCreateModal(true)}
-              className="h-9 px-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border border-zinc-700 rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-2"
+              className="h-9 px-4 bg-slate-900 hover:bg-slate-800 text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:text-zinc-100 border border-slate-700 dark:border-zinc-700 rounded-xl text-xs font-semibold transition-all shadow-sm flex items-center gap-2"
             >
               <Plus className="w-3.5 h-3.5" /> New Form
             </Button>

@@ -394,11 +394,11 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
             <FormLabel className={LabelClass}>Trip Type</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
-                <SelectTrigger className="h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl">
+                <SelectTrigger className="h-10 sm:h-11 text-sm border-slate-300 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur rounded-xl text-slate-900 dark:text-white">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent className="bg-zinc-900 border-white/10">
+              <SelectContent className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white">
                 <SelectItem value="adventurous">Adventurous</SelectItem>
                 <SelectItem value="scenic">Scenic</SelectItem>
                 <SelectItem value="relaxed">Relaxed</SelectItem>
@@ -416,11 +416,11 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
             <FormLabel className={LabelClass}>Timing Preference</FormLabel>
             <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
-                <SelectTrigger className="h-10 sm:h-11 text-sm border-white/10 bg-white/5 backdrop-blur rounded-xl">
+                <SelectTrigger className="h-10 sm:h-11 text-sm border-slate-300 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur rounded-xl text-slate-900 dark:text-white">
                   <SelectValue placeholder="Preference" />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent className="bg-zinc-900 border-white/10">
+              <SelectContent className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white">
                 <SelectItem value="no_preference">No preference</SelectItem>
                 <SelectItem value="avoid_night_travel">Avoid night</SelectItem>
                 <SelectItem value="prefer_morning_travel">Morning</SelectItem>

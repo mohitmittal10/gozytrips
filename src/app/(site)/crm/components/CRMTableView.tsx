@@ -148,7 +148,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-zinc-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white text-xs rounded-xl font-semibold cursor-pointer">
+                            <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white text-xs rounded-xl font-semibold cursor-pointer">
                                 <Columns3 className="w-3.5 h-3.5 mr-1.5 text-primary" /> Columns
                             </Button>
                         </DropdownMenuTrigger>
@@ -163,7 +163,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
             </div>
 
             {/* Table */}
-            <div className="bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] shadow-2xl rounded-2xl overflow-hidden">
+            <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] shadow-2xl rounded-2xl overflow-hidden">
                 <div className="crm-table-wrapper">
                     <table className="w-full text-left border-collapse min-w-[520px]">
                         <thead>
@@ -246,7 +246,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                             </div>
                                         </td>
                                         {visibleColumns.destination && (
-                                            <td className="p-4 text-zinc-300">
+                                            <td className="p-4 text-slate-700 dark:text-zinc-300">
                                                 <div className="flex flex-col gap-1.5 py-1">
                                                     {client.bookedDestinations && client.bookedDestinations.length > 0 ? (
                                                         client.bookedDestinations.map((dest: any, idx: number) => (
