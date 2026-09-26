@@ -249,7 +249,7 @@ export default function SignUp() {
                           style={{ width: `${passwordStrength.progress}%` }}
                         />
                       </div>
-                      <p>{passwordStrength.feedback}</p>
+                      <div>{passwordStrength.feedback}</div>
                     </FormDescription>
                   )}
                   <FormMessage className="text-xs" aria-live="polite" />
