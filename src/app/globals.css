@@ -135,12 +135,31 @@
 }
 
 @layer base {
-  * {
-    @apply border-border/20;
+  html {
+    scrollbar-gutter: stable;
+    overflow-y: scroll !important;
   }
 
   body {
     @apply bg-background text-foreground transition-colors duration-300;
+    scrollbar-gutter: stable;
+    overflow-y: scroll !important;
+  }
+
+  /* Prevent Radix UI / react-remove-scroll / modal triggers from hiding scrollbars and distorting page width */
+  html[data-scroll-locked],
+  body[data-scroll-locked],
+  html[style*="overflow: hidden"],
+  body[style*="overflow: hidden"] {
+    overflow-y: scroll !important;
+    padding-right: 0px !important;
+    margin-right: 0px !important;
+  }
+
+  body[data-scroll-locked] [data-radix-popper-content-wrapper],
+  body[style*="overflow: hidden"] [data-radix-popper-content-wrapper] {
+    padding-right: 0px !important;
+    margin-right: 0px !important;
   }
 
   section {
