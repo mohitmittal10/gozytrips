@@ -83,6 +83,11 @@ export const getAgentInfo = (userProfile: any, agencySettings?: any, liveData?: 
         companyName = realBrandOrCompany;
     }
 
+    // Strip any emojis from agency name for clean presentation in itineraries
+    companyName = companyName
+        .replace(/[\p{Extended_Pictographic}\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, "")
+        .trim();
+
     const agentPhone =
         overrides.phone ||
         overrides.agentPhone ||

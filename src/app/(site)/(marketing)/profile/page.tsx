@@ -12,7 +12,7 @@ export default function ProfilePage() {
 
   if (authLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-[#050505]">
+      <div className="flex items-center justify-center min-h-screen bg-slate-50 dark:bg-[#050505]">
         <div className="relative group">
           <div className="absolute -inset-4 bg-primary/20 rounded-full blur-2xl opacity-50 animate-pulse" />
           <UniqueLoading variant="morph" size="lg" className="relative z-10" />
@@ -24,10 +24,10 @@ export default function ProfilePage() {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#050505]">
-      <main className="flex-grow container mx-auto px-4 py-20 max-w-5xl">
+    <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-[#050505] text-slate-900 dark:text-white transition-colors">
+      <main className="flex-grow container mx-auto px-4 py-12 sm:py-20 max-w-5xl">
         <Link href="/the-lab">
-          <Button variant="ghost" className="mb-6 gap-2 text-slate-600 dark:text-gray-400 hover:text-white">
+          <Button variant="ghost" className="mb-6 gap-2 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-white/10">
             <ArrowLeft className="w-4 h-4" />
             Back to The Lab
           </Button>

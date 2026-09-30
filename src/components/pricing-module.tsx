@@ -757,7 +757,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                   <SelectTrigger className="bg-white dark:bg-black/30 border-slate-300/60 dark:border-white/10 h-9 text-xs text-slate-900 dark:text-white">
                                     <SelectValue />
                                   </SelectTrigger>
-                                  <SelectContent className="bg-obsidian-dark border-slate-300/60 dark:border-white/10 text-zinc-300">
+                                  <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-zinc-300 shadow-xl">
                                     {manualCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                   </SelectContent>
                                 </Select>
@@ -776,7 +776,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                     <SelectTrigger className={`h-9 text-xs text-slate-900 dark:text-white ${isLinked ? "bg-white dark:bg-emerald-950/40 border-emerald-500/40 text-emerald-900 dark:text-emerald-200 font-medium" : "bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/10"}`}>
                                       <SelectValue placeholder={`Choose ${option.category}...`} />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-obsidian-dark border-slate-300/60 dark:border-white/10 text-zinc-200 max-h-56">
+                                    <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-zinc-200 max-h-56 shadow-xl">
                                       <SelectItem value="unlinked">
                                         <span className="text-slate-600 dark:text-gray-400 italic">Manual Entry (Unlinked)</span>
                                       </SelectItem>
@@ -865,7 +865,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                     <SelectTrigger className="bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/5 h-9 text-xs text-slate-900 dark:text-white">
                                       <SelectValue />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-obsidian-dark border-slate-300/60 dark:border-white/5 text-zinc-300">
+                                    <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/5 text-slate-900 dark:text-zinc-300 shadow-xl">
                                       <SelectItem value="per-person">Per Person</SelectItem>
                                       <SelectItem value="total">Total Flat</SelectItem>
                                     </SelectContent>
@@ -909,7 +909,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                   <SelectTrigger className="bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/5 h-9 text-xs text-slate-900 dark:text-white">
                                     <SelectValue />
                                   </SelectTrigger>
-                                  <SelectContent className="bg-obsidian-dark border-slate-300/60 dark:border-white/5 text-zinc-300">
+                                  <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/5 text-slate-900 dark:text-zinc-300 shadow-xl">
                                     <SelectItem value="percentage">Percentage (%)</SelectItem>
                                     <SelectItem value="flat">Flat Amount ({currencySymbol})</SelectItem>
                                   </SelectContent>

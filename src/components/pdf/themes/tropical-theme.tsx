@@ -820,7 +820,7 @@ export const TropicalTheme = ({
                         <div className="meta-box">
                             <div className="meta-col">
                                 <span className="meta-label">Agency Details</span>
-                                <h3 data-field="agency.companyName">🌴 {agent.companyName}</h3>
+                                <h3 data-field="agency.companyName">{agent.companyName}</h3>
                                 <ul className="meta-list">
                                     {agent.agentEmail && (
                                         <li>

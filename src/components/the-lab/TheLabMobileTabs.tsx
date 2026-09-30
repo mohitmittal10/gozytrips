@@ -72,7 +72,7 @@ const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
               <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs font-medium focus:ring-zinc-700 h-9 flex-1">
                 <SelectValue placeholder="No Client" />
               </SelectTrigger>
-              <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+              <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/5 text-slate-900 dark:text-zinc-300 shadow-xl">
                 <SelectItem value="none">No Client</SelectItem>
                 {clients.map((client) => (
                   <SelectItem key={client.id} value={client.id}>{client.name}</SelectItem>
@@ -91,7 +91,7 @@ const TheLabMobileTabs = React.memo(function TheLabMobileTabs({
               <SelectTrigger className="border-none bg-white/5 text-zinc-300 rounded-lg text-xs font-medium focus:ring-zinc-700 h-9 flex-1">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-obsidian-dark border-white/5 text-zinc-300">
+              <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/5 text-slate-900 dark:text-zinc-300 shadow-xl">
                 {itineraryStatuses.length > 0 ? (
                   itineraryStatuses.map(opt => (
                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
