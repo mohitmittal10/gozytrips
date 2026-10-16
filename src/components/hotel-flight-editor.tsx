@@ -415,11 +415,11 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
   if (isCollapsed) {
     return (
       <div className="rounded-xl border border-slate-300/60 dark:border-white/5 bg-[#EFECE5] dark:bg-white/[0.02] p-4 flex items-center justify-between gap-4 transition-all animate-in fade-in duration-200 select-none">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 min-w-0">
           <div className="p-2 bg-primary/10 rounded-lg shrink-0">
             <Hotel className="w-5 h-5 text-primary" />
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-semibold text-slate-900 dark:text-white">{hotel.name || "Untitled Hotel"}</span>
               {!isComplete && (
@@ -429,10 +429,23 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
                 </span>
               )}
             </div>
-            {hotel.address && <p className="text-xs text-slate-600 dark:text-gray-400 mt-1">{hotel.address}</p>}
+            <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+              {selectedDays.length > 0 ? (
+                selectedDays.map((d) => (
+                  <span key={d} className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-primary/10 text-primary border border-primary/20">
+                    Day {d + 1}
+                  </span>
+                ))
+              ) : (
+                <span className="text-[10px] text-slate-500 dark:text-zinc-500 italic">No days assigned</span>
+              )}
+              {hotel.address && (
+                <span className="text-[10px] text-slate-500 dark:text-zinc-500 hidden sm:inline truncate">· {hotel.address}</span>
+              )}
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <StarRating value={hotel.starRating} onChange={(v) => update("starRating", v)} />
           <button type="button" onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors p-1.5 hover:bg-white/5 rounded-lg">
             <Trash2 className="w-4 h-4" />

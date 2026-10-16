@@ -1,5 +1,5 @@
 // Handles the conditional rendering of the 4 tabs, each wrapped in an Error Boundary
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useMemo } from 'react';
 import { Sparkles } from 'lucide-react';
 import type { ActiveLabTab } from '@/types/the-lab';
 import { ItineraryErrorBoundary } from './ItineraryErrorBoundary';
@@ -38,6 +38,52 @@ const PricingSync = React.memo(({ onChange }: { onChange: (pricing: any) => void
     }
   }, [contextPricing, onChange]);
   
+  return null;
+});
+
+/**
+ * LogisticsSync — bridges the Zustand lab store into the ItineraryContext used
+ * by PricingModule. The ItineraryProvider is only seeded once at mount, so any
+ * hotels/flights/cabs/buses added or edited in the Logistics tab after mount
+ * would not be visible to the Financial tab without this sync.
+ *
+ * It dispatches the four SET_* actions whenever the prop arrays change identity,
+ * keeping the context in lockstep with the store without a full provider remount.
+ */
+const LogisticsSync = React.memo(function LogisticsSync({
+  hotels, flights, cabs, buses,
+}: { hotels: any[]; flights: any[]; cabs: any[]; buses: any[] }) {
+  const ctx = React.useContext(ItineraryContext);
+
+  const hotelsKey = useMemo(() => JSON.stringify(hotels), [hotels]);
+  const flightsKey = useMemo(() => JSON.stringify(flights), [flights]);
+  const cabsKey = useMemo(() => JSON.stringify(cabs), [cabs]);
+  const busesKey = useMemo(() => JSON.stringify(buses), [buses]);
+
+  useEffect(() => {
+    if (!ctx) return;
+    ctx.dispatch({ type: 'SET_HOTELS', payload: hotels });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hotelsKey]);
+
+  useEffect(() => {
+    if (!ctx) return;
+    ctx.dispatch({ type: 'SET_FLIGHTS', payload: flights });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flightsKey]);
+
+  useEffect(() => {
+    if (!ctx) return;
+    ctx.dispatch({ type: 'SET_CABS', payload: cabs });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cabsKey]);
+
+  useEffect(() => {
+    if (!ctx) return;
+    ctx.dispatch({ type: 'SET_BUSES', payload: buses });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busesKey]);
+
   return null;
 });
 
@@ -211,6 +257,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
               }}
             >
               <PricingSync onChange={setPricing} />
+              <LogisticsSync hotels={hotels} flights={flights} cabs={cabs} buses={buses} />
               <MemoizedPricingModule onSave={handleSaveItinerary} isSaving={isSaving} />
             </ItineraryProvider>
           </ItineraryErrorBoundary>
