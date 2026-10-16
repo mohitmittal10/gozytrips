@@ -30,16 +30,16 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
     )}>
       <div className={cn(
         "flex flex-col items-center w-full bg-white/[0.03] backdrop-blur-xl border border-white/[0.08] rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300 overflow-x-hidden",
-        "h-[calc(100vh-110px)] max-h-[900px] py-4 px-2"
+        "h-[calc(100vh-140px)] max-h-[880px] py-4 px-2"
       )}>
         {/* Logo Section */}
         <div className={cn(
           "mb-6 transition-all duration-300 flex items-center",
           isSidebarExpanded ? "px-4 w-full" : "justify-center w-10"
         )}>
-          <Logo 
-            className={cn(isSidebarExpanded ? "gap-3" : "gap-0")} 
-            isLoading={isGenerating || isLoading} 
+          <Logo
+            className={cn(isSidebarExpanded ? "gap-3" : "gap-0")}
+            isLoading={isGenerating || isLoading}
             hideText={!isSidebarExpanded}
           />
         </div>
@@ -64,7 +64,7 @@ const TheLabSidebar = React.memo(function TheLabSidebar({
             <Plus className={cn(isSidebarExpanded ? "w-4 h-4 text-white" : "w-5 h-5")} />
           </div>
           {isSidebarExpanded && <span className="text-sm font-bold tracking-tight">New Itinerary</span>}
-          
+
           {!isSidebarExpanded && (
             <div className="absolute left-full ml-3 px-3 py-1.5 bg-[#0c0c0e]/95 backdrop-blur-2xl border border-white/10 rounded-xl text-xs font-semibold text-white whitespace-nowrap opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 shadow-xl pointer-events-none">
               New Itinerary

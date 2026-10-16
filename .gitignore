@@ -44,8 +44,22 @@ next-env.d.ts
 firebase-debug.log
 firestore-debug.log
 
-# token tracking
+# token tracking (local filesystem — not for serverless prod)
 .token-usage.json
 
-# archived home page
-src/app/(site)/(marketing)/archived-home.tsx
+# supabase CLI local/temp state (project refs, pooler URLs)
+supabase/.temp/
+
+# large dumps / exports / lighthouse / scratch
+WanderLabs_Mock_Backup.json
+report2.json
+figma_node.json
+scratch/
+scripts/archive/
+
+# ad-hoc one-off root scripts (archived under scripts/archive when needed)
+/add_themes.js
+/fix-*.js
+/replace-colors.js
+/update_pdf.js
+/test-index.ts

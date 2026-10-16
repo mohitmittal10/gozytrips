@@ -9,7 +9,7 @@ Your application uses **only the `.env` file** to manage all configuration keys.
 
 ### 1. **GEMINI_API_KEY** ✓
 - **Location**: `.env`
-- **Current Value**: `AIzaSyDBM35AOwybeauDCJ_bGrhxqPXhN6AnypE`
+- **Current Value**: `YOUR_GEMINI_API_KEY` (set in local `.env` only — never commit real keys)
 - **Used In**: `src/ai/genkit.ts` (line 12)
 - **Purpose**: Google Gemini AI API authentication
 - **Type**: Server-side secret
@@ -69,11 +69,11 @@ return createServerClient(
 ### 4. **SUPABASE_SERVICE_ROLE_KEY** ✓
 - **Location**: `.env`
 - **Current Value**: `your_supabase_service_role_key` (needs to be filled)
-- **Used In**: Not currently used in codebase
-- **Purpose**: Supabase service role key for server-side admin operations
+- **Used In**: Admin client, backup cron, rate limiter, webhooks, invoice share pages, migration scripts
+- **Purpose**: Supabase service role key for server-side admin operations (bypasses RLS)
 - **Type**: Server-side secret (never expose to client)
-- **Status**: ⚠️ Ready for future use
-- **Note**: Can be used for server-side operations requiring elevated privileges
+- **Status**: ✅ Required in production
+- **Note**: Never ship this key to the browser bundle
 
 ---
 
@@ -96,13 +96,35 @@ if (process.env.NODE_ENV === 'production' && (!authToken || authToken !== expect
 
 ---
 
-### 6. **NEXT_PUBLIC_BASE_URL** ✓
+### 6. **NEXT_PUBLIC_APP_URL** ✓
 - **Location**: `.env`
 - **Current Value**: `http://localhost:9002`
-- **Used In**: Configuration reference (may be used for redirects)
-- **Purpose**: Application base URL for redirects and OAuth callbacks
+- **Used In**: Invoice link API routes (`api/itineraries/generate-invoice-link`, `api/bookings/generate-invoice-link`)
+- **Purpose**: Canonical public origin for invoice / share URLs (required in production)
 - **Type**: Public (contains no sensitive data)
-- **Status**: ✅ Configured correctly
+- **Status**: ✅ Required — do not leave empty in production
+- **Note**: Older docs mentioned `NEXT_PUBLIC_BASE_URL`; runtime code uses `NEXT_PUBLIC_APP_URL` only.
+
+---
+
+### 7. **CRON_SECRET** ✓
+- **Location**: `.env` / production secrets
+- **Purpose**: Authenticates `GET /api/backup/cron` (required — fail-closed if unset)
+- **Type**: Server-side secret
+- **Preferred**: `Authorization: Bearer <secret>` or `x-cron-secret` header
+
+---
+
+### 8. **Other production secrets**
+| Variable | Purpose |
+|----------|---------|
+| `UNSPLASH_ACCESS_KEY` | Unsplash image search |
+| `RAZORPAY_KEY_ID` / `RAZORPAY_KEY_SECRET` | Payments |
+| `RAZORPAY_PLAN_ID_PRO` / `RAZORPAY_PLAN_ID_AGENCY` | Subscription plan IDs (required — no placeholders) |
+| `RAZORPAY_WEBHOOK_SECRET` | Webhook signature verification |
+| `NEXT_PUBLIC_GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | Google Drive backup OAuth |
+| `TOKEN_TRACKER_SECRET` | Auth for `/api/token-stats` DELETE and API-key GET |
+| `BACKUP_CRON_CONCURRENCY` | Optional parallel backup workers (default 5) |
 
 ---
 
@@ -110,12 +132,13 @@ if (process.env.NODE_ENV === 'production' && (!authToken || authToken !== expect
 
 | Variable | Current Value | Type | Status | Location |
 |----------|--------------|------|--------|----------|
-| `GEMINI_API_KEY` | `AIzaSy...` | Server Secret | ✅ Active | `.env` |
+| `GEMINI_API_KEY` | Set in local `.env` only | Server Secret | ✅ Active | `.env` |
 | `NEXT_PUBLIC_SUPABASE_URL` | Placeholder | Public | ⚠️ Needs Setup | `.env` |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Placeholder | Public | ⚠️ Needs Setup | `.env` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Placeholder | Server Secret | ⚠️ Ready | `.env` |
-| `TOKEN_TRACKER_SECRET` | Placeholder | Server Secret | ✅ Optional | `.env` |
-| `NEXT_PUBLIC_BASE_URL` | `http://localhost:9002` | Public | ✅ Correct | `.env` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Placeholder | Server Secret | ✅ Required | `.env` |
+| `TOKEN_TRACKER_SECRET` | Placeholder | Server Secret | ✅ Required for token APIs | `.env` |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:9002` | Public | ✅ Required | `.env` |
+| `CRON_SECRET` | Placeholder | Server Secret | ✅ Required for backup cron | `.env` |
 
 ---
 
@@ -145,7 +168,7 @@ Next.js automatically loads variables from `.env` in this order:
 - [x] All code references point to `.env`
 - [x] No other `.env` files created
 - [x] `GEMINI_API_KEY` is set ✓
-- [x] `NEXT_PUBLIC_BASE_URL` is correct ✓
+- [x] `NEXT_PUBLIC_APP_URL` is set ✓
 - [ ] `NEXT_PUBLIC_SUPABASE_URL` - Set your Supabase URL
 - [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Set your Supabase Anon Key
 - [ ] `SUPABASE_SERVICE_ROLE_KEY` - Set your service role key (optional)

@@ -61,15 +61,17 @@ export function useCrmData() {
                 .from("itineraries")
                 .select("id, client_id, title, status, destinations, start_date, end_date, budget, client_price, currency, commission_rate, markup_value, markup_type, tax_percentage, adult_pax, child_pax, infant_pax, created_at, updated_at, itinerary_data, starting_location, ending_location, share_token, share_enabled, trip_line_items(net_cost, markup_percentage)")
                 .eq("user_id", user.id)
-                .order("updated_at", { ascending: false });
+                .order("updated_at", { ascending: false })
+                .limit(200);
 
             if (error) throw error;
 
             const { data: standaloneData, error: standaloneError } = await supabase
                 .from('standalone_bookings')
-                .select('*')
+                .select('id, client_id, title, service_type, status, created_at, updated_at, currency, net_cost, markup_percentage, booking_details')
                 .eq('user_id', user.id)
-                .order('created_at', { ascending: false });
+                .order('created_at', { ascending: false })
+                .limit(200);
 
             if (!standaloneError) {
                 setBookings(standaloneData || []);

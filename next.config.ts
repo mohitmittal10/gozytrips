@@ -4,10 +4,10 @@ const nextConfig: NextConfig = {
   /* config options here */
   compress: true,
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   serverExternalPackages: [
     'genkit',

@@ -59,7 +59,7 @@ export default function TheLab() {
     const urlTab = params.get("tab") as ActiveLabTab | null;
     const storedTab = localStorage.getItem("the_lab_active_tab") as ActiveLabTab | null;
     const validTabs: ActiveLabTab[] = ['new', 'itinerary', 'flights-hotels', 'inclusions', 'pricing', 'history'];
-    
+
     if (urlTab && validTabs.includes(urlTab)) {
       setActiveLabTabState(urlTab);
     } else if (storedTab && validTabs.includes(storedTab)) {
@@ -251,7 +251,7 @@ export default function TheLab() {
     const startLoc = tripMetadata.startingLocation;
     const dests = tripMetadata.destinations;
     let title = dests ? (startLoc ? `${startLoc} to ${dests}` : `Trip to ${dests}`) : "Untitled Lab Draft";
-    
+
     if (tripMetadata.startDate && tripMetadata.endDate) {
       const s = new Date(tripMetadata.startDate);
       const e = new Date(tripMetadata.endDate);
@@ -410,7 +410,7 @@ export default function TheLab() {
       cancellationPolicy: s.cancellationPolicy,
       paymentMethods: s.paymentMethods,
     });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentHash, saveAll]);
 
   // Auto-sync form changes to persistence
@@ -478,11 +478,11 @@ export default function TheLab() {
   const handleStatusChangeAction = useCallback(async (newStatus: string) => {
     setSelectedStatus(newStatus);
     if (currentTripId && user?.id) {
-       try {
-         await updateItineraryStatus(currentTripId, newStatus, supabase, user.id);
-       } catch (err) {
-         console.error("Centralized status update fail:", err);
-       }
+      try {
+        await updateItineraryStatus(currentTripId, newStatus, supabase, user.id);
+      } catch (err) {
+        console.error("Centralized status update fail:", err);
+      }
     }
   }, [currentTripId, user?.id, supabase]);
 
@@ -492,11 +492,12 @@ export default function TheLab() {
   }, [currentStep, form]);
 
   const onSubmit = useCallback(async (values: TheLabFormValues, feedback?: string) => {
-    console.log("[TheLab index.tsx] onSubmit called. values:", values, "feedback:", feedback);
+    if (process.env.NODE_ENV === 'development') {
+      console.log("[TheLab] onSubmit", { hasFeedback: !!feedback });
+    }
     setTripMetadata(values);
-    
+
     if (!feedback) {
-      console.log("[TheLab index.tsx] Fresh generation. Resetting state values...");
       // Fresh generation: decouple from any existing record.
       // resetForNewTrip cancels pending auto-save timers and nulls the ref,
       // but does NOT write to the DB. No phantom records are created.
@@ -513,20 +514,18 @@ export default function TheLab() {
       setPaymentMethods("");
       resetForNewTrip();
     }
-    
+
     // Run AI generation — no DB writes happen during this.
-    console.log("[TheLab index.tsx] Triggering AI generation (calling generate)...");
     const res = await generate(values, feedback, tripMetadata);
-    console.log("[TheLab index.tsx] AI generation result (res):", res);
-    
+
     if (res) {
-      console.log("[TheLab index.tsx] Generation succeeded. Post-processing response...");
+
       if (!feedback) {
         let resolvedClientId = "none";
         let shareToken = "";
-        
+
         if (typeof window !== 'undefined') {
-          shareToken = window.crypto?.randomUUID ? window.crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+          shareToken = window.crypto?.randomUUID ? window.crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
             var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
             return v.toString(16);
           });
@@ -654,7 +653,7 @@ export default function TheLab() {
 
   const handleRegenerateItinerary = useCallback(async (updatedMetadata: TripMetadata, feedbackPrompt?: string) => {
     console.log("[TheLab index.tsx] handleRegenerateItinerary called. updatedMetadata:", updatedMetadata, "feedbackPrompt:", feedbackPrompt);
-    
+
     if (feedbackPrompt && feedbackPrompt.trim()) {
       const wordCount = feedbackPrompt.trim().split(/\s+/).filter(Boolean).length;
       if (wordCount > 25) {
@@ -666,7 +665,7 @@ export default function TheLab() {
         return;
       }
     }
-    
+
     let sDate = updatedMetadata.startDate;
     let eDate = updatedMetadata.endDate;
     if (sDate && !(sDate instanceof Date)) sDate = new Date(sDate);
@@ -697,7 +696,7 @@ export default function TheLab() {
 
     if (res) {
       setItinerary(res);
-      
+
       const formattedHotels = (sanitizedValues.hotels || hotels || []).map((h: any) => ({
         id: h.id,
         dayIndex: h.dayIndex,
@@ -935,17 +934,17 @@ export default function TheLab() {
       {isViewingItinerary && (itinerary?.itinerary?.length ?? 0) > 0 && (
         <div className="w-full sticky top-0 z-40 bg-[#EFECE5]/90 dark:bg-black/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
           <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
-            <TheLabHeader 
-              itinerary={itinerary} 
-              clients={clients} 
-              selectedClientId={selectedClientId} 
-              setSelectedClientId={setSelectedClientId} 
-              selectedStatus={selectedStatus} 
-              setSelectedStatus={handleStatusChangeAction} 
-              showTimestamps={showTimestamps} 
-              setShowTimestamps={setShowTimestamps} 
-              isEditing={isEditing} 
-              setIsEditing={handleSetIsEditing} 
+            <TheLabHeader
+              itinerary={itinerary}
+              clients={clients}
+              selectedClientId={selectedClientId}
+              setSelectedClientId={setSelectedClientId}
+              selectedStatus={selectedStatus}
+              setSelectedStatus={handleStatusChangeAction}
+              showTimestamps={showTimestamps}
+              setShowTimestamps={setShowTimestamps}
+              isEditing={isEditing}
+              setIsEditing={handleSetIsEditing}
               handleDownloadPdf={async () => {
                 // If cache is already valid, open dialog instantly
                 if (previewRef.current?.hasValidCache()) {
@@ -965,9 +964,9 @@ export default function TheLab() {
                   setIsPreRendering(false);
                 }
                 setIsPreviewOpen(true);
-              }} 
-              handleSaveItinerary={handleHeaderSaveItinerary} 
-              isSaving={isSaving} 
+              }}
+              handleSaveItinerary={handleHeaderSaveItinerary}
+              isSaving={isSaving}
               isPreRendering={isPreRendering}
               activeLabTab={activeLabTab}
               canUndoPrevious={canUndoPrevious}
@@ -988,27 +987,37 @@ export default function TheLab() {
         <div className={cn("transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
           <TheLabMobileTabs activeLabTab={activeLabTab} setActiveLabTab={setActiveLabTab} clients={clients} selectedClientId={selectedClientId} setSelectedClientId={setSelectedClientId} selectedStatus={selectedStatus} setSelectedStatus={handleStatusChangeAction} handleCreateNew={handleCreateNew} onOpenAddClient={() => setIsAddClientOpen(true)} />
         </div>
-        
+
         <div className="flex flex-row items-start gap-4 lg:gap-6 w-full">
-          <div className={cn("transition-all duration-500 shrink-0 sticky top-24 self-start z-40", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
-            <TheLabSidebar 
-              isSidebarExpanded={isSidebarExpanded} 
-              setIsSidebarExpanded={setIsSidebarExpanded} 
-              activeLabTab={activeLabTab} 
-              setActiveLabTab={setActiveLabTab} 
+          <div
+            style={{ left: 'max(16px, calc((100vw - 1500px) / 2 + 32px))' }}
+            className={cn(
+              "hidden lg:flex flex-col shrink-0 fixed top-28 z-40 transition-all duration-300",
+              isEditing && "blur-[1px] opacity-40 pointer-events-none",
+              isSidebarExpanded ? "w-64" : "w-16"
+            )}
+          >
+            <TheLabSidebar
+              isSidebarExpanded={isSidebarExpanded}
+              setIsSidebarExpanded={setIsSidebarExpanded}
+              activeLabTab={activeLabTab}
+              setActiveLabTab={setActiveLabTab}
               handleCreateNew={handleCreateNew}
               isGenerating={isGenerating}
               isLoading={isLoading}
             />
           </div>
-          
+
+          {/* Spacer to maintain flex layout column width */}
+          <div className={cn("hidden lg:block shrink-0 transition-all duration-300 pointer-events-none", isSidebarExpanded ? "w-64" : "w-16")} />
+
           <div className={cn(
             "flex-1 min-w-0 flex flex-col",
             isDesigningNew || !itinerary || ['history'].includes(activeLabTab) ? "items-center justify-center" : "lg:grid lg:grid-cols-12 gap-4"
           )}>
             <div className={cn(
-              ['history'].includes(activeLabTab) ? "w-full" : 
-              (isDesigningNew || !itinerary ? "w-full max-w-5xl" : "lg:col-span-8 order-2 lg:order-1")
+              ['history'].includes(activeLabTab) ? "w-full" :
+                (isDesigningNew || !itinerary ? "w-full max-w-5xl" : "lg:col-span-8 order-2 lg:order-1")
             )}>
               {(isGenerating && !itinerary) || (isLoading) ? (
                 <div className="py-24 flex flex-col items-center min-h-[400px] justify-center space-y-12">
@@ -1022,29 +1031,29 @@ export default function TheLab() {
                       <TheLabHero itinerary={itinerary} />
                     </div>
                   )}
-                  <TheLabTabContent 
-                    activeLabTab={activeLabTab} 
-                    isGenerating={isGenerating} 
-                    itinerary={itinerary} 
-                    setItinerary={setItineraryWithHistory} 
-                    isEditing={isEditing} 
-                    setIsEditing={handleSetIsEditing} 
-                    hotels={hotels} 
-                    setHotels={setHotels} 
-                    flights={flights} 
-                    setFlights={setFlights} 
-                    cabs={cabs} 
-                    setCabs={setCabs} 
-                    buses={buses} 
-                    setBuses={setBuses} 
-                    showTimestamps={showTimestamps} 
-                    pricing={pricing} 
-                    setPricing={setPricing} 
-                    agencySettings={null} 
-                    handleSaveItinerary={handleTabContentSaveItinerary} 
-                    isSaving={isSaving} 
-                    setCurrentTripId={setCurrentTripId} 
-                    setActiveLabTab={setActiveLabTab} 
+                  <TheLabTabContent
+                    activeLabTab={activeLabTab}
+                    isGenerating={isGenerating}
+                    itinerary={itinerary}
+                    setItinerary={setItineraryWithHistory}
+                    isEditing={isEditing}
+                    setIsEditing={handleSetIsEditing}
+                    hotels={hotels}
+                    setHotels={setHotels}
+                    flights={flights}
+                    setFlights={setFlights}
+                    cabs={cabs}
+                    setCabs={setCabs}
+                    buses={buses}
+                    setBuses={setBuses}
+                    showTimestamps={showTimestamps}
+                    pricing={pricing}
+                    setPricing={setPricing}
+                    agencySettings={null}
+                    handleSaveItinerary={handleTabContentSaveItinerary}
+                    isSaving={isSaving}
+                    setCurrentTripId={setCurrentTripId}
+                    setActiveLabTab={setActiveLabTab}
                     form={form}
                     currentStep={currentStep}
                     setCurrentStep={setCurrentStep}
@@ -1065,15 +1074,15 @@ export default function TheLab() {
                 </>
               )}
             </div>
-            
+
             {isViewingItinerary && itinerary && (
               <div className={cn("lg:col-span-4 order-1 lg:order-2 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
-                <TheLabSummaryPanel 
-                  itinerary={itinerary} 
-                  selectedStatus={selectedStatus} 
-                  clients={clients} 
-                  selectedClientId={selectedClientId} 
-                  isGenerating={isGenerating} 
+                <TheLabSummaryPanel
+                  itinerary={itinerary}
+                  selectedStatus={selectedStatus}
+                  clients={clients}
+                  selectedClientId={selectedClientId}
+                  isGenerating={isGenerating}
                   finalTotal={finalTotal}
                   currencySymbol={currencySymbol}
                   tripMetadata={tripMetadata}

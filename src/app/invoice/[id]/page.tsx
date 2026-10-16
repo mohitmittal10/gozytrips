@@ -11,10 +11,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const supabaseAdmin = createAdminClient();
 
-  // 1. Fetch itinerary securely via share_token
+  // 1. Fetch itinerary securely via share_token (narrow columns — never select refresh tokens)
   const { data: itinData, error: itinError } = await supabaseAdmin
     .from("itineraries")
-    .select("*")
+    .select("id, user_id, title, starting_location, ending_location, start_date, end_date, currency, client_price, share_token, share_enabled")
     .eq("share_token", id)
     .eq("share_enabled", true)
     .single();
@@ -26,10 +26,10 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const itinerary = itinData as any;
   const itineraryId = itinerary.id;
 
-  // 2. Fetch agent profile
+  // 2. Fetch agent profile (public invoice fields only)
   const { data: profData } = await supabaseAdmin
     .from("user_profiles")
-    .select("*")
+    .select("company_name, full_name, business_email, email, business_phone")
     .eq("id", itinerary.user_id)
     .single();
     
@@ -38,14 +38,14 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   // 3. Fetch line items
   const { data: lineItemsData } = await supabaseAdmin
     .from("trip_line_items")
-    .select("*")
+    .select("id, title, category, net_cost, markup_percentage")
     .eq("itinerary_id", itineraryId)
     .order("created_at", { ascending: true });
 
   // 4. Fetch payments
   const { data: paymentsData } = await supabaseAdmin
     .from("trip_payments")
-    .select("*")
+    .select("id, amount, date, created_at, notes, reference, method")
     .eq("itinerary_id", itineraryId);
     
   const payments = (paymentsData as any[]) || [];
@@ -54,7 +54,7 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   // 5. Fetch agency settings
   const { data: settingsData } = await supabaseAdmin
     .from("agency_settings")
-    .select("*")
+    .select("default_currency, bank_details, terms_conditions, agent_signature")
     .eq("user_id", itinerary.user_id)
     .single();
     

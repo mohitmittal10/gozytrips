@@ -1,6 +1,11 @@
 /**
  * @fileOverview Token tracking utility for Gemini API calls.
  * Logs and stores token usage for billing calculations.
+ *
+ * LOCAL / DEV NOTE: persists to `.token-usage.json` on disk.
+ * This will not work reliably on read-only serverless (App Hosting / Vercel).
+ * Prefer a DB or observability backend for production metrics.
+ * The CLI `scripts/token-usage-inspector.ts` is local-only.
  */
 
 import fs from 'fs/promises';
@@ -28,19 +33,22 @@ export interface TokenStats {
   records: TokenUsageRecord[];
 }
 
-// Token pricing (as of Feb 2025 - update as needed)
+/**
+ * Gemini token pricing estimates (USD per token).
+ * Update periodically against Google AI pricing; override via TOKEN_PRICE_* env if needed.
+ */
 const TOKEN_PRICING = {
   'gemini-2.5-flash-lite': {
-    input: 0.1 / 1_000_000, // $0.075 per million input tokens
-    output: 0.4 / 1_000_000, // $0.3 per million output tokens
+    input: Number(process.env.TOKEN_PRICE_FLASH_LITE_INPUT ?? 0.1 / 1_000_000),
+    output: Number(process.env.TOKEN_PRICE_FLASH_LITE_OUTPUT ?? 0.4 / 1_000_000),
   },
   'gemini-1.5-pro': {
-    input: 1.25 / 1_000_000,
-    output: 5 / 1_000_000,
+    input: Number(process.env.TOKEN_PRICE_PRO_INPUT ?? 1.25 / 1_000_000),
+    output: Number(process.env.TOKEN_PRICE_PRO_OUTPUT ?? 5 / 1_000_000),
   },
   'gemini-1.5-flash': {
-    input: 0.075 / 1_000_000,
-    output: 0.3 / 1_000_000,
+    input: Number(process.env.TOKEN_PRICE_FLASH_INPUT ?? 0.075 / 1_000_000),
+    output: Number(process.env.TOKEN_PRICE_FLASH_OUTPUT ?? 0.3 / 1_000_000),
   },
 };
 

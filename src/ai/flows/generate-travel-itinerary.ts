@@ -398,15 +398,8 @@ const generateTravelItineraryFlow = ai.defineFlow(
       console.log('Itinerary generation successful');
       return output!;
     } catch (error) {
-      // 🔴 CRITICAL LOGGING FOR VERCEL DEPLOYMENT 🔴
-      console.error('------- AI GENERATION FAILED -------');
-      console.error('Error message:', error instanceof Error ? error.message : String(error));
-      if (error instanceof Error && error.stack) {
-        console.error('Stack trace:', error.stack);
-      }
-      console.error('Input payload:', JSON.stringify(input, null, 2));
-      console.error('------------------------------------');
-      throw error; // Re-throw so the frontend still catches it
+      console.error('[generateTravelItinerary] failed:', error instanceof Error ? error.message : 'unknown');
+      throw error;
     }
   }
 );

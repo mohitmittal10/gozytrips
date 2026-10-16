@@ -216,13 +216,7 @@ const generateVendorEnquiryFlow = ai.defineFlow(
       console.log('Vendor enquiry email generated successfully');
       return result;
     } catch (error) {
-      console.error('------- VENDOR ENQUIRY GENERATION FAILED -------');
-      console.error('Error:', error instanceof Error ? error.message : String(error));
-      if (error instanceof Error && error.stack) {
-        console.error('Stack:', error.stack);
-      }
-      console.error('Input:', JSON.stringify(input, null, 2));
-      console.error('------------------------------------------------');
+      console.error('[generateVendorEnquiry] failed:', error instanceof Error ? error.message : 'unknown');
       throw error;
     }
   }

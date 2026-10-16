@@ -22,13 +22,18 @@ export async function GET(
     }
 
     let responses;
+    const url = new URL(_req.url);
+    const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "100", 10) || 100, 1), 500);
+    const offset = Math.max(parseInt(url.searchParams.get("offset") || "0", 10) || 0, 0);
+
     if (formId === "all") {
       const { data, error } = await (supabase as any)
         .from("client_enquiry_responses")
         .select("*, client_enquiry_forms!inner(user_id)")
         .eq("client_enquiry_forms.user_id", user.id)
         .neq("status", "archived")
-        .order("submitted_at", { ascending: false });
+        .order("submitted_at", { ascending: false })
+        .range(offset, offset + limit - 1);
 
       if (error) throw error;
       responses = data;
@@ -50,7 +55,8 @@ export async function GET(
         .select("*")
         .eq("form_id", formId)
         .neq("status", "archived")
-        .order("submitted_at", { ascending: false });
+        .order("submitted_at", { ascending: false })
+        .range(offset, offset + limit - 1);
 
       if (error) throw error;
       responses = data;

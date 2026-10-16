@@ -2,17 +2,11 @@
  * @fileOverview Per-user, per-action rate limiter for AI server actions.
  *
  * Uses the `rate_limits` Supabase table to persist counts across serverless
- * invocations. Windows are fixed (e.g. per-minute, per-hour) and are keyed
- * by (user_id, action, window_start).
- *
- * Usage:
- *   await checkRateLimit(userId, 'ai_generation', { maxCalls: 30, windowSeconds: 60 });
- *   // Throws RateLimitError if limit exceeded.
+ * invocations. Prefers the atomic `check_and_increment_rate_limit` RPC when
+ * available; falls back to a conditional update. Fail-closed for paid AI.
  */
 
 import { createClient } from '@supabase/supabase-js';
-
-// ── Types ─────────────────────────────────────────────────────────────────────
 
 export class RateLimitError extends Error {
   public retryAfterSeconds: number;
@@ -27,32 +21,18 @@ export class RateLimitError extends Error {
 }
 
 export interface RateLimitOptions {
-  /** Maximum number of calls allowed in the window. */
   maxCalls: number;
-  /** Duration of the rate-limit window in seconds. */
   windowSeconds: number;
 }
 
-// ── Defaults per action ───────────────────────────────────────────────────────
-
 export const RATE_LIMIT_DEFAULTS: Record<string, RateLimitOptions> = {
-  ai_generation:      { maxCalls: 30,  windowSeconds: 60  },  // 30 per minute
-  day_regeneration:   { maxCalls: 20,  windowSeconds: 60  },  // 20 per minute
-  client_update:      { maxCalls: 40,  windowSeconds: 60  },  // 40 per minute
-  vendor_enquiry:     { maxCalls: 20,  windowSeconds: 60  },  // 20 per minute
-  day_summaries:      { maxCalls: 30,  windowSeconds: 60  },  // 30 per minute
+  ai_generation:      { maxCalls: 30,  windowSeconds: 60  },
+  day_regeneration:   { maxCalls: 20,  windowSeconds: 60  },
+  client_update:      { maxCalls: 40,  windowSeconds: 60  },
+  vendor_enquiry:     { maxCalls: 20,  windowSeconds: 60  },
+  day_summaries:      { maxCalls: 30,  windowSeconds: 60  },
 };
 
-// ── Core function ─────────────────────────────────────────────────────────────
-
-/**
- * Checks and increments the rate-limit counter for a given user + action.
- * Throws `RateLimitError` if the limit is exceeded.
- *
- * @param userId        - Supabase user UUID
- * @param action        - Action identifier (e.g. 'ai_generation')
- * @param options       - Override defaults
- */
 export async function checkRateLimit(
   userId: string,
   action: string,
@@ -61,24 +41,59 @@ export async function checkRateLimit(
   const config = { ...RATE_LIMIT_DEFAULTS[action], ...options };
 
   if (!config.maxCalls || !config.windowSeconds) {
-    // Unknown action — apply a safe default
     config.maxCalls = 20;
     config.windowSeconds = 60;
   }
 
-  // Use service role client to bypass RLS for atomic upsert
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!supabaseUrl || !serviceKey) {
+    throw new RateLimitError(action, 60);
+  }
 
-  // Compute window_start by truncating the current time to the window boundary
+  const supabase = createClient(supabaseUrl, serviceKey);
+
   const now = new Date();
   const windowMs = config.windowSeconds * 1000;
   const windowStart = new Date(Math.floor(now.getTime() / windowMs) * windowMs);
   const windowStartISO = windowStart.toISOString();
+  const windowEndMs = windowStart.getTime() + windowMs;
+  const retryAfter = Math.max(1, Math.ceil((windowEndMs - now.getTime()) / 1000));
 
-  // Fetch current count for this window
+  // Prefer atomic RPC (see migration 20260528120000_atomic_rate_limit.sql)
+  const { data: rpcResult, error: rpcError } = await supabase.rpc(
+    'check_and_increment_rate_limit' as any,
+    {
+      p_user_id: userId,
+      p_action: action,
+      p_window_start: windowStartISO,
+      p_max_calls: config.maxCalls,
+    } as any
+  );
+
+  if (!rpcError && rpcResult != null) {
+    const row = Array.isArray(rpcResult) ? rpcResult[0] : rpcResult;
+    const allowed = row?.allowed ?? row?.check_and_increment_rate_limit?.allowed;
+    if (allowed === false) {
+      throw new RateLimitError(action, retryAfter);
+    }
+    if (allowed === true) {
+      void Promise.resolve(
+        supabase
+          .from('rate_limits')
+          .delete()
+          .eq('user_id', userId)
+          .lt('window_start', new Date(now.getTime() - 86_400_000).toISOString())
+      ).catch(() => undefined);
+      return;
+    }
+  }
+
+  // Fallback: conditional increment (still better than fail-open)
+  if (rpcError) {
+    console.warn('[RateLimiter] RPC unavailable, using fallback:', rpcError.message);
+  }
+
   const { data: existing, error: fetchError } = await supabase
     .from('rate_limits')
     .select('id, call_count')
@@ -88,28 +103,31 @@ export async function checkRateLimit(
     .maybeSingle();
 
   if (fetchError) {
-    // If we can't read the table, fail open (don't block legitimate users)
-    console.error('[RateLimiter] Failed to fetch rate limit row:', fetchError.message);
-    return;
+    console.error('[RateLimiter] Failed to fetch rate limit row — failing closed');
+    throw new RateLimitError(action, retryAfter);
   }
 
   const currentCount = existing?.call_count ?? 0;
 
   if (currentCount >= config.maxCalls) {
-    // Calculate seconds remaining in the window
-    const windowEndMs = windowStart.getTime() + windowMs;
-    const retryAfter = Math.ceil((windowEndMs - now.getTime()) / 1000);
     throw new RateLimitError(action, retryAfter);
   }
 
-  // Increment (upsert)
   if (existing) {
-    await supabase
+    const { data: updated, error: updateError } = await supabase
       .from('rate_limits')
       .update({ call_count: currentCount + 1, updated_at: now.toISOString() })
-      .eq('id', existing.id);
+      .eq('id', existing.id)
+      .eq('call_count', currentCount) // optimistic lock
+      .select('id')
+      .maybeSingle();
+
+    if (updateError || !updated) {
+      // Lost race or DB error — fail closed
+      throw new RateLimitError(action, retryAfter);
+    }
   } else {
-    await supabase
+    const { error: insertError } = await supabase
       .from('rate_limits')
       .insert({
         user_id: userId,
@@ -118,14 +136,18 @@ export async function checkRateLimit(
         call_count: 1,
         updated_at: now.toISOString(),
       });
+
+    if (insertError) {
+      // Unique conflict = concurrent first insert; treat as limited/retry
+      throw new RateLimitError(action, retryAfter);
+    }
   }
 
-  // Background cleanup: delete windows older than 24 hours for this user
-  // Fire-and-forget — don't await so it doesn't slow down the request
-  supabase
-    .from('rate_limits')
-    .delete()
-    .eq('user_id', userId)
-    .lt('window_start', new Date(now.getTime() - 86_400_000).toISOString())
-    .then(() => {/* silent */});
+  void Promise.resolve(
+    supabase
+      .from('rate_limits')
+      .delete()
+      .eq('user_id', userId)
+      .lt('window_start', new Date(now.getTime() - 86_400_000).toISOString())
+  ).catch(() => undefined);
 }

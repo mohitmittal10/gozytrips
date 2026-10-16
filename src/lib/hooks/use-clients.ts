@@ -32,8 +32,10 @@ export function useClients() {
     try {
       const { data, error } = await supabase
         .from('clients')
-        .select('*')
-        .order('updated_at', { ascending: false });
+        .select('id, user_id, name, email, phone, notes, tags, created_at, updated_at')
+        .eq('user_id', user.id)
+        .order('updated_at', { ascending: false })
+        .limit(500);
 
       if (error) throw error;
       

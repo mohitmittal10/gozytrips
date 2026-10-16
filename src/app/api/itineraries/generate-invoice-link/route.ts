@@ -2,6 +2,14 @@ import { NextResponse } from "next/server";
 import { createServerComponentClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+function requireAppUrl(): string {
+    const base = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
+    if (!base) {
+        throw new Error("NEXT_PUBLIC_APP_URL is not configured");
+    }
+    return base;
+}
+
 export async function POST(request: Request) {
     try {
         const supabase = await createServerComponentClient();
@@ -13,6 +21,16 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
+        let appUrl: string;
+        try {
+            appUrl = requireAppUrl();
+        } catch {
+            return NextResponse.json(
+                { error: "Server misconfigured: NEXT_PUBLIC_APP_URL is required" },
+                { status: 500 }
+            );
+        }
+
         const body = await request.json();
         const { itineraryId } = body;
 
@@ -20,7 +38,6 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "itineraryId is required" }, { status: 400 });
         }
 
-        // Verify the itinerary belongs to this user
         const { data: itinerary, error: itinError } = await supabase
             .from("itineraries")
             .select("id, user_id, share_token, share_enabled")
@@ -32,17 +49,15 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Itinerary not found or access denied" }, { status: 404 });
         }
 
-        // If a token already exists, just return it (idempotent)
         if (itinerary.share_token && itinerary.share_enabled) {
             return NextResponse.json({
                 success: true,
                 share_token: itinerary.share_token,
-                invoice_url: `${process.env.NEXT_PUBLIC_APP_URL || ""}/invoice/${itinerary.share_token}`,
+                invoice_url: `${appUrl}/invoice/${itinerary.share_token}`,
                 already_existed: true,
             });
         }
 
-        // Generate a new UUID token via admin client (bypasses RLS for the UPDATE)
         const { data: updated, error: updateError } = await supabaseAdmin
             .from("itineraries")
             .update({
@@ -56,18 +71,18 @@ export async function POST(request: Request) {
             .single();
 
         if (updateError || !updated) {
-            console.error("Failed to generate itinerary invoice token:", updateError);
+            console.error("Failed to generate itinerary invoice token");
             return NextResponse.json({ error: "Failed to generate invoice" }, { status: 500 });
         }
 
         return NextResponse.json({
             success: true,
             share_token: updated.share_token,
-            invoice_url: `${process.env.NEXT_PUBLIC_APP_URL || ""}/invoice/${updated.share_token}`,
+            invoice_url: `${appUrl}/invoice/${updated.share_token}`,
             already_existed: false,
         });
-    } catch (err) {
-        console.error("Itinerary invoice generation error:", err);
+    } catch {
+        console.error("Itinerary invoice generation error");
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
 }

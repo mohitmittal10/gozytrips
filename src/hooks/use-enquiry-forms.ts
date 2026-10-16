@@ -3,7 +3,7 @@
  * Follows the existing hook patterns in the codebase (use-reference-options, etc.)
  */
 import { useState, useEffect, useCallback } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { fetchJson, FetchHttpError } from "@/lib/fetch-json";
 import type { ClientEnquiryForm, ClientEnquiryResponse, CreateEnquiryFormPayload } from "@/types/enquiry";
 
 export function useEnquiryForms() {
@@ -15,12 +15,16 @@ export function useEnquiryForms() {
     setFormsLoading(true);
     setFormsError(null);
     try {
-      const res = await fetch("/api/enquiry-forms");
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load forms");
+      const data = await fetchJson<{ forms?: ClientEnquiryForm[]; error?: string }>("/api/enquiry-forms");
       setForms(data.forms || []);
-    } catch (err: any) {
-      setFormsError(err.message);
+    } catch (err: unknown) {
+      const message =
+        err instanceof FetchHttpError
+          ? (err.body as { error?: string })?.error || err.message
+          : err instanceof Error
+            ? err.message
+            : "Failed to load forms";
+      setFormsError(message);
     } finally {
       setFormsLoading(false);
     }
@@ -31,32 +35,27 @@ export function useEnquiryForms() {
   }, [fetchForms]);
 
   const createForm = useCallback(async (payload: CreateEnquiryFormPayload) => {
-    const res = await fetch("/api/enquiry-forms", {
+    const data = await fetchJson<{ form: ClientEnquiryForm }>("/api/enquiry-forms", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to create form");
     await fetchForms();
-    return data.form as ClientEnquiryForm;
+    return data.form;
   }, [fetchForms]);
 
   const updateForm = useCallback(async (formId: string, updates: Partial<CreateEnquiryFormPayload & { status: string }>) => {
-    const res = await fetch(`/api/enquiry-forms/${formId}`, {
+    const data = await fetchJson<{ form: ClientEnquiryForm }>(`/api/enquiry-forms/${formId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(updates),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Failed to update form");
     await fetchForms();
-    return data.form as ClientEnquiryForm;
+    return data.form;
   }, [fetchForms]);
 
   const deleteForm = useCallback(async (formId: string) => {
-    const res = await fetch(`/api/enquiry-forms/${formId}`, { method: "DELETE" });
-    if (!res.ok) throw new Error("Failed to archive form");
+    await fetchJson(`/api/enquiry-forms/${formId}`, { method: "DELETE" });
     await fetchForms();
   }, [fetchForms]);
 
@@ -80,12 +79,18 @@ export function useEnquiryResponses(formId: string | null) {
     setResponsesLoading(true);
     setResponsesError(null);
     try {
-      const res = await fetch(`/api/enquiry-forms/${id}/responses`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load responses");
+      const data = await fetchJson<{ responses?: ClientEnquiryResponse[]; error?: string }>(
+        `/api/enquiry-forms/${id}/responses`
+      );
       setResponses(data.responses || []);
-    } catch (err: any) {
-      setResponsesError(err.message);
+    } catch (err: unknown) {
+      const message =
+        err instanceof FetchHttpError
+          ? (err.body as { error?: string })?.error || err.message
+          : err instanceof Error
+            ? err.message
+            : "Failed to load responses";
+      setResponsesError(message);
     } finally {
       setResponsesLoading(false);
     }
@@ -96,12 +101,11 @@ export function useEnquiryResponses(formId: string | null) {
   }, [formId, fetchResponses]);
 
   const convertResponse = useCallback(async (fId: string, responseId: string) => {
-    const res = await fetch(`/api/enquiry-forms/${fId}/responses/${responseId}/convert`, {
-      method: "POST",
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Conversion failed");
-    return data.redirect_url as string;
+    const data = await fetchJson<{ redirect_url: string }>(
+      `/api/enquiry-forms/${fId}/responses/${responseId}/convert`,
+      { method: "POST" }
+    );
+    return data.redirect_url;
   }, []);
 
   return {

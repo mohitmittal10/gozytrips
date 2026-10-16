@@ -1,12 +1,17 @@
-# TODO: Enable Automated Backups in Production
+# Automated Backups Cron
 
-To fully enable the automated backup system, follow these steps:
+Production backup cron requires `CRON_SECRET` (fail-closed: requests are rejected if unset).
 
-1. **Set Environment Variable**: Add `CRON_SECRET` to your production environment variables (e.g., in Vercel, Netlify, or your server).
-2. **Configure Cron Service**: Use a service like Vercel Cron, GitHub Actions, or a standard crontab to call the following endpoint periodically (e.g., once a day):
+## Setup
 
-   ```
-   GET https://your-domain.com/api/backup/cron?secret=YOUR_CRON_SECRET
-   ```
+1. Set `CRON_SECRET` in production env (App Hosting / Vercel / etc.).
+2. Schedule a daily call (prefer header over query string):
 
-Replace `your-domain.com` with your actual production URL and `YOUR_CRON_SECRET` with the value you set in step 1.
+```bash
+curl -H "Authorization: Bearer $CRON_SECRET" \
+  https://your-domain.com/api/backup/cron
+```
+
+Legacy query form still works: `?secret=YOUR_CRON_SECRET` — prefer the header for new schedulers.
+
+Optional: `BACKUP_CRON_CONCURRENCY` (default `5`) controls parallel user backups.

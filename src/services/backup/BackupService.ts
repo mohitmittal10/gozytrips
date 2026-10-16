@@ -87,6 +87,7 @@ export class BackupService {
       method: 'POST',
       headers: { Authorization: `Bearer ${accessToken}` },
       body: form,
+      signal: AbortSignal.timeout(60_000),
     });
 
     if (!response.ok) {
@@ -166,7 +167,10 @@ export class BackupService {
     const query = encodeURIComponent("name contains 'WanderLabs_Backup_' and trashed = false");
     const response = await fetch(
       `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name,createdTime)&orderBy=createdTime desc`,
-      { headers: { Authorization: `Bearer ${accessToken}` } },
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+        signal: AbortSignal.timeout(30_000),
+      },
     );
     if (!response.ok) throw new Error('Failed to list backup files from Google Drive.');
     const data = await response.json();
@@ -179,6 +183,7 @@ export class BackupService {
   static async downloadBackup(accessToken: string, fileId: string): Promise<any> {
     const response = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
       headers: { Authorization: `Bearer ${accessToken}` },
+      signal: AbortSignal.timeout(60_000),
     });
     if (!response.ok) throw new Error('Failed to download backup file from Google Drive.');
     return await response.json();

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 /**
- * CLI tool to inspect and manage token usage logs
+ * CLI tool to inspect and manage token usage logs (LOCAL ONLY).
+ * Reads/writes `.token-usage.json` on disk — not suitable for serverless prod.
  * Usage: npx tsx scripts/token-usage-inspector.ts [command]
  */
 

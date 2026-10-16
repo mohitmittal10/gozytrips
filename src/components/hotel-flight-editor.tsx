@@ -108,6 +108,16 @@ export type BusInfo = {
 let _idCounter = 0;
 const uid = () => `hf-${Date.now()}-${++_idCounter}`;
 
+/**
+ * Ensures every logistics entry has a stable, unique `id`.
+ * Hotels loaded from the DB or from the form wizard (pre-generation) can arrive
+ * without an id, which makes id-based delete / update operations unreliable.
+ */
+export const normalizeHotels  = (arr: HotelInfo[]):  HotelInfo[]  => arr.map(h => h?.id ? h : { ...h, id: uid() });
+export const normalizeFlights = (arr: FlightInfo[]): FlightInfo[] => arr.map(f => f?.id ? f : { ...f, id: uid() });
+export const normalizeCabs    = (arr: CabInfo[]):    CabInfo[]    => arr.map(c => c?.id ? c : { ...c, id: uid() });
+export const normalizeBuses   = (arr: BusInfo[]):    BusInfo[]    => arr.map(b => b?.id ? b : { ...b, id: uid() });
+
 const emptyHotel = (dayIndex: number): HotelInfo => ({
   id: uid(), dayIndex, dayIndices: [], nights: 0, name: "", address: "", checkIn: "2:00 PM", checkOut: "11:00 AM", bookingRef: "", starRating: 3,
 });
@@ -215,13 +225,19 @@ function DayMultiPicker({ selectedDays, onChange, totalDays, label = "Select Day
   totalDays: number;
   label?: string;
   occupiedInfo?: Map<number, string>;
+  // onClaimDay: called with the dayIndex being claimed; it should atomically
+  // remove that day from the previous owner AND add it to the current hotel.
+  // When provided, DayMultiPicker will NOT call onChange for that day.
   onClaimDay?: (dayIndex: number) => void;
 }) {
   const [conflictPending, setConflictPending] = useState<{ dayIndex: number; existingHotelName: string } | null>(null);
 
   const doToggle = (idx: number, proceedClaim = false) => {
     if (proceedClaim && onClaimDay) {
+      // The claim handler atomically removes the day from the old hotel AND
+      // adds it to this hotel — so we must NOT call onChange separately here.
       onClaimDay(idx);
+      return;
     }
     const current = new Set(selectedDays);
     if (current.has(idx)) {
@@ -418,7 +434,7 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
         </div>
         <div className="flex items-center gap-3">
           <StarRating value={hotel.starRating} onChange={(v) => update("starRating", v)} />
-          <button onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors p-1.5 hover:bg-white/5 rounded-lg">
+          <button type="button" onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors p-1.5 hover:bg-white/5 rounded-lg">
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
@@ -441,7 +457,7 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
         </div>
         <div className="flex items-center gap-3 shrink-0">
           <StarRating value={hotel.starRating} onChange={(v) => update("starRating", v)} />
-          <button onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors">
+          <button type="button" onClick={onDelete} className="text-red-400/50 hover:text-red-400 transition-colors">
             <Trash2 className="w-4 h-4" />
           </button>
         </div>
@@ -919,10 +935,10 @@ interface HotelFlightEditorProps {
 }
 
 export default function HotelFlightEditor({
-  hotels = [],
-  flights = [],
-  cabs = [],
-  buses = [],
+  hotels: rawHotels = [],
+  flights: rawFlights = [],
+  cabs: rawCabs = [],
+  buses: rawBuses = [],
   totalDays,
   currency,
   onHotelsChange,
@@ -930,6 +946,16 @@ export default function HotelFlightEditor({
   onCabsChange,
   onBusesChange,
 }: HotelFlightEditorProps) {
+  // Normalize on entry so every item always has a stable id.
+  // useMemo keeps the references stable across re-renders when data is unchanged.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const hotels  = React.useMemo(() => normalizeHotels(rawHotels),   [JSON.stringify(rawHotels)]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const flights = React.useMemo(() => normalizeFlights(rawFlights), [JSON.stringify(rawFlights)]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const cabs    = React.useMemo(() => normalizeCabs(rawCabs),       [JSON.stringify(rawCabs)]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const buses   = React.useMemo(() => normalizeBuses(rawBuses),     [JSON.stringify(rawBuses)]);
   const [selectedEditorTab, setSelectedEditorTab] = useState<string>("hotels");
   const [slideDir, setSlideDir] = useState<"left" | "right">("right");
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -984,16 +1010,24 @@ export default function HotelFlightEditor({
   const deleteBus = (id: string) => onBusesChange(buses.filter((b) => b.id !== id));
 
   const claimDayForHotel = (claimingHotelId: string, dayIndex: number) => {
+    // Single atomic update: remove day from previous owner AND add it to
+    // the claiming hotel. This avoids stale-closure overwrites from two
+    // separate onHotelsChange calls.
     const updatedHotels = hotels.map((h) => {
-      if (h.id === claimingHotelId) return h;
+      if (h.id === claimingHotelId) {
+        // Add the claimed day to this hotel
+        const currentDays = h.dayIndices?.length ? h.dayIndices : [h.dayIndex];
+        if (!currentDays.includes(dayIndex)) {
+          const newDays = [...currentDays, dayIndex].sort((a, b) => a - b);
+          return { ...h, dayIndices: newDays, dayIndex: newDays[0] ?? dayIndex };
+        }
+        return h;
+      }
+      // Remove the claimed day from any other hotel that owns it
       const days = h.dayIndices?.length ? h.dayIndices : [h.dayIndex];
       if (days.includes(dayIndex)) {
         const newDays = days.filter((d) => d !== dayIndex);
-        return {
-          ...h,
-          dayIndices: newDays,
-          dayIndex: newDays[0] ?? 0,
-        };
+        return { ...h, dayIndices: newDays, dayIndex: newDays[0] ?? 0 };
       }
       return h;
     });
@@ -1180,9 +1214,9 @@ export default function HotelFlightEditor({
         <div className="p-6 lg:p-8">
           <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar min-h-[200px]">
             {selectedEditorTab === "hotels"
-              ? hotels.map((hotel, idx) => (
+              ? hotels.map((hotel) => (
                   <HotelCard
-                    key={hotel.id ? `${hotel.id}-${idx}` : `hotel-${idx}`}
+                    key={hotel.id}
                     hotel={hotel}
                     totalDays={totalDays}
                     onChange={(updated) => updateHotel(hotel.id, updated)}
@@ -1195,9 +1229,9 @@ export default function HotelFlightEditor({
               : null}
 
             {selectedEditorTab === "flights"
-              ? flights.map((flight, idx) => (
+              ? flights.map((flight) => (
                   <FlightCard
-                    key={flight.id ? `${flight.id}-${idx}` : `flight-${idx}`}
+                    key={flight.id}
                     flight={flight}
                     totalDays={totalDays}
                     onChange={(updated) => updateFlight(flight.id, updated)}
@@ -1209,9 +1243,9 @@ export default function HotelFlightEditor({
               : null}
 
             {selectedEditorTab === "cabs"
-              ? cabs.map((cab, idx) => (
+              ? cabs.map((cab) => (
                   <CabCard
-                    key={cab.id ? `${cab.id}-${idx}` : `cab-${idx}`}
+                    key={cab.id}
                     cab={cab}
                     totalDays={totalDays}
                     onChange={(updated) => updateCab(cab.id, updated)}
@@ -1223,9 +1257,9 @@ export default function HotelFlightEditor({
               : null}
 
             {selectedEditorTab === "buses"
-              ? buses.map((bus, idx) => (
+              ? buses.map((bus) => (
                   <BusCard
-                    key={bus.id ? `${bus.id}-${idx}` : `bus-${idx}`}
+                    key={bus.id}
                     bus={bus}
                     totalDays={totalDays}
                     onChange={(updated) => updateBus(bus.id, updated)}

@@ -47,7 +47,7 @@ Your application is now configured to use **only the `.env` file** for all envir
 
 ```env
 # ✅ Active - Gemini API Key
-GEMINI_API_KEY=AIzaSyDBM35AOwybeauDCJ_bGrhxqPXhN6AnypE
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
 
 # ⚠️ Optional - Token Tracking Secret
 TOKEN_TRACKER_SECRET=your_secret_key_for_production
@@ -58,7 +58,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 
 # ✅ Correct - Application Base URL
-NEXT_PUBLIC_BASE_URL=http://localhost:9002
+NEXT_PUBLIC_APP_URL=http://localhost:9002
 ```
 
 ---

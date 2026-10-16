@@ -40,7 +40,7 @@ Your entire codebase is configured to use **only the `.env` file** for all key m
 
 ```env
 # AI Configuration
-GEMINI_API_KEY=AIzaSyDBM35AOwybeauDCJ_bGrhxqPXhN6AnypE
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY
 ↓
 Used in: src/ai/genkit.ts (line 12)
 Code: plugins: [googleAI({apiKey: process.env.GEMINI_API_KEY})]
@@ -69,12 +69,16 @@ Code: createBrowserClient(..., process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!)
 # Supabase Server Configuration
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 ↓
-Ready for server-side operations (currently not in use)
+Used by admin client, backup cron, rate limiter, webhooks, invoice share pages
 
-# Application Base URL
-NEXT_PUBLIC_BASE_URL=http://localhost:9002
+# Application origin (invoice / share links)
+NEXT_PUBLIC_APP_URL=http://localhost:9002
 ↓
-Application configuration (redirects, OAuth callbacks)
+Required in production for absolute invoice URLs
+
+# Cron + token APIs
+CRON_SECRET=your_cron_secret
+TOKEN_TRACKER_SECRET=your_secret_key_for_production
 ```
 
 ---
@@ -86,12 +90,13 @@ These are NEVER exposed to the browser:
 - ✅ `GEMINI_API_KEY` - Not sent to client
 - ✅ `TOKEN_TRACKER_SECRET` - Not sent to client  
 - ✅ `SUPABASE_SERVICE_ROLE_KEY` - Not sent to client
+- ✅ `CRON_SECRET` - Not sent to client
 
 ### Public Configuration (Safe for Client)
 These are exposed to browser (ok because non-sensitive):
 - ✅ `NEXT_PUBLIC_SUPABASE_URL` - Project URL only
 - ✅ `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Limited public access key
-- ✅ `NEXT_PUBLIC_BASE_URL` - Just a URL
+- ✅ `NEXT_PUBLIC_APP_URL` - Public origin URL
 
 **Protection**: Supabase Row Level Security ensures users only access their own data
 

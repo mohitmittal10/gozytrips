@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { fetchJson, FetchHttpError } from "@/lib/fetch-json";
 
 export interface ClientMessage {
   id: string;
@@ -27,12 +28,16 @@ export function useClientMessages(responseId: string | null, role: "agent" | "cl
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/messages/${id}`);
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load messages");
+      const data = await fetchJson<{ messages?: ClientMessage[]; error?: string }>(`/api/messages/${id}`);
       setMessages(data.messages || []);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      const message =
+        err instanceof FetchHttpError
+          ? (err.body as { error?: string })?.error || err.message
+          : err instanceof Error
+            ? err.message
+            : "Failed to load messages";
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -83,7 +88,9 @@ export function useClientMessages(responseId: string | null, role: "agent" | "cl
         }
       )
       .subscribe((status) => {
-        console.log(`Realtime message subscription for response ${responseId}:`, status);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`Realtime message subscription for response ${responseId}:`, status);
+        }
       });
 
     channelRef.current = channel;

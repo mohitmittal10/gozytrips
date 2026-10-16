@@ -14,7 +14,7 @@ export const getRazorpay = () => {
 
 /**
  * Verifies a Razorpay webhook or payment signature using HMAC-SHA256
- * 
+ *
  * @param body The raw request body as a string
  * @param signature The signature from the 'x-razorpay-signature' header
  * @param secret The secret used to sign the payload (either webhook secret or key secret)
@@ -30,16 +30,33 @@ export function verifyRazorpaySignature(
       .createHmac('sha256', secret)
       .update(body)
       .digest('hex');
-      
-    return expectedSignature === signature;
+
+    const expected = Buffer.from(expectedSignature);
+    const provided = Buffer.from(signature);
+    if (expected.length !== provided.length) {
+      return false;
+    }
+    return crypto.timingSafeEqual(expected, provided);
   } catch (error) {
-    console.error('Error verifying Razorpay signature:', error);
+    console.error('Error verifying Razorpay signature');
     return false;
   }
 }
 
-// Map our internal plans to Razorpay Plan IDs (these should be created in Razorpay Dashboard)
+function requirePlanId(envName: string): string {
+  const value = process.env[envName];
+  if (!value) {
+    throw new Error(`${envName} is not configured. Create the plan in Razorpay and set the env var.`);
+  }
+  return value;
+}
+
+/** Lazily resolved so missing env fails at call time, not module load. */
 export const RAZORPAY_PLANS = {
-  pro: process.env.RAZORPAY_PLAN_ID_PRO || 'plan_pro_placeholder',
-  agency: process.env.RAZORPAY_PLAN_ID_AGENCY || 'plan_agency_placeholder',
+  get pro() {
+    return requirePlanId('RAZORPAY_PLAN_ID_PRO');
+  },
+  get agency() {
+    return requirePlanId('RAZORPAY_PLAN_ID_AGENCY');
+  },
 } as const;

@@ -93,7 +93,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // Fallback timeout in case onAuthStateChange doesn't fire
+    // Fallback timeout (5s) if onAuthStateChange never fires — avoids infinite loading
+    const AUTH_LOADING_FALLBACK_MS = 5000;
     const timeout = setTimeout(() => {
       setLoading((prev) => {
         if (prev) {
@@ -101,7 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
         return false;
       });
-    }, 5000);
+    }, AUTH_LOADING_FALLBACK_MS);
 
     return () => {
       subscription?.unsubscribe();

@@ -38,7 +38,9 @@ export default function TokenUsageDashboard() {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(`/api/token-stats?daysBack=${daysBack}`);
+      const response = await fetch(`/api/token-stats?daysBack=${daysBack}`, {
+        credentials: 'same-origin',
+      });
       if (!response.ok) throw new Error('Failed to fetch stats');
       const data = await response.json();
       setStats(data);

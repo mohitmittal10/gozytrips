@@ -33,11 +33,16 @@ export async function GET(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    const url = new URL(_req.url);
+    const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") || "200", 10) || 200, 1), 500);
+    const offset = Math.max(parseInt(url.searchParams.get("offset") || "0", 10) || 0);
+
     const { data: messages, error } = await (supabase as any)
       .from("client_messages")
       .select("*")
       .eq("response_id", responseId)
-      .order("created_at", { ascending: true });
+      .order("created_at", { ascending: true })
+      .range(offset, offset + limit - 1);
 
     if (error) throw error;
 

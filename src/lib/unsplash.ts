@@ -253,6 +253,7 @@ async function rawSearch(
         const response = await fetch(`${UNSPLASH_API_URL}?${params}`, {
             headers: { Authorization: `Client-ID ${UNSPLASH_ACCESS_KEY}` },
             next: { revalidate: 86400 }, // Cache response for 24h
+            signal: AbortSignal.timeout(10_000),
         });
 
         if (!response.ok) {

@@ -1,14 +1,23 @@
+import { NextResponse } from 'next/server';
 
-import defineNextJsHandler from '@genkit-ai/next';
-import {ai} from '@/ai/genkit';
-
-// Import flows to register them with the Genkit system.
-import '@/ai/flows/generate-travel-itinerary';
-import '@/ai/flows/generate-vendor-enquiry';
-import '@/ai/flows/generate-client-update';
-
-// Extend Vercel serverless function timeout (default is 10s, too short for AI calls)
+/**
+ * Genkit HTTP exposure is disabled.
+ * AI flows are invoked only via authenticated server actions
+ * (which enforce getUser + rate limits + subscription checks).
+ * Leaving defineNextJsHandler public would bypass those wrappers.
+ */
 export const maxDuration = 60;
 
-// Expose the registered flows as Next.js API routes.
-export const POST = defineNextJsHandler({} as any, undefined);
+export async function POST() {
+  return NextResponse.json(
+    { error: 'Genkit HTTP API is disabled. Use authenticated server actions.' },
+    { status: 410 }
+  );
+}
+
+export async function GET() {
+  return NextResponse.json(
+    { error: 'Genkit HTTP API is disabled.' },
+    { status: 410 }
+  );
+}

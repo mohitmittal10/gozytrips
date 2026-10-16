@@ -32,10 +32,10 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
     const { token } = await params;
     const supabaseAdmin = createAdminClient();
 
-    // 1. Fetch the standalone booking securely via share_token
+    // 1. Fetch the standalone booking securely via share_token (narrow columns)
     const { data: bookingData, error: bookingError } = await (supabaseAdmin as any)
         .from("standalone_bookings")
-        .select("*")
+        .select("id, user_id, client_id, title, service_type, status, created_at, currency, net_cost, markup_percentage, booking_details, share_token, share_enabled")
         .eq("share_token", token as any)
         .eq("share_enabled", true as any)
         .single();
@@ -46,10 +46,10 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
 
     const booking = bookingData as any;
 
-    // 2. Fetch agent profile
+    // 2. Fetch agent profile (public invoice fields only)
     const { data: profData } = await supabaseAdmin
         .from("user_profiles")
-        .select("*")
+        .select("company_name, full_name, business_email, email, business_phone")
         .eq("id", booking.user_id)
         .single();
 
@@ -58,7 +58,7 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
     // 3. Fetch agency settings
     const { data: settingsData } = await supabaseAdmin
         .from("agency_settings")
-        .select("*")
+        .select("default_currency, bank_details, terms_conditions, agent_signature")
         .eq("user_id", booking.user_id)
         .single();
 
