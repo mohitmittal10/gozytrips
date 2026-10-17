@@ -34,6 +34,7 @@ interface TheLabFormProps {
   onSubmit: (values: TheLabFormValues) => void;
   isGenerating: boolean;
   sidebarMode?: boolean;
+  isActive?: boolean;
 }
 
 const StepDestinations = React.memo(({ form }: { form: UseFormReturn<TheLabFormValues> }) => (
@@ -187,7 +188,7 @@ function StarRating({ value, onChange }: { value: number; onChange: (v: number) 
   );
 }
 
-const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormValues> }) => {
+const StepStayOptions = React.memo(({ form, isActive = true }: { form: UseFormReturn<TheLabFormValues>; isActive?: boolean }) => {
   const startDate = form.watch("startDate");
   const endDate = form.watch("endDate");
 
@@ -207,6 +208,7 @@ const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
   const staySlotsCount = Math.max(0, dayCount - 1);
 
   React.useEffect(() => {
+    if (!isActive) return;
     if (staySlotsCount > 0 && fields.length !== staySlotsCount) {
       if (fields.length < staySlotsCount) {
         const toAdd = [];
@@ -232,7 +234,7 @@ const StepStayOptions = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
         remove(indicesToRemove);
       }
     }
-  }, [staySlotsCount, fields.length, append, remove]);
+  }, [staySlotsCount, fields.length, append, remove, isActive]);
 
   if (dayCount <= 1) {
     return (
@@ -588,7 +590,7 @@ const WizardInputSummary = ({ form, currentStep }: { form: UseFormReturn<TheLabF
 
 
 const TheLabForm = React.memo(function TheLabForm({
-  form, currentStep, setCurrentStep, onNext, onSubmit, isGenerating, sidebarMode
+  form, currentStep, setCurrentStep, onNext, onSubmit, isGenerating, sidebarMode, isActive = true
 }: TheLabFormProps) {
   return (
     <Form {...form}>
@@ -659,7 +661,7 @@ const TheLabForm = React.memo(function TheLabForm({
         {currentStep === 1 && <StepDates form={form} sidebarMode={sidebarMode} />}
         {currentStep === 2 && <StepDaywisePlan form={form} />}
         {currentStep === 3 && <StepPreferences form={form} sidebarMode={sidebarMode} />}
-        {currentStep === 4 && <StepStayOptions form={form} />}
+        {currentStep === 4 && isActive && <StepStayOptions form={form} isActive={isActive} />}
 
 
         {/* Actions */}

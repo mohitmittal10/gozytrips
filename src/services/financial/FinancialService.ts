@@ -63,7 +63,9 @@ export function getItemBaseCostForPax(
     typeof item.flatCost === 'number'
   ) {
     const isFlat = item.costType === 'flat';
-    const nights = item.nights || 1;
+    const nights = (typeof item.nights === 'number' && item.nights > 0)
+      ? item.nights
+      : (Array.isArray(item.dayIndices) && item.dayIndices.length > 0 ? item.dayIndices.length : 1);
     if (isFlat) {
       return (item.flatCost ?? item.totalCost ?? 0) * (item.nights ? nights : 1);
     }

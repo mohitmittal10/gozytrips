@@ -64,7 +64,9 @@ export const PdfHotelBlock = ({ hotel, accentColor, textColor, styleVariant }: {
     const validImages = hotel.imageUrls ? hotel.imageUrls.filter(url => url && url.trim().length > 0) : [];
     const hasImages = validImages.length > 0;
     const isSingleImage = validImages.length === 1;
-    const staysList = hotel.stays || (hotel.dayIndices?.length ? hotel.dayIndices.map(d => ({ dayIndex: d, nights: hotel.nights || 1 })) : [{ dayIndex: hotel.dayIndex, nights: hotel.nights || 1 }]);
+    const rawDays = Array.isArray(hotel.dayIndices) ? hotel.dayIndices : (typeof hotel.dayIndex === 'number' && hotel.dayIndex >= 0 ? [hotel.dayIndex] : []);
+    const validDays = rawDays.filter(d => d >= 0);
+    const staysList = hotel.stays || (validDays.length ? validDays.map(d => ({ dayIndex: d, nights: hotel.nights || 1 })) : (typeof hotel.dayIndex === 'number' && hotel.dayIndex >= 0 ? [{ dayIndex: hotel.dayIndex, nights: hotel.nights || 1 }] : []));
     const totalNights = staysList.reduce((sum, s) => sum + s.nights, 0);
     const staysLabel = staysList.map(s => `Day ${s.dayIndex + 1}`).join(', ');
 
@@ -152,7 +154,8 @@ export function groupHotelsByName(hotels: HotelInfo[]): GroupedHotel[] {
     (hotels || []).forEach((h) => {
         const key = (h.name || "Untitled Hotel").trim().toLowerCase();
         // Expand dayIndices (multi-day hotel selection) into individual stay records
-        const days = h.dayIndices?.length ? h.dayIndices : [h.dayIndex];
+        const rawDays = Array.isArray(h.dayIndices) ? h.dayIndices : (typeof h.dayIndex === 'number' && h.dayIndex >= 0 ? [h.dayIndex] : []);
+        const days = rawDays.filter(d => d >= 0);
         const staysForEntry = days.map(d => ({ dayIndex: d, nights: h.nights || 1 }));
 
         if (!groupedMap[key]) {

@@ -38,6 +38,14 @@ export interface TokenStats {
  * Update periodically against Google AI pricing; override via TOKEN_PRICE_* env if needed.
  */
 const TOKEN_PRICING = {
+  'gemini-3.5-flash-lite': {
+    input: Number(process.env.TOKEN_PRICE_FLASH_LITE_INPUT ?? 0.3 / 1_000_000),
+    output: Number(process.env.TOKEN_PRICE_FLASH_LITE_OUTPUT ?? 2.5 / 1_000_000),
+  },
+  'gemini-3.8-flash': {
+    input: Number(process.env.TOKEN_PRICE_FLASH_INPUT ?? 0.75 / 1_000_000),
+    output: Number(process.env.TOKEN_PRICE_FLASH_OUTPUT ?? 3.75 / 1_000_000),
+  },
   'gemini-2.5-flash-lite': {
     input: Number(process.env.TOKEN_PRICE_FLASH_LITE_INPUT ?? 0.1 / 1_000_000),
     output: Number(process.env.TOKEN_PRICE_FLASH_LITE_OUTPUT ?? 0.4 / 1_000_000),
@@ -88,7 +96,7 @@ export async function logTokenUsage(
   outputTokens: number
 ): Promise<TokenUsageRecord> {
   const totalTokens = inputTokens + outputTokens;
-  const pricing = TOKEN_PRICING[model as keyof typeof TOKEN_PRICING] || TOKEN_PRICING['gemini-2.5-flash-lite'];
+  const pricing = TOKEN_PRICING[model as keyof typeof TOKEN_PRICING] || TOKEN_PRICING['gemini-3.5-flash-lite'];
   const cost = inputTokens * pricing.input + outputTokens * pricing.output;
 
   const record: TokenUsageRecord = {

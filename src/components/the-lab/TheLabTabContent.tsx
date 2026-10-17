@@ -291,6 +291,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
                 onNext={onNext} 
                 onSubmit={onSubmit} 
                 isGenerating={isGenerating} 
+                isActive={activeLabTab === 'new'}
               />
             </div>
           </div>

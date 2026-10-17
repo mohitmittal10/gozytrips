@@ -144,7 +144,7 @@ export { generateSuggestionsWithEmails as generateUpdateSuggestions };
 
 const combinedPrompt = ai.definePrompt({
   name: 'clientUpdateCombinedPrompt',
-  model: googleAI.model('gemini-2.5-flash-lite'),
+  model: googleAI.model('gemini-3.5-flash-lite'),
   input: { schema: ClientUpdateContextSchema },
   output: { schema: CombinedOutputSchema },
   prompt: `Travel agent AI. Trip context:
@@ -162,7 +162,7 @@ Rules: id=kebab-case, title≤40ch, preview≤80ch, subject≤80ch, body≤800ch
 
 const redoEmailPrompt = ai.definePrompt({
   name: 'clientUpdateRedoEmailPrompt',
-  model: googleAI.model('gemini-2.5-flash-lite'),
+  model: googleAI.model('gemini-3.5-flash-lite'),
   input: { schema: ClientUpdateContextSchema.extend({ suggestionTitle: z.string() }) },
   output: { schema: SingleEmailOutputSchema },
   prompt: `Travel agent email. Plain text, warm, professional. Subject≤80ch, body≤800ch.
@@ -186,7 +186,7 @@ const combinedFlow = ai.defineFlow(
       if (usage) {
         await logTokenUsage(
           'generateCombinedSuggestionsFlow',
-          'gemini-2.5-flash-lite',
+          'gemini-3.5-flash-lite',
           usage.inputTokens || 0,
           usage.outputTokens || 0
         );
@@ -217,7 +217,7 @@ const redoEmailFlow = ai.defineFlow(
       if (usage) {
         await logTokenUsage(
           'generateRedoEmailFlow',
-          'gemini-2.5-flash-lite',
+          'gemini-3.5-flash-lite',
           usage.inputTokens || 0,
           usage.outputTokens || 0
         );

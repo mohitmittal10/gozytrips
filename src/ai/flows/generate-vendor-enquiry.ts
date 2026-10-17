@@ -122,7 +122,7 @@ export async function generateVendorEnquiry(input: VendorEnquiryInput): Promise<
 
 const prompt = ai.definePrompt({
   name: 'vendorEnquiryPrompt',
-  model: googleAI.model('gemini-2.5-flash-lite'),
+  model: googleAI.model('gemini-3.5-flash-lite'),
   input: { schema: VendorEnquiryInputSchema },
   output: { schema: VendorEnquiryOutputSchema },
   prompt: `
@@ -198,7 +198,7 @@ const generateVendorEnquiryFlow = ai.defineFlow(
       if (usage) {
         await logTokenUsage(
           'generateVendorEnquiryFlow',
-          'gemini-2.5-flash-lite',
+          'gemini-3.5-flash-lite',
           usage.inputTokens || 0,
           usage.outputTokens || 0
         );

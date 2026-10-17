@@ -297,6 +297,7 @@ export default function TheLab() {
       });
 
       if (loadedData.tripMetadata && currentTripId && currentTripId !== formSyncedForIdRef.current) {
+        setCurrentStep(0);
         form.reset({
           ...loadedData.tripMetadata,
           hotels: loadedData.hotels || [],
@@ -426,7 +427,8 @@ export default function TheLab() {
         setTripMetadata(values as any);
       }, 200);
 
-      if (values.hotels) {
+      // Only sync wizard stay preferences into store while actively filling the wizard (tab 'new')
+      if (activeLabTabRef.current === 'new' && values.hotels) {
         // Only update if they are different to prevent loop
         const formHotelsJson = JSON.stringify(values.hotels);
         const stateHotelsJson = JSON.stringify(hotels);
@@ -646,6 +648,7 @@ export default function TheLab() {
       setEnquiryBanner(null);
       console.log("[TheLab index.tsx] Switching active tab to 'itinerary'");
       setActiveLabTab('itinerary');
+      setCurrentStep(0);
     } else {
       console.warn("[TheLab index.tsx] Generation did not return a result.");
     }

@@ -45,7 +45,7 @@ export type GenerateDaySummariesOutput = z.infer<typeof GenerateDaySummariesOutp
 
 const daySummariesPrompt = ai.definePrompt({
   name: 'daySummariesPromptV1',
-  model: googleAI.model('gemini-2.5-flash-lite'),
+  model: googleAI.model('gemini-3.5-flash-lite'),
   input: { schema: GenerateDaySummariesInputSchema },
   output: { schema: GenerateDaySummariesOutputSchema },
   prompt: `

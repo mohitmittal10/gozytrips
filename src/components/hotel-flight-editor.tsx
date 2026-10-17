@@ -113,13 +113,40 @@ const uid = () => `hf-${Date.now()}-${++_idCounter}`;
  * Hotels loaded from the DB or from the form wizard (pre-generation) can arrive
  * without an id, which makes id-based delete / update operations unreliable.
  */
-export const normalizeHotels  = (arr: HotelInfo[]):  HotelInfo[]  => arr.map(h => h?.id ? h : { ...h, id: uid() });
+export const getHotelDays = (h: Partial<HotelInfo> | undefined | null): number[] => {
+  if (!h) return [];
+  if (Array.isArray(h.dayIndices)) return h.dayIndices;
+  if (typeof h.dayIndex === "number" && h.dayIndex >= 0) return [h.dayIndex];
+  return [];
+};
+
+export const normalizeHotels = (arr: HotelInfo[]): HotelInfo[] =>
+  arr.map((h) => {
+    const days = getHotelDays(h);
+    const stableId = h?.id ? h.id : uid();
+    return {
+      ...h,
+      id: stableId,
+      dayIndices: days,
+      dayIndex: days.length > 0 ? days[0] : (typeof h?.dayIndex === "number" && h.dayIndex >= 0 ? h.dayIndex : -1),
+      nights: typeof h?.nights === "number" && h.nights > 0 ? h.nights : days.length,
+    };
+  });
 export const normalizeFlights = (arr: FlightInfo[]): FlightInfo[] => arr.map(f => f?.id ? f : { ...f, id: uid() });
 export const normalizeCabs    = (arr: CabInfo[]):    CabInfo[]    => arr.map(c => c?.id ? c : { ...c, id: uid() });
 export const normalizeBuses   = (arr: BusInfo[]):    BusInfo[]    => arr.map(b => b?.id ? b : { ...b, id: uid() });
 
-const emptyHotel = (dayIndex: number): HotelInfo => ({
-  id: uid(), dayIndex, dayIndices: [], nights: 0, name: "", address: "", checkIn: "2:00 PM", checkOut: "11:00 AM", bookingRef: "", starRating: 3,
+const emptyHotel = (dayIndex = -1): HotelInfo => ({
+  id: uid(),
+  dayIndex: dayIndex >= 0 ? dayIndex : -1,
+  dayIndices: dayIndex >= 0 ? [dayIndex] : [],
+  nights: dayIndex >= 0 ? 1 : 0,
+  name: "",
+  address: "",
+  checkIn: "2:00 PM",
+  checkOut: "11:00 AM",
+  bookingRef: "",
+  starRating: 3,
 });
 
 const emptyFlight = (dayIndex: number): FlightInfo => ({
@@ -354,7 +381,7 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
   onClaimDay?: (dayIndex: number) => void;
 }) {
   const [touched, setTouched] = useState(false);
-  const selectedDays = hotel.dayIndices ?? [hotel.dayIndex];
+  const selectedDays = getHotelDays(hotel);
 
   const validation = validateLogisticsEntry(hotel, "hotel");
   const isComplete = validation.isValid;
@@ -403,7 +430,7 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
     const map = new Map<number, string>();
     allHotels.forEach((h) => {
       if (h.id === hotel.id) return;
-      const days = h.dayIndices?.length ? h.dayIndices : [h.dayIndex];
+      const days = getHotelDays(h);
       const nameLabel = h.name.trim() || "Another Hotel";
       days.forEach((d) => {
         map.set(d, nameLabel);
@@ -476,7 +503,21 @@ function HotelCard({ hotel, totalDays, onChange, onDelete, isCollapsed, allHotel
         </div>
       </div>
 
-      <DayMultiPicker selectedDays={selectedDays} onChange={(days) => onChange({ ...hotel, dayIndices: days, dayIndex: days[0] ?? 0 })} totalDays={totalDays} label="Select Stay Days" occupiedInfo={occupiedInfo} onClaimDay={onClaimDay} />
+      <DayMultiPicker
+        selectedDays={selectedDays}
+        onChange={(days) =>
+          onChange({
+            ...hotel,
+            dayIndices: days,
+            dayIndex: days.length > 0 ? days[0] : -1,
+            nights: days.length,
+          })
+        }
+        totalDays={totalDays}
+        label="Select Stay Days"
+        occupiedInfo={occupiedInfo}
+        onClaimDay={onClaimDay}
+      />
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Hotel Name" required value={hotel.name} onChange={(v) => update("name", v)} onBlur={handleBlur} error={errors.name} placeholder="e.g. The Taj Palace" className="col-span-2" />
@@ -992,7 +1033,7 @@ export default function HotelFlightEditor({
   }, [selectedEditorTab, TAB_CONFIG]);
 
   const handleTabClick = (tabKey: string) => {
-    if (tabKey === "hotels") onHotelsChange([...hotels, emptyHotel(0)]);
+    if (tabKey === "hotels") onHotelsChange([...hotels, emptyHotel(-1)]);
     else if (tabKey === "flights") onFlightsChange([...flights, emptyFlight(0)]);
     else if (tabKey === "cabs") onCabsChange([...cabs, emptyCab(0)]);
     else if (tabKey === "buses") onBusesChange([...buses, emptyBus(0)]);
@@ -1029,18 +1070,28 @@ export default function HotelFlightEditor({
     const updatedHotels = hotels.map((h) => {
       if (h.id === claimingHotelId) {
         // Add the claimed day to this hotel
-        const currentDays = h.dayIndices?.length ? h.dayIndices : [h.dayIndex];
+        const currentDays = getHotelDays(h);
         if (!currentDays.includes(dayIndex)) {
           const newDays = [...currentDays, dayIndex].sort((a, b) => a - b);
-          return { ...h, dayIndices: newDays, dayIndex: newDays[0] ?? dayIndex };
+          return {
+            ...h,
+            dayIndices: newDays,
+            dayIndex: newDays[0] ?? dayIndex,
+            nights: newDays.length,
+          };
         }
         return h;
       }
       // Remove the claimed day from any other hotel that owns it
-      const days = h.dayIndices?.length ? h.dayIndices : [h.dayIndex];
+      const days = getHotelDays(h);
       if (days.includes(dayIndex)) {
         const newDays = days.filter((d) => d !== dayIndex);
-        return { ...h, dayIndices: newDays, dayIndex: newDays[0] ?? 0 };
+        return {
+          ...h,
+          dayIndices: newDays,
+          dayIndex: newDays.length > 0 ? newDays[0] : -1,
+          nights: newDays.length,
+        };
       }
       return h;
     });
@@ -1050,7 +1101,10 @@ export default function HotelFlightEditor({
   // Costing calculations for the Costing Module overview
   const hotelsTotal = useMemo(() => hotels.reduce((sum, h) => {
     const isFlat = h.costType === 'flat';
-    return sum + (isFlat ? (h.flatCost || 0) : (h.costAdult || 0) * (h.nights || 1));
+    const nightsCount = typeof h.nights === 'number' && h.nights > 0
+      ? h.nights
+      : (getHotelDays(h).length || 1);
+    return sum + (isFlat ? (h.flatCost || 0) : (h.costAdult || 0) * nightsCount);
   }, 0), [hotels]);
 
   const flightsTotal = useMemo(() => flights.reduce((sum, f) => {
@@ -1071,16 +1125,22 @@ export default function HotelFlightEditor({
   const grandLogisticsTotal = hotelsTotal + flightsTotal + cabsTotal + busesTotal;
 
   const allLogisticsItems = useMemo(() => [
-    ...hotels.map((h) => ({
-      id: h.id,
-      category: 'Hotel',
-      icon: <Hotel className="w-3.5 h-3.5 text-amber-400" />,
-      name: h.name || 'Untitled Hotel',
-      subtitle: `${(h.dayIndices || [h.dayIndex]).length} Day(s)${h.nights ? ` • ${h.nights} Night(s)` : ''}`,
-      costType: h.costType || 'per-person',
-      unitRate: h.costType === 'flat' ? (h.flatCost || 0) : (h.costAdult || 0),
-      calculatedTotal: h.costType === 'flat' ? (h.flatCost || 0) : (h.costAdult || 0) * (h.nights || 1),
-    })),
+    ...hotels.map((h) => {
+      const days = getHotelDays(h);
+      const nightsCount = typeof h.nights === 'number' && h.nights > 0
+        ? h.nights
+        : (days.length || 1);
+      return {
+        id: h.id,
+        category: 'Hotel',
+        icon: <Hotel className="w-3.5 h-3.5 text-amber-400" />,
+        name: h.name || 'Untitled Hotel',
+        subtitle: `${days.length} Day(s)${nightsCount ? ` • ${nightsCount} Night(s)` : ''}`,
+        costType: h.costType || 'per-person',
+        unitRate: h.costType === 'flat' ? (h.flatCost || 0) : (h.costAdult || 0),
+        calculatedTotal: h.costType === 'flat' ? (h.flatCost || 0) : (h.costAdult || 0) * nightsCount,
+      };
+    }),
     ...flights.map((f) => ({
       id: f.id,
       category: 'Flight',
