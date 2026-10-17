@@ -313,7 +313,7 @@ function AuthenticatedPortal({
         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 flex items-center justify-center mx-auto mb-6 animate-in zoom-in duration-500">
           <CheckCircle2 className="w-10 h-10 text-green-500 dark:text-green-400" />
         </div>
-        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">You&apos;re all set! 🎉</h1>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">You&apos;re all set!</h1>
         <p className="text-slate-600 dark:text-gray-400 text-base max-w-md mb-2 font-medium">
           Your travel preferences have been shared with{" "}
           <span className="text-[#FF5C33] font-medium">{formMeta.agent_brand_name}</span>.

@@ -5,7 +5,8 @@ import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate, renderFormattedText } from '../utils';
 import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
-import { calcPricingFromBaseCost } from '@/services/financial';
+import { calcPricingFromBaseCost, calcItemClientPrice } from '@/services/financial';
+import { PdfHotelIcon, PdfFlightIcon, PdfCabIcon, PdfBusIcon, PdfPhoneIcon, PdfMailIcon, PdfGlobeIcon } from '../pdf-icons';
 
 const parseList = (text?: any): string[] => {
     if (!text) return [];
@@ -145,7 +146,7 @@ export const DarkTheme = ({
                         {/* Client Info Card */}
                         {clientName ? (
                             <div style={{ padding: "20px 24px", background: "rgba(255,255,255,0.025)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", borderLeft: `3px solid ${accent}` }}>
-                                <p style={{ margin: "0 0 12px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: accent, fontWeight: 800 }}>👤 Client Details</p>
+                                <p style={{ margin: "0 0 12px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: accent, fontWeight: 800 }}>Client Details</p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                                     <div>
                                         <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1px", color: "#64748b", fontWeight: 700 }}>Client Name</p>
@@ -176,12 +177,12 @@ export const DarkTheme = ({
                         {/* Consultant Info Card */}
                         {(agent.agentName || agent.companyName || agent.agentPhone || agent.agentEmail || agent.agentWebsite) ? (
                             <div style={{ padding: "20px 24px", background: "rgba(255,255,255,0.025)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.08)", borderLeft: "3px solid #ec4899" }}>
-                                <p style={{ margin: "0 0 12px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "#ec4899", fontWeight: 800 }}>✨ Agency Consultant</p>
+                                <p style={{ margin: "0 0 12px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2px", color: "#ec4899", fontWeight: 800 }}>Agency Consultant</p>
                                 {agent.companyName && <p style={{ fontWeight: 800, color: "#ffffff", fontSize: "16px", margin: "0 0 4px 0", fontFamily: "'Outfit', sans-serif" }}>{agent.companyName}</p>}
                                 {agent.agentName && <p style={{ fontWeight: 700, color: "#cbd5e1", fontSize: "14px", margin: "0 0 6px 0", fontFamily: "'Outfit', sans-serif" }}>{agent.agentName}</p>}
-                                {agent.agentPhone && <p style={{ margin: "2px 0", fontSize: "12px", color: "#94a3b8" }}>📞 {agent.agentPhone}</p>}
-                                {agent.agentEmail && <p style={{ margin: "2px 0", fontSize: "12px", color: "#94a3b8" }}>✉️ {agent.agentEmail}</p>}
-                                {agent.agentWebsite && <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: accent, fontWeight: 700, textDecoration: "underline" }}>🌐 {agent.agentWebsite}</p>}
+                                {agent.agentPhone && <p style={{ margin: "4px 0", fontSize: "12px", color: "#94a3b8", display: "flex", alignItems: "center", gap: "6px" }}><PdfPhoneIcon size={12} color="#94a3b8" /> <span>{agent.agentPhone}</span></p>}
+                                {agent.agentEmail && <p style={{ margin: "4px 0", fontSize: "12px", color: "#94a3b8", display: "flex", alignItems: "center", gap: "6px" }}><PdfMailIcon size={12} color="#94a3b8" /> <span>{agent.agentEmail}</span></p>}
+                                {agent.agentWebsite && <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: accent, fontWeight: 700, textDecoration: "underline", display: "flex", alignItems: "center", gap: "6px" }}><PdfGlobeIcon size={12} color={accent} /> <span>{agent.agentWebsite}</span></p>}
                             </div>
                         ) : null}
                     </div>
@@ -282,7 +283,9 @@ export const DarkTheme = ({
                                     {hasPhoto ? (
                                         <img src={validImages[0]} alt={h.name} style={{ width: "90px", height: "90px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} crossOrigin="anonymous" />
                                     ) : (
-                                        <div style={{ width: "48px", height: "48px", background: `rgba(${rgbAccent},0.12)`, border: `1px solid rgba(${rgbAccent},0.25)`, borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", flexShrink: 0 }}>🏨</div>
+                                        <div style={{ width: "48px", height: "48px", background: `rgba(${rgbAccent},0.12)`, border: `1px solid rgba(${rgbAccent},0.25)`, borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            <PdfHotelIcon size={22} color={accent} />
+                                        </div>
                                     )}
                                     <div style={{ flex: 1 }}>
                                         <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "6px" }}>
@@ -300,7 +303,9 @@ export const DarkTheme = ({
                         })}
                         {flights.map((f, i) => (
                             <div key={`flight-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(255,255,255,0.06)", padding: "16px", background: "rgba(255,255,255,0.02)", borderRadius: "8px" }}>
-                                <div style={{ width: "90px", height: "90px", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", borderRadius: "4px" }}>✈️</div>
+                                <div style={{ width: "90px", height: "90px", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "4px" }}>
+                                    <PdfFlightIcon size={36} color={accent} />
+                                </div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "6px" }}>Flight • Day {f.dayIndex + 1}</div>
                                     <h4 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#ffffff", fontWeight: 700 }}>{f.airline} {f.flightNumber}</h4>
@@ -324,7 +329,9 @@ export const DarkTheme = ({
                         ))}
                         {cabs.map((c, i) => (
                             <div key={`cab-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(255,255,255,0.06)", padding: "16px", background: "rgba(255,255,255,0.02)", borderRadius: "8px" }}>
-                                <div style={{ width: "90px", height: "90px", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", borderRadius: "4px" }}>🚕</div>
+                                <div style={{ width: "90px", height: "90px", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "4px" }}>
+                                    <PdfCabIcon size={36} color={accent} />
+                                </div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "6px" }}>Transfer • Day {c.dayIndex + 1}</div>
                                     {c.vehicleType && <h4 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#ffffff", fontWeight: 700 }}>{c.vehicleType}</h4>}
@@ -338,7 +345,9 @@ export const DarkTheme = ({
                         ))}
                         {buses.map((b, i) => (
                             <div key={`bus-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(255,255,255,0.06)", padding: "16px", background: "rgba(255,255,255,0.02)", borderRadius: "8px" }}>
-                                <div style={{ width: "90px", height: "90px", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", borderRadius: "4px" }}>🚌</div>
+                                <div style={{ width: "90px", height: "90px", background: "rgba(255,255,255,0.03)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "4px" }}>
+                                    <PdfBusIcon size={36} color={accent} />
+                                </div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "6px" }}>Bus • Day {b.dayIndex + 1}</div>
                                     {b.busType && <h4 style={{ margin: "0 0 12px 0", fontSize: "15px", color: "#ffffff", fontWeight: 700 }}>{b.busType}</h4>}
@@ -415,9 +424,7 @@ export const DarkTheme = ({
                             <tbody>
                                 {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
                                     pricing.manualOptions.map((item: any, idx: number) => {
-                                        const qty = item.type === 'per-person' ? totalPax : 1;
-                                        const rate = Number(item.amount) || 0;
-                                        const amount = qty * rate;
+                                        const { qty, rate, amount } = calcItemClientPrice(item, totalPax, pricing);
                                         return (
                                             <tr key={item.id || idx}>
                                                 <td>{item.name} {item.type === 'per-person' ? `(Per Person)` : ''}</td>
@@ -439,24 +446,19 @@ export const DarkTheme = ({
                         </table>
                     </div>
                     <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "20px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-end" }}>
-                        {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
-                            <>
-                                <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#94a3b8" }}><span>Subtotal (Base Cost)</span><span>{formatCurrency(resolvedBaseCost, currency)}</span></div>
-                                {markupAmount > 0 && (
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#94a3b8" }}><span>Service Fee / Markup</span><span>+ {formatCurrency(markupAmount, currency)}</span></div>
-                                )}
-                                {taxAmount > 0 && (
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#94a3b8" }}><span>Taxes & Fees ({pricing.taxPercentage}%)</span><span>+ {formatCurrency(taxAmount, currency)}</span></div>
-                                )}
-                            </>
-                        ) : (
-                            <>
-                                <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "13px", color: "#94a3b8" }}><span>Subtotal</span><span>{formatCurrency(costWithMarkup, currency)}</span></div>
-                                <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "13px", color: "#94a3b8" }}><span>Taxes & Fees</span><span>{formatCurrency(taxAmount, currency)}</span></div>
-                            </>
-                        )}
+                        <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#94a3b8" }}>
+                            <span>Subtotal</span>
+                            <span>{formatCurrency(costWithMarkup, currency)}</span>
+                        </div>
+                        <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#94a3b8" }}>
+                            <span>Taxes & Fees{pricing?.taxPercentage ? ` (${pricing.taxPercentage}%)` : ''}</span>
+                            <span>{taxAmount > 0 ? `+ ${formatCurrency(taxAmount, currency)}` : formatCurrency(taxAmount, currency)}</span>
+                        </div>
                         <div style={{ width: "320px", height: "1px", background: "rgba(255,255,255,0.1)", margin: "4px 0" }}></div>
-                        <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "18px", color: accent, fontWeight: 800, fontFamily: "var(--font-mono)", textShadow: `0 0 10px rgba(${rgbAccent},0.5)` }}><span>Grand Total</span><span>{formatCurrency(calculatedFinalTotal, currency)}</span></div>
+                        <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "18px", color: accent, fontWeight: 800, fontFamily: "var(--font-mono)", textShadow: `0 0 10px rgba(${rgbAccent},0.5)` }}>
+                            <span>Grand Total</span>
+                            <span>{formatCurrency(calculatedFinalTotal, currency)}</span>
+                        </div>
                     </div>
                 </div>
 

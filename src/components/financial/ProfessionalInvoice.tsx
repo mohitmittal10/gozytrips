@@ -81,7 +81,7 @@ export const ProfessionalInvoice = React.forwardRef<HTMLDivElement, Professional
                                     fontSize: "11px", fontWeight: "700", color: "#86efac",
                                     textAlign: "center", letterSpacing: "1px", textTransform: "uppercase",
                                 }}>
-                                    ✓ PAID IN FULL
+                                    PAID IN FULL
                                 </div>
                             )}
                         </div>
@@ -212,7 +212,7 @@ export const ProfessionalInvoice = React.forwardRef<HTMLDivElement, Professional
                                 borderTop: isFullyPaid ? "1px solid #bbf7d0" : "1px solid #fed7aa",
                             }}>
                                 <span style={{ fontSize: "14px", fontWeight: "700", color: isFullyPaid ? "#16a34a" : "#c2410c" }}>
-                                    {isFullyPaid ? "✓ Balance Due" : "Balance Due"}
+                                    {isFullyPaid ? "Balance Settled" : "Balance Due"}
                                 </span>
                                 <span style={{ fontSize: "16px", fontWeight: "800", color: isFullyPaid ? "#16a34a" : "#c2410c" }}>
                                     {fm(balance, fin.currency)}

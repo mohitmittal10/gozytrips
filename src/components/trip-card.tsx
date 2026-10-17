@@ -116,7 +116,7 @@ export function TripCard({
                     </div>
                     {trip.budget && (
                         <div className="flex items-center gap-2 text-foreground/80">
-                            <span className="w-4 h-4 flex items-center justify-center text-[10px]">💰</span>
+                            <DollarSign className="w-4 h-4 text-emerald-500" />
                             <span>Budget: {getCurrencySymbol(agencySettings?.default_currency || DEFAULT_CURRENCY)}{trip.budget?.toLocaleString()}</span>
                         </div>
                     )}

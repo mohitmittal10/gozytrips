@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { useClientMessages } from "@/hooks/use-client-messages";
 import type { PublicEnquiryFormMeta } from "@/types/enquiry";
+import { calcItemClientPrice } from "@/services/financial";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type WorkflowStatus = "submitted" | "under_review" | "itinerary_ready" | "booked";
@@ -67,7 +68,7 @@ const WORKFLOW_STEPS: { key: WorkflowStatus; label: string; desc: string }[] = [
   { key: "submitted",       label: "Enquiry Submitted",  desc: "We've received your travel preferences" },
   { key: "under_review",   label: "Under Review",        desc: "Your agent is crafting your perfect trip" },
   { key: "itinerary_ready", label: "Itinerary Ready",    desc: "Your personalised plan is here!" },
-  { key: "booked",          label: "Booked & Confirmed", desc: "Your adventure is locked in 🎉" },
+  { key: "booked",          label: "Booked & Confirmed", desc: "Your booking is locked in and confirmed" },
 ];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -301,7 +302,7 @@ type ItinSubTab = "days" | "logistics" | "financials" | "inclusions";
 
 function ItinerarySubTabs({
   days, flights, hotels, cabs, buses, itin, pricing,
-  clientPrice, baseCost, markupAmount, taxAmount, taxPct, markupType, markupValue,
+  clientPrice, baseCost, costWithMarkup, markupAmount, taxAmount, taxPct, markupType, markupValue,
   totalPax, adultPax, childPax, infantPax, perPerson, milestones,
   currencySymbol, fmt, showTimestamps, dayPhotos, loadingPhotos, shareUrl,
 }: any) {
@@ -511,18 +512,12 @@ function ItinerarySubTabs({
                   {infantPax > 0 && `, ${infantPax} infant${infantPax !== 1 ? "s" : ""}`}
                 </p>
               </div>
-              {baseCost > 0 && (
+              {clientPrice > 0 && (
                 <div className="px-5 py-4 space-y-2.5">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-600 dark:text-gray-400">Base Cost</span>
-                    <span className="text-zinc-200 font-medium">{currencySymbol}{fmt(baseCost)}</span>
+                    <span className="text-slate-600 dark:text-gray-400">Package Cost</span>
+                    <span className="text-zinc-200 font-medium">{currencySymbol}{fmt(costWithMarkup || (clientPrice - taxAmount))}</span>
                   </div>
-                  {markupAmount > 0 && (
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-slate-600 dark:text-gray-400">Service Charge{markupType === "percentage" && markupValue > 0 ? ` (${markupValue}%)` : ""}</span>
-                      <span className="text-zinc-200 font-medium">+ {currencySymbol}{fmt(markupAmount)}</span>
-                    </div>
-                  )}
                   {taxAmount > 0 && (
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-slate-600 dark:text-gray-400">GST / Tax ({taxPct}%)</span>
@@ -540,13 +535,12 @@ function ItinerarySubTabs({
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2.5">Cost Breakdown</p>
                   <div className="space-y-2">
                     {pricing.manualOptions.map((item: any, ii: number) => {
-                      const amt = Number(item.amount) || 0;
-                      const itemTotal = item.type === "per-person" ? amt * totalPax : amt;
+                      const { qty, rate, amount: itemTotal } = calcItemClientPrice(item, totalPax, pricing);
                       return (
                         <div key={ii} className="flex items-center justify-between gap-2 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-2.5">
                           <div className="flex-1 min-w-0">
                             <p className="text-xs font-semibold text-white">{item.name || item.category || "Item"}</p>
-                            {item.type === "per-person" && <p className="text-[10px] text-purple-400 mt-0.5">{currencySymbol}{fmt(amt)} × {totalPax} pax</p>}
+                            {item.type === "per-person" && <p className="text-[10px] text-purple-400 mt-0.5">{currencySymbol}{fmt(rate)} × {totalPax} pax</p>}
                           </div>
                           <p className="text-sm font-black text-[#FF5C33] shrink-0">{currencySymbol}{fmt(itemTotal)}</p>
                         </div>
@@ -904,7 +898,7 @@ export function ClientDashboard({ formMeta, shareToken, responseId }: ClientDash
               <div className="relative z-10">
                 <p className="text-xs text-[#FF5C33] font-bold uppercase tracking-widest mb-2">Welcome back</p>
                 <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                  {response.client_name ? `Hi, ${response.client_name.split(" ")[0]}! 👋` : "Your Trip Dashboard"}
+                  {response.client_name ? `Hi, ${response.client_name.split(" ")[0]}` : "Your Trip Dashboard"}
                 </h1>
                 <p className="text-slate-600 dark:text-gray-400 text-sm mt-2 max-w-lg font-medium">
                   Track your enquiry status, view your trip details, and chat directly with {agentName}.
@@ -1182,6 +1176,7 @@ export function ClientDashboard({ formMeta, shareToken, responseId }: ClientDash
                     itin={itin}
                     pricing={pricing}
                     clientPrice={clientPrice}
+                    costWithMarkup={costWithMarkup}
                     baseCost={baseCost}
                     markupAmount={markupAmount}
                     taxAmount={taxAmount}

@@ -22,7 +22,7 @@ const TheLabHero = React.memo(function TheLabHero({ itinerary }: TheLabHeroProps
           <span className="aurora-gradient text-[7px] sm:text-[8px] font-black px-2 sm:px-3 py-0.5 sm:py-1 rounded-full uppercase tracking-widest shadow-lg">Active Journey</span>
         </div>
         <h2 className="font-extrabold tracking-tighter" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.5rem)' }}>
-          Tropical Intelligence: <span className="text-gradient">{itinerary.itinerary[0]?.areaFocus?.split(',')[0]}</span>
+          Destination Overview: <span className="text-gradient">{itinerary.itinerary[0]?.areaFocus?.split(',')[0] || "Overview"}</span>
         </h2>
       </div>
     </div>

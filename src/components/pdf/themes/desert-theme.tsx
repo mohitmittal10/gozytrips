@@ -5,7 +5,8 @@ import { formatCurrency } from '@/lib/utils/currency';
 import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDate, resolveAboutPlace, renderFormattedText } from '../utils';
 import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
-import { calcPricingFromBaseCost } from '@/services/financial';
+import { calcPricingFromBaseCost, calcItemClientPrice } from '@/services/financial';
+import { PdfHotelIcon, PdfFlightIcon, PdfCabIcon, PdfBusIcon, PdfPhoneIcon, PdfMailIcon, PdfGlobeIcon, PdfUserIcon, PdfCalendarIcon, PdfPinIcon, PdfCheckIcon, PdfCrossIcon } from '../pdf-icons';
 
 const parseList = (text?: any): string[] => {
     if (!text) return [];
@@ -84,17 +85,17 @@ export const DesertFooter = ({ agent, agencySettings, clientName }: { agent: The
                 <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "16px", marginBottom: "36px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                     {agent.agentPhone && (
                         <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: "999px", padding: "10px 22px", fontSize: "14px", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
-                            <span>📞</span> {agent.agentPhone}
+                            <PdfPhoneIcon size={14} color="#ffffff" /> <span>{agent.agentPhone}</span>
                         </div>
                     )}
                     {agent.agentEmail && (
                         <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: "999px", padding: "10px 22px", fontSize: "14px", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
-                            <span>✉️</span> {agent.agentEmail}
+                            <PdfMailIcon size={14} color="#ffffff" /> <span>{agent.agentEmail}</span>
                         </div>
                     )}
                     {agent.agentWebsite && (
                         <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: "999px", padding: "10px 22px", fontSize: "14px", fontWeight: 600, color: "#ffffff", display: "flex", alignItems: "center", gap: "8px" }}>
-                            <span>🌐</span> {agent.agentWebsite}
+                            <PdfGlobeIcon size={14} color="#ffffff" /> <span>{agent.agentWebsite}</span>
                         </div>
                     )}
                 </div>
@@ -249,10 +250,10 @@ export const DesertTheme = ({
                 <div data-pdf-section="quick-stats" style={{ background: "#ffffff", borderBottom: "1px solid #f3f4f6", padding: "42px 64px" }}>
                     <div style={{ display: "flex", gap: "20px" }}>
                         {[
-                            clientName ? { label: "Guest / Client", value: clientName, icon: "👤" } : null,
-                            { label: "Duration", value: `${days} Days / ${nights}`, icon: "📅" },
-                            { label: "Total Budget", value: totalBudget, icon: "💰" },
-                            { label: "Location", value: destination, icon: "📍" },
+                            clientName ? { label: "Guest / Client", value: clientName, icon: <PdfUserIcon size={18} color="#ea580c" /> } : null,
+                            { label: "Duration", value: `${days} Days / ${nights}`, icon: <PdfCalendarIcon size={18} color="#ea580c" /> },
+                            { label: "Total Budget", value: totalBudget, icon: <span style={{ fontSize: "16px", fontWeight: 700 }}>₹</span> },
+                            { label: "Location", value: destination, icon: <PdfPinIcon size={18} color="#ea580c" /> },
                         ].filter(Boolean).map((item: any, index) => (
                             <div key={index} style={{ flex: 1, display: "flex", alignItems: "center", gap: "14px" }}>
                                 <div style={{ width: "44px", height: "44px", borderRadius: "999px", background: "#fff7ed", border: "1px solid #ffedd5", display: "flex", alignItems: "center", justifyContent: "center", color: "#ea580c", fontSize: "16px", fontWeight: 700, flexShrink: 0 }}>
@@ -287,7 +288,7 @@ export const DesertTheme = ({
                     <div style={{ display: "grid", gridTemplateColumns: clientName ? "1fr 1fr" : "1fr", gap: "24px" }}>
                         <div style={{ background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "22px", padding: "32px 34px" }}>
                             <p style={{ margin: "0 0 18px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "3px", color: "#b48b63", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                                🏜️ Agency Details
+                                Agency Details
                             </p>
                             <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                                 <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
@@ -318,7 +319,7 @@ export const DesertTheme = ({
                         {clientName && (
                             <div style={{ background: "#fcfaf7", border: "1px solid #f3e8d8", borderRadius: "22px", padding: "32px 34px" }}>
                                 <p style={{ margin: "0 0 18px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "3px", color: "#b48b63", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
-                                    👤 Client Details
+                                    Client Details
                                 </p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                                     <div style={{ paddingBottom: "10px", borderBottom: "1px solid #efe5d8" }}>
@@ -448,7 +449,9 @@ export const DesertTheme = ({
                                             <img src={validImages[0]} alt={h.name} style={{ width: "100px", height: "100px", objectFit: "cover", borderRadius: "8px" }} crossOrigin="anonymous" />
                                         </div>
                                     ) : (
-                                        <div style={{ width: "50px", height: "50px", background: "#fdf8f0", border: "1px solid #f5e6d3", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", flexShrink: 0 }}>🏨</div>
+                                        <div style={{ width: "50px", height: "50px", background: "#fdf8f0", border: "1px solid #f5e6d3", borderRadius: "12px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            <PdfHotelIcon size={24} color="#b48b63" />
+                                        </div>
                                     )}
                                     <div style={{ flex: 1, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                         <div style={{ color: "#fb923c", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "8px" }}>
@@ -466,7 +469,9 @@ export const DesertTheme = ({
                         })}
                         {flights.map((f, i) => (
                             <div key={`flight-${i}`} style={{ display: "flex", gap: "24px", background: "#ffffff", border: "1px solid #f3e8d8", padding: "24px", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
-                                <div style={{ width: "100px", height: "100px", background: "#fcfaf7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", borderRadius: "8px" }}>✈️</div>
+                                <div style={{ width: "100px", height: "100px", background: "#fcfaf7", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px" }}>
+                                    <PdfFlightIcon size={40} color="#b48b63" />
+                                </div>
                                 <div style={{ flex: 1, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     <div style={{ color: "#fb923c", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "8px" }}>Flight • Day {f.dayIndex + 1}</div>
                                     <h4 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1f2937", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>{f.airline} {f.flightNumber}</h4>
@@ -490,7 +495,9 @@ export const DesertTheme = ({
                         ))}
                         {cabs.map((c, i) => (
                             <div key={`cab-${i}`} style={{ display: "flex", gap: "24px", background: "#ffffff", border: "1px solid #f3e8d8", padding: "24px", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
-                                <div style={{ width: "100px", height: "100px", background: "#fcfaf7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", borderRadius: "8px" }}>🚕</div>
+                                <div style={{ width: "100px", height: "100px", background: "#fcfaf7", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px" }}>
+                                    <PdfCabIcon size={40} color="#b48b63" />
+                                </div>
                                 <div style={{ flex: 1, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     <div style={{ color: "#fb923c", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "8px" }}>Transfer • Day {c.dayIndex + 1}</div>
                                     {c.vehicleType && <h4 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1f2937", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>{c.vehicleType}</h4>}
@@ -504,7 +511,9 @@ export const DesertTheme = ({
                         ))}
                         {buses.map((b, i) => (
                             <div key={`bus-${i}`} style={{ display: "flex", gap: "24px", background: "#ffffff", border: "1px solid #f3e8d8", padding: "24px", borderRadius: "16px", boxShadow: "0 10px 30px rgba(0,0,0,0.03)" }}>
-                                <div style={{ width: "100px", height: "100px", background: "#fcfaf7", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "32px", borderRadius: "8px" }}>🚌</div>
+                                <div style={{ width: "100px", height: "100px", background: "#fcfaf7", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "8px" }}>
+                                    <PdfBusIcon size={40} color="#b48b63" />
+                                </div>
                                 <div style={{ flex: 1, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     <div style={{ color: "#fb923c", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "8px" }}>Bus • Day {b.dayIndex + 1}</div>
                                     {b.busType && <h4 style={{ margin: "0 0 16px 0", fontSize: "18px", color: "#1f2937", fontWeight: 700, fontFamily: "'Noto Serif', 'Georgia', serif" }}>{b.busType}</h4>}
@@ -530,7 +539,10 @@ export const DesertTheme = ({
                                 <h3 style={{ margin: "0 0 32px 0", fontSize: "32px", color: "#111827", fontWeight: 500 }}>Inclusions</h3>
                                 <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "16px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     {inclusionsList.map((inc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "16px", fontSize: "15px", color: "#374151", lineHeight: "1.7", fontWeight: 500 }}><span style={{ color: "#fb923c", fontSize: "18px", marginTop: "-2px" }}>✓</span> <span data-field={`inclusions[${i}]`}>{renderFormattedText(inc)}</span></li>
+                                        <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "16px", fontSize: "15px", color: "#374151", lineHeight: "1.7", fontWeight: 500 }}>
+                                            <PdfCheckIcon size={16} color="#fb923c" style={{ marginTop: "4px", flexShrink: 0 }} />
+                                            <span data-field={`inclusions[${i}]`}>{renderFormattedText(inc)}</span>
+                                        </li>
                                     ))}
                                 </ul>
                             </div>
@@ -541,7 +553,10 @@ export const DesertTheme = ({
                                 <h3 style={{ margin: "0 0 32px 0", fontSize: "32px", color: "#111827", fontWeight: 500 }}>Exclusions</h3>
                                 <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: "16px", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     {exclusionsList.map((exc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "16px", fontSize: "15px", color: "#6b7280", lineHeight: "1.7", fontWeight: 500 }}><span style={{ color: "#d1d5db", fontSize: "18px", marginTop: "-2px" }}>✗</span> <span data-field={`exclusions[${i}]`}>{renderFormattedText(exc)}</span></li>
+                                        <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "16px", fontSize: "15px", color: "#6b7280", lineHeight: "1.7", fontWeight: 500 }}>
+                                            <PdfCrossIcon size={16} color="#9ca3af" style={{ marginTop: "4px", flexShrink: 0 }} />
+                                            <span data-field={`exclusions[${i}]`}>{renderFormattedText(exc)}</span>
+                                        </li>
                                     ))}
                                 </ul>
                             </div>
@@ -578,9 +593,7 @@ export const DesertTheme = ({
                                 <tbody>
                                     {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
                                         pricing.manualOptions.map((item: any, idx: number) => {
-                                            const qty = item.type === 'per-person' ? totalPax : 1;
-                                            const rate = Number(item.amount) || 0;
-                                            const amount = qty * rate;
+                                            const { qty, rate, amount } = calcItemClientPrice(item, totalPax, pricing);
                                             return (
                                                 <tr key={item.id || idx}>
                                                     <td>{item.name} {item.type === 'per-person' ? `(Per Person)` : ''}</td>
@@ -602,24 +615,19 @@ export const DesertTheme = ({
                             </table>
                         </div>
                         <div style={{ background: "#fcfaf7", borderTop: "1px solid #f3e8d8", padding: "24px 32px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-end" }}>
-                            {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
-                                <>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "14px", color: "#6b7280" }}><span>Subtotal (Base Cost)</span><span style={{ fontWeight: 600, color: "#1f2937" }}>{formatCurrency(resolvedBaseCost, currency)}</span></div>
-                                    {markupAmount > 0 && (
-                                        <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "14px", color: "#6b7280" }}><span>Service Fee / Markup</span><span style={{ fontWeight: 600, color: "#1f2937" }}>+ {formatCurrency(markupAmount, currency)}</span></div>
-                                    )}
-                                    {taxAmount > 0 && (
-                                        <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "14px", color: "#6b7280" }}><span>Taxes & Fees ({pricing.taxPercentage}%)</span><span style={{ fontWeight: 600, color: "#1f2937" }}>+ {formatCurrency(taxAmount, currency)}</span></div>
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#6b7280" }}><span>Subtotal</span><span style={{ fontWeight: 600, color: "#1f2937" }}>{formatCurrency(costWithMarkup, currency)}</span></div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#6b7280" }}><span>Taxes & Fees</span><span style={{ fontWeight: 600, color: "#1f2937" }}>{formatCurrency(taxAmount, currency)}</span></div>
-                                </>
-                            )}
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "14px", color: "#6b7280" }}>
+                                <span>Subtotal</span>
+                                <span style={{ fontWeight: 600, color: "#1f2937" }}>{formatCurrency(costWithMarkup, currency)}</span>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "14px", color: "#6b7280" }}>
+                                <span>Taxes & Fees{pricing?.taxPercentage ? ` (${pricing.taxPercentage}%)` : ''}</span>
+                                <span style={{ fontWeight: 600, color: "#1f2937" }}>{taxAmount > 0 ? `+ ${formatCurrency(taxAmount, currency)}` : formatCurrency(taxAmount, currency)}</span>
+                            </div>
                             <div style={{ width: "320px", height: "1px", background: "#f3e8d8", margin: "4px 0" }}></div>
-                            <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "20px", color: "#b48b63", fontWeight: 800, fontFamily: "var(--font-mono)" }}><span>Grand Total</span><span>{formatCurrency(calculatedFinalTotal, currency)}</span></div>
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "20px", color: "#b48b63", fontWeight: 800, fontFamily: "var(--font-mono)" }}>
+                                <span>Grand Total</span>
+                                <span>{formatCurrency(calculatedFinalTotal, currency)}</span>
+                            </div>
                         </div>
                     </div>
  

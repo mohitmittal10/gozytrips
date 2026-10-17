@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plane, DollarSign, Eye, AlertCircle, Edit, MapPin, Save, Loader2 } from "lucide-react";
+import { Plane, DollarSign, Eye, AlertCircle, Edit, MapPin, Save, Loader2, ClipboardList, Lock } from "lucide-react";
 import { PdfPreviewEditor } from "@/components/pdf-preview-editor";
 import ItineraryTimeline from "@/components/itinerary-timeline";
 import HotelFlightEditor from "@/components/hotel-flight-editor";
@@ -199,7 +199,7 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
             </span>
             <span className="w-1 h-1 rounded-full bg-gray-500" />
             <span className="flex items-center gap-1.5 capitalize">
-              <span className="w-3.5 h-3.5 flex items-center justify-center text-xs">📋</span>
+              <ClipboardList className="w-3.5 h-3.5 text-slate-400" />
               Status: {status}
             </span>
           </div>
@@ -278,7 +278,10 @@ function InnerEditor({ trip, clientName, onSave, onOpenChange }: InnerEditorProp
                       value={opt.value}
                       disabled={!hasPremiumPdf && opt.value !== 'classic'}
                     >
-                      {opt.label} {!hasPremiumPdf && opt.value !== 'classic' && '🔒'}
+                      <span className="flex items-center gap-1.5">
+                        <span>{opt.label}</span>
+                        {!hasPremiumPdf && opt.value !== 'classic' && <Lock className="w-3 h-3 text-slate-400 inline-block" />}
+                      </span>
                     </SelectItem>
                   ))}
                 </SelectContent>

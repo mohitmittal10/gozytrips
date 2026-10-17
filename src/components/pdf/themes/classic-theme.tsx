@@ -7,7 +7,8 @@ import { getAgentInfo, getTotalBudget, getCoverImage, getDayImage, formatTitleCa
 import { getThematicBackground, glassStyles } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
-import { calcPricingFromBaseCost } from '@/services/financial';
+import { calcPricingFromBaseCost, calcItemClientPrice } from '@/services/financial';
+import { PdfHotelIcon, PdfFlightIcon, PdfCabIcon, PdfBusIcon, PdfPhoneIcon, PdfMailIcon, PdfGlobeIcon, PdfCheckIcon } from '../pdf-icons';
 
 export type ThemeProps = {
     itinerary: TravelItineraryOutput;
@@ -226,7 +227,7 @@ export const ClassicTheme = ({
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                                 {(aboutPlace.highlights || []).map((hl: string, i: number) => (
                                     <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
-                                        <div style={{ flexShrink: 0, width: "20px", height: "20px", borderRadius: "50%", background: `rgba(${rgbAccent}, 0.1)`, display: "flex", alignItems: "center", justifyContent: "center", color: agent.primaryColor, marginTop: "2px" }}>✓</div>
+                                        <div style={{ flexShrink: 0, width: "20px", height: "20px", borderRadius: "50%", background: `rgba(${rgbAccent}, 0.1)`, display: "flex", alignItems: "center", justifyContent: "center", color: agent.primaryColor, marginTop: "2px" }}><PdfCheckIcon size={11} color={agent.primaryColor} /></div>
                                         <span data-field={`aboutPlace.highlights[${i}]`} style={{ fontSize: "14px", color: "#334155", fontWeight: 500, lineHeight: "1.5" }}>{renderFormattedText(hl)}</span>
                                     </div>
                                 ))}
@@ -325,7 +326,7 @@ export const ClassicTheme = ({
                             {(day as any).dailyStats?.totalCost && (
                                 <div style={{ marginTop: "24px", paddingTop: "20px", borderTop: "1px solid #e2e8f0", display: "flex", gap: "20px", fontSize: "13px", color: "#64748b", fontWeight: 700 }}>
                                     <div style={{ background: "rgba(15, 23, 42, 0.04)", padding: "6px 16px", borderRadius: "8px", display: "inline-flex", alignItems: "center" }}>
-                                        💰 Day Cost: {formatCurrency((day as any).dailyStats?.totalCost, (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}
+                                        Day Cost: {formatCurrency((day as any).dailyStats?.totalCost, (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}
                                     </div>
                                 </div>
                             )}
@@ -349,7 +350,9 @@ export const ClassicTheme = ({
                                         <img src={validImages[0]} alt={h.name} style={{ width: "100%", height: "160px", objectFit: "cover" }} crossOrigin="anonymous" />
                                     ) : (
                                         <div style={{ padding: "20px 24px 0 24px", display: "flex", alignItems: "center", gap: "10px" }}>
-                                            <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: `${agent.primaryColor}15`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>🏨</div>
+                                            <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: `${agent.primaryColor}15`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <PdfHotelIcon size={20} color={agent.primaryColor} />
+                                            </div>
                                             <div style={{ flex: 1, height: "2px", background: `linear-gradient(to right, ${agent.primaryColor}30, transparent)` }} />
                                         </div>
                                     )}
@@ -367,7 +370,9 @@ export const ClassicTheme = ({
                         })}
                         {flights.map((f, i) => (
                             <div key={`flight-${i}`} style={{ ...glassStyles, borderRadius: "16px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                                <div style={{ height: "160px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: "40px" }}>✈️</span></div>
+                                <div style={{ height: "160px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <PdfFlightIcon size={40} color={agent.primaryColor || "#3b82f6"} />
+                                </div>
                                 <div style={{ padding: "24px" }}>
                                     <h4 style={{ margin: "0 0 4px 0", fontSize: "18px", color: "#0f172a", fontWeight: 800 }}>{f.airline} {f.flightNumber}</h4>
                                     <div style={{ color: agent.primaryColor, fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>Flight • Day {f.dayIndex + 1}</div>
@@ -391,7 +396,9 @@ export const ClassicTheme = ({
                         ))}
                         {cabs.map((c, i) => (
                             <div key={`cab-${i}`} style={{ ...glassStyles, borderRadius: "16px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                                <div style={{ height: "160px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: "40px" }}>🚕</span></div>
+                                <div style={{ height: "160px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <PdfCabIcon size={40} color={agent.primaryColor || "#a855f7"} />
+                                </div>
                                 <div style={{ padding: "24px" }}>
                                     {c.vehicleType && <h4 style={{ margin: "0 0 4px 0", fontSize: "18px", color: "#0f172a", fontWeight: 800 }}>{c.vehicleType}</h4>}
                                     <div style={{ color: agent.primaryColor || "#a855f7", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>Cab • Day {c.dayIndex + 1}</div>
@@ -405,7 +412,9 @@ export const ClassicTheme = ({
                         ))}
                         {buses.map((b, i) => (
                             <div key={`bus-${i}`} style={{ ...glassStyles, borderRadius: "16px", overflow: "hidden", display: "flex", flexDirection: "column" }}>
-                                <div style={{ height: "160px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ fontSize: "40px" }}>🚌</span></div>
+                                <div style={{ height: "160px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <PdfBusIcon size={40} color={agent.primaryColor || "#a855f7"} />
+                                </div>
                                 <div style={{ padding: "24px" }}>
                                     {b.busType && <h4 style={{ margin: "0 0 4px 0", fontSize: "18px", color: "#0f172a", fontWeight: 800 }}>{b.busType}</h4>}
                                     <div style={{ color: agent.primaryColor || "#a855f7", fontSize: "12px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: "16px" }}>Bus • Day {b.dayIndex + 1}</div>
@@ -475,9 +484,7 @@ export const ClassicTheme = ({
                                 <tbody>
                                     {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
                                         pricing.manualOptions.map((item: any, idx: number) => {
-                                            const qty = item.type === 'per-person' ? totalPax : 1;
-                                            const rate = Number(item.amount) || 0;
-                                            const amount = qty * rate;
+                                            const { qty, rate, amount } = calcItemClientPrice(item, totalPax, pricing);
                                             return (
                                                 <tr key={item.id || idx}>
                                                     <td>{item.name} {item.type === 'per-person' ? `(Per Person)` : ''}</td>
@@ -499,24 +506,19 @@ export const ClassicTheme = ({
                             </table>
                         </div>
                         <div style={{ background: "rgba(15,23,42,0.02)", padding: "24px", display: "flex", flexDirection: "column", gap: "12px", alignItems: "flex-end" }}>
-                            {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
-                                <>
-                                    <div style={{ display: "flex", gap: "40px", fontSize: "14px", color: "#475569" }}><span style={{ width: "160px" }}>Subtotal (Base Cost):</span><span style={{ width: "120px", textAlign: "right", fontFamily: "var(--font-mono)", fontWeight: 600 }}>{formatCurrency(resolvedBaseCost, currency)}</span></div>
-                                    {markupAmount > 0 && (
-                                        <div style={{ display: "flex", gap: "40px", fontSize: "14px", color: "#475569" }}><span style={{ width: "160px" }}>Service Fee / Markup:</span><span style={{ width: "120px", textAlign: "right", fontFamily: "var(--font-mono)", fontWeight: 600 }}>+ {formatCurrency(markupAmount, currency)}</span></div>
-                                    )}
-                                    {taxAmount > 0 && (
-                                        <div style={{ display: "flex", gap: "40px", fontSize: "14px", color: "#475569" }}><span style={{ width: "160px" }}>Taxes & Fees ({pricing.taxPercentage}%):</span><span style={{ width: "120px", textAlign: "right", fontFamily: "var(--font-mono)", fontWeight: 600 }}>+ {formatCurrency(taxAmount, currency)}</span></div>
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <div style={{ display: "flex", gap: "40px", fontSize: "14px", color: "#475569" }}><span style={{ width: "160px" }}>Subtotal:</span><span style={{ width: "120px", textAlign: "right", fontFamily: "var(--font-mono)", fontWeight: 600 }}>{formatCurrency(costWithMarkup, currency)}</span></div>
-                                    <div style={{ display: "flex", gap: "40px", fontSize: "14px", color: "#475569" }}><span style={{ width: "160px" }}>Taxes & Fees:</span><span style={{ width: "120px", textAlign: "right", fontFamily: "var(--font-mono)", fontWeight: 600 }}>{formatCurrency(taxAmount, currency)}</span></div>
-                                </>
-                            )}
+                            <div style={{ display: "flex", gap: "40px", fontSize: "14px", color: "#475569" }}>
+                                <span style={{ width: "160px" }}>Subtotal:</span>
+                                <span style={{ width: "120px", textAlign: "right", fontFamily: "var(--font-mono)", fontWeight: 600 }}>{formatCurrency(costWithMarkup, currency)}</span>
+                            </div>
+                            <div style={{ display: "flex", gap: "40px", fontSize: "14px", color: "#475569" }}>
+                                <span style={{ width: "160px" }}>Taxes & Fees{pricing?.taxPercentage ? ` (${pricing.taxPercentage}%)` : ''}:</span>
+                                <span style={{ width: "120px", textAlign: "right", fontFamily: "var(--font-mono)", fontWeight: 600 }}>{taxAmount > 0 ? `+ ${formatCurrency(taxAmount, currency)}` : formatCurrency(taxAmount, currency)}</span>
+                            </div>
                             <div style={{ width: "280px", height: "1px", background: "#cbd5e1", margin: "8px 0" }}></div>
-                            <div style={{ display: "flex", gap: "40px", fontSize: "18px", color: "#0f172a", fontWeight: 800 }}><span style={{ width: "160px" }}>Grand Total:</span><span style={{ width: "120px", textAlign: "right", fontFamily: "var(--font-mono)", color: agent.primaryColor }}>{formatCurrency(calculatedFinalTotal, currency)}</span></div>
+                            <div style={{ display: "flex", gap: "40px", fontSize: "18px", color: "#0f172a", fontWeight: 800 }}>
+                                <span style={{ width: "160px" }}>Grand Total:</span>
+                                <span style={{ width: "120px", textAlign: "right", fontFamily: "var(--font-mono)", color: agent.primaryColor }}>{formatCurrency(calculatedFinalTotal, currency)}</span>
+                            </div>
                         </div>
                     </div>
 
@@ -631,9 +633,9 @@ export const ClassicTheme = ({
                     </div>
                     
                     <div style={{ display: "flex", flexDirection: "column", gap: "6px", alignItems: "flex-end", textAlign: "right" }}>
-                        {agent.agentPhone && <p style={{ margin: 0, color: "#cbd5e1", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}><span>📞</span> {agent.agentPhone}</p>}
-                        {agent.agentEmail && <p style={{ margin: 0, color: "#cbd5e1", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}><span>✉️</span> {agent.agentEmail}</p>}
-                        {agent.agentWebsite && <p style={{ margin: 0, color: agent.primaryColor || "#a855f7", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}><span>🌐</span> {agent.agentWebsite}</p>}
+                        {agent.agentPhone && <p style={{ margin: 0, color: "#cbd5e1", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}><PdfPhoneIcon size={12} color="#cbd5e1" /> <span>{agent.agentPhone}</span></p>}
+                        {agent.agentEmail && <p style={{ margin: 0, color: "#cbd5e1", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}><PdfMailIcon size={12} color="#cbd5e1" /> <span>{agent.agentEmail}</span></p>}
+                        {agent.agentWebsite && <p style={{ margin: 0, color: agent.primaryColor || "#a855f7", fontSize: "12px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}><PdfGlobeIcon size={12} color={agent.primaryColor || "#a855f7"} /> <span>{agent.agentWebsite}</span></p>}
                     </div>
                 </div>
                 <div style={{ textAlign: "center", marginTop: "30px", fontSize: "10px", color: "#475569" }}>

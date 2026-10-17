@@ -14,6 +14,7 @@ import { filterCompleteEntriesForExport } from "@/lib/validation/logistics-valid
 import { ImagePicker } from "./ImagePicker";
 import { FloatingToolbar } from "./FloatingToolbar";
 import { StructuralControls } from "./StructuralControls";
+import { Edit3, Check } from "lucide-react";
 
 // ─────────────────────────────────────────────────────────────
 // Toolbar: save / editing state
@@ -78,7 +79,10 @@ function EditorToolbar({
                             : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200"
                     }`}
                 >
-                    ✏ Edit
+                    <span className="inline-flex items-center gap-1">
+                        <Edit3 className="w-3 h-3" />
+                        <span>Edit</span>
+                    </span>
                 </button>
             </div>
 
@@ -143,8 +147,9 @@ function EditorToolbar({
                         </button>
                     </div>
                 ) : (
-                    <span className="text-[11px] sm:text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800/50 px-2 sm:px-2.5 py-1 rounded-full whitespace-nowrap">
-                        ✓ Saved
+                    <span className="text-[11px] sm:text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800/50 px-2 sm:px-2.5 py-1 rounded-full whitespace-nowrap inline-flex items-center gap-1">
+                        <Check className="w-3 h-3" />
+                        <span>Saved</span>
                     </span>
                 )}
             </div>

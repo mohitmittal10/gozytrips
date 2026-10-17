@@ -45,8 +45,10 @@ const Header = () => {
 
   return (
     <nav className={cn(
-      "fixed top-0 w-full z-50 bg-[#EFECE5]/80 dark:bg-[#020305]/80 backdrop-blur-2xl border-b border-slate-200/80 dark:border-white/5 transition-all duration-500 ease-in-out",
-      scrolled ? "-translate-y-full opacity-0 pointer-events-none" : "translate-y-0 opacity-100",
+      "fixed top-0 w-full z-50 backdrop-blur-2xl transition-all duration-300 ease-in-out",
+      scrolled 
+        ? "bg-[#EFECE5]/95 dark:bg-[#020305]/95 border-b border-slate-200 dark:border-white/10 shadow-sm" 
+        : "bg-[#EFECE5]/80 dark:bg-[#020305]/80 border-b border-slate-200/80 dark:border-white/5",
       shouldBlurNavbar && "blur-[1px] opacity-40 pointer-events-none"
     )}>
       <div className="flex justify-between items-center px-4 sm:px-8 py-3 sm:py-4 max-w-7xl mx-auto">

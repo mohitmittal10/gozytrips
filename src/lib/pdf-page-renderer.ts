@@ -160,10 +160,10 @@ export async function renderPdfPages(
     container.querySelectorAll<HTMLElement>('[data-pdf-section]').forEach((el) => {
         const id = el.getAttribute('data-pdf-section') || '';
         let label = id;
-        if (id === 'cover') label = '📄 Cover';
-        else if (id === 'daywise-index') label = '📅 Summary Index';
-        else if (id === 'pricing') label = '💰 Pricing';
-        else if (id.startsWith('day-')) label = `📅 Day ${id.replace('day-', '')}`;
+        if (id === 'cover') label = 'Cover';
+        else if (id === 'daywise-index') label = 'Summary Index';
+        else if (id === 'pricing') label = 'Pricing';
+        else if (id.startsWith('day-')) label = `Day ${id.replace('day-', '')}`;
         sectionMetas.push({ id, label, pageIndex: 0 });
     });
 

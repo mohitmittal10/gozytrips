@@ -13,18 +13,19 @@ import {
     MapPin,
     Phone,
     Mail,
+    Train,
 } from "lucide-react";
 
 export const revalidate = 0;
 
 function getServiceIcon(type: string) {
     switch (type) {
-        case "flight": return "✈️";
-        case "cab": return "🚗";
-        case "bus": return "🚌";
-        case "train": return "🚆";
-        case "hotel": return "🏨";
-        default: return "📄";
+        case "flight": return <Plane className="w-4 h-4 inline-block mr-1 text-sky-500" />;
+        case "cab": return <Car className="w-4 h-4 inline-block mr-1 text-emerald-500" />;
+        case "bus": return <Bus className="w-4 h-4 inline-block mr-1 text-amber-500" />;
+        case "train": return <Train className="w-4 h-4 inline-block mr-1 text-indigo-500" />;
+        case "hotel": return <Hotel className="w-4 h-4 inline-block mr-1 text-purple-500" />;
+        default: return <FileText className="w-4 h-4 inline-block mr-1 text-slate-500" />;
     }
 }
 
@@ -114,7 +115,7 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
                             <div>
                                 <p className="text-xs font-semibold text-slate-600 dark:text-zinc-400 uppercase tracking-widest mb-1">Invoice</p>
                                 <h2 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">{booking.title}</h2>
-                                <p className="text-zinc-500 text-sm mt-1 capitalize">{getServiceIcon(booking.service_type)} {booking.service_type} Booking</p>
+                                <p className="text-zinc-500 text-sm mt-1 capitalize inline-flex items-center gap-1.5">{getServiceIcon(booking.service_type)} <span>{booking.service_type} Booking</span></p>
                             </div>
                             <div className="text-right">
                                 <p className="text-xs text-slate-600 dark:text-zinc-400">Reference</p>
@@ -149,13 +150,15 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
                                     <div className="space-y-1">
                                         <p className="font-semibold text-zinc-900 dark:text-zinc-100">{client.name}</p>
                                         {client.email && (
-                                            <p className="text-sm text-zinc-500 flex items-center gap-1">
-                                                <span>📧</span> {client.email}
+                                            <p className="text-sm text-zinc-500 flex items-center gap-1.5">
+                                                <Mail className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                                <span>{client.email}</span>
                                             </p>
                                         )}
                                         {client.phone && (
-                                            <p className="text-sm text-zinc-500 flex items-center gap-1">
-                                                <span>📱</span> {client.phone}
+                                            <p className="text-sm text-zinc-500 flex items-center gap-1.5">
+                                                <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                                <span>{client.phone}</span>
                                             </p>
                                         )}
                                     </div>
@@ -172,10 +175,16 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
                                         {profile?.full_name || profile?.company_name || "Your Travel Agent"}
                                     </p>
                                     {(profile?.business_email || profile?.email) && (
-                                        <p className="text-sm text-zinc-500">📧 {profile?.business_email || profile?.email}</p>
+                                        <p className="text-sm text-zinc-500 flex items-center gap-1.5">
+                                            <Mail className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                            <span>{profile?.business_email || profile?.email}</span>
+                                        </p>
                                     )}
                                     {profile?.business_phone && (
-                                        <p className="text-sm text-zinc-500">📱 {profile.business_phone}</p>
+                                        <p className="text-sm text-zinc-500 flex items-center gap-1.5">
+                                            <Phone className="w-3.5 h-3.5 text-zinc-400 shrink-0" />
+                                            <span>{profile.business_phone}</span>
+                                        </p>
                                     )}
                                 </div>
                             </div>

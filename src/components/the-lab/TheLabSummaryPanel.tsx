@@ -878,7 +878,7 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
               variant="ghost"
               size="sm"
               onClick={onOpenAddClient}
-              className="h-6 text-[10px] text-indigo-400 hover:text-indigo-300 hover:bg-slate-100 dark:hover:bg-slate-100/50 dark:bg-white/5 px-2 rounded-md font-semibold gap-1"
+              className="h-6 text-[10px] text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 hover:bg-slate-100 dark:hover:bg-white/5 px-2 rounded-md font-semibold gap-1"
             >
               <Plus className="w-3 h-3" />
               <span>Add Client</span>
@@ -890,19 +890,19 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
           if (!selectedClient) {
             return (
               <div className="flex flex-col items-center justify-center py-4 text-center">
-                <div className="w-10 h-10 rounded-full bg-slate-50 dark:bg-slate-100/50 dark:bg-white/5 border border-slate-300/60 dark:border-slate-300/60 dark:border-white/10 flex items-center justify-center mb-3">
-                  <span className="material-symbols-outlined text-[18px] text-zinc-600">person_off</span>
+                <div className="w-10 h-10 rounded-full bg-slate-100/80 dark:bg-white/5 border border-slate-300/60 dark:border-white/10 flex items-center justify-center mb-3">
+                  <span className="material-symbols-outlined text-[18px] text-slate-500 dark:text-zinc-500">person_off</span>
                 </div>
-                <p className="text-[11px] font-bold text-zinc-500">No Client Assigned</p>
-                <p className="text-[9px] text-zinc-600 mt-0.5 mb-3">Assign a client from the dropdown above or create a new client.</p>
+                <p className="text-[11px] font-bold text-slate-700 dark:text-zinc-400">No Client Assigned</p>
+                <p className="text-[9px] text-slate-500 dark:text-zinc-500 mt-0.5 mb-3">Assign a client from the dropdown above or create a new client.</p>
                 {onOpenAddClient && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={onOpenAddClient}
-                    className="h-7 text-[10px] bg-slate-100/50 dark:bg-white/5 border-slate-300/60 dark:border-white/10 text-zinc-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-white/10 rounded-lg gap-1.5 font-medium"
+                    className="h-7 text-[10px] bg-slate-100/80 hover:bg-slate-200 border-slate-300/80 text-slate-700 hover:text-slate-900 dark:bg-white/5 dark:border-white/10 dark:text-zinc-300 dark:hover:text-white dark:hover:bg-white/10 rounded-lg gap-1.5 font-medium"
                   >
-                    <Plus className="w-3.5 h-3.5 text-indigo-400" />
+                    <Plus className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                     <span>Create New Client</span>
                   </Button>
                 )}

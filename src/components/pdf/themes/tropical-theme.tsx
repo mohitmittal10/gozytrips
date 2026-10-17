@@ -4,8 +4,9 @@ import type { HotelInfo, FlightInfo, CabInfo, BusInfo } from '@/components/hotel
 import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getAgentInfo, getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDistance, formatDate, renderFormattedText, cleanSummaryText } from '../utils';
-import { calcPricingFromBaseCost } from '@/services/financial';
+import { calcPricingFromBaseCost, calcItemClientPrice } from '@/services/financial';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
+import { PdfHotelIcon, PdfFlightIcon, PdfCabIcon, PdfBusIcon } from '../pdf-icons';
 
 export type TropicalThemeProps = {
     itinerary: TravelItineraryOutput;
@@ -1010,13 +1011,13 @@ export const TropicalTheme = ({
                                             <img src={validImages[0]} alt={hotel.name} crossOrigin="anonymous" />
                                         ) : (
                                             <div style={{ padding: "16px 20px 0 20px", display: "flex", alignItems: "center", gap: "10px" }}>
-                                                <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "var(--emerald-50, #ecfdf5)", border: "1px solid var(--emerald-200, #a7f3d0)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>🏨</div>
+                                                <div style={{ width: "40px", height: "40px", borderRadius: "10px", background: "var(--emerald-50, #ecfdf5)", border: "1px solid var(--emerald-200, #a7f3d0)", display: "flex", alignItems: "center", justifyContent: "center" }}><PdfHotelIcon size={20} color="#059669" /></div>
                                                 <div style={{ flex: 1, height: "2px", background: "linear-gradient(to right, var(--emerald-300, #6ee7b7), transparent)" }} />
                                             </div>
                                         )}
                                         <div className="acc-card-body">
                                             <h4>{hotel.name}</h4>
-                                            <span className="acc-subtitle">🏨 Hotel • {formatHotelStays(hotel.stays)}</span>
+                                            <span className="acc-subtitle" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}><PdfHotelIcon size={14} color="var(--emerald-600, #059669)" /> Hotel • {formatHotelStays(hotel.stays)}</span>
                                             <div className="logistics-details">
                                                 <div className="logistics-row"><span className="label">Check-in</span><span className="value">{hotel.checkIn}</span></div>
                                                 <div className="logistics-row"><span className="label">Check-out</span><span className="value">{hotel.checkOut}</span></div>
@@ -1036,7 +1037,7 @@ export const TropicalTheme = ({
                                     </div>
                                     <div className="acc-card-body">
                                         <h4>{flight.airline} {flight.flightNumber}</h4>
-                                        <span className="acc-subtitle">✈️ Flight • Day {flight.dayIndex + 1}</span>
+                                        <span className="acc-subtitle" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}><PdfFlightIcon size={14} color="var(--emerald-600, #059669)" /> Flight • Day {flight.dayIndex + 1}</span>
                                         <div className="logistics-details">
                                             <div className="logistics-row"><span className="label">Route</span><span className="value">{flight.departureAirport} → {flight.arrivalAirport}</span></div>
                                             <div className="logistics-row"><span className="label">Type</span><span className="value">{flight.flightType === 'connecting' ? 'Connecting' : 'Direct'}</span></div>
@@ -1065,7 +1066,7 @@ export const TropicalTheme = ({
                                     </div>
                                     <div className="acc-card-body">
                                         {cab.vehicleType && <h4>{cab.vehicleType}</h4>}
-                                        <span className="acc-subtitle">🚕 Cab/Transfer • Day {cab.dayIndex + 1}</span>
+                                        <span className="acc-subtitle" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}><PdfCabIcon size={14} color="var(--emerald-600, #059669)" /> Cab/Transfer • Day {cab.dayIndex + 1}</span>
                                         <div className="logistics-details">
                                             {cab.route && <div className="logistics-row"><span className="label">Route</span><span className="value">{cab.route}</span></div>}
                                             {cab.pickupTime && <div className="logistics-row"><span className="label">Pickup</span><span className="value">{cab.pickupTime}</span></div>}
@@ -1084,7 +1085,7 @@ export const TropicalTheme = ({
                                     </div>
                                     <div className="acc-card-body">
                                         {bus.busType && <h4>{bus.busType}</h4>}
-                                        <span className="acc-subtitle">🚌 Bus • Day {bus.dayIndex + 1}</span>
+                                        <span className="acc-subtitle" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}><PdfBusIcon size={14} color="var(--emerald-600, #059669)" /> Bus • Day {bus.dayIndex + 1}</span>
                                         <div className="logistics-details">
                                             {bus.route && <div className="logistics-row"><span className="label">Route</span><span className="value">{bus.route}</span></div>}
                                             {bus.departureTime && <div className="logistics-row"><span className="label">Departure</span><span className="value">{bus.departureTime}</span></div>}
@@ -1122,9 +1123,7 @@ export const TropicalTheme = ({
                                     <tbody>
                                         {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
                                             pricing.manualOptions.map((item: any, idx: number) => {
-                                                const qty = item.type === 'per-person' ? totalPax : 1;
-                                                const rate = Number(item.amount) || 0;
-                                                const amount = qty * rate;
+                                                const { qty, rate, amount } = calcItemClientPrice(item, totalPax, pricing);
                                                 return (
                                                     <tr key={item.id || idx}>
                                                         <td>{item.name} {item.type === 'per-person' ? `(Per Person)` : ''}</td>
@@ -1147,24 +1146,19 @@ export const TropicalTheme = ({
                             </div>
 
                             <div className="totals">
-                                {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
-                                    <>
-                                        <div className="total-row"><span>Subtotal (Base Cost):</span><span>{formatCurrency(resolvedBaseCost, currency)}</span></div>
-                                        {markupAmount > 0 && (
-                                            <div className="total-row"><span>Service Fee / Markup:</span><span>+ {formatCurrency(markupAmount, currency)}</span></div>
-                                        )}
-                                        {taxAmount > 0 && (
-                                            <div className="total-row"><span>Taxes & Fees ({pricing.taxPercentage}%):</span><span>+ {formatCurrency(taxAmount, currency)}</span></div>
-                                        )}
-                                    </>
-                                ) : (
-                                    <>
-                                        <div className="total-row"><span>Subtotal:</span><span>{formatCurrency(costWithMarkup, currency)}</span></div>
-                                        <div className="total-row"><span>Taxes & Fees:</span><span>{formatCurrency(taxAmount, currency)}</span></div>
-                                    </>
-                                )}
+                                <div className="total-row">
+                                    <span>Subtotal:</span>
+                                    <span>{formatCurrency(costWithMarkup, currency)}</span>
+                                </div>
+                                <div className="total-row">
+                                    <span>Taxes & Fees{pricing?.taxPercentage ? ` (${pricing.taxPercentage}%)` : ''}:</span>
+                                    <span>{taxAmount > 0 ? `+ ${formatCurrency(taxAmount, currency)}` : formatCurrency(taxAmount, currency)}</span>
+                                </div>
                                 <div className="total-divider"></div>
-                                <div className="total-grand"><span>Grand Total:</span><span>{formatCurrency(calculatedFinalTotal, currency)}</span></div>
+                                <div className="total-grand">
+                                    <span>Grand Total:</span>
+                                    <span>{formatCurrency(calculatedFinalTotal, currency)}</span>
+                                </div>
                             </div>
 
                             {/* Payment Schedule */}

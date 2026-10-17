@@ -1,6 +1,7 @@
 import React from 'react';
 import type { HotelInfo, FlightInfo } from '@/components/hotel-flight-editor';
 import { glassStyles } from './styles';
+import { PdfFlightIcon, PdfPinIcon } from './pdf-icons';
 
 export type PdfLogisticsBlockStyle = {
     useGlass?: boolean;
@@ -28,7 +29,7 @@ export const PdfFlightBlock = ({ flight, accentColor, textColor, styleVariant }:
             border: styleVariant.border,
         }}
     >
-        <span style={{ fontSize: '18px' }}>✈️</span>
+        <PdfFlightIcon size={18} color={styleVariant.titleColor || accentColor} />
         <div style={{ flex: 1 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span style={{ fontWeight: 'bold', color: styleVariant.titleColor || accentColor, fontSize: '13px' }}>{flight.airline} {flight.flightNumber}</span>
@@ -111,8 +112,9 @@ export const PdfHotelBlock = ({ hotel, accentColor, textColor, styleVariant }: {
                             <span style={{ fontSize: '14px', letterSpacing: '2px', color: '#f59e0b' }}>{'★'.repeat(hotel.starRating)}{'☆'.repeat(5 - hotel.starRating)}</span>
                         </h4>
                         {hotel.address && (
-                            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: textColor, opacity: 0.8 }}>
-                                📍 {hotel.address}
+                            <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: textColor, opacity: 0.8, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <PdfPinIcon size={13} color={textColor} />
+                                <span>{hotel.address}</span>
                             </p>
                         )}
                     </div>

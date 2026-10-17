@@ -6,7 +6,7 @@ import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDist
 import { getThematicBackground, glassStyles } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
-import { calcPricingFromBaseCost } from '@/services/financial';
+import { calcPricingFromBaseCost, calcItemClientPrice } from '@/services/financial';
 
 const parseList = (text?: any): string[] => {
     if (!text) return [];
@@ -361,9 +361,7 @@ export const EditorialTheme = ({
                                 <tbody>
                                     {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
                                         pricing.manualOptions.map((item: any, idx: number) => {
-                                            const qty = item.type === 'per-person' ? totalPax : 1;
-                                            const rate = Number(item.amount) || 0;
-                                            const amount = qty * rate;
+                                            const { qty, rate, amount } = calcItemClientPrice(item, totalPax, pricing);
                                             return (
                                                 <tr key={item.id || idx}>
                                                     <td>{item.name} {item.type === 'per-person' ? `(Per Person)` : ''}</td>
@@ -385,24 +383,19 @@ export const EditorialTheme = ({
                             </table>
                         </div>
                         <div style={{ borderTop: "1px solid rgba(15,23,42,0.1)", paddingTop: "20px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-end" }}>
-                            {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
-                                <>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#475569" }}><span>Subtotal (Base Cost)</span><span style={{ fontWeight: 600, color: "#1e293b" }}>{formatCurrency(resolvedBaseCost, currency)}</span></div>
-                                    {markupAmount > 0 && (
-                                        <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#475569" }}><span>Service Fee / Markup</span><span style={{ fontWeight: 600, color: "#1e293b" }}>+ {formatCurrency(markupAmount, currency)}</span></div>
-                                    )}
-                                    {taxAmount > 0 && (
-                                        <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#475569" }}><span>Taxes & Fees ({pricing.taxPercentage}%)</span><span style={{ fontWeight: 600, color: "#1e293b" }}>+ {formatCurrency(taxAmount, currency)}</span></div>
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#475569" }}><span>Subtotal</span><span style={{ fontWeight: 600, color: "#1e293b" }}>{formatCurrency(costWithMarkup, currency)}</span></div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#475569" }}><span>Taxes & Fees</span><span style={{ fontWeight: 600, color: "#1e293b" }}>{formatCurrency(taxAmount, currency)}</span></div>
-                                </>
-                            )}
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#475569" }}>
+                                <span>Subtotal</span>
+                                <span style={{ fontWeight: 600, color: "#1e293b" }}>{formatCurrency(costWithMarkup, currency)}</span>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "14px", color: "#475569" }}>
+                                <span>Taxes & Fees{pricing?.taxPercentage ? ` (${pricing.taxPercentage}%)` : ''}</span>
+                                <span style={{ fontWeight: 600, color: "#1e293b" }}>{taxAmount > 0 ? `+ ${formatCurrency(taxAmount, currency)}` : formatCurrency(taxAmount, currency)}</span>
+                            </div>
                             <div style={{ width: "260px", height: "1px", background: "rgba(15,23,42,0.1)", margin: "4px 0" }}></div>
-                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "18px", color: gold, fontWeight: 700 }}><span>Total Valuation</span><span>{formatCurrency(calculatedFinalTotal, currency)}</span></div>
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "18px", color: gold, fontWeight: 700 }}>
+                                <span>Total Valuation</span>
+                                <span>{formatCurrency(calculatedFinalTotal, currency)}</span>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -6,7 +6,8 @@ import { getTotalBudget, getDayImage, formatTitleCase, formatDistance, formatDat
 import { getThematicBackground, glassStyles } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
-import { calcPricingFromBaseCost } from '@/services/financial';
+import { calcPricingFromBaseCost, calcItemClientPrice } from '@/services/financial';
+import { PdfHotelIcon, PdfFlightIcon, PdfCabIcon, PdfBusIcon, PdfCheckIcon, PdfCrossIcon } from '../pdf-icons';
 
 const parseList = (text?: any): string[] => {
     if (!text) return [];
@@ -257,7 +258,9 @@ export const CorporateTheme = ({
                                     {hasPhoto ? (
                                         <img src={validImages[0]} alt={h.name} style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} crossOrigin="anonymous" />
                                     ) : (
-                                        <div style={{ width: "44px", height: "44px", background: `${brandColor}12`, borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0 }}>🏨</div>
+                                        <div style={{ width: "44px", height: "44px", background: `${brandColor}12`, borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            <PdfHotelIcon size={22} color={brandColor} />
+                                        </div>
                                     )}
                                     <div style={{ flex: 1 }}>
                                         <div style={{ color: brandColor, fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>
@@ -275,7 +278,9 @@ export const CorporateTheme = ({
                         })}
                         {flights.map((f, i) => (
                             <div key={`flight-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "rgba(255,255,255,0.7)", borderRadius: "8px" }}>
-                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.04)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", borderRadius: "4px" }}>✈️</div>
+                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.04)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "4px" }}>
+                                    <PdfFlightIcon size={36} color={brandColor} />
+                                </div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: brandColor, fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Flight • Day {f.dayIndex + 1}</div>
                                     <h4 style={{ margin: "0 0 10px 0", fontSize: "15px", color: "#0f172a", fontWeight: 700 }}>{f.airline} {f.flightNumber}</h4>
@@ -299,7 +304,9 @@ export const CorporateTheme = ({
                         ))}
                         {cabs.map((c, i) => (
                             <div key={`cab-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "rgba(255,255,255,0.7)", borderRadius: "8px" }}>
-                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.04)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", borderRadius: "4px" }}>🚕</div>
+                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.04)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "4px" }}>
+                                    <PdfCabIcon size={36} color={brandColor} />
+                                </div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: brandColor, fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Transfer • Day {c.dayIndex + 1}</div>
                                     {c.vehicleType && <h4 style={{ margin: "0 0 10px 0", fontSize: "15px", color: "#0f172a", fontWeight: 700 }}>{c.vehicleType}</h4>}
@@ -313,7 +320,9 @@ export const CorporateTheme = ({
                         ))}
                         {buses.map((b, i) => (
                             <div key={`bus-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "rgba(255,255,255,0.7)", borderRadius: "8px" }}>
-                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.04)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", borderRadius: "4px" }}>🚌</div>
+                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.04)", display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "4px" }}>
+                                    <PdfBusIcon size={36} color={brandColor} />
+                                </div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: brandColor, fontSize: "10px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: "4px" }}>Bus • Day {b.dayIndex + 1}</div>
                                     {b.busType && <h4 style={{ margin: "0 0 10px 0", fontSize: "15px", color: "#0f172a", fontWeight: 700 }}>{b.busType}</h4>}
@@ -340,7 +349,10 @@ export const CorporateTheme = ({
                                 </div>
                                 <ul style={{ margin: 0, padding: "20px", listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
                                     {inclusionsList.map((inc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#334155", fontWeight: 500 }}><span style={{ color: brandColor }}>✓</span> <span data-field={`inclusions[${i}]`}>{renderFormattedText(inc)}</span></li>
+                                        <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "12px", fontSize: "13px", color: "#334155", fontWeight: 500 }}>
+                                            <PdfCheckIcon size={14} color={brandColor} style={{ marginTop: "2px", flexShrink: 0 }} />
+                                            <span data-field={`inclusions[${i}]`}>{renderFormattedText(inc)}</span>
+                                        </li>
                                     ))}
                                 </ul>
                             </div>
@@ -352,7 +364,10 @@ export const CorporateTheme = ({
                                 </div>
                                 <ul style={{ margin: 0, padding: "20px", listStyle: "none", display: "flex", flexDirection: "column", gap: "12px" }}>
                                     {exclusionsList.map((exc, i) => (
-                                        <li key={i} style={{ display: "flex", gap: "12px", fontSize: "13px", color: "#475569", fontWeight: 500 }}><span style={{ color: "#94a3b8" }}>✗</span> <span data-field={`exclusions[${i}]`}>{renderFormattedText(exc)}</span></li>
+                                        <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: "12px", fontSize: "13px", color: "#475569", fontWeight: 500 }}>
+                                            <PdfCrossIcon size={14} color="#94a3b8" style={{ marginTop: "2px", flexShrink: 0 }} />
+                                            <span data-field={`exclusions[${i}]`}>{renderFormattedText(exc)}</span>
+                                        </li>
                                     ))}
                                 </ul>
                             </div>
@@ -385,9 +400,7 @@ export const CorporateTheme = ({
                                 <tbody>
                                     {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
                                         pricing.manualOptions.map((item: any, idx: number) => {
-                                            const qty = item.type === 'per-person' ? totalPax : 1;
-                                            const rate = Number(item.amount) || 0;
-                                            const amount = qty * rate;
+                                            const { qty, rate, amount } = calcItemClientPrice(item, totalPax, pricing);
                                             return (
                                                 <tr key={item.id || idx}>
                                                     <td>{item.name} {item.type === 'per-person' ? `(Per Person)` : ''}</td>
@@ -410,24 +423,19 @@ export const CorporateTheme = ({
                         </div>
 
                         <div style={{ background: "rgba(15, 23, 42, 0.02)", border: "1px solid rgba(148,163,184,0.2)", borderTop: "none", padding: "20px 24px", display: "flex", flexDirection: "column", gap: "10px", alignItems: "flex-end", borderRadius: "0 0 8px 8px", marginTop: "-40px", marginBottom: "40px" }}>
-                            {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
-                                <>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#475569" }}><span>Subtotal (Base Cost):</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{formatCurrency(resolvedBaseCost, currency)}</span></div>
-                                    {markupAmount > 0 && (
-                                        <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#475569" }}><span>Service Fee / Markup:</span><span style={{ fontWeight: 600, color: "#0f172a" }}>+ {formatCurrency(markupAmount, currency)}</span></div>
-                                    )}
-                                    {taxAmount > 0 && (
-                                        <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#475569" }}><span>Taxes & Fees ({pricing.taxPercentage}%):</span><span style={{ fontWeight: 600, color: "#0f172a" }}>+ {formatCurrency(taxAmount, currency)}</span></div>
-                                    )}
-                                </>
-                            ) : (
-                                <>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#475569" }}><span>Subtotal:</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{formatCurrency(costWithMarkup, currency)}</span></div>
-                                    <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#475569" }}><span>Taxes & Fees:</span><span style={{ fontWeight: 600, color: "#0f172a" }}>{formatCurrency(taxAmount, currency)}</span></div>
-                                </>
-                            )}
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#475569" }}>
+                                <span>Subtotal:</span>
+                                <span style={{ fontWeight: 600, color: "#0f172a" }}>{formatCurrency(costWithMarkup, currency)}</span>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "13px", color: "#475569" }}>
+                                <span>Taxes & Fees{pricing?.taxPercentage ? ` (${pricing.taxPercentage}%)` : ''}:</span>
+                                <span style={{ fontWeight: 600, color: "#0f172a" }}>{taxAmount > 0 ? `+ ${formatCurrency(taxAmount, currency)}` : formatCurrency(taxAmount, currency)}</span>
+                            </div>
                             <div style={{ width: "320px", height: "1px", background: "rgba(148,163,184,0.3)", margin: "4px 0" }}></div>
-                            <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "16px", color: brandColor, fontWeight: 800 }}><span>Grand Total:</span><span style={{ fontFamily: "var(--font-mono)" }}>{formatCurrency(calculatedFinalTotal, currency)}</span></div>
+                            <div style={{ display: "flex", justifyContent: "space-between", width: "320px", fontSize: "16px", color: brandColor, fontWeight: 800 }}>
+                                <span>Grand Total:</span>
+                                <span style={{ fontFamily: "var(--font-mono)" }}>{formatCurrency(calculatedFinalTotal, currency)}</span>
+                            </div>
                         </div>
 
                         {/* Payment Schedule — full width */}

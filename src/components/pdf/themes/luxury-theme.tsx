@@ -4,6 +4,7 @@ import { DEFAULT_CURRENCY } from '@/types/pricing';
 import { getCurrencySymbol, formatCurrency } from '@/lib/utils/currency';
 import { getAgentInfo, getCoverImage, getDayImage, formatDate, formatTitleCase, renderFormattedText } from '../utils';
 import { calcPricingFromBaseCost, calcBaseCost, extractTripCost } from '@/services/financial';
+import { PdfPhoneIcon, PdfMailIcon, PdfGlobeIcon, PdfPinIcon } from '../pdf-icons';
 
 const parseList = (text?: any): string[] => {
     if (!text) return [];
@@ -1211,25 +1212,25 @@ export const LuxuryTheme = ({
                             <div className="contact-list">
                                 {agentEmail && (
                                     <div className="contact-row">
-                                        <span className="icon">✉</span>
+                                        <span className="icon"><PdfMailIcon size={12} color="#c9a96e" /></span>
                                         <span data-field="agency.email">{agentEmail}</span>
                                     </div>
                                 )}
                                 {agentPhone && (
                                     <div className="contact-row">
-                                        <span className="icon">📱</span>
+                                        <span className="icon"><PdfPhoneIcon size={12} color="#c9a96e" /></span>
                                         <span data-field="agency.phone">{agentPhone}</span>
                                     </div>
                                 )}
                                 {agentWebsite && (
                                     <div className="contact-row">
-                                        <span className="icon">🌐</span>
+                                        <span className="icon"><PdfGlobeIcon size={12} color="#c9a96e" /></span>
                                         <span data-field="agency.website">{agentWebsite}</span>
                                     </div>
                                 )}
                                 {agentAddress && (
                                     <div className="contact-row">
-                                        <span className="icon">📍</span>
+                                        <span className="icon"><PdfPinIcon size={12} color="#c9a96e" /></span>
                                         <span data-field="agency.address">{agentAddress}</span>
                                     </div>
                                 )}
@@ -1473,7 +1474,7 @@ export const LuxuryTheme = ({
                             <div className="incl-grid">
                                 {inclusionsList.length > 0 && (
                                     <div className="incl-col included">
-                                        <div className="col-title">✓ Included</div>
+                                        <div className="col-title">Included</div>
                                         {inclusionsList.map((inc, i) => (
                                             <div className="incl-row" key={i}>
                                                 <span className="bullet">◆</span>
@@ -1485,7 +1486,7 @@ export const LuxuryTheme = ({
 
                                 {exclusionsList.length > 0 && (
                                     <div className="incl-col excluded">
-                                        <div className="col-title">✕ Excluded</div>
+                                        <div className="col-title">Excluded</div>
                                         {exclusionsList.map((exc, i) => (
                                             <div className="incl-row" key={i}>
                                                 <span className="bullet">◆</span>
@@ -1561,13 +1562,13 @@ export const LuxuryTheme = ({
                                         {pricing?.customPackageCost || pricing?.packageCost || formatCurrency(costWithMarkup, currency)}
                                     </span>
                                 </div>
-                                {(taxAmount > 0 || pricing?.customTaxesAmount || pricing?.taxesAmount) && (
+                                {(taxAmount > 0 || pricing?.customTaxesAmount || pricing?.taxesAmount || taxRate > 0) && (
                                     <div className="cost-line">
                                         <span>
-                                            {pricing?.taxesLabel || `Taxes & Fees (${pricing?.taxRate || 0}%)`}
+                                            {pricing?.taxesLabel || `Taxes & Fees (${taxRate}%)`}
                                         </span>
                                         <span>
-                                            {pricing?.customTaxesAmount || pricing?.taxesAmount || formatCurrency(taxAmount, currency)}
+                                            {pricing?.customTaxesAmount || pricing?.taxesAmount || (taxAmount > 0 ? `+ ${formatCurrency(taxAmount, currency)}` : formatCurrency(taxAmount, currency))}
                                         </span>
                                     </div>
                                 )}

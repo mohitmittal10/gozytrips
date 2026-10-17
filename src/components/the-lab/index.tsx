@@ -742,7 +742,7 @@ export default function TheLab() {
       }
 
       toast({
-        title: "Itinerary Regenerated! ✨",
+        title: "Itinerary Regenerated",
         description: "Your itinerary has been updated with the new requirements.",
       });
 
@@ -1035,6 +1035,7 @@ export default function TheLab() {
                     </div>
                   )}
                   <TheLabTabContent
+                    currentTripId={currentTripId}
                     activeLabTab={activeLabTab}
                     isGenerating={isGenerating}
                     itinerary={itinerary}

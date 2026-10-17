@@ -5,7 +5,7 @@ import {
   X, MapPin, Calendar, Users, Zap, Loader2, ExternalLink, Clock,
   DollarSign, MessageSquare, Plane, Train, Bus, Car, Ship,
   Send, AlertCircle, CheckCircle2, Link2, Edit3, Save, RefreshCw,
-  Compass, Upload, Eye, ChevronDown
+  Compass, Upload, Eye, ChevronDown, CheckCircle, XCircle, Sun
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -24,13 +24,13 @@ const METHOD_ICONS: Record<string, React.ReactNode> = {
 };
 
 const TRIP_TYPE_LABELS: Record<string, string> = {
-  adventurous: "🏔 Adventure",
-  scenic:      "📷 Scenic",
-  relaxed:     "🌴 Relaxed",
-  cultural:    "🏛 Cultural",
-  romantic:    "❤️ Romantic",
-  family:      "👨‍👩‍👧 Family",
-  foodie:      "🍜 Foodie",
+  adventurous: "Adventure",
+  scenic:      "Scenic",
+  relaxed:     "Relaxed",
+  cultural:    "Cultural",
+  romantic:    "Romantic",
+  family:      "Family",
+  foodie:      "Foodie",
 };
 
 const WORKFLOW_LABELS: Record<string, { label: string; cls: string }> = {
@@ -420,17 +420,17 @@ function AgentControlsPanel({ response, formId, onUpdated }: { response: Respons
 
         {/* Dropdown list */}
         {showPicker && (
-          <div className="mt-1 rounded-xl border border-slate-300 dark:border-white/10 bg-[#0e0e18] overflow-hidden shadow-2xl">
+          <div className="mt-1 rounded-xl border border-slate-300 dark:border-white/10 bg-white dark:bg-[#0e0e18] overflow-hidden shadow-2xl">
             {loadingItineraries ? (
               <div className="flex items-center justify-center py-6">
-                <Loader2 className="w-4 h-4 text-purple-400 animate-spin" />
+                <Loader2 className="w-4 h-4 text-purple-600 dark:text-purple-400 animate-spin" />
               </div>
             ) : labItineraries.length === 0 ? (
               <div className="px-4 py-6 text-center text-xs text-slate-600 dark:text-zinc-400 font-medium">
                 No itineraries found in The Lab.
               </div>
             ) : (
-              <div className="max-h-52 overflow-y-auto divide-y divide-white/5">
+              <div className="max-h-52 overflow-y-auto divide-y divide-slate-100 dark:divide-white/5">
                 {labItineraries.map((itin) => (
                   <button
                     key={itin.id}
@@ -468,8 +468,9 @@ function AgentControlsPanel({ response, formId, onUpdated }: { response: Respons
           </div>
         )}
         {!isPushed && selectedItinerary && (
-          <p className="mt-2 text-[10px] text-amber-400/80">
-            ⚠ Itinerary selected but not yet pushed to client.
+          <p className="mt-2 text-[10px] text-amber-400/80 flex items-center gap-1.5">
+            <AlertCircle className="w-3 h-3 shrink-0" />
+            <span>Itinerary selected but not yet pushed to client.</span>
           </p>
         )}
 
@@ -684,7 +685,7 @@ export function ResponseDetailSheet({ response, formId, onClose, onConverted, on
                 <p className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-zinc-400 mb-3">Preferences</p>
                 {response.trip_type && (
                   <div className="flex gap-3">
-                    <div className="pt-0.5 text-primary shrink-0">🎯</div>
+                    <div className="pt-0.5 text-primary shrink-0"><Compass className="w-3.5 h-3.5" /></div>
                     <div>
                       <p className="text-[10px] text-slate-600 dark:text-zinc-400 uppercase tracking-wider font-semibold">Trip Style</p>
                       <p className="text-sm text-slate-700 dark:text-zinc-300 mt-0.5 font-medium">{TRIP_TYPE_LABELS[response.trip_type] || response.trip_type}</p>
@@ -706,13 +707,13 @@ export function ResponseDetailSheet({ response, formId, onClose, onConverted, on
                     </div>
                   </div>
                 )}
-                <Field label="Must Include" value={response.must_include} icon={<span className="text-xs">✅</span>} />
-                <Field label="Things to Avoid" value={response.avoid} icon={<span className="text-xs">🚫</span>} />
+                <Field label="Must Include" value={response.must_include} icon={<CheckCircle className="w-3.5 h-3.5 text-emerald-500" />} />
+                <Field label="Things to Avoid" value={response.avoid} icon={<XCircle className="w-3.5 h-3.5 text-rose-500" />} />
                 {response.travel_time_preference && response.travel_time_preference !== "no_preference" && (
                   <Field label="Timing Preference" value={response.travel_time_preference.replace(/_/g, " ")} icon={<Clock className="w-3.5 h-3.5" />} />
                 )}
                 {response.leisure_time && (
-                  <Field label="Leisure Time" value="Requested a free day" icon={<span className="text-xs">🏖</span>} />
+                  <Field label="Leisure Time" value="Requested a free day" icon={<Sun className="w-3.5 h-3.5 text-amber-500" />} />
                 )}
               </div>
 
@@ -805,7 +806,7 @@ export function ResponseDetailSheet({ response, formId, onClose, onConverted, on
             {response.status === "converted" && response.converted_itinerary_id && (
               <div className="shrink-0 p-5 border-t border-white/5 space-y-3">
                 <div className="flex items-center justify-center gap-2 text-emerald-600 dark:text-emerald-400 text-sm font-semibold">
-                  <span className="w-5 h-5 rounded-full bg-emerald-500/20 flex items-center justify-center">✓</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   Already converted to an itinerary
                 </div>
                 <button

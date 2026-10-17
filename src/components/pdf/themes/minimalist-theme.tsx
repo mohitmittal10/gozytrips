@@ -6,7 +6,8 @@ import { getTotalBudget, getCoverImage, getDayImage, formatTitleCase, formatDist
 import { getThematicBackground } from '../styles';
 import { PdfDaywiseIndex } from '../pages';
 import { groupHotelsByName, formatHotelStays } from '../shared-blocks';
-import { calcPricingFromBaseCost } from '@/services/financial';
+import { calcPricingFromBaseCost, calcItemClientPrice } from '@/services/financial';
+import { PdfHotelIcon, PdfFlightIcon, PdfCabIcon, PdfBusIcon, PdfPhoneIcon, PdfMailIcon, PdfGlobeIcon } from '../pdf-icons';
 
 const parseList = (text?: any): string[] => {
     if (!text) return [];
@@ -148,7 +149,7 @@ export const MinimalistTheme = ({
                         {/* Client Details Box */}
                         {clientName ? (
                             <div style={{ padding: "24px", background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.24)", borderTop: `3px solid ${accent}`, borderRadius: "8px", boxShadow: "0 8px 24px rgba(15,23,42,0.04)" }}>
-                                <p style={{ margin: "0 0 14px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2.5px", color: accent, fontWeight: 800 }}>👤 Client Details</p>
+                                <p style={{ margin: "0 0 14px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2.5px", color: accent, fontWeight: 800 }}>Client Details</p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                                     <div>
                                         <p style={{ margin: "0 0 2px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "1.5px", color: "#64748b", fontWeight: 700 }}>Client Name</p>
@@ -179,12 +180,12 @@ export const MinimalistTheme = ({
                         {/* Agency Details Box */}
                         {(agent.companyName || agent.agentName || agent.agentPhone || agent.agentEmail || agent.agentWebsite) ? (
                             <div style={{ padding: "24px", background: "rgba(255,255,255,0.7)", border: "1px solid rgba(148,163,184,0.24)", borderTop: "3px solid #3b82f6", borderRadius: "8px", boxShadow: "0 8px 24px rgba(15,23,42,0.04)" }}>
-                                <p style={{ margin: "0 0 14px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2.5px", color: "#3b82f6", fontWeight: 800 }}>🏢 Agency Details</p>
+                                <p style={{ margin: "0 0 14px 0", fontSize: "10px", textTransform: "uppercase", letterSpacing: "2.5px", color: "#3b82f6", fontWeight: 800 }}>Agency Details</p>
                                 {agent.companyName && <p style={{ fontWeight: 800, color: "#0f172a", fontSize: "16px", margin: "0 0 4px 0", fontFamily: "'Outfit', sans-serif" }}>{agent.companyName}</p>}
                                 {agent.agentName && <p style={{ fontSize: "12px", color: "#64748b", margin: "0 0 10px 0", fontWeight: 600 }}>Consultant: <strong style={{ color: "#0f172a" }}>{agent.agentName}</strong></p>}
-                                {agent.agentPhone && <p style={{ margin: "2px 0", fontSize: "12px", color: "#475569" }}>📞 {agent.agentPhone}</p>}
-                                {agent.agentEmail && <p style={{ margin: "2px 0", fontSize: "12px", color: "#475569" }}>✉️ {agent.agentEmail}</p>}
-                                {agent.agentWebsite && <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: accent, fontWeight: 700, textDecoration: "underline" }}>🌐 {agent.agentWebsite}</p>}
+                                {agent.agentPhone && <p style={{ margin: "4px 0", fontSize: "12px", color: "#475569", display: "flex", alignItems: "center", gap: "6px" }}><PdfPhoneIcon size={12} color="#475569" /> <span>{agent.agentPhone}</span></p>}
+                                {agent.agentEmail && <p style={{ margin: "4px 0", fontSize: "12px", color: "#475569", display: "flex", alignItems: "center", gap: "6px" }}><PdfMailIcon size={12} color="#475569" /> <span>{agent.agentEmail}</span></p>}
+                                {agent.agentWebsite && <p style={{ margin: "4px 0 0 0", fontSize: "12px", color: accent, fontWeight: 700, textDecoration: "underline", display: "flex", alignItems: "center", gap: "6px" }}><PdfGlobeIcon size={12} color={accent} /> <span>{agent.agentWebsite}</span></p>}
                             </div>
                         ) : null}
                     </div>
@@ -287,7 +288,9 @@ export const MinimalistTheme = ({
                                     {hasPhoto ? (
                                         <img src={validImages[0]} alt={h.name} style={{ width: "80px", height: "80px", objectFit: "cover", flexShrink: 0 }} crossOrigin="anonymous" />
                                     ) : (
-                                        <div style={{ width: "44px", height: "44px", background: "rgba(15,23,42,0.03)", border: "1px solid rgba(148,163,184,0.2)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0 }}>🏨</div>
+                                        <div style={{ width: "44px", height: "44px", background: "rgba(15,23,42,0.03)", border: "1px solid rgba(148,163,184,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            <PdfHotelIcon size={22} color={accent} />
+                                        </div>
                                     )}
                                     <div style={{ flex: 1 }}>
                                         <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "4px" }}>
@@ -305,7 +308,9 @@ export const MinimalistTheme = ({
                         })}
                         {flights.map((f, i) => (
                             <div key={`flight-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "white" }}>
-                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>✈️</div>
+                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <PdfFlightIcon size={36} color={accent} />
+                                </div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "4px" }}>Flight • Day {f.dayIndex + 1}</div>
                                     <h4 style={{ margin: "0 0 10px 0", fontSize: "16px", color: "#0f172a", fontWeight: 700 }}>{f.airline} {f.flightNumber}</h4>
@@ -329,7 +334,9 @@ export const MinimalistTheme = ({
                         ))}
                         {cabs.map((c, i) => (
                             <div key={`cab-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "white" }}>
-                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>🚕</div>
+                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <PdfCabIcon size={36} color={accent} />
+                                </div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "4px" }}>Transfer • Day {c.dayIndex + 1}</div>
                                     {c.vehicleType && <h4 style={{ margin: "0 0 10px 0", fontSize: "16px", color: "#0f172a", fontWeight: 700 }}>{c.vehicleType}</h4>}
@@ -343,7 +350,9 @@ export const MinimalistTheme = ({
                         ))}
                         {buses.map((b, i) => (
                             <div key={`bus-${i}`} style={{ display: "flex", gap: "20px", border: "1px solid rgba(148,163,184,0.2)", padding: "16px", background: "white" }}>
-                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px" }}>🚌</div>
+                                <div style={{ width: "80px", height: "80px", background: "rgba(15,23,42,0.03)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <PdfBusIcon size={36} color={accent} />
+                                </div>
                                 <div style={{ flex: 1 }}>
                                     <div style={{ color: accent, fontSize: "9px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "2px", marginBottom: "4px" }}>Bus • Day {b.dayIndex + 1}</div>
                                     {b.busType && <h4 style={{ margin: "0 0 10px 0", fontSize: "16px", color: "#0f172a", fontWeight: 700 }}>{b.busType}</h4>}
@@ -419,9 +428,7 @@ export const MinimalistTheme = ({
                         <tbody>
                             {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
                                 pricing.manualOptions.map((item: any, idx: number) => {
-                                    const qty = item.type === 'per-person' ? totalPax : 1;
-                                    const rate = Number(item.amount) || 0;
-                                    const amount = qty * rate;
+                                    const { qty, rate, amount } = calcItemClientPrice(item, totalPax, pricing);
                                     return (
                                         <tr key={item.id || idx}>
                                             <td>{item.name} {item.type === 'per-person' ? `(Per Person)` : ''}</td>
@@ -443,24 +450,19 @@ export const MinimalistTheme = ({
                     </table>
                 </div>
                 <div style={{ background: "white", borderTop: "1px solid rgba(148,163,184,0.2)", padding: "20px 16px", display: "flex", flexDirection: "column", gap: "8px", alignItems: "flex-end", marginBottom: "40px" }}>
-                    {pricing?.manualOptions && pricing.manualOptions.length > 0 ? (
-                        <>
-                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569" }}><span>Subtotal (Base Cost)</span><span>{formatCurrency(resolvedBaseCost, currency)}</span></div>
-                            {markupAmount > 0 && (
-                                <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569", marginTop: "4px" }}><span>Service Fee / Markup</span><span>+ {formatCurrency(markupAmount, currency)}</span></div>
-                            )}
-                            {taxAmount > 0 && (
-                                <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569", marginTop: "4px" }}><span>Taxes & Fees ({pricing.taxPercentage}%)</span><span>+ {formatCurrency(taxAmount, currency)}</span></div>
-                            )}
-                        </>
-                    ) : (
-                        <>
-                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569" }}><span>Subtotal</span><span>{formatCurrency(costWithMarkup, currency)}</span></div>
-                            <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569", marginTop: "4px" }}><span>Taxes & Fees</span><span>{formatCurrency(taxAmount, currency)}</span></div>
-                        </>
-                    )}
+                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569" }}>
+                        <span>Subtotal</span>
+                        <span>{formatCurrency(costWithMarkup, currency)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "12px", color: "#475569", marginTop: "4px" }}>
+                        <span>Taxes & Fees{pricing?.taxPercentage ? ` (${pricing.taxPercentage}%)` : ''}</span>
+                        <span>{taxAmount > 0 ? `+ ${formatCurrency(taxAmount, currency)}` : formatCurrency(taxAmount, currency)}</span>
+                    </div>
                     <div style={{ width: "260px", height: "1px", background: "rgba(148,163,184,0.2)", margin: "6px 0" }}></div>
-                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "18px", color: accent, fontWeight: 800, fontFamily: "var(--font-mono)" }}><span>Grand Total</span><span>{formatCurrency(calculatedFinalTotal, currency)}</span></div>
+                    <div style={{ display: "flex", justifyContent: "space-between", width: "260px", fontSize: "18px", color: accent, fontWeight: 800, fontFamily: "var(--font-mono)" }}>
+                        <span>Grand Total</span>
+                        <span>{formatCurrency(calculatedFinalTotal, currency)}</span>
+                    </div>
                 </div>
 
                 {/* Payment Schedule — full width */}

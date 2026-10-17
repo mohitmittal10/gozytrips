@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import {
-  Hotel, Plane, Plus, Minus, Trash2, Star, ChevronDown, X, Camera, Car, Bus, Minimize2, Maximize2, AlertCircle, AlertTriangle, Calculator, Receipt, Coins, DollarSign, CheckCircle2
+  Hotel, Plane, Plus, Minus, Trash2, Star, ChevronDown, X, Camera, Car, Bus, Minimize2, Maximize2, AlertCircle, AlertTriangle, Calculator, Receipt, Coins, DollarSign, CheckCircle2, Check
 } from "lucide-react";
 import { CustomTabs } from "@/components/ui/custom-tabs";
 import {
@@ -321,7 +321,7 @@ function DayMultiPicker({ selectedDays, onChange, totalDays, label = "Select Day
               {isOccupied && (
                 <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-amber-500/30 text-[7px] font-black text-amber-300">!</span>
               )}
-              {isSelected && <span className="text-white/50 text-[9px]">✓</span>}
+              {isSelected && <Check className="w-2.5 h-2.5 text-current opacity-70" />}
             </button>
           );
         })}
@@ -1133,7 +1133,7 @@ export default function HotelFlightEditor({
       return {
         id: h.id,
         category: 'Hotel',
-        icon: <Hotel className="w-3.5 h-3.5 text-amber-400" />,
+        icon: <Hotel className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />,
         name: h.name || 'Untitled Hotel',
         subtitle: `${days.length} Day(s)${nightsCount ? ` • ${nightsCount} Night(s)` : ''}`,
         costType: h.costType || 'per-person',
@@ -1144,7 +1144,7 @@ export default function HotelFlightEditor({
     ...flights.map((f) => ({
       id: f.id,
       category: 'Flight',
-      icon: <Plane className="w-3.5 h-3.5 text-sky-400" />,
+      icon: <Plane className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" />,
       name: `${f.airline || 'Flight'} ${f.flightNumber || ''}`.trim(),
       subtitle: `${f.departureAirport || 'DEP'} → ${f.arrivalAirport || 'ARR'}`,
       costType: f.costType || 'per-person',
@@ -1154,7 +1154,7 @@ export default function HotelFlightEditor({
     ...cabs.map((c) => ({
       id: c.id,
       category: 'Cab',
-      icon: <Car className="w-3.5 h-3.5 text-indigo-400" />,
+      icon: <Car className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />,
       name: c.vehicleType || 'Cab Transfer',
       subtitle: c.route || 'Local Route',
       costType: c.costType || 'flat',
@@ -1164,7 +1164,7 @@ export default function HotelFlightEditor({
     ...buses.map((b) => ({
       id: b.id,
       category: 'Bus',
-      icon: <Bus className="w-3.5 h-3.5 text-purple-400" />,
+      icon: <Bus className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />,
       name: b.busType || 'Bus Transfer',
       subtitle: b.route || 'Bus Route',
       costType: b.costType || 'per-person',
@@ -1208,13 +1208,13 @@ export default function HotelFlightEditor({
                   className={`flex items-center gap-1.5 px-3 pb-[8px] pt-1 cursor-pointer font-sans text-sm font-semibold transition-colors duration-200 select-none rounded-t-sm ${
                     isSelected
                       ? "text-primary"
-                      : "text-slate-500 dark:text-zinc-400 hover:text-primary"
+                      : "text-slate-600 dark:text-zinc-400 hover:text-primary"
                   }`}
                 >
                   <TabIcon className="w-3.5 h-3.5 shrink-0" />
                   <span className="hidden sm:inline">{tab.label}</span>
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full transition-colors ${
-                    isSelected ? "bg-primary/20 text-primary" : "bg-primary/5 text-slate-500 dark:text-zinc-400"
+                    isSelected ? "bg-primary/20 text-primary" : "bg-slate-200/80 dark:bg-primary/5 text-slate-700 dark:text-zinc-400"
                   }`}>{tab.count}</span>
                 </button>
               );
@@ -1346,12 +1346,12 @@ export default function HotelFlightEditor({
             {selectedEditorTab === "costing" && (
               <div className="space-y-6 animate-in fade-in duration-200">
                 {/* Information banner */}
-                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 text-xs flex items-center justify-between flex-wrap gap-3">
+                <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 dark:text-emerald-300 text-xs flex items-center justify-between flex-wrap gap-3">
                   <div className="flex items-center gap-2.5">
                     <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     <div>
-                      <p className="font-bold text-white text-sm">Logistics Cost to Agent Overview</p>
-                      <p className="text-emerald-700 dark:text-emerald-300/80 mt-0.5">
+                      <p className="font-bold text-slate-900 dark:text-white text-sm">Logistics Cost to Agent Overview</p>
+                      <p className="text-emerald-800/90 dark:text-emerald-300/80 mt-0.5">
                         These cost to agent figures are dynamically referenced in the Financials section. Rates can be set per person or as a flat cost per item.
                       </p>
                     </div>
@@ -1360,42 +1360,42 @@ export default function HotelFlightEditor({
 
                 {/* Summary stat cards */}
                 <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                  <div className="p-3 rounded-xl border border-white/10 bg-white/5 space-y-1">
+                  <div className="p-3 rounded-xl border border-slate-300/70 dark:border-white/10 bg-white/80 dark:bg-white/5 shadow-xs space-y-1">
                     <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-gray-400">Hotels ({hotels.length})</span>
-                    <p className="text-sm font-bold text-amber-400 font-mono">
+                    <p className="text-sm font-bold text-amber-600 dark:text-amber-400 font-mono">
                       {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{hotelsTotal.toLocaleString()}
                     </p>
                   </div>
-                  <div className="p-3 rounded-xl border border-white/10 bg-white/5 space-y-1">
+                  <div className="p-3 rounded-xl border border-slate-300/70 dark:border-white/10 bg-white/80 dark:bg-white/5 shadow-xs space-y-1">
                     <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-gray-400">Flights ({flights.length})</span>
-                    <p className="text-sm font-bold text-sky-400 font-mono">
+                    <p className="text-sm font-bold text-sky-600 dark:text-sky-400 font-mono">
                       {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{flightsTotal.toLocaleString()}
                     </p>
                   </div>
-                  <div className="p-3 rounded-xl border border-white/10 bg-white/5 space-y-1">
+                  <div className="p-3 rounded-xl border border-slate-300/70 dark:border-white/10 bg-white/80 dark:bg-white/5 shadow-xs space-y-1">
                     <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-gray-400">Cabs ({cabs.length})</span>
-                    <p className="text-sm font-bold text-indigo-400 font-mono">
+                    <p className="text-sm font-bold text-indigo-600 dark:text-indigo-400 font-mono">
                       {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{cabsTotal.toLocaleString()}
                     </p>
                   </div>
-                  <div className="p-3 rounded-xl border border-white/10 bg-white/5 space-y-1">
+                  <div className="p-3 rounded-xl border border-slate-300/70 dark:border-white/10 bg-white/80 dark:bg-white/5 shadow-xs space-y-1">
                     <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-gray-400">Buses ({buses.length})</span>
-                    <p className="text-sm font-bold text-purple-400 font-mono">
+                    <p className="text-sm font-bold text-purple-600 dark:text-purple-400 font-mono">
                       {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{busesTotal.toLocaleString()}
                     </p>
                   </div>
                   <div className="p-3 rounded-xl border border-primary/30 bg-primary/10 col-span-2 sm:col-span-1 space-y-1">
                     <span className="text-[10px] uppercase font-bold text-primary">Total Cost to Agent</span>
-                    <p className="text-base font-extrabold text-white font-mono">
+                    <p className="text-base font-extrabold text-slate-900 dark:text-white font-mono">
                       {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{grandLogisticsTotal.toLocaleString()}
                     </p>
                   </div>
                 </div>
 
                 {/* Items costing table */}
-                <div className="rounded-xl border border-slate-300/60 dark:border-white/10 overflow-hidden bg-[#EFECE5]/90 dark:bg-black/20">
+                <div className="rounded-xl border border-slate-300/70 dark:border-white/10 overflow-hidden bg-white/80 dark:bg-black/20 shadow-xs">
                   <table className="w-full text-left text-xs text-slate-700 dark:text-zinc-300">
-                    <thead className="bg-[#EFECE5] dark:bg-white/5 text-[10px] uppercase text-slate-600 dark:text-zinc-400 border-b border-slate-300/60 dark:border-white/10 font-bold">
+                    <thead className="bg-slate-100/90 dark:bg-white/5 text-[10px] uppercase text-slate-600 dark:text-zinc-400 border-b border-slate-300/70 dark:border-white/10 font-bold">
                       <tr>
                         <th className="p-3">Category</th>
                         <th className="p-3">Item Details</th>
@@ -1404,34 +1404,36 @@ export default function HotelFlightEditor({
                         <th className="p-3 text-right">Total Cost to Agent</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-slate-200 dark:divide-white/5">
                       {allLogisticsItems.length === 0 ? (
                         <tr>
-                          <td colSpan={5} className="p-6 text-center text-zinc-500 italic">
+                          <td colSpan={5} className="p-6 text-center text-slate-500 dark:text-zinc-500 italic">
                             No logistics items added yet. Add hotels, flights, cabs, or buses to see cost to agent breakdown.
                           </td>
                         </tr>
                       ) : (
                         allLogisticsItems.map((item) => (
-                          <tr key={item.id} className="hover:bg-white/[0.02]">
+                          <tr key={item.id} className="hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition-colors">
                             <td className="p-3">
-                              <span className="flex items-center gap-1.5 font-semibold text-white">
+                              <span className="flex items-center gap-1.5 font-semibold text-slate-900 dark:text-white">
                                 {item.icon}
                                 {item.category}
                               </span>
                             </td>
-                            <td className="p-3 font-medium text-white">
+                            <td className="p-3 font-medium text-slate-900 dark:text-white">
                               {item.name}
-                              {item.subtitle && <p className="text-[10px] text-zinc-500">{item.subtitle}</p>}
+                              {item.subtitle && <p className="text-[10px] text-slate-500 dark:text-zinc-500">{item.subtitle}</p>}
                             </td>
                             <td className="p-3">
                               <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                item.costType === 'flat' ? 'bg-indigo-500/15 text-indigo-300 border border-indigo-500/30' : 'bg-amber-500/15 text-amber-300 border border-amber-500/30'
+                                item.costType === 'flat'
+                                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/15 dark:text-indigo-300 dark:border-indigo-500/30'
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-500/15 dark:text-amber-300 dark:border-amber-500/30'
                               }`}>
                                 {item.costType === 'flat' ? 'Flat Cost' : 'Per Person'}
                               </span>
                             </td>
-                            <td className="p-3 text-right font-mono font-medium text-zinc-200">
+                            <td className="p-3 text-right font-mono font-medium text-slate-800 dark:text-zinc-200">
                               {getCurrencySymbol(currency || DEFAULT_CURRENCY)}{item.unitRate.toLocaleString()}
                             </td>
                             <td className="p-3 text-right font-mono font-bold text-primary">

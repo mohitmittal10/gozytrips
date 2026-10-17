@@ -51,14 +51,15 @@ const PricingSync = React.memo(({ onChange }: { onChange: (pricing: any) => void
  * keeping the context in lockstep with the store without a full provider remount.
  */
 const LogisticsSync = React.memo(function LogisticsSync({
-  hotels, flights, cabs, buses,
-}: { hotels: any[]; flights: any[]; cabs: any[]; buses: any[] }) {
+  hotels, flights, cabs, buses, itinerary,
+}: { hotels: any[]; flights: any[]; cabs: any[]; buses: any[]; itinerary?: any[] }) {
   const ctx = React.useContext(ItineraryContext);
 
   const hotelsKey = useMemo(() => JSON.stringify(hotels), [hotels]);
   const flightsKey = useMemo(() => JSON.stringify(flights), [flights]);
   const cabsKey = useMemo(() => JSON.stringify(cabs), [cabs]);
   const busesKey = useMemo(() => JSON.stringify(buses), [buses]);
+  const itineraryKey = useMemo(() => JSON.stringify(itinerary), [itinerary]);
 
   useEffect(() => {
     if (!ctx) return;
@@ -84,10 +85,17 @@ const LogisticsSync = React.memo(function LogisticsSync({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [busesKey]);
 
+  useEffect(() => {
+    if (!ctx || !itinerary) return;
+    ctx.dispatch({ type: 'SET_ITINERARY', payload: itinerary });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itineraryKey]);
+
   return null;
 });
 
 interface TheLabTabContentProps {
+  currentTripId?: string | null;
   activeLabTab: ActiveLabTab;
   isGenerating: boolean;
   itinerary: any;
@@ -130,6 +138,7 @@ interface TheLabTabContentProps {
 }
 
 const TheLabTabContent = React.memo(function TheLabTabContent({
+  currentTripId,
   activeLabTab, isGenerating, itinerary, setItinerary,
   isEditing, setIsEditing, hotels, setHotels, flights, setFlights, cabs, setCabs, buses, setBuses,
   showTimestamps, pricing, setPricing, 
@@ -237,8 +246,9 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
         <div className={activeLabTab !== 'pricing' ? 'hidden' : undefined}>
           <ItineraryErrorBoundary onReset={() => setPricing(undefined)} fallbackMessage="Pricing module failed to load.">
             <ItineraryProvider
-              key={`pricing-provider-${itinerary?.itinerary?.length}`}
+              key={`pricing-provider-${currentTripId ?? 'new'}-${itinerary?.itinerary?.length}`}
               initialTrip={{
+                id: currentTripId,
                 itinerary: itinerary?.itinerary || [],
                 hotels,
                 flights,
@@ -257,7 +267,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
               }}
             >
               <PricingSync onChange={setPricing} />
-              <LogisticsSync hotels={hotels} flights={flights} cabs={cabs} buses={buses} />
+              <LogisticsSync hotels={hotels} flights={flights} cabs={cabs} buses={buses} itinerary={itinerary?.itinerary || []} />
               <MemoizedPricingModule onSave={handleSaveItinerary} isSaving={isSaving} />
             </ItineraryProvider>
           </ItineraryErrorBoundary>

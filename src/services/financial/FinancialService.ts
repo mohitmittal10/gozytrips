@@ -227,6 +227,29 @@ export function calcItemTax(
   return (itemCostWithMarkup * taxPct) / 100;
 }
 
+/**
+ * Calculates client-facing rate and amount for an itemized line item (manualOption).
+ * Base cost is NEVER revealed to the client — instead, rate and amount reflect
+ * the final item price including any item-level or global markup.
+ */
+export function calcItemClientPrice(
+  item: any,
+  totalPax: number,
+  pricing?: PricingConfig
+): { qty: number; rate: number; amount: number } {
+  const qty = item.type === 'per-person' ? (totalPax || 1) : 1;
+  const itemBase = calcItemBaseCost(item, totalPax);
+  const fallbackMarkupVal =
+    pricing?.tiersEnabled && pricing?.tiers?.[pricing.selectedTier]?.isActive
+      ? (pricing.tiers[pricing.selectedTier]?.markupValue ?? pricing.markupValue ?? 0)
+      : (pricing?.markupValue ?? 0);
+  const fallbackMarkupType = pricing?.markupType || 'percentage';
+  const itemMarkup = calcItemMarkup(item, totalPax, fallbackMarkupType, fallbackMarkupVal);
+  const amount = itemBase + itemMarkup;
+  const rate = qty > 0 ? amount / qty : amount;
+  return { qty, rate, amount };
+}
+
 export function calcTotalTaxAmount(
   state: Pick<ItineraryState, 'itinerary' | 'hotels' | 'flights' | 'cabs' | 'buses' | 'pricing'>,
 ): number {

@@ -198,7 +198,7 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                                     : "bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30"
                                             )}
                                         >
-                                            {isFullyPaid ? "Paid ✓" : totalPaid > 0 ? "Partial" : "Unpaid"}
+                                            {isFullyPaid ? "Paid" : totalPaid > 0 ? "Partial" : "Unpaid"}
                                         </Badge>
                                     </div>
 
