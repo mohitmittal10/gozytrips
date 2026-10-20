@@ -247,20 +247,24 @@ export default function TheLab() {
   const { baseCost, finalTotal, currencySymbol } = useBaseCostCalculator({ itinerary, flights, hotels, cabs, buses, pricing });
 
   const tripTitle = useMemo(() => {
-    if (!tripMetadata) return formatTitleCase(`Trip to ${itinerary?.itinerary?.[0]?.areaFocus?.split(',')[0] || 'Destination'}`);
-    const startLoc = tripMetadata.startingLocation;
-    const dests = tripMetadata.destinations;
-    let title = dests ? (startLoc ? `${startLoc} to ${dests}` : `Trip to ${dests}`) : "Untitled Lab Draft";
-
-    if (tripMetadata.startDate && tripMetadata.endDate) {
-      const s = new Date(tripMetadata.startDate);
-      const e = new Date(tripMetadata.endDate);
-      if (!isNaN(s.getTime()) && !isNaN(e.getTime()) && e > s) {
-        const totalDays = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24));
-        title += ` ${totalDays}N ${totalDays + 1}D`;
+    const startLoc = tripMetadata?.startingLocation;
+    const dests = tripMetadata?.destinations;
+    if (dests) {
+      let title = startLoc ? `${startLoc} to ${dests}` : `Trip to ${dests}`;
+      if (tripMetadata?.startDate && tripMetadata?.endDate) {
+        const s = new Date(tripMetadata.startDate);
+        const e = new Date(tripMetadata.endDate);
+        if (!isNaN(s.getTime()) && !isNaN(e.getTime()) && e > s) {
+          const totalDays = Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24));
+          title += ` ${totalDays}N ${totalDays + 1}D`;
+        }
       }
+      return formatTitleCase(title);
     }
-    return formatTitleCase(title);
+    if ((itinerary as any)?.title) return formatTitleCase((itinerary as any).title);
+    if ((itinerary as any)?.tripTitle) return formatTitleCase((itinerary as any).tripTitle);
+    if ((tripMetadata as any)?.title) return formatTitleCase((tripMetadata as any).title);
+    return formatTitleCase(`Trip to ${itinerary?.itinerary?.[0]?.areaFocus?.split(',')[0] || 'Destination'}`);
   }, [tripMetadata, itinerary]);
 
   const clientName = useMemo(() => {
@@ -825,6 +829,25 @@ export default function TheLab() {
     });
   }, [saveItinerary, form, itinerary, selectedClientId, selectedStatus, hotels, flights, cabs, buses, pricing, showTimestamps, selectedTheme, tripMetadata, inclusions, exclusions, termsAndConditions, cancellationPolicy, paymentMethods]);
 
+  const handleDownloadPdf = useCallback(async () => {
+    if (previewRef.current?.hasValidCache()) {
+      setIsPreviewOpen(true);
+      return;
+    }
+    setIsPreRendering(true);
+    setPreRenderProgress(0);
+    setPreRenderStage('Initializing…');
+    try {
+      await previewRef.current?.preRender((progress, stage) => {
+        setPreRenderProgress(progress);
+        setPreRenderStage(stage);
+      });
+    } finally {
+      setIsPreRendering(false);
+    }
+    setIsPreviewOpen(true);
+  }, []);
+
   const handleDirectGenerate = useCallback(async () => {
     const currentValues = form.getValues();
 
@@ -948,26 +971,7 @@ export default function TheLab() {
               setShowTimestamps={setShowTimestamps}
               isEditing={isEditing}
               setIsEditing={handleSetIsEditing}
-              handleDownloadPdf={async () => {
-                // If cache is already valid, open dialog instantly
-                if (previewRef.current?.hasValidCache()) {
-                  setIsPreviewOpen(true);
-                  return;
-                }
-                // Otherwise: show blur overlay, pre-render, then open
-                setIsPreRendering(true);
-                setPreRenderProgress(0);
-                setPreRenderStage('Initializing\u2026');
-                try {
-                  await previewRef.current?.preRender((progress, stage) => {
-                    setPreRenderProgress(progress);
-                    setPreRenderStage(stage);
-                  });
-                } finally {
-                  setIsPreRendering(false);
-                }
-                setIsPreviewOpen(true);
-              }}
+              handleDownloadPdf={handleDownloadPdf}
               handleSaveItinerary={handleHeaderSaveItinerary}
               isSaving={isSaving}
               isPreRendering={isPreRendering}
@@ -1031,7 +1035,7 @@ export default function TheLab() {
                 <>
                   {isViewingItinerary && (itinerary?.itinerary?.length ?? 0) > 0 && (
                     <div className={cn("transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
-                      <TheLabHero itinerary={itinerary} />
+                      <TheLabHero itinerary={itinerary} title={tripTitle} />
                     </div>
                   )}
                   <TheLabTabContent
@@ -1056,6 +1060,7 @@ export default function TheLab() {
                     agencySettings={null}
                     handleSaveItinerary={handleTabContentSaveItinerary}
                     isSaving={isSaving}
+                    handleDownloadPdf={handleDownloadPdf}
                     setCurrentTripId={setCurrentTripId}
                     setActiveLabTab={setActiveLabTab}
                     form={form}
@@ -1090,6 +1095,7 @@ export default function TheLab() {
                   finalTotal={finalTotal}
                   currencySymbol={currencySymbol}
                   tripMetadata={tripMetadata}
+                  title={tripTitle}
                   onOpenAddClient={() => setIsAddClientOpen(true)}
                   onRegenerateItinerary={handleRegenerateItinerary}
                   onUpdateTripMetadata={handleUpdateTripMetadata}

@@ -116,6 +116,7 @@ interface TheLabTabContentProps {
   agencySettings: any;
   handleSaveItinerary: (pricing?: any) => void;
   isSaving: boolean;
+  handleDownloadPdf?: () => void;
   setCurrentTripId: (id: string | null) => void;
   setActiveLabTab: (tab: ActiveLabTab) => void;
   // Form props
@@ -142,7 +143,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
   activeLabTab, isGenerating, itinerary, setItinerary,
   isEditing, setIsEditing, hotels, setHotels, flights, setFlights, cabs, setCabs, buses, setBuses,
   showTimestamps, pricing, setPricing, 
-  agencySettings, handleSaveItinerary, isSaving,
+  agencySettings, handleSaveItinerary, isSaving, handleDownloadPdf,
   setCurrentTripId, setActiveLabTab,
   form, currentStep, setCurrentStep, onNext, onSubmit,
   handleCreateNew,
@@ -268,7 +269,7 @@ const TheLabTabContent = React.memo(function TheLabTabContent({
             >
               <PricingSync onChange={setPricing} />
               <LogisticsSync hotels={hotels} flights={flights} cabs={cabs} buses={buses} itinerary={itinerary?.itinerary || []} />
-              <MemoizedPricingModule onSave={handleSaveItinerary} isSaving={isSaving} />
+              <MemoizedPricingModule onSave={handleSaveItinerary} isSaving={isSaving} onExportPdf={handleDownloadPdf} />
             </ItineraryProvider>
           </ItineraryErrorBoundary>
         </div>

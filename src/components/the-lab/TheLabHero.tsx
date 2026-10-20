@@ -1,12 +1,17 @@
 // Top destination header containing dynamically fetched Unsplash banners.
 import React from 'react';
 
+import { formatTitleCase } from "@/components/pdf/utils";
+
 interface TheLabHeroProps {
   itinerary: any;
+  title?: string;
 }
 
-const TheLabHero = React.memo(function TheLabHero({ itinerary }: TheLabHeroProps) {
+const TheLabHero = React.memo(function TheLabHero({ itinerary, title }: TheLabHeroProps) {
   if (!itinerary || !itinerary.itinerary || itinerary.itinerary.length === 0) return null;
+
+  const displayTitle = title || itinerary?.title || itinerary?.tripTitle || formatTitleCase(itinerary.itinerary[0]?.areaFocus?.split(',')[0] || "Overview");
 
   return (
     <div className="relative rounded-xl sm:rounded-2xl overflow-hidden h-28 sm:h-36 md:h-40 shadow-xl group border border-white/10 mb-4 sm:mb-6">
@@ -21,8 +26,8 @@ const TheLabHero = React.memo(function TheLabHero({ itinerary }: TheLabHeroProps
         <div className="flex items-center gap-2 mb-1 sm:mb-2">
           <span className="aurora-gradient text-[7px] sm:text-[8px] font-black px-2 sm:px-3 py-0.5 sm:py-1 rounded-full uppercase tracking-widest shadow-lg">Active Journey</span>
         </div>
-        <h2 className="font-extrabold tracking-tighter" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.5rem)' }}>
-          Destination Overview: <span className="text-gradient">{itinerary.itinerary[0]?.areaFocus?.split(',')[0] || "Overview"}</span>
+        <h2 className="font-extrabold tracking-tighter truncate" style={{ fontSize: 'clamp(1rem, 2.5vw, 1.5rem)' }} title={displayTitle}>
+          Destination Overview: <span className="text-gradient">{displayTitle}</span>
         </h2>
       </div>
     </div>

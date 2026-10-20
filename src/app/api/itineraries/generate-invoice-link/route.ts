@@ -2,12 +2,27 @@ import { NextResponse } from "next/server";
 import { createServerComponentClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-function requireAppUrl(): string {
-    const base = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "");
-    if (!base) {
-        throw new Error("NEXT_PUBLIC_APP_URL is not configured");
+function resolveAppUrl(request: Request): string {
+    const envUrl = (process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_BASE_URL)?.replace(/\/$/, "");
+    if (envUrl) return envUrl;
+
+    const originHeader = request.headers.get("origin");
+    if (originHeader) return originHeader.replace(/\/$/, "");
+
+    try {
+        const urlOrigin = new URL(request.url).origin;
+        if (urlOrigin && urlOrigin !== "null") return urlOrigin.replace(/\/$/, "");
+    } catch {
+        // Ignore URL parse error
     }
-    return base;
+
+    const host = request.headers.get("x-forwarded-host") || request.headers.get("host");
+    if (host) {
+        const proto = request.headers.get("x-forwarded-proto") || "http";
+        return `${proto}://${host}`.replace(/\/$/, "");
+    }
+
+    return "http://localhost:3000";
 }
 
 export async function POST(request: Request) {
@@ -21,15 +36,7 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        let appUrl: string;
-        try {
-            appUrl = requireAppUrl();
-        } catch {
-            return NextResponse.json(
-                { error: "Server misconfigured: NEXT_PUBLIC_APP_URL is required" },
-                { status: 500 }
-            );
-        }
+        const appUrl = resolveAppUrl(request);
 
         const body = await request.json();
         const { itineraryId } = body;

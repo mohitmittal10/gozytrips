@@ -11,6 +11,7 @@ import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import type { TripMetadata } from '@/types/the-lab';
+import { formatTitleCase } from "@/components/pdf/utils";
 
 interface TheLabSummaryPanelProps {
   itinerary: any;
@@ -21,6 +22,7 @@ interface TheLabSummaryPanelProps {
   finalTotal?: number;
   currencySymbol?: string;
   tripMetadata?: TripMetadata | any;
+  title?: string;
   onOpenAddClient?: () => void;
   onRegenerateItinerary?: (updatedMetadata: TripMetadata, feedbackPrompt?: string) => Promise<void>;
   onUpdateTripMetadata?: (updatedMetadata: TripMetadata) => Promise<void> | void;
@@ -50,6 +52,7 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
   itinerary, selectedStatus, clients, selectedClientId,
   isGenerating,
   finalTotal, currencySymbol, tripMetadata,
+  title,
   onOpenAddClient,
   onRegenerateItinerary,
   onUpdateTripMetadata,
@@ -57,6 +60,12 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
   const { options: itineraryStatuses } = useReferenceOptions('itinerary_status');
   const { toast } = useToast();
   
+  const displayTitle = title || (itinerary as any)?.title || (itinerary as any)?.tripTitle || (tripMetadata as any)?.title || (
+    tripMetadata?.destinations 
+      ? formatTitleCase(tripMetadata.startingLocation ? `${tripMetadata.startingLocation} to ${tripMetadata.destinations}` : `Trip to ${tripMetadata.destinations}`)
+      : formatTitleCase(itinerary.itinerary[0]?.areaFocus?.split(',')[0] || "Overview")
+  );
+
   const [isInputsOpen, setIsInputsOpen] = useState(true);
   const [isEditingRequirements, setIsEditingRequirements] = useState(false);
   const [quickPrompt, setQuickPrompt] = useState("");
@@ -293,9 +302,9 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
         <div className="w-full sm:w-auto">
           <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-2 block">Journey Summary</h3>
           <div className="flex flex-wrap gap-3 sm:gap-4 md:gap-8">
-            <div className="flex flex-col">
+            <div className="flex flex-col min-w-0 max-w-[200px] sm:max-w-[240px]">
               <span className="text-[9px] font-black text-primary uppercase tracking-widest mb-0.5">Focus</span>
-              <span className="text-slate-900 dark:text-white text-xs font-bold leading-none">{itinerary.itinerary[0]?.areaFocus?.split(',')[0]}</span>
+              <span className="text-slate-900 dark:text-white text-xs font-bold leading-none truncate" title={displayTitle}>{displayTitle}</span>
             </div>
             <div className="flex flex-col">
               <span className="text-[9px] font-black text-primary/80 uppercase tracking-widest mb-0.5">Duration</span>
@@ -303,11 +312,13 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
                 {itinerary.itinerary.length} Days / {Math.max(0, itinerary.itinerary.length - 1)} Nights
               </span>
             </div>
-            {finalTotal !== undefined && finalTotal > 0 && (
+            {finalTotal !== undefined && finalTotal !== 0 && (
               <div className="flex flex-col">
                 <span className="text-[9px] font-black text-primary/80 uppercase tracking-widest mb-0.5">Total Cost</span>
-                <span className="text-slate-900 dark:text-white text-xs font-bold leading-none">
-                  {currencySymbol}{Math.round(finalTotal).toLocaleString('en-IN')}
+                <span className="text-slate-900 dark:text-white text-xs font-bold leading-none whitespace-nowrap">
+                  {finalTotal < 0
+                    ? `\u2011${currencySymbol}${Math.abs(Math.round(finalTotal)).toLocaleString('en-IN')}`
+                    : `${currencySymbol}${Math.round(finalTotal).toLocaleString('en-IN')}`}
                 </span>
               </div>
             )}

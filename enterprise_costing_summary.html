@@ -1,0 +1,219 @@
+<!DOCTYPE html><html class="h-full bg-slate-50" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Costing Summary - Enterprise Billing Widget</title>
+<!-- Tailwind CSS CDN with forms and container queries plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
+          },
+          colors: {
+            primary: {
+              DEFAULT: '#ff5c33',
+              foreground: '#ffffff',
+              50: '#fff5f2',
+              100: '#ffe8e1',
+              500: '#ff5c33',
+              600: '#e04820',
+              700: '#c53813'
+            },
+            brand: {
+              50: '#fff5f2',
+              100: '#ffe8e1',
+              500: '#ff5c33',
+              600: '#e04820',
+              700: '#c53813',
+              800: '#9c2b0c',
+              900: '#7a220a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Styles -->
+<style data-purpose="typography-and-tabular">
+    /* Enforce tabular figures for aligned financial numerals */
+    .tabular-nums {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+  </style>
+<!-- END: Custom Styles -->
+</head>
+<body class="min-h-full flex items-center justify-center p-4 sm:p-6 lg:p-10 text-slate-800 antialiased selection:bg-brand-100 selection:text-brand-900">
+<!-- BEGIN: MainContainer -->
+<main class="w-full max-w-md bg-white rounded-2xl shadow-xl shadow-slate-200/60 border border-slate-200/80 overflow-hidden transition-all duration-200" data-purpose="costing-summary-card">
+<!-- BEGIN: HeaderSection -->
+<header class="p-5 sm:p-6 border-b border-slate-100 bg-gradient-to-b from-white to-slate-50/60">
+<div class="flex items-center justify-between gap-3">
+<div>
+<div class="flex items-baseline gap-2">
+<h1 class="text-xl font-bold tracking-tight text-slate-900">Costing Summary</h1>
+<span class="text-xs font-semibold uppercase tracking-wider text-slate-400 font-mono">INR (₹)</span>
+</div>
+<p class="text-xs text-slate-500 mt-0.5">Commercial travel &amp; hospitality tier breakdown</p>
+</div>
+<!-- Quick Action Menu Icons -->
+<div class="flex items-center gap-1 text-slate-400">
+<button aria-label="Print or export summary" class="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-colors" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<button aria-label="Widget options" class="p-1.5 rounded-lg hover:bg-slate-100 hover:text-slate-600 transition-colors" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+</div>
+</header>
+<!-- END: HeaderSection -->
+<!-- BEGIN: PaxBreakdownCard -->
+<section aria-labelledby="pax-breakdown-heading" class="p-5 sm:p-6 pb-2">
+<div class="rounded-xl border border-slate-200/90 bg-slate-50/70 p-3.5 transition-colors hover:border-slate-300">
+<!-- Subheader for PAX category -->
+<div class="flex items-center justify-between mb-2.5">
+<span class="text-[11px] font-bold uppercase tracking-wider text-slate-500" id="pax-breakdown-heading">
+            Pax Cost Breakdown (Base)
+          </span>
+
+</div>
+<!-- Occupancy & Rate Detail Row -->
+<div class="flex items-center justify-between py-1">
+<div class="flex items-center gap-2.5 text-slate-700">
+<!-- Pax Icon -->
+<div class="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-2xs">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div>
+<p class="text-sm font-semibold text-slate-800 leading-tight">2 Adults</p>
+<p class="text-[11px] text-slate-500 leading-tight">₹42,500.00 / pax</p>
+</div>
+</div>
+<!-- Base cost figure for 2 adults -->
+<div class="text-right">
+<span class="text-sm font-bold font-mono text-slate-900 tabular-nums">₹85,000.00</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: PaxBreakdownCard -->
+<!-- BEGIN: ItemizedCostBreakdown -->
+<section aria-label="Detailed Financial Breakdown" class="px-5 sm:px-6 py-2">
+<div class="space-y-3.5 text-sm pt-2">
+<!-- Base Cost Row -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-1.5 text-slate-600">
+<span class="">Base Cost</span>
+<button class="text-slate-300 hover:text-slate-500 focus:outline-none" title="Base tariff calculated for 2 guests" type="button">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+<path d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<div class="font-mono font-medium text-slate-800 tabular-nums">
+            ₹85,000.00
+          </div>
+</div>
+<!-- Markup Row -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-1.5 text-slate-600">
+<span class="text-slate-700">Total Item Markup</span>
+<span class="text-[10px] uppercase font-semibold tracking-wide bg-amber-50 text-amber-700 border border-amber-200/70 rounded px-1.5 py-0.2">
+              10%
+            </span>
+</div>
+<div class="font-mono font-semibold text-amber-700 tabular-nums flex items-center gap-0.5">
+<span class="text-xs">+</span>
+<span class="">₹8,500.00</span>
+</div>
+</div>
+<!-- Tax Row -->
+<div class="flex items-center justify-between group">
+<div class="flex items-center gap-1.5 text-slate-600">
+<span class="text-slate-700">Total Item Tax</span>
+<span class="text-[10px] uppercase font-semibold tracking-wide bg-sky-50 text-sky-700 border border-sky-200/70 rounded px-1.5 py-0.2">
+              GST 18%
+            </span>
+</div>
+<div class="font-mono font-semibold text-sky-700 tabular-nums flex items-center gap-0.5">
+<span class="text-xs">+</span>
+<span class="">₹16,830.00</span>
+</div>
+</div>
+<!-- Optional Corporate Rebate / Adjustment Row -->
+<div class="flex items-center justify-between group pt-0.5">
+<div class="flex items-center gap-1.5 text-slate-500 text-xs">
+<span class="">Corporate Privilege Credit</span>
+</div>
+<div class="font-mono text-xs font-medium text-emerald-600 tabular-nums flex items-center gap-0.5">
+<span class="">-</span>
+<span class="">₹2,500.00</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: ItemizedCostBreakdown -->
+<!-- BEGIN: TotalClientQuoteHighlight -->
+<section aria-label="Total Quote Computation" class="p-5 sm:p-6 pt-4">
+<div class="relative overflow-hidden rounded-xl border border-slate-900 text-white p-4.5 sm:p-5 shadow-lg shadow-slate-900/10" style="background-color: #000000; border-color: #000000;">
+<!-- Subtle decorative glow -->
+<div class="absolute -top-12 -right-12 w-28 h-28 bg-[#ff5c33]/20 rounded-full blur-2xl pointer-events-none"></div>
+<div class="relative flex items-end justify-between gap-2">
+<div>
+<span class="inline-block text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+              Final Amount
+            </span>
+<h2 class="text-base sm:text-lg font-bold tracking-tight text-white leading-tight mt-0.5">
+              Total Client Quote
+            </h2>
+<p class="text-[11px] text-slate-400 mt-1">Inclusive of all duties &amp; municipal taxes</p>
+</div>
+<!-- Prominent Highlight Value -->
+<div class="text-right">
+<div class="flex items-baseline justify-end font-mono font-extrabold text-2xl sm:text-3xl tracking-tight text-white tabular-nums">
+<span class="text-lg sm:text-xl font-medium text-slate-300 mr-1">₹</span>
+<span class="">107,830.00</span>
+</div>
+<span class="inline-block text-[10px] text-emerald-400 font-medium tracking-wide">
+              Net Payable
+            </span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: TotalClientQuoteHighlight -->
+<!-- BEGIN: AuditFooter -->
+
+<!-- END: AuditFooter -->
+</main>
+<!-- END: MainContainer -->
+<!-- BEGIN: InteractiveScripts -->
+<script data-purpose="toggle-interactions">
+    // Placeholder for enterprise event handler bindings or currency switching
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('Costing Summary Widget initialized.');
+    });
+  </script>
+<!-- END: InteractiveScripts -->
+
+
+</body></html>

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { MapPin, Calendar, FileText } from "lucide-react";
+import { PrintButton } from "./PrintButton";
 import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 
@@ -14,8 +15,8 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   // 1. Fetch itinerary securely via share_token (narrow columns — never select refresh tokens)
   const { data: itinData, error: itinError } = await supabaseAdmin
     .from("itineraries")
-    .select("id, user_id, title, starting_location, ending_location, start_date, end_date, currency, client_price, share_token, share_enabled")
-    .eq("share_token", id)
+    .select("id, user_id, title, starting_location, ending_location, start_date, end_date, currency, client_price, share_token, share_enabled, itinerary_data")
+    .or(`share_token.eq.${id},id.eq.${id}`)
     .eq("share_enabled", true)
     .single();
 
@@ -62,7 +63,25 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const currencyCode = itinerary.currency || agencySettings?.default_currency || DEFAULT_CURRENCY;
   const currency = getCurrencySymbol(currencyCode as any);
 
-  const items = (lineItemsData as any[]) || [];
+  let items = (lineItemsData as any[]) || [];
+
+  if (items.length === 0 && itinerary.itinerary_data?.pricing?.manualOptions?.length > 0) {
+    items = itinerary.itinerary_data.pricing.manualOptions.map((opt: any) => ({
+      id: opt.id,
+      title: opt.name,
+      category: opt.category || "Service",
+      net_cost: opt.amount,
+      markup_percentage: opt.markupValue ?? 15,
+    }));
+  } else if (items.length === 0 && itinerary.client_price) {
+    items = [{
+      id: "pkg-1",
+      title: itinerary.title || "Custom Travel Package",
+      category: "Package",
+      net_cost: Number(itinerary.client_price),
+      markup_percentage: 0,
+    }];
+  }
   
   const calculatedTotal = items.reduce((sum, item) => {
     return sum + (Number(item.net_cost) * (1 + Number(item.markup_percentage) / 100));
@@ -102,12 +121,12 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                   Detailed Invoice
                 </CardDescription>
               </div>
-              <div className="text-right">
-                <div className="inline-flex items-center justify-center p-3 bg-zinc-100 dark:bg-zinc-800 rounded-full mb-2">
-                  <FileText className="w-6 h-6 text-zinc-600 dark:text-zinc-400" />
+              <div className="text-right flex flex-col items-end gap-2">
+                <PrintButton />
+                <div>
+                  <p className="text-sm font-medium text-zinc-500">Invoice Reference</p>
+                  <p className="text-xs text-slate-600 dark:text-zinc-400 uppercase font-mono">{itinerary.id.split('-')[0]}</p>
                 </div>
-                <p className="text-sm font-medium text-zinc-500">Invoice Reference</p>
-                <p className="text-xs text-slate-600 dark:text-zinc-400 uppercase">{itinerary.id.split('-')[0]}</p>
               </div>
             </div>
 

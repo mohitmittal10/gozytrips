@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Plus, Trash2, Wallet, Settings, AlertCircle, Minimize2, Maximize2, Link, Plane, Hotel, Car, Bus, Percent, Activity, Compass, RefreshCw, Lock, Unlink, Zap, Check, Copy, Info, Users, Tag, ChevronDown } from "lucide-react";
+import { Plus, Trash2, Wallet, Settings, AlertCircle, Minimize2, Maximize2, Link, Plane, Hotel, Car, Bus, Percent, Activity, Compass, Lock, Unlink, Zap, Check, Copy, Info, Users, Tag, ChevronDown } from "lucide-react";
 import { type Currency, type PaymentMilestone, type PricingTier, type ManualCostItem, type PricingConfig } from "@/types/pricing";
 import { useItinerary } from "@/hooks/use-itinerary";
 import { useItineraryPricing } from "@/hooks/use-itinerary-pricing";
@@ -14,6 +14,7 @@ import { getItemBaseCostForPax } from "@/services/financial";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
+import { CostingSummaryCard } from "@/components/the-lab/CostingSummaryCard";
 
 // Fallback defaults if DB is not populated
 const DEFAULT_CURRENCIES: { value: Currency; label: string }[] = [
@@ -65,7 +66,17 @@ const getCategoryIconLarge = (category: string) => {
   }
 };
 
-export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: PricingConfig) => void, isSaving?: boolean }) {
+export default function PricingModule({ 
+  onSave, 
+  isSaving,
+  onExportPdf,
+  onSendToClient
+}: { 
+  onSave?: (p?: PricingConfig) => void; 
+  isSaving?: boolean;
+  onExportPdf?: () => void;
+  onSendToClient?: () => void;
+}) {
   // Store
   const { state, pricing, validationErrors, updatePricing, flights, hotels, cabs, buses, itinerary } = useItinerary();
   const supabase = useMemo(() => createClient(), []);
@@ -338,6 +349,51 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
     milestoneAmounts,
   } = useItineraryPricing();
 
+  // Derived per-pax calculations for CostingSummaryCard
+  const paxBreakdown = useMemo(() => {
+    const adultPax = pricing?.adultPax || 0;
+    const childPax = pricing?.childPax || 0;
+    const infantPax = pricing?.infantPax || 0;
+    const totalPax = adultPax + childPax + infantPax;
+
+    let totalAdultCost = 0;
+    let totalChildCost = 0;
+    let totalInfantCost = 0;
+
+    for (const item of (pricing?.manualOptions || [])) {
+      let linkedItem: any = null;
+      if (item.linkedItemId) {
+        if (item.category === "Flight") linkedItem = (flights || []).find((f) => f.id === item.linkedItemId);
+        else if (item.category === "Hotel") linkedItem = (hotels || []).find((h) => h.id === item.linkedItemId);
+        else if (item.category === "Transport") {
+          linkedItem = (cabs || []).find((c) => c.id === item.linkedItemId) || (buses || []).find((b) => b.id === item.linkedItemId);
+        }
+      }
+
+      if (linkedItem && linkedItem.costType !== "flat") {
+        const nights = linkedItem.nights || 1;
+        totalAdultCost += (linkedItem.costAdult || 0) * adultPax * nights;
+        totalChildCost += (linkedItem.costChild || 0) * childPax * nights;
+        totalInfantCost += (linkedItem.costInfant || 0) * infantPax * nights;
+      } else if (linkedItem && linkedItem.costType === "flat") {
+        const nights = linkedItem.nights || 1;
+        const flatTotal = (linkedItem.flatCost ?? linkedItem.totalCost ?? 0) * nights;
+        const share = totalPax > 0 ? flatTotal / totalPax : 0;
+        totalAdultCost += share * adultPax;
+        totalChildCost += share * childPax;
+        totalInfantCost += share * infantPax;
+      } else {
+        const itemBase = item.type === "per-person" ? (Number(item.amount) || 0) * totalPax : (Number(item.amount) || 0);
+        const share = totalPax > 0 ? itemBase / totalPax : 0;
+        totalAdultCost += share * adultPax;
+        totalChildCost += share * childPax;
+        totalInfantCost += share * infantPax;
+      }
+    }
+
+    return { totalAdultCost, totalChildCost, totalInfantCost };
+  }, [pricing?.manualOptions, pricing?.adultPax, pricing?.childPax, pricing?.infantPax, flights, hotels, cabs, buses]);
+
   // ── Milestone helpers ──────────────────────────────────────────────────────
 
   const addMilestone = () => {
@@ -602,17 +658,22 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                 </span>
                               )}
                               {mVal > 0 && (
-                                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded ml-1 font-mono">
+                                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded ml-1 font-mono whitespace-nowrap">
                                   +{mType === 'percentage' ? `${mVal}%` : formatMoney(mVal, pricing.currency)}
                                 </span>
                               )}
+                              {mVal < 0 && (
+                                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded ml-1 font-mono whitespace-nowrap">
+                                  {mType === 'percentage' ? `${mVal}%` : formatMoney(mVal, pricing.currency)}
+                                </span>
+                              )}
                               {itemTaxPct > 0 && (
-                                <span className="text-[10px] bg-sky-500/10 text-sky-400 px-1.5 py-0.5 rounded ml-1 font-mono">
+                                <span className="text-[10px] bg-sky-500/10 text-sky-400 px-1.5 py-0.5 rounded ml-1 font-mono whitespace-nowrap">
                                   Tax {itemTaxPct}%
                                 </span>
                               )}
                             </div>
-                            <span className="text-gray-300 font-mono">
+                            <span className="text-gray-300 font-mono whitespace-nowrap shrink-0">
                               {formatMoney(itemTotal, pricing.currency)}
                             </span>
                           </div>
@@ -636,7 +697,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                             <span className="text-xs text-slate-600 dark:text-gray-400 ml-2">({m.percentage}%)</span>
                           </div>
                           <div className="text-right font-mono">
-                            <span className="text-primary font-bold">{formatMoney(m.amount, pricing.currency)}</span>
+                            <span className="text-primary font-bold whitespace-nowrap">{formatMoney(m.amount, pricing.currency)}</span>
                             <p className="text-[10px] text-gray-500 leading-none mt-0.5">{m.dueDate}</p>
                           </div>
                         </div>
@@ -648,25 +709,28 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
 
               {/* Total quote block */}
               <div className="space-y-4">
-                <div className="space-y-4 bg-primary/10 p-5 rounded-xl border border-primary/20 text-sm">
-                  <div className="text-primary font-bold text-base uppercase tracking-wider border-b border-primary/20 pb-2">Costing Summary</div>
-                  <div className="flex justify-between text-slate-600 dark:text-gray-400">
-                    <span>Base Cost</span>
-                    <span className="font-mono">{formatMoney(baseCost, pricing.currency)}</span>
-                  </div>
-                  <div className="flex justify-between text-primary font-medium">
-                    <span>Total Item Markup</span>
-                    <span className="font-mono">+{formatMoney(markupAmount, pricing.currency)}</span>
-                  </div>
-                  <div className="flex justify-between text-sky-400 font-medium">
-                    <span>Total Item Tax</span>
-                    <span className="font-mono">+{formatMoney(taxAmount, pricing.currency)}</span>
-                  </div>
-                  <div className="pt-3 mt-2 border-t border-primary/20 flex justify-between font-extrabold text-slate-900 dark:text-white text-xl">
-                    <span>Total Quote</span>
-                    <span className="text-primary font-mono">{formatMoney(finalTotal, pricing.currency)}</span>
-                  </div>
-                </div>
+                <CostingSummaryCard
+                  tripId={state.tripId}
+                  currency={pricing.currency}
+                  currencySymbol={currencySymbol}
+                  baseCost={baseCost}
+                  markupAmount={markupAmount}
+                  markupPercentage={pricing.markupValue}
+                  taxAmount={taxAmount}
+                  taxPercentage={pricing.taxPercentage}
+                  finalTotal={finalTotal}
+                  adultPax={pricing.adultPax ?? 2}
+                  childPax={pricing.childPax ?? 0}
+                  infantPax={pricing.infantPax ?? 0}
+                  totalAdultCost={paxBreakdown.totalAdultCost}
+                  totalChildCost={paxBreakdown.totalChildCost}
+                  totalInfantCost={paxBreakdown.totalInfantCost}
+                  onExportPdf={onExportPdf}
+                  onSendToClient={onSendToClient}
+                  onSave={() => onSave?.(pricing)}
+                  isSaving={isSaving}
+                  milestones={pricing.milestones}
+                />
               </div>
             </div>
           ) : (
@@ -882,31 +946,20 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
 
                                   {/* Linked Property / Inventory Record */}
                                   <div className="sm:col-span-8 space-y-0.5">
-                                    <div className="flex items-center justify-between">
-                                      <label className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1 truncate">
-                                        <Link className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                                        <span className="truncate">
-                                          {option.category === "Hotel" 
-                                            ? "Connected Hotel Property" 
-                                            : option.category === "Flight" 
-                                            ? "Connected Flight Route" 
-                                            : option.category === "Transport" 
-                                            ? "Connected Ground Transfer" 
-                                            : option.category === "Activity" 
-                                            ? "Connected Activity / Tour" 
-                                            : `Connected ${option.category} Item`}
-                                        </span>
-                                      </label>
-                                      {isLinked ? (
-                                        <span className="text-[9px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 px-1.5 py-0.2 rounded shrink-0 ml-1">
-                                          Feed Active
-                                        </span>
-                                      ) : (
-                                        <span className="text-[9px] font-medium text-slate-400 shrink-0 ml-1">
-                                          Standalone
-                                        </span>
-                                      )}
-                                    </div>
+                                    <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1 truncate">
+                                      <Link className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                                      <span className="truncate">
+                                        {option.category === "Hotel" 
+                                          ? "Connected Hotel Property" 
+                                          : option.category === "Flight" 
+                                          ? "Connected Flight Route" 
+                                          : option.category === "Transport" 
+                                          ? "Connected Ground Transfer" 
+                                          : option.category === "Activity" 
+                                          ? "Connected Activity / Tour" 
+                                          : `Connected ${option.category} Item`}
+                                      </span>
+                                    </label>
 
                                     <Select
                                       value={option.linkedItemId || "unlinked"}
@@ -973,33 +1026,19 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                   </div>
                                 </div>
 
-                                {/* ROW 2: Derived Specs & Base Cost */}
-                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2" data-purpose="derived-specs-grid">
-                                  {/* Field 1: Service Name (Derived & Locked) */}
+                                {/* ROW 2: Specs & Base Cost */}
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2" data-purpose="specs-grid">
+                                  {/* Field 1: Service Name */}
                                   <div className="space-y-0.5 min-w-0">
-                                    <div className="flex items-center justify-between">
-                                      <label className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
-                                        Service Label
-                                      </label>
-                                      <span className="text-[9px] font-medium text-slate-400 flex items-center gap-0.5 shrink-0 ml-1">
-                                        {isLinked ? (
-                                          <>
-                                            <Lock className="w-2.5 h-2.5 text-slate-400" />
-                                            Derived
-                                          </>
-                                        ) : (
-                                          "Custom"
-                                        )}
-                                      </span>
-                                    </div>
+                                    <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+                                      Service Label
+                                    </label>
                                     {isLinked ? (
                                       <div className="h-8 flex items-center justify-between bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 rounded-lg px-2.5">
                                         <span className="text-xs font-medium text-slate-700 dark:text-slate-200 truncate mr-1.5" title={option.name}>
                                           {option.name || "Service Item"}
                                         </span>
-                                        <span className="text-[9px] uppercase font-bold tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 px-1 py-0.2 rounded shrink-0">
-                                          Synced
-                                        </span>
+                                        <Lock className="w-3 h-3 text-slate-400 shrink-0" />
                                       </div>
                                     ) : (
                                       <input 
@@ -1014,21 +1053,9 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
 
                                   {/* Field 2: Pricing Type */}
                                   <div className="space-y-0.5 min-w-0">
-                                    <div className="flex items-center justify-between">
-                                      <label className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
-                                        Pricing Model
-                                      </label>
-                                      <span className="text-[9px] font-medium text-slate-400 flex items-center gap-0.5 shrink-0 ml-1">
-                                        {isLinked ? (
-                                          <>
-                                            <Lock className="w-2.5 h-2.5 text-slate-400" />
-                                            Locked
-                                          </>
-                                        ) : (
-                                          "Editable"
-                                        )}
-                                      </span>
-                                    </div>
+                                    <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+                                      Pricing Model
+                                    </label>
                                     {isLinked ? (
                                       <div className="h-8 flex items-center justify-between bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700/80 rounded-lg px-2.5">
                                         <div className="flex items-center gap-1.5 truncate mr-1">
@@ -1061,19 +1088,9 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
 
                                   {/* Field 3: Base Unit Cost */}
                                   <div className="space-y-0.5 min-w-0">
-                                    <div className="flex items-center justify-between">
-                                      <label className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
-                                        Base Unit Cost
-                                      </label>
-                                      {isLinked ? (
-                                        <span className="inline-flex items-center gap-1 text-[9px] font-medium text-emerald-600 dark:text-emerald-400 shrink-0 ml-1">
-                                          <RefreshCw className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
-                                          Auto-rate
-                                        </span>
-                                      ) : (
-                                        <span className="text-[9px] font-medium text-slate-400 shrink-0 ml-1">Manual</span>
-                                      )}
-                                    </div>
+                                    <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
+                                      Base Unit Cost
+                                    </label>
                                     {isLinked ? (
                                       <div className="h-8 flex items-center justify-between bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg px-2.5 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/20 shadow-xs">
                                         <div className="flex items-center gap-1 font-mono font-semibold text-slate-900 dark:text-white text-xs truncate mr-1">
@@ -1083,9 +1100,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                             {option.category === "Hotel" ? "/ nt" : option.type === "per-person" ? "/ pax" : "/ tot"}
                                           </span>
                                         </div>
-                                        <span className="text-[9px] font-mono font-medium uppercase bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.2 rounded border border-slate-200 dark:border-slate-700 shrink-0">
-                                          {option.category === "Hotel" ? "GDS Rate" : "Synced Rate"}
-                                        </span>
+                                        <Lock className="w-3 h-3 text-slate-400 shrink-0" />
                                       </div>
                                     ) : (
                                       <div className="relative rounded-lg shadow-xs">
@@ -1145,8 +1160,8 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                       <label className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
                                         Margin Markup
                                       </label>
-                                      <span className="text-[9px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded font-medium font-mono border border-emerald-200/70 dark:border-emerald-800/60 shrink-0 ml-1">
-                                        +{formatMoney(markupVal, pricing.currency)}
+                                      <span className="text-[9px] text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.2 rounded font-medium font-mono border border-emerald-200/70 dark:border-emerald-800/60 shrink-0 ml-1 whitespace-nowrap">
+                                        {markupVal > 0 ? `+${formatMoney(markupVal, pricing.currency)}` : formatMoney(markupVal, pricing.currency)}
                                       </span>
                                     </div>
                                     <div className="relative rounded-lg shadow-xs">
@@ -1163,31 +1178,30 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                     </div>
                                   </div>
 
-                                  {/* Item Tax / GST (App Select Dropdown) */}
+                                  {/* Item Tax / GST Input */}
                                   <div className="space-y-0.5 min-w-0">
                                     <div className="flex items-center justify-between">
                                       <label className="text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider truncate">
                                         Applicable GST / Tax
                                       </label>
-                                      <span className="text-[9px] text-slate-500 shrink-0 ml-1">
-                                        {taxPct === 0 ? "Exempt" : `+${formatMoney(taxVal, pricing.currency)}`}
+                                      <span className="text-[9px] text-slate-500 shrink-0 ml-1 whitespace-nowrap">
+                                        {taxPct === 0 ? "Exempt" : taxVal > 0 ? `+${formatMoney(taxVal, pricing.currency)}` : formatMoney(taxVal, pricing.currency)}
                                       </span>
                                     </div>
-                                    <Select 
-                                      value={taxPct.toString()}
-                                      onValueChange={(v) => updateManualOption(option.id, "taxPercentage", Number(v))}
-                                    >
-                                      <SelectTrigger className="w-full h-8 bg-white dark:bg-black/20 border-slate-300/60 dark:border-white/10 rounded-lg text-xs font-medium text-slate-900 dark:text-white shadow-xs px-2.5">
-                                        <SelectValue />
-                                      </SelectTrigger>
-                                      <SelectContent className="bg-white dark:bg-obsidian-dark border-slate-300/60 dark:border-white/10 text-slate-900 dark:text-zinc-200 shadow-xl text-xs">
-                                        <SelectItem value="0">0% (Nil / Exempt)</SelectItem>
-                                        <SelectItem value="5">5% Standard GST</SelectItem>
-                                        <SelectItem value="12">12% Hospitality GST</SelectItem>
-                                        <SelectItem value="18">18% Integrated IGST</SelectItem>
-                                        <SelectItem value="28">28% Luxury GST</SelectItem>
-                                      </SelectContent>
-                                    </Select>
+                                    <div className="relative rounded-lg shadow-xs">
+                                      <input 
+                                        type="number"
+                                        min="0"
+                                        step="0.5" 
+                                        value={typeof option.taxPercentage === "number" ? option.taxPercentage : 0} 
+                                        onChange={(e) => updateManualOption(option.id, "taxPercentage", Number(e.target.value))}
+                                        className="h-8 w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 rounded-lg pl-2.5 pr-7 py-1 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20"
+                                        placeholder="0"
+                                      />
+                                      <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2.5">
+                                        <span className="text-slate-400 font-semibold text-[10px]">%</span>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
                               </div>
@@ -1202,13 +1216,13 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                       {adultPax} Adult{adultPax > 1 ? 's' : ''}{childPax > 0 ? `, ${childPax} Child${childPax > 1 ? 'ren' : ''}` : ''}{infantPax > 0 ? `, ${infantPax} Infant${infantPax > 1 ? 's' : ''}` : ''}
                                     </span>
                                     {option.type === "per-person" && (
-                                      <span className="text-slate-500 text-[10px] font-mono">
+                                      <span className="text-slate-500 text-[10px] font-mono whitespace-nowrap">
                                         × {formatMoney(option.amount, pricing.currency)} / pax
                                       </span>
                                     )}
                                   </div>
-                                  <div className="font-mono text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300">
-                                    Gross Base: <span className="text-slate-900 dark:text-white font-bold">{formatMoney(baseVal, pricing.currency)}</span>
+                                  <div className="font-mono text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                    Gross Base: <span className="text-slate-900 dark:text-white font-bold whitespace-nowrap">{formatMoney(baseVal, pricing.currency)}</span>
                                   </div>
                                 </div>
 
@@ -1218,19 +1232,19 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                     {adultPax > 0 && (
                                       <div className="flex justify-between text-[10px] sm:text-[11px] font-mono">
                                         <span className="text-slate-600 dark:text-slate-400">Adults: {adultPax} × {formatMoney(adultCostEach, pricing.currency)}</span>
-                                        <span className="text-emerald-700 dark:text-emerald-400 font-semibold">{formatMoney(adultCostEach * adultPax, pricing.currency)}</span>
+                                        <span className="text-emerald-700 dark:text-emerald-400 font-semibold whitespace-nowrap">{formatMoney(adultCostEach * adultPax, pricing.currency)}</span>
                                       </div>
                                     )}
                                     {childPax > 0 && (
                                       <div className="flex justify-between text-[10px] sm:text-[11px] font-mono">
                                         <span className="text-slate-600 dark:text-slate-400">Children: {childPax} × {formatMoney(childCostEach, pricing.currency)}</span>
-                                        <span className="text-amber-600 dark:text-amber-400 font-semibold">{formatMoney(childCostEach * childPax, pricing.currency)}</span>
+                                        <span className="text-amber-600 dark:text-amber-400 font-semibold whitespace-nowrap">{formatMoney(childCostEach * childPax, pricing.currency)}</span>
                                       </div>
                                     )}
                                     {infantPax > 0 && (
                                       <div className="flex justify-between text-[10px] sm:text-[11px] font-mono">
                                         <span className="text-slate-600 dark:text-slate-400">Infants: {infantPax} × {formatMoney(infantCostEach, pricing.currency)}</span>
-                                        <span className="text-sky-600 dark:text-sky-400 font-semibold">{formatMoney(infantCostEach * infantPax, pricing.currency)}</span>
+                                        <span className="text-sky-600 dark:text-sky-400 font-semibold whitespace-nowrap">{formatMoney(infantCostEach * infantPax, pricing.currency)}</span>
                                       </div>
                                     )}
                                   </div>
@@ -1242,17 +1256,19 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                   <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] sm:text-[11px] text-slate-600 dark:text-slate-400 font-mono">
                                     <div className="flex items-center gap-1">
                                       <span className="text-slate-500 font-sans">Base:</span>
-                                      <span className="text-slate-800 dark:text-slate-200 font-semibold">{formatMoney(baseVal, pricing.currency)}</span>
+                                      <span className="text-slate-800 dark:text-slate-200 font-semibold whitespace-nowrap">{formatMoney(baseVal, pricing.currency)}</span>
                                     </div>
                                     <span className="text-slate-400">+</span>
                                     <div className="flex items-center gap-1">
                                       <span className="text-slate-500 font-sans">Markup ({mType === "percentage" ? `${mVal}%` : formatMoney(mVal, pricing.currency)}):</span>
-                                      <span className="text-emerald-700 dark:text-emerald-400 font-semibold">+{formatMoney(markupVal, pricing.currency)}</span>
+                                      <span className="text-emerald-700 dark:text-emerald-400 font-semibold whitespace-nowrap">
+                                        {markupVal > 0 ? `+${formatMoney(markupVal, pricing.currency)}` : formatMoney(markupVal, pricing.currency)}
+                                      </span>
                                     </div>
                                     <span className="text-slate-400">+</span>
                                     <div className="flex items-center gap-1">
                                       <span className="text-slate-500 font-sans">Tax ({taxPct}%):</span>
-                                      <span className="text-slate-600 dark:text-slate-400">{formatMoney(taxVal, pricing.currency)}</span>
+                                      <span className="text-slate-600 dark:text-slate-400 whitespace-nowrap">{formatMoney(taxVal, pricing.currency)}</span>
                                     </div>
                                   </div>
 
@@ -1260,7 +1276,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                                   <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-2 bg-slate-900 text-white border border-slate-800 px-2.5 py-1 sm:py-1.5 rounded-lg shadow-xs">
                                     <div className="text-left sm:text-right">
                                       <div className="text-[9px] font-bold tracking-wider uppercase text-slate-400">Line Subtotal</div>
-                                      <div className="text-sm sm:text-base font-bold font-mono text-emerald-400 tracking-tight">{formatMoney(subtotal, pricing.currency)}</div>
+                                      <div className="text-sm sm:text-base font-bold font-mono text-emerald-400 tracking-tight whitespace-nowrap">{formatMoney(subtotal, pricing.currency)}</div>
                                     </div>
                                     <button 
                                       aria-label="Copy subtotal" 
@@ -1281,18 +1297,6 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                               </section>
                             </div>
                             {/* END: CardBodyForm */}
-
-                            {/* BEGIN: CardFooterMeta */}
-                            <footer className="px-3 py-1 sm:px-3.5 sm:py-1.5 bg-slate-50/70 dark:bg-slate-900/60 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1 text-[10px] text-slate-500 dark:text-slate-400">
-                              <div className="flex items-center gap-1.5">
-                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-                                <span>{isLinked ? "Live price sync confirmed (Inventory Feed Active)" : "Manual itemized cost entry"}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <span className="text-slate-400 dark:text-slate-500 text-[9px] sm:text-[10px]">Pricing Policies • Inventory Feed Verified</span>
-                              </div>
-                            </footer>
-                            {/* END: CardFooterMeta */}
                           </article>
                         );
                       })
@@ -1301,109 +1305,28 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
                 </div>
 
                 <div className="col-span-12 lg:col-span-5 xl:col-span-4 space-y-4 lg:sticky lg:top-24 self-start">
-                  {/* Live Costing Summary — Primary Orange Theme */}
-                  <div className="space-y-3 bg-primary/10 p-5 rounded-xl border border-primary/20 text-sm">
-                    <div className="text-primary font-bold text-base uppercase tracking-wider border-b border-primary/20 pb-2">
-                      Costing Summary
-                    </div>
-
-                    {/* PAX Composition Breakdown */}
-                    {(() => {
-                      const adultPax = pricing.adultPax || 0;
-                      const childPax = pricing.childPax || 0;
-                      const infantPax = pricing.infantPax || 0;
-                      const totalPax = adultPax + childPax + infantPax;
-                      if (totalPax === 0) return null;
-
-                      // Calculate per-pax costs across all items
-                      let totalAdultCost = 0;
-                      let totalChildCost = 0;
-                      let totalInfantCost = 0;
-
-                      for (const item of (pricing.manualOptions || [])) {
-                        let linkedItem: any = null;
-                        if (item.linkedItemId) {
-                          if (item.category === "Flight") linkedItem = (flights || []).find((f) => f.id === item.linkedItemId);
-                          else if (item.category === "Hotel") linkedItem = (hotels || []).find((h) => h.id === item.linkedItemId);
-                          else if (item.category === "Transport") {
-                            linkedItem = (cabs || []).find((c) => c.id === item.linkedItemId) || (buses || []).find((b) => b.id === item.linkedItemId);
-                          }
-                        }
-
-                        if (linkedItem && linkedItem.costType !== "flat") {
-                          const nights = linkedItem.nights || 1;
-                          totalAdultCost += (linkedItem.costAdult || 0) * adultPax * nights;
-                          totalChildCost += (linkedItem.costChild || 0) * childPax * nights;
-                          totalInfantCost += (linkedItem.costInfant || 0) * infantPax * nights;
-                        } else if (linkedItem && linkedItem.costType === "flat") {
-                          // flat cost — split proportionally for display
-                          const nights = linkedItem.nights || 1;
-                          const flatTotal = (linkedItem.flatCost ?? linkedItem.totalCost ?? 0) * nights;
-                          const share = totalPax > 0 ? flatTotal / totalPax : 0;
-                          totalAdultCost += share * adultPax;
-                          totalChildCost += share * childPax;
-                          totalInfantCost += share * infantPax;
-                        } else {
-                          // Manual (unlinked) per-person or total item — split proportionally
-                          const itemBase = item.type === "per-person" ? (Number(item.amount) || 0) * totalPax : (Number(item.amount) || 0);
-                          const share = totalPax > 0 ? itemBase / totalPax : 0;
-                          totalAdultCost += share * adultPax;
-                          totalChildCost += share * childPax;
-                          totalInfantCost += share * infantPax;
-                        }
-                      }
-
-                      return (
-                        <div className="space-y-1 bg-white/[0.03] border border-white/[0.06] rounded-lg p-3 text-xs">
-                          <div className="text-[10px] uppercase tracking-wider text-gray-500 font-semibold mb-2">Pax Cost Breakdown (Base)</div>
-                          {adultPax > 0 && (
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-600 dark:text-gray-400 inline-flex items-center gap-1.5">
-                                <Users className="w-3.5 h-3.5 text-slate-400" />
-                                <span>{adultPax} Adult{adultPax > 1 ? "s" : ""}</span>
-                              </span>
-                              <span className="font-mono text-slate-900 dark:text-white font-semibold">{formatMoney(totalAdultCost, pricing.currency)}</span>
-                            </div>
-                          )}
-                          {childPax > 0 && (
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-600 dark:text-gray-400 inline-flex items-center gap-1.5">
-                                <Users className="w-3.5 h-3.5 text-amber-400" />
-                                <span>{childPax} Child{childPax > 1 ? "ren" : ""}</span>
-                              </span>
-                              <span className="font-mono text-amber-300 font-semibold">{formatMoney(totalChildCost, pricing.currency)}</span>
-                            </div>
-                          )}
-                          {infantPax > 0 && (
-                            <div className="flex justify-between items-center">
-                              <span className="text-slate-600 dark:text-gray-400 inline-flex items-center gap-1.5">
-                                <Users className="w-3.5 h-3.5 text-sky-400" />
-                                <span>{infantPax} Infant{infantPax > 1 ? "s" : ""}</span>
-                              </span>
-                              <span className="font-mono text-sky-300 font-semibold">{formatMoney(totalInfantCost, pricing.currency)}</span>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })()}
-
-                    <div className="flex justify-between text-slate-600 dark:text-gray-400">
-                      <span>Base Cost</span>
-                      <span className="font-mono">{formatMoney(baseCost, pricing.currency)}</span>
-                    </div>
-                    <div className="flex justify-between text-primary font-medium">
-                      <span>Total Item Markup</span>
-                      <span className="font-mono">+{formatMoney(markupAmount, pricing.currency)}</span>
-                    </div>
-                    <div className="flex justify-between text-sky-400 font-medium">
-                      <span>Total Item Tax</span>
-                      <span className="font-mono">+{formatMoney(taxAmount, pricing.currency)}</span>
-                    </div>
-                    <div className="pt-3 mt-2 border-t border-primary/20 flex justify-between font-extrabold text-slate-900 dark:text-white text-xl">
-                      <span>Total Client Quote</span>
-                      <span className="text-primary font-mono">{formatMoney(finalTotal, pricing.currency)}</span>
-                    </div>
-                  </div>
+                  <CostingSummaryCard
+                    tripId={state.tripId}
+                    currency={pricing.currency}
+                    currencySymbol={currencySymbol}
+                    baseCost={baseCost}
+                    markupAmount={markupAmount}
+                    markupPercentage={pricing.markupValue}
+                    taxAmount={taxAmount}
+                    taxPercentage={pricing.taxPercentage}
+                    finalTotal={finalTotal}
+                    adultPax={pricing.adultPax ?? 2}
+                    childPax={pricing.childPax ?? 0}
+                    infantPax={pricing.infantPax ?? 0}
+                    totalAdultCost={paxBreakdown.totalAdultCost}
+                    totalChildCost={paxBreakdown.totalChildCost}
+                    totalInfantCost={paxBreakdown.totalInfantCost}
+                    onExportPdf={onExportPdf}
+                    onSendToClient={onSendToClient}
+                    onSave={() => onSave?.(pricing)}
+                    isSaving={isSaving}
+                    milestones={pricing.milestones}
+                  />
                 </div>
               </div>
 
@@ -1457,7 +1380,7 @@ export default function PricingModule({ onSave, isSaving }: { onSave?: (p?: Pric
 
                       {/* Milestone amount — reactive from engine */}
                       <div className="pt-5">
-                        <div className="text-primary font-bold text-base w-32 text-right font-mono">
+                        <div className="text-primary font-bold text-base w-32 text-right font-mono whitespace-nowrap shrink-0">
                           {formatMoney(milestone.amount, pricing.currency)}
                         </div>
                       </div>

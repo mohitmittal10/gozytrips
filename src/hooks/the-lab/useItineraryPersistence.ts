@@ -228,9 +228,16 @@ export function useItineraryPersistence({
 
           if (_tripMetadata.startDate) _tripMetadata.startDate = new Date(_tripMetadata.startDate);
           if (_tripMetadata.endDate) _tripMetadata.endDate = new Date(_tripMetadata.endDate);
+          if (!_tripMetadata.destinations && data.destinations) _tripMetadata.destinations = data.destinations;
+          if (!_tripMetadata.startingLocation && data.starting_location) _tripMetadata.startingLocation = data.starting_location;
+
+          const itineraryTitle = data.title || itineraryData.title || itineraryData.tripTitle;
+          if (itineraryTitle && !_tripMetadata.title) {
+            _tripMetadata.title = itineraryTitle;
+          }
 
           const newData = {
-            itinerary: (itineraryObj.itinerary ? itineraryObj : null) as any,
+            itinerary: (itineraryObj.itinerary ? { ...itineraryObj, title: itineraryTitle || itineraryObj.title } : null) as any,
             hotels: hotels || [],
             flights: flights || [],
             cabs: cabs || [],

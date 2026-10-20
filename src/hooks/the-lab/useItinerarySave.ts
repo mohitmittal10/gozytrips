@@ -204,6 +204,8 @@ export function useItinerarySave({
         status:            itineraryState.selectedStatus,
         itinerary_data: {
           ...itineraryState.itinerary,
+          title:   generatedTitle,
+          tripTitle: generatedTitle,
           hotels:  itineraryState.hotels,
           flights: itineraryState.flights,
           cabs:    itineraryState.cabs,

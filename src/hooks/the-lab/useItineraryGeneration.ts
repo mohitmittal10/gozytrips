@@ -6,6 +6,7 @@ import { generateDaySummaries } from "@/ai/flows/generate-day-summaries";
 import { useLabStore } from "@/store/the-lab/labStore";
 import { format } from "date-fns";
 import type { TheLabFormValues, TripMetadata } from "@/types/the-lab";
+import { formatTitleCase } from "@/components/pdf/utils";
 
 export function useItineraryGeneration() {
   const [isGenerating, setIsGenerating] = useState(false);
@@ -148,6 +149,19 @@ export function useItineraryGeneration() {
         (result as any).pdfOverrides = initialPdfOverrides;
       } catch (sumError) {
         console.warn('[useItineraryGeneration] Failed to generate AI day summaries:', sumError);
+      }
+
+      // Compute and attach itinerary title
+      const startLoc = effectiveValues.startingLocation;
+      const dests = effectiveValues.destinations;
+      let genTitle = dests ? (startLoc ? `${startLoc} to ${dests}` : `Trip to ${dests}`) : "";
+      if (startDate && endDate && endDate > startDate) {
+        const totalDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+        genTitle += ` ${totalDays}N ${totalDays + 1}D`;
+      }
+      if (genTitle) {
+        (result as any).title = formatTitleCase(genTitle);
+        (result as any).tripTitle = formatTitleCase(genTitle);
       }
 
       setItinerary(result);

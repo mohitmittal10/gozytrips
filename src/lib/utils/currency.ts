@@ -32,16 +32,19 @@ export function formatCurrencyCompact(
   locale = "en-IN"
 ): string {
   const symbol = getCurrencySymbol(currency);
+  const isNegative = val < 0;
+  const absVal = Math.abs(val);
+  const prefix = isNegative ? "\u2011" : "";
   
   if (currency === 'INR' || locale === 'en-IN') {
-    if (val >= 10000000) return `${symbol}${(val / 10000000).toFixed(2)}Cr`;
-    if (val >= 100000) return `${symbol}${(val / 100000).toFixed(2)}L`;
+    if (absVal >= 10000000) return `${prefix}${symbol}${(absVal / 10000000).toFixed(2)}Cr`;
+    if (absVal >= 100000) return `${prefix}${symbol}${(absVal / 100000).toFixed(2)}L`;
   } else {
-    if (val >= 1000000) return `${symbol}${(val / 1000000).toFixed(1)}M`;
-    if (val >= 1000) return `${symbol}${(val / 1000).toFixed(1)}k`;
+    if (absVal >= 1000000) return `${prefix}${symbol}${(absVal / 1000000).toFixed(1)}M`;
+    if (absVal >= 1000) return `${prefix}${symbol}${(absVal / 1000).toFixed(1)}k`;
   }
   
-  return `${symbol}${Math.round(val).toLocaleString(locale)}`;
+  return `${prefix}${symbol}${Math.round(absVal).toLocaleString(locale)}`;
 }
 
 /**
@@ -55,12 +58,16 @@ export function formatMoney(
   const val = typeof amount === 'number' ? amount : parseFloat(String(amount).replace(/,/g, ''));
   if (isNaN(val)) return "0";
 
-  return new Intl.NumberFormat(locale, {
+  const formatted = new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(val);
+
+  // Use non-breaking hyphen (\u2011) for negative sign so browser word-breaking
+  // never splits the negative sign from the currency symbol and amount onto its own line
+  return formatted.replace(/^-/, '\u2011').replace(/-\s*/, '\u2011');
 }
 
 /**
@@ -76,11 +83,13 @@ export function formatMoneyWithDecimals(
   currency: Currency = DEFAULT_CURRENCY,
   locale = "en-IN"
 ): string {
-  return new Intl.NumberFormat(locale, {
+  const formatted = new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
+
+  return formatted.replace(/^-/, '\u2011').replace(/-\s*/, '\u2011');
 }
 
