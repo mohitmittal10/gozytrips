@@ -4,7 +4,7 @@ import type { TravelItineraryOutput } from "@/ai/flows/generate-travel-itinerary
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { Trash2, Plus, Minus, Sparkles, Camera, Users } from "lucide-react";
+import { Trash2, Plus, Minus, Sparkles, Camera, Users, Building2, Utensils } from "lucide-react";
 import { uploadItineraryPhoto } from "@/lib/upload-itinerary-photo";
 import { useState, useCallback, useContext, useEffect, useRef } from "react";
 import { CustomTabs } from "@/components/ui/custom-tabs";
@@ -39,6 +39,7 @@ import { InlineEdit } from "@/components/ui/inline-edit";
 import { useItineraryDnd } from "@/hooks/use-itinerary-dnd";
 import { useReferenceOptions } from "@/hooks/use-reference-options";
 import { DEFAULT_FALLBACK_PHOTOS, getActivityFallbackUrl } from "@/lib/constants";
+import { cleanHtmlToBulletText } from "@/lib/sanitize-itinerary-html";
 
 import { fetchItineraryImages } from "@/ai/flows/fetch-itinerary-images";
 
@@ -77,6 +78,55 @@ const parseStepId = (id: string): { dayIndex: number; stepIndex: number } | null
   if (!m) return null;
   return { dayIndex: Number(m[1]), stepIndex: Number(m[2]) };
 };
+
+// ── Timeline Step Details (rich bullet rendering) ──────────────────────────────
+
+function TimelineStepDetails({ details }: { details: string }) {
+  if (!details) return null;
+  const cleanText = cleanHtmlToBulletText(details);
+  if (!cleanText) return null;
+  const lines = cleanText.split('\n').filter(l => l.trim().length > 0);
+  const hasBullets = lines.some(l => /^[•]/.test(l.trim()) || /^\s*[-–]\s/.test(l));
+
+  if (!hasBullets) {
+    return (
+      <p className="text-slate-800 dark:text-zinc-300 text-xs leading-relaxed font-normal whitespace-pre-line m-0">
+        {cleanText}
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      {lines.map((line, i) => {
+        const trimmed = line.trim();
+        const isBullet = /^•\s*/.test(trimmed);
+        const isSub = !isBullet && (/^[-–]\s/.test(trimmed) || /^\s{2,}/.test(line));
+        const text = trimmed.replace(/^[•\-–]\s*/, '');
+
+        if (isBullet) {
+          return (
+            <div key={i} className="flex items-center gap-2">
+              <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary/70" />
+              <span className="text-slate-800 dark:text-zinc-200 text-xs leading-relaxed font-medium flex-1">{text}</span>
+            </div>
+          );
+        }
+        if (isSub) {
+          return (
+            <div key={i} className="flex items-center gap-2 pl-4">
+              <span className="flex-shrink-0 text-[8px] text-slate-400 dark:text-zinc-500">▸</span>
+              <span className="text-slate-600 dark:text-zinc-400 text-xs leading-relaxed font-normal flex-1">{text}</span>
+            </div>
+          );
+        }
+        return (
+          <span key={i} className="text-slate-800 dark:text-zinc-300 text-xs leading-relaxed font-normal block">{trimmed}</span>
+        );
+      })}
+    </div>
+  );
+}
 
 // ── Sortable Activity Item ─────────────────────────────────────────────────────
 
@@ -122,7 +172,7 @@ function SortableActivity({
         {/* Drag handle */}
         {isEditable && (
           <button
-            className="mt-1 cursor-grab active:cursor-grabbing text-primary/30 hover:text-primary/70 transition-colors opacity-0 group-hover/step:opacity-100 flex-shrink-0"
+            className="mt-2 cursor-grab active:cursor-grabbing text-primary/30 hover:text-primary/70 transition-colors opacity-0 group-hover/step:opacity-100 flex-shrink-0"
             {...attributes}
             {...listeners}
             tabIndex={-1}
@@ -133,36 +183,40 @@ function SortableActivity({
         )}
 
         <div className="flex-1 min-w-0">
-          <div className="p-2 sm:p-2.5 rounded-xl flex flex-col sm:flex-row gap-1.5 sm:gap-3 items-start sm:items-baseline group/card transition-all bg-slate-50/50 dark:bg-white/[0.02] hover:bg-slate-100 dark:hover:bg-white/[0.04]">
+          <div className="p-2.5 sm:p-3 rounded-xl flex flex-col gap-2 group/card transition-all bg-slate-50/60 dark:bg-white/[0.02] hover:bg-slate-100/80 dark:hover:bg-white/[0.05] border border-slate-200/60 dark:border-white/[0.04]">
+            {/* Time badge */}
             {showTimestamps !== false && (
-              <div className="flex-shrink-0">
-                <InlineEdit
-                  value={step.time}
-                  onSave={(v) => onUpdateStep("time", v)}
-                  onEditStart={() => onEditingChange?.(true)}
-                  className="text-[11px] font-medium text-primary tracking-wide uppercase inline-block"
-                  inputClassName="text-[11px] font-medium"
-                  placeholder="e.g. 08:00 AM"
-                  disabled={!isEditable}
-                />
+              <div className="flex items-center gap-1.5">
+                <div className="flex-shrink-0 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20">
+                  <InlineEdit
+                    value={step.time}
+                    onSave={(v) => onUpdateStep("time", v)}
+                    onEditStart={() => onEditingChange?.(true)}
+                    className="text-[10px] font-bold text-primary tracking-wide uppercase inline-block"
+                    inputClassName="text-[10px] font-bold"
+                    placeholder="e.g. 08:00 AM"
+                    disabled={!isEditable}
+                  />
+                </div>
               </div>
             )}
 
-            {showTimestamps !== false && (
-              <span className="hidden sm:inline text-zinc-600 text-xs select-none">—</span>
-            )}
-            
+            {/* Details body */}
             <div className="flex-1 w-full min-w-0">
-              <InlineEdit
-                value={step.details}
-                onSave={(v) => onUpdateStep("details", v)}
-                onEditStart={() => onEditingChange?.(true)}
-                className="text-slate-900 dark:text-zinc-300 text-xs leading-relaxed font-normal block"
-                inputClassName="text-xs font-normal"
-                multiline
-                placeholder="Activity description..."
-                disabled={!isEditable}
-              />
+              {isEditable ? (
+                <InlineEdit
+                  value={cleanHtmlToBulletText(step.details)}
+                  onSave={(v) => onUpdateStep("details", cleanHtmlToBulletText(v))}
+                  onEditStart={() => onEditingChange?.(true)}
+                  className="text-slate-800 dark:text-zinc-300 text-xs leading-relaxed font-normal block whitespace-pre-line"
+                  inputClassName="text-xs font-normal"
+                  multiline
+                  placeholder="Activity description..."
+                  disabled={false}
+                />
+              ) : (
+                <TimelineStepDetails details={step.details} />
+              )}
             </div>
           </div>
         </div>
@@ -171,7 +225,7 @@ function SortableActivity({
         {isEditable && (
           <button
             onClick={onDeleteStep}
-            className="mt-1 text-red-400/50 hover:text-red-400 transition-colors opacity-0 group-hover/step:opacity-100 flex-shrink-0"
+            className="mt-2 text-red-400/50 hover:text-red-400 transition-colors opacity-0 group-hover/step:opacity-100 flex-shrink-0"
             title="Delete activity"
           >
             <span className="material-symbols-outlined text-[16px]">delete</span>
@@ -188,7 +242,7 @@ function ActivityOverlay({ step, showTimestamps }: { step: TimelineStep, showTim
   return (
     <div className="bg-primary/20 backdrop-blur-md border border-primary/40 rounded-lg px-4 py-3 shadow-2xl max-w-md">
       {showTimestamps !== false && <p className="font-bold text-primary text-lg">{step.time}</p>}
-      <p className="text-foreground/80 text-sm line-clamp-2">{renderFormattedText(step.details)}</p>
+      <div className="text-foreground/80 text-sm line-clamp-2">{renderFormattedText(cleanHtmlToBulletText(step.details))}</div>
     </div>
   );
 }
@@ -394,7 +448,7 @@ const ItineraryTimeline = ({
 
       const result = res.data;
 
-      // Fetch dynamic Unsplash image for newly regenerated day
+      // Fetch dynamic site photo for newly regenerated day
       let newImageUrl: string | undefined = undefined;
       try {
         const searchTerm = result.imageSearchTerm || result.areaFocus;
@@ -508,7 +562,7 @@ const ItineraryTimeline = ({
     });
   };
 
-  const updateDayField = (dayIndex: number, field: "areaFocus" | "date", value: string) => {
+  const updateDayField = (dayIndex: number, field: "areaFocus" | "date" | "stayCity" | "meals", value: string) => {
     if (onEditingChange) onEditingChange(true);
     updateItinerary((days) => {
       (days[dayIndex] as Record<string, unknown>)[field] = value;
@@ -525,6 +579,8 @@ const ItineraryTimeline = ({
         day: days.length + 1,
         date: `Day ${days.length + 1}`,
         areaFocus: "New Area — click to edit",
+        stayCity: "",
+        meals: "",
         imageSearchTerm: "",
         timeline: [{ time: "9:00 AM", details: "First activity — click to edit" }],
       };
@@ -869,9 +925,49 @@ const ItineraryTimeline = ({
                                 </h3>
                               </>
                             )}
-                            <p className="text-xs text-zinc-500 mt-1">
-                              {day.timeline.length} {day.timeline.length === 1 ? 'activity' : 'activities'} planned
-                            </p>
+
+                            {/* Stay City & Meals Info Bar */}
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
+                              {(day.stayCity || editable) && (
+                                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-500/10 border border-blue-500/20 text-blue-600 dark:text-blue-400 text-xs">
+                                  <Building2 className="w-3.5 h-3.5 flex-shrink-0" />
+                                  <span className="text-[10px] uppercase font-bold tracking-wider opacity-75">Stay:</span>
+                                  {editable ? (
+                                    <InlineEdit
+                                      value={day.stayCity || ""}
+                                      onSave={(v) => updateDayField(dayIndex, "stayCity", v)}
+                                      onEditStart={() => onEditingChange?.(true)}
+                                      className="font-medium text-xs text-blue-700 dark:text-blue-300"
+                                      placeholder="e.g. Jaipur"
+                                    />
+                                  ) : (
+                                    <span className="font-medium">{day.stayCity || "Not specified"}</span>
+                                  )}
+                                </div>
+                              )}
+
+                              {(day.meals || editable) && (
+                                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs">
+                                  <Utensils className="w-3.5 h-3.5 flex-shrink-0" />
+                                  <span className="text-[10px] uppercase font-bold tracking-wider opacity-75">Meals:</span>
+                                  {editable ? (
+                                    <InlineEdit
+                                      value={day.meals || ""}
+                                      onSave={(v) => updateDayField(dayIndex, "meals", v)}
+                                      onEditStart={() => onEditingChange?.(true)}
+                                      className="font-medium text-xs text-amber-800 dark:text-amber-300"
+                                      placeholder="e.g. Breakfast included"
+                                    />
+                                  ) : (
+                                    <span className="font-medium">{day.meals || "Not specified"}</span>
+                                  )}
+                                </div>
+                              )}
+
+                              <p className="text-xs text-zinc-500">
+                                {day.timeline.length} {day.timeline.length === 1 ? 'activity' : 'activities'} planned
+                              </p>
+                            </div>
                           </div>
                         </div>
 
@@ -911,7 +1007,7 @@ const ItineraryTimeline = ({
                         strategy={verticalListSortingStrategy}
                         disabled={!editable}
                       >
-                        <div className="space-y-2.5">
+                        <div className="space-y-3">
                           {day.timeline.map((step, stepIndex) => (
                             <SortableActivity
                               key={stepId(dayIndex, stepIndex)}

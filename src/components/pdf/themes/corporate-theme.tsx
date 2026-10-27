@@ -186,7 +186,7 @@ export const CorporateTheme = ({
                                 <h3 style={{ margin: 0, fontSize: "11px", color: brandColor, textTransform: "uppercase", letterSpacing: "1.5px", fontWeight: 800 }}>Destination Overview</h3>
                             </div>
                             <h2 style={{ margin: "0 0 16px 0", fontSize: "24px", color: "#0f172a", fontWeight: 800, letterSpacing: "-0.5px" }}>{aboutPlace.title}</h2>
-                            <p style={{ margin: "0 0 20px 0", color: "#475569", fontSize: "13.5px", lineHeight: "1.7", fontWeight: 500 }}>{renderFormattedText(aboutPlace.description)}</p>
+                            <div style={{ margin: "0 0 20px 0", color: "#475569", fontSize: "13.5px", lineHeight: "1.7", fontWeight: 500 }}>{renderFormattedText(aboutPlace.description)}</div>
 
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
                                 {(aboutPlace.highlights || []).map((hl: string, i: number) => (
@@ -216,7 +216,15 @@ export const CorporateTheme = ({
                                 <img src={dayImg} alt={formatTitleCase(day.areaFocus)} style={{ width: "120px", height: "70px", objectFit: "cover", display: "block", flexShrink: 0 }} crossOrigin="anonymous" />
                             ) : null}
                             <div style={{ padding: "12px 24px", display: "flex", justifyContent: "space-between", alignItems: "center", flex: 1 }}>
-                                <h3 data-field={`days[${index}].location`} style={{ fontSize: "16px", margin: 0, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Day {index + 1}: {formatTitleCase(day.areaFocus)}</h3>
+                                <div>
+                                    <h3 data-field={`days[${index}].location`} style={{ fontSize: "16px", margin: 0, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.5px" }}>Day {index + 1}: {formatTitleCase(day.areaFocus)}</h3>
+                                    {((day as any).stayCity || (day as any).meals) && (
+                                        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "4px", fontSize: "11px", fontWeight: 600, color: "#475569" }}>
+                                            {(day as any).stayCity && <span>🏨 Stay: {(day as any).stayCity}</span>}
+                                            {(day as any).meals && <span>🍽️ Meals: {(day as any).meals}</span>}
+                                        </div>
+                                    )}
+                                </div>
                                 <span style={{ fontSize: "12px", opacity: 0.8, fontWeight: 600 }}>{formatDate(day.date)}</span>
                             </div>
                         </div>

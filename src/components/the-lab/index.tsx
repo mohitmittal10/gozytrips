@@ -958,7 +958,7 @@ export default function TheLab() {
         </div>
       )}
       {isViewingItinerary && (itinerary?.itinerary?.length ?? 0) > 0 && (
-        <div className="w-full sticky top-0 z-40 bg-[#EFECE5]/90 dark:bg-black/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
+        <div className="w-full sticky top-[60px] sm:top-[68px] z-40 bg-[#EFECE5]/90 dark:bg-black/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
           <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
             <TheLabHeader
               itinerary={itinerary}

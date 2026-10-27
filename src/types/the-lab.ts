@@ -60,9 +60,9 @@ export const formSchema = z.object({
   ]).default("no_preference"),
   daywiseDestinations: z
     .string()
-    .max(1000, "Day-wise plan is too long (max 1000 characters).")
+    .max(10000, "Day-wise plan is too long (max 10,000 characters).")
     .optional()
-    .transform((v) => sanitizeText(v, 1000)),
+    .transform((v) => sanitizeText(v, 10000)),
   hotels: z.array(z.object({
     id: z.string(),
     dayIndex: z.number(),

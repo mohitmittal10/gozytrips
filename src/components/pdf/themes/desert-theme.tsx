@@ -360,7 +360,7 @@ export const DesertTheme = ({
                         <div style={{ flex: 1, paddingTop: "20px" }}>
                             <p style={{ margin: "0 0 16px 0", fontSize: "12px", textTransform: "uppercase", letterSpacing: "4px", color: "#b48b63", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>About The Destination</p>
                             <h2 data-field="aboutPlace.title" style={{ margin: "0 0 24px 0", fontSize: "40px", color: "#111827", fontWeight: 500, lineHeight: "1.1" }}>{resolvedAbout.title}</h2>
-                            <p data-field="aboutPlace.description" style={{ margin: "0 0 32px 0", color: "#4b5563", fontSize: "16px", lineHeight: "1.9", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{renderFormattedText(resolvedAbout.description)}</p>
+                            <div data-field="aboutPlace.description" style={{ margin: "0 0 32px 0", color: "#4b5563", fontSize: "16px", lineHeight: "1.9", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>{renderFormattedText(resolvedAbout.description)}</div>
                             
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}>
                                 {(resolvedAbout.highlights || []).map((hl: string, i: number) => (
@@ -406,6 +406,12 @@ export const DesertTheme = ({
                                 <h3 data-field={`days[${index}].location`} style={{ margin: "0 0 8px 0", fontSize: "30px", color: "#1f2937", fontWeight: 500 }}>
                                     {formatTitleCase(day.areaFocus)}
                                 </h3>
+                                {((day as any).stayCity || (day as any).meals) && (
+                                    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", margin: "0 0 10px 0", fontSize: "12px", fontWeight: 600, color: "#c2410c" }}>
+                                        {(day as any).stayCity && <span style={{ background: "rgba(194, 65, 12, 0.08)", padding: "2px 8px", borderRadius: "4px" }}>🏨 Stay: {(day as any).stayCity}</span>}
+                                        {(day as any).meals && <span style={{ background: "rgba(194, 65, 12, 0.08)", padding: "2px 8px", borderRadius: "4px" }}>🍽️ Meals: {(day as any).meals}</span>}
+                                    </div>
+                                )}
                                 <p style={{ margin: "0 0 16px 0", fontSize: "13px", color: "#9ca3af", fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif" }}>
                                     {day.timeline?.[0]?.time && day.timeline?.[day.timeline.length - 1]?.time
                                         ? `${day.timeline[0].time} - ${day.timeline[day.timeline.length - 1].time}`
@@ -415,12 +421,12 @@ export const DesertTheme = ({
                                     {day.timeline?.map((step, si) => (
                                         <li key={si} style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
                                             <span style={{ flexShrink: 0, marginTop: "5px", width: "6px", height: "6px", borderRadius: "50%", background: "#fb923c", display: "inline-block" }} />
-                                            <span style={{ flex: 1, fontSize: "14px", lineHeight: "1.7", color: "#6b7280" }}>
+                                            <div style={{ flex: 1, fontSize: "14px", lineHeight: "1.7", color: "#6b7280" }}>
                                                 {showTimestamps && step.time && (
                                                     <span style={{ fontWeight: 700, color: "#fb923c", marginRight: "6px", fontSize: "12px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{step.time}</span>
                                                 )}
-                                                <span data-field={`days[${index}].activities[${si}]`}>{renderFormattedText(step.details)}</span>
-                                            </span>
+                                                <div data-field={`days[${index}].activities[${si}]`}>{renderFormattedText(step.details)}</div>
+                                            </div>
                                         </li>
                                     )) || <li style={{ fontSize: "14px", color: "#6b7280" }}>{formatDate(day.date)}</li>}
                                 </ul>

@@ -154,6 +154,7 @@ export function CrmApp() {
                                             activeTab === 'trips' ? 'Monitor your active trip pipeline' :
                                                 activeTab === 'itineraries' ? 'View, search and edit all itineraries created in The Lab' :
                                                     activeTab === 'client-forms' ? 'Create client enquiry forms and track responses' :
+                                                        activeTab === 'enquiry' ? 'Ingest WhatsApp chats into leads & manage vendor quotations' :
                                                         'Manage your travel operations efficiency'}
                                 </p>
                             </div>

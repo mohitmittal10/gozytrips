@@ -8,6 +8,7 @@ import { defaultPricingConfig, DEFAULT_CURRENCY } from "@/types/pricing";
 import { useLabStore } from "@/store/the-lab/labStore";
 
 import { formatTitleCase } from "@/components/pdf/utils";
+import { sanitizeItineraryObject } from "@/lib/sanitize-itinerary-html";
 
 export function buildComparisonPayload(data: Partial<LoadedPersistenceData>) {
   const pricingCfg = {
@@ -221,7 +222,8 @@ export function useItineraryPersistence({
             setCurrentTripId(data.id);
           }
 
-          const itineraryData = data.itinerary_data || {};
+          const rawItineraryData = data.itinerary_data || {};
+          const itineraryData = sanitizeItineraryObject(rawItineraryData);
           const { hotels, flights, cabs, buses, pricing, ...itineraryObj } = itineraryData;
 
           let _tripMetadata = data.generation_preferences || {};

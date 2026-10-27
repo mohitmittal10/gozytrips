@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { fetchItineraryImages } from "@/ai/flows/fetch-itinerary-images";
+import { searchSiteCandidatePhotos } from "@/ai/flows/fetch-itinerary-images";
 import { uploadItineraryPhoto } from "@/lib/upload-itinerary-photo";
 import { Search, Upload, Link as LinkIcon, Loader2, X, Check } from "lucide-react";
 
@@ -20,7 +20,7 @@ export function ImagePicker({
     title = "Choose Image",
     initialQuery = "travel destination",
 }: ImagePickerProps) {
-    const [tab, setTab] = useState<"unsplash" | "upload" | "url">("unsplash");
+    const [tab, setTab] = useState<"search" | "upload" | "url">("search");
     const [searchQuery, setSearchQuery] = useState(initialQuery);
     const [images, setImages] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
@@ -40,10 +40,10 @@ export function ImagePicker({
         if (!query.trim()) return;
         setLoading(true);
         try {
-            const urls = await fetchItineraryImages([query.trim()]);
+            const urls = await searchSiteCandidatePhotos(query.trim(), undefined, 9);
             setImages(urls || []);
         } catch (err) {
-            console.error("Unsplash search failed:", err);
+            console.error("Site photo search failed:", err);
             setImages([]);
         } finally {
             setLoading(false);
@@ -99,14 +99,14 @@ export function ImagePicker({
                 {/* Tabs */}
                 <div className="flex border-b border-slate-200 dark:border-zinc-800 bg-slate-100/50 dark:bg-zinc-900/50 p-1 gap-1">
                     <button
-                        onClick={() => setTab("unsplash")}
+                        onClick={() => setTab("search")}
                         className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
-                            tab === "unsplash"
+                            tab === "search"
                                 ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm"
                                 : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-100/50 dark:hover:bg-zinc-800/40"
                         }`}
                     >
-                        <Search size={14} /> Unsplash Photos
+                        <Search size={14} /> Search Sights
                     </button>
                     <button
                         onClick={() => setTab("upload")}
@@ -132,7 +132,7 @@ export function ImagePicker({
 
                 {/* Tab Body */}
                 <div className="p-5 overflow-y-auto flex-1 space-y-4">
-                    {tab === "unsplash" && (
+                    {tab === "search" && (
                         <div className="space-y-4">
                             <div className="flex gap-2">
                                 <input
@@ -140,7 +140,7 @@ export function ImagePicker({
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     onKeyDown={(e) => e.key === "Enter" && handleSearch(searchQuery)}
-                                    placeholder="Search Unsplash (e.g. Paris, Beach, Mountains)..."
+                                    placeholder="Search sights, monuments, beaches (e.g. Amber Fort, Baga Beach)..."
                                     className="flex-1 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-slate-400 dark:focus:border-zinc-600 transition-colors"
                                 />
                                 <button
@@ -154,7 +154,7 @@ export function ImagePicker({
 
                             {loading ? (
                                 <div className="text-center py-12 text-slate-600 dark:text-zinc-400 text-xs font-medium">
-                                    Fetching high-res Unsplash photos...
+                                    Searching Wikipedia & Travel Commons for authentic photos...
                                 </div>
                             ) : images.length > 0 ? (
                                 <div className="grid grid-cols-3 gap-3">
@@ -253,7 +253,7 @@ export function ImagePicker({
                     >
                         Cancel
                     </button>
-                    {tab === "unsplash" && selectedUrl && (
+                    {tab === "search" && selectedUrl && (
                         <button
                             onClick={() => {
                                 onSelectImage(selectedUrl);

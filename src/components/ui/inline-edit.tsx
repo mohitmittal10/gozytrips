@@ -77,7 +77,7 @@ export function InlineEdit({
       return containsHtml ? (
         <span className={className} dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} />
       ) : (
-        <span className={className}>{value}</span>
+        <span className={cn("whitespace-pre-line", className)}>{value}</span>
       );
     }
 
@@ -96,7 +96,7 @@ export function InlineEdit({
         {containsHtml ? (
           <span className="flex-1" dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) }} />
         ) : (
-          <span className="flex-1">{value}</span>
+          <span className="flex-1 whitespace-pre-line">{value}</span>
         )}
         <Pencil className="w-3 h-3 text-primary/40 opacity-0 group-hover/edit:opacity-100 transition-opacity flex-shrink-0" />
       </span>

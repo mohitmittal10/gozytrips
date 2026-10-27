@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { createServerComponentClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { fetchImagesForTerms } from "@/lib/unsplash";
+import { fetchImagesForTerms } from "@/lib/site-photos";
 
 /**
  * POST /api/enquiry-forms/[formId]/responses/[responseId]/itinerary/photos
  *
  * Accepts { searchTerms: string[], areaNames: string[] } and returns
- * an array of photo URLs fetched via Unsplash (server-side, key never exposed).
+ * an array of photo URLs fetched via Wikipedia / Wikimedia Commons.
  *
  * Access control mirrors the parent itinerary route.
  */

@@ -7,5 +7,6 @@ import '@/ai/flows/generate-travel-itinerary';
 import '@/ai/flows/generate-vendor-enquiry';
 import '@/ai/flows/generate-client-update';
 import '@/ai/flows/generate-day-summaries';
+import '@/ai/flows/extract-whatsapp-lead';
 
 console.log('[genkit:dev] Flows registered. Prefer server actions in the app.');

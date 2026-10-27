@@ -1,6 +1,7 @@
 import React from 'react';
 import type { TravelItineraryOutput } from '@/ai/flows/generate-travel-itinerary';
 import { extractTripCost } from '@/services/financial/FinancialService';
+import { cleanHtmlToBulletText } from '@/lib/sanitize-itinerary-html';
 
 export const getTotalBudget = (itinerary: any): number => {
     if (!itinerary) return 0;
@@ -289,11 +290,53 @@ export const getSanitizedTitle = (title: string, itinerary: TravelItineraryOutpu
 
 export const renderFormattedText = (val: any): React.ReactNode => {
     if (val === undefined || val === null || val === '') return null;
-    const str = String(val);
+    let str = String(val);
+
+    // Self-heal any corrupted DOM/React markup or data-field attributes
+    if (/<(span|div|p|header|section|ul|ol|li)[^>]*style=/i.test(str) || /data-field=/i.test(str)) {
+        str = cleanHtmlToBulletText(str);
+    }
+
     const hasHtmlTags = /<[a-z][\s\S]*>/i.test(str);
     if (hasHtmlTags) {
         const cleanHtml = str.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
         return React.createElement('span', { dangerouslySetInnerHTML: { __html: cleanHtml } });
+    }
+    // Detect structured bullet/sub-pointer content (lines starting with • or -)
+    if (str.includes('\n')) {
+        const lines = str.split('\n');
+        const hasBullets = lines.some(l => /^\s*[•\-–]\s/.test(l.trim()) || /^\s*•/.test(l));
+        if (hasBullets) {
+            return React.createElement('span', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+                lines.map((line, i) => {
+                    const trimmed = line.trim();
+                    if (!trimmed) return null;
+                    const isBullet = /^•\s*/.test(trimmed);
+                    const isSub = /^[-–]\s/.test(trimmed) || (!isBullet && /^\s{2,}/.test(line));
+                    const text = trimmed.replace(/^[•\-–]\s*/, '');
+                    if (isBullet) {
+                        return React.createElement('span', {
+                            key: i,
+                            style: { display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 600 }
+                        },
+                            React.createElement('span', { style: { flexShrink: 0, fontSize: '10px' } }, '●'),
+                            React.createElement('span', { style: { flex: 1, lineHeight: '1.6' } }, text)
+                        );
+                    }
+                    if (isSub) {
+                        return React.createElement('span', {
+                            key: i,
+                            style: { display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '18px', opacity: 0.8 }
+                        },
+                            React.createElement('span', { style: { flexShrink: 0, fontSize: '8px' } }, '▸'),
+                            React.createElement('span', { style: { flex: 1, lineHeight: '1.55' } }, text)
+                        );
+                    }
+                    return React.createElement('span', { key: i, style: { display: 'block', lineHeight: '1.6' } }, trimmed);
+                }).filter(Boolean)
+            );
+        }
+        return React.createElement('span', { style: { whiteSpace: 'pre-line' } }, str);
     }
     return str;
 };

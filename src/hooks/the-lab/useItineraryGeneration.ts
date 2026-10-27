@@ -110,7 +110,7 @@ export function useItineraryGeneration() {
 
       const result = res.data;
 
-      // Fetch dynamic images — exactly ONE image per day from Unsplash
+      // Fetch dynamic images — exactly ONE photo per day via Wikipedia/Commons pipeline
       try {
         const daySearchTerms = result.itinerary.map(day => day.imageSearchTerm || day.areaFocus);
         const dayAreaNames = result.itinerary.map(day => day.areaFocus);

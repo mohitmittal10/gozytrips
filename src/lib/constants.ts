@@ -20,14 +20,14 @@ export type ActivityCategory =
     | 'shopping'       // markets, bazaars, malls
     | 'food'           // meals, restaurants, cafés (use food fallback — not scenic)
     | 'transit'        // specific scenic drives, train journeys
-    | 'transit_generic'// generic transfers (skip Unsplash)
-    | 'rest'           // free time, leisure, overnight (skip Unsplash)
+    | 'transit_generic'// generic transfers (skip external search)
+    | 'rest'           // free time, leisure, overnight (skip external search)
     | 'general';       // everything else
 
 // ─── Classification rules ────────────────────────────────────────────────────
 
 const CATEGORY_PATTERNS: [RegExp, ActivityCategory][] = [
-    // Mundane — skip Unsplash
+    // Mundane — skip external search, use curated fallback
     [/\b(breakfast|lunch|dinner|meal|cafe|restaurant|food|cuisine|eat|dining|snack|chai|tea)\b/i, 'food'],
     [/\b(free\s*time|leisure|relax|rest|nap|overnight|sleep|night\s*halt|check[- ]in|check[- ]out)\b/i, 'rest'],
     [/\b(transfer|cab|taxi|airport|railway\s*station|bus\s*stand|depart|arrival|board|flight\s*catch)\b/i, 'transit_generic'],

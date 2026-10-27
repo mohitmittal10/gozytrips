@@ -15,6 +15,7 @@ import { ImagePicker } from "./ImagePicker";
 import { FloatingToolbar } from "./FloatingToolbar";
 import { StructuralControls } from "./StructuralControls";
 import { Edit3, Check } from "lucide-react";
+import { cleanHtmlToBulletText, cleanSimpleFieldText, sanitizeItineraryObject } from "@/lib/sanitize-itinerary-html";
 
 // ─────────────────────────────────────────────────────────────
 // Toolbar: save / editing state
@@ -161,64 +162,23 @@ function EditorToolbar({
 // Helper functions to sanitize collected text and prevent duplicate timestamps/bullets
 function cleanActivityText(str: string): string {
     if (!str) return "";
-    let cleaned = str;
+    let cleaned = cleanHtmlToBulletText(str);
     let prev = "";
     while (cleaned !== prev) {
         prev = cleaned;
         cleaned = cleaned.replace(/^\s*(?:\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?\s*[-–—•]?\s*)+/gi, "").trim();
-        cleaned = cleaned.replace(/^\s*(?:[-•◆✓✕✦\*\+]\s*|\d+[\.\)]\s*)+/gi, "").trim();
     }
     return cleaned;
 }
 
 function cleanListItemText(str: string): string {
     if (!str) return "";
-    return str.replace(/^\s*(?:[-•◆✓✕✦\*\+]\s*|\d+[\.\)]\s*)+/gi, "").trim();
+    return cleanSimpleFieldText(str).replace(/^\s*(?:[-•◆✓✕✦\*\+]\s*|\d+[\.\)]\s*)+/gi, "").trim();
 }
 
 function sanitizeItineraryData(data: any) {
     if (!data || typeof data !== "object") return data;
-    const cloned = JSON.parse(JSON.stringify(data));
-    if (Array.isArray(cloned.itinerary)) {
-        cloned.itinerary.forEach((day: any) => {
-            if (Array.isArray(day.timeline)) {
-                day.timeline.forEach((step: any) => {
-                    if (step && typeof step === "object") {
-                        if (typeof step.details === "string") {
-                            step.details = cleanActivityText(step.details);
-                        }
-                        if (typeof step.activityTitle === "string") {
-                            step.activityTitle = cleanActivityText(step.activityTitle);
-                        }
-                    }
-                });
-            }
-            if (Array.isArray(day.activities)) {
-                day.activities = day.activities.map((act: any) =>
-                    typeof act === "string" ? cleanActivityText(act) : act
-                );
-            }
-        });
-    }
-    if (Array.isArray(cloned.inclusions)) {
-        cloned.inclusions = cloned.inclusions.map((item: any) => typeof item === "string" ? cleanListItemText(item) : item);
-    }
-    if (Array.isArray(cloned.exclusions)) {
-        cloned.exclusions = cloned.exclusions.map((item: any) => typeof item === "string" ? cleanListItemText(item) : item);
-    }
-    if (Array.isArray(cloned.terms)) {
-        cloned.terms = cloned.terms.map((item: any) => typeof item === "string" ? cleanListItemText(item) : item);
-    }
-    if (Array.isArray(cloned.conditions)) {
-        cloned.conditions = cloned.conditions.map((item: any) => typeof item === "string" ? cleanListItemText(item) : item);
-    }
-    if (Array.isArray(cloned.cancellationPolicy)) {
-        cloned.cancellationPolicy = cloned.cancellationPolicy.map((item: any) => typeof item === "string" ? cleanListItemText(item) : item);
-    }
-    if (Array.isArray(cloned.daySummaries)) {
-        cloned.daySummaries = cloned.daySummaries.map((item: any) => typeof item === "string" ? cleanActivityText(item) : item);
-    }
-    return cloned;
+    return sanitizeItineraryObject(data);
 }
 
 // instrumentTheme: stamps data-field on any rendered theme's DOM
@@ -260,15 +220,18 @@ function instrumentTheme(container: HTMLDivElement, liveData: any) {
         const dayImg = daySection.querySelector("img") || daySection.querySelector("[style*='background-image']");
         stampImage(dayImg, `days[${idx}].imageUrl`);
 
-        const activityEls = Array.from(
-            daySection.querySelectorAll("p, li")
-        ).filter(el => {
-            const text = (el as HTMLElement).innerText?.trim() || "";
-            return text.length > 4 && !text.match(/^\d{1,2}:\d{2}/) && !text.match(/^Day \d/);
-        });
-        activityEls.forEach((el, aIdx) => {
-            stamp(el, `days[${idx}].activities[${aIdx}]`);
-        });
+        const existingActivities = daySection.querySelectorAll(`[data-field^='days[${idx}].activities[']`);
+        if (existingActivities.length === 0) {
+            const activityEls = Array.from(
+                daySection.querySelectorAll("p, li")
+            ).filter(el => {
+                const text = (el as HTMLElement).innerText?.trim() || "";
+                return text.length > 4 && !text.match(/^\d{1,2}:\d{2}/) && !text.match(/^Day \d/);
+            });
+            activityEls.forEach((el, aIdx) => {
+                stamp(el, `days[${idx}].activities[${aIdx}]`);
+            });
+        }
     });
 
     // — Inclusions section: each <li> or <p> or <span> with text
@@ -327,7 +290,7 @@ function instrumentTheme(container: HTMLDivElement, liveData: any) {
     // — Daywise Index / Itinerary at a Glance section
     const glanceSection = container.querySelector("[data-pdf-section='daywise-index'], [data-pdf-section='brief-plan']");
     if (glanceSection) {
-        const rows = Array.from(glanceSection.querySelectorAll("p"));
+        const rows = Array.from(glanceSection.querySelectorAll("[data-field^='daySummaries'], .timeline-desc, p"));
         rows.forEach((pEl, i) => {
             stamp(pEl, `daySummaries[${i}]`);
         });
@@ -902,13 +865,21 @@ export default function LuxuryEditorPage() {
 
         fields.forEach((el) => {
             const path = (el as HTMLElement).dataset.field || "";
+            if (!path) return;
+
             const htmlContent = ((el as HTMLElement).innerHTML || "").trim();
             const textContent = ((el as HTMLElement).innerText || "").trim();
-            // Preserve rich HTML formatting like <b>, <i>, <strong> if present
-            const text = /<[a-z][\s\S]*>/i.test(htmlContent)
-                ? htmlContent.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
-                : textContent;
-            if (!path) return;
+
+            let text = textContent;
+            if (path.includes("activities[") || path.startsWith("daySummaries[")) {
+                text = cleanHtmlToBulletText(htmlContent || textContent);
+            } else if (/<[a-z][\s\S]*>/i.test(htmlContent)) {
+                const stripped = htmlContent
+                    .replace(/<\/?(span|div|p|header|section|ul|ol|li)[^>]*>/gi, "")
+                    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, "")
+                    .trim();
+                text = stripped || textContent;
+            }
 
             // Top level title & subtitle
             if (path === "itinerary.title") {
@@ -1496,7 +1467,7 @@ export default function LuxuryEditorPage() {
                 onOpenImagePicker={handleOpenImagePicker}
             />
 
-            {/* Unsplash & Local Photo Picker Modal */}
+            {/* Site & Local Photo Picker Modal */}
             <ImagePicker
                 open={imagePickerOpen}
                 onClose={() => setImagePickerOpen(false)}

@@ -290,7 +290,7 @@ export const TropicalTheme = ({
                     line-height: 1.25;
                     letter-spacing: -0.3px;
                 }
-                .tropical-wrap .about-content p {
+                .tropical-wrap .about-content p, .tropical-wrap .about-content .about-desc {
                     font-size: 13px;
                     color: var(--stone-600);
                     line-height: 1.75;
@@ -357,7 +357,7 @@ export const TropicalTheme = ({
                     font-weight: 500;
                     color: var(--stone-800);
                 }
-                .tropical-wrap .timeline-info p {
+                .tropical-wrap .timeline-info p, .tropical-wrap .timeline-info .timeline-desc {
                     font-size: 11px;
                     color: var(--stone-400);
                     font-family: var(--font-sans);
@@ -879,7 +879,7 @@ export const TropicalTheme = ({
                         <div className="about-content">
                             <span className="capsule-badge">About The Destination</span>
                             <h2>{aboutPlace?.title || (itinerary.itinerary?.[0]?.areaFocus ? `Discover ${itinerary.itinerary[0].areaFocus.split(',')[0]}` : "")}</h2>
-                            {aboutPlace?.description && <p>{renderFormattedText(aboutPlace.description)}</p>}
+                            {aboutPlace?.description && <div className="about-desc">{renderFormattedText(aboutPlace.description)}</div>}
                             <ul className="highlights">
                                 {aboutPlace?.highlights ? (
                                     aboutPlace.highlights.map((highlight: string, idx: number) => (
@@ -914,7 +914,7 @@ export const TropicalTheme = ({
                                     <span className="day-pill">Day {i + 1}</span>
                                     <div className="timeline-info">
                                         <h4>{formatTitleCase(day.areaFocus)}</h4>
-                                        <p data-field={`daySummaries[${i}]`}>{renderFormattedText(cleanSummaryText(daySummaries && daySummaries[i] ? daySummaries[i] : (day.timeline?.[0]?.details || `Highlights of ${day.areaFocus}`)))}</p>
+                                        <div className="timeline-desc" data-field={`daySummaries[${i}]`}>{renderFormattedText(cleanSummaryText(daySummaries && daySummaries[i] ? daySummaries[i] : (day.timeline?.[0]?.details || `Highlights of ${day.areaFocus}`)))}</div>
                                     </div>
                                 </li>
                             ))}
@@ -953,7 +953,7 @@ export const TropicalTheme = ({
                                                 ) : (
                                                     <span className="num" style={{width: '20px'}}>•</span>
                                                 )}
-                                                <span data-field={`days[${index}].activities[${si}]`}>{renderFormattedText(step.details)}</span>
+                                                <div data-field={`days[${index}].activities[${si}]`} style={{ flex: 1 }}>{renderFormattedText(step.details)}</div>
                                             </li>
                                         ))}
                                     </ul>

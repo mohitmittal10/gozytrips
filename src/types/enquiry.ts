@@ -129,3 +129,92 @@ export interface PublicEnquiryFormMeta {
   agent_brand_name: string | null;
   agent_avatar_url: string | null;
 }
+
+
+// ── WhatsApp Lead Ingestion Types ─────────────────────────────────────────────
+
+export interface ExtractedWhatsAppLead {
+  clientName: string;
+  phone: string;
+  email?: string | null;
+  startingLocation: string;
+  destinations: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  durationDays?: number | null;
+  adultPax: number;
+  childPax: number;
+  infantPax: number;
+  tripType?: TripType | null;
+  budget?: number | null;
+  currency: string;
+  travelMethods: string[];
+  mustInclude?: string | null;
+  avoid?: string | null;
+  hotelPreference?: string | null;
+  mealPlan?: string | null;
+  specialRequests?: string | null;
+  urgency: 'urgent' | 'high' | 'normal' | 'low';
+  confidenceScore: number;
+  keySummary: string;
+  suggestedWhatsAppReply: string;
+  rawChat: string;
+}
+
+export interface IngestedWhatsAppLeadRecord {
+  id: string;
+  formId: string;
+  clientId: string | null;
+  clientName: string;
+  clientEmail: string;
+  phone: string;
+  destinations: string;
+  startingLocation: string;
+  startDate: string | null;
+  endDate: string | null;
+  durationDays: number | null;
+  adultPax: number;
+  childPax: number;
+  infantPax: number;
+  budget: number | null;
+  currency: string;
+  tripType: TripType | null;
+  status: EnquiryResponseStatus;
+  urgency: 'urgent' | 'high' | 'normal' | 'low';
+  confidenceScore: number;
+  summary: string;
+  suggestedWhatsAppReply: string;
+  rawChat: string;
+  submittedAt: string;
+  convertedAt: string | null;
+  convertedItineraryId: string | null;
+  channelSource?: 'whatsapp_direct' | 'whatsapp_cloud' | 'meta_lead_ad' | 'instagram_direct' | string;
+}
+
+// ── WhatsApp & Meta Integration Types ──────────────────────────────────────────
+
+export type MetaIntegrationProvider = 'meta_whatsapp' | 'whatsapp_cloud' | 'meta_lead_ads';
+export type MetaIntegrationStatus = 'connected' | 'syncing' | 'error' | 'disconnected';
+
+export interface WhatsAppMetaIntegration {
+  id?: string;
+  userId?: string;
+  accountName: string;
+  phoneNumber: string;
+  provider: MetaIntegrationProvider;
+  status: MetaIntegrationStatus;
+  metaPageName?: string;
+  metaAdAccountId?: string;
+  metaFormId?: string;
+  metaAccessToken?: string;
+  wabaId?: string;
+  phoneNumberId?: string;
+  verifyToken?: string;
+  autoSync: boolean;
+  syncIntervalMinutes: number;
+  lastSyncedAt?: string | null;
+  leadsIngestedCount: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+

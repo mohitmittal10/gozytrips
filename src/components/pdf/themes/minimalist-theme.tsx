@@ -204,7 +204,7 @@ export const MinimalistTheme = ({
                         <div style={{ flex: 1 }}>
                             <h3 style={{ margin: "0 0 10px 0", fontSize: "10px", color: "#64748b", textTransform: "uppercase", letterSpacing: "3px", fontWeight: 700 }}>About Destination</h3>
                             <h2 data-field="aboutPlace.title" style={{ margin: "0 0 20px 0", fontSize: "32px", color: "#0f172a", fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-1px" }}>{aboutPlace.title}</h2>
-                            <p data-field="aboutPlace.description" style={{ margin: "0 0 30px 0", color: "#334155", fontSize: "14px", lineHeight: "1.8", fontWeight: 500 }}>{renderFormattedText(aboutPlace.description)}</p>
+                            <div data-field="aboutPlace.description" style={{ margin: "0 0 30px 0", color: "#334155", fontSize: "14px", lineHeight: "1.8", fontWeight: 500 }}>{renderFormattedText(aboutPlace.description)}</div>
                             
                             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                                 {(aboutPlace.highlights || []).map((hl: string, i: number) => (
@@ -251,6 +251,12 @@ export const MinimalistTheme = ({
                                         <span style={{ color: accent }}>{formatCurrency((day as any).dailyStats?.totalCost, (itinerary as any).pricing?.currency || DEFAULT_CURRENCY)}</span>
                                     )}
                                 </div>
+                                {((day as any).stayCity || (day as any).meals) && (
+                                    <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", marginTop: "6px", fontSize: "11px", fontWeight: 600, color: "#475569" }}>
+                                        {(day as any).stayCity && <span>🏨 Stay: {(day as any).stayCity}</span>}
+                                        {(day as any).meals && <span>🍽️ Meals: {(day as any).meals}</span>}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -263,7 +269,7 @@ export const MinimalistTheme = ({
                                     ) : (
                                         <span style={{ width: "10px", height: "10px", borderRadius: "50%", background: accent, marginTop: "7px", flexShrink: 0 }} />
                                     )}
-                                    <p data-field={`days[${index}].activities[${si}]`} style={{ flex: 1, margin: 0, fontSize: "13.5px", lineHeight: "1.7", color: "#334155", fontWeight: 500 }}>{renderFormattedText(step.details)}</p>
+                                    <div data-field={`days[${index}].activities[${si}]`} style={{ flex: 1, margin: 0, fontSize: "13.5px", lineHeight: "1.7", color: "#334155", fontWeight: 500 }}>{renderFormattedText(step.details)}</div>
                                 </div>
                             ))}
                         </div>

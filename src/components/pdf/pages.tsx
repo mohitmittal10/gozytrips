@@ -595,9 +595,9 @@ export const PdfDaywiseIndex = ({
                                         </span>
                                     )}
                                 </div>
-                                <p data-field={`daySummaries[${index}]`} style={{ margin: 0, fontSize: "13px", color: styles.bodyTextColor, lineHeight: "1.6", fontStyle: "italic" }}>
+                                <div data-field={`daySummaries[${index}]`} style={{ margin: 0, fontSize: "13px", color: styles.bodyTextColor, lineHeight: "1.6", fontStyle: "italic" }}>
                                     {renderFormattedText(summary)}
-                                </p>
+                                </div>
                             </div>
                         </div>
                     );

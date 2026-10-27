@@ -31,6 +31,7 @@ export const RATE_LIMIT_DEFAULTS: Record<string, RateLimitOptions> = {
   client_update:      { maxCalls: 40,  windowSeconds: 60  },
   vendor_enquiry:     { maxCalls: 20,  windowSeconds: 60  },
   day_summaries:      { maxCalls: 30,  windowSeconds: 60  },
+  whatsapp_lead_extraction: { maxCalls: 30, windowSeconds: 60 },
 };
 
 export async function checkRateLimit(

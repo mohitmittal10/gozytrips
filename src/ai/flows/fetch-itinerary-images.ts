@@ -1,10 +1,13 @@
 'use server';
 
-import { fetchImagesForTerms } from '@/lib/unsplash';
+import {
+    fetchImagesForTerms,
+    searchSitePhotos,
+} from '@/lib/site-photos';
 
 /**
- * Server action to fetch Unsplash images for itinerary days.
- * Takes search terms + area names (for fallback relevance) and returns image URLs.
+ * Server action to fetch authentic site & destination photos for itinerary days.
+ * Queries Wikipedia, Wikivoyage, and Wikimedia Commons.
  */
 export async function fetchItineraryImages(
     searchTerms: string[],
@@ -17,3 +20,18 @@ export async function fetchItineraryImages(
     return fetchImagesForTerms(searchTerms, areaNames);
 }
 
+/**
+ * Server action to search for candidate photos for a specific place/sight.
+ * Returns multiple high-resolution photos for the user to choose from.
+ */
+export async function searchSiteCandidatePhotos(
+    query: string,
+    areaName?: string,
+    limit: number = 6
+): Promise<string[]> {
+    if (!query || !query.trim()) {
+        return [];
+    }
+
+    return searchSitePhotos(query.trim(), areaName, limit);
+}

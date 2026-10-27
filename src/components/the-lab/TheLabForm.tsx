@@ -84,28 +84,34 @@ const StepDaywisePlan = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
   }, [startDate, endDate]);
 
   const [localDays, setLocalDays] = React.useState<string[]>([]);
+  const lastCombinedRef = React.useRef<string>("");
 
   // Sync inputs from standard format Day X: Content
   React.useEffect(() => {
     if (dayCount > 0) {
+      if (daywiseDestinations === lastCombinedRef.current) {
+        return;
+      }
       const parsed = Array(dayCount).fill("");
-      const lines = daywiseDestinations.split("\n");
-      lines.forEach((line) => {
-        const match = line.match(/^Day\s*(\d+)\s*[:\-]\s*(.*)$/i);
+      const chunks = daywiseDestinations.split(/(?=(?:^|\n)\s*Day\s*\d+\s*[:\-])/i);
+      chunks.forEach((chunk) => {
+        const match = chunk.match(/^\s*Day\s*(\d+)\s*[:\-]\s*([\s\S]*)$/i);
         if (match) {
           const dayNum = parseInt(match[1], 10);
           if (dayNum >= 1 && dayNum <= dayCount) {
-            parsed[dayNum - 1] = match[2].trim();
+            parsed[dayNum - 1] = match[2].trim().slice(0, 300);
           }
         }
       });
       setLocalDays(parsed);
+      lastCombinedRef.current = daywiseDestinations;
     }
   }, [dayCount, daywiseDestinations]);
 
   const handleDayChange = (index: number, val: string) => {
+    const truncated = val.slice(0, 300);
     const updated = [...localDays];
-    updated[index] = val;
+    updated[index] = truncated;
     setLocalDays(updated);
 
     const combined = updated
@@ -113,6 +119,7 @@ const StepDaywisePlan = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
       .filter((_, idx) => updated[idx].trim().length > 0)
       .join("\n");
     
+    lastCombinedRef.current = combined;
     form.setValue("daywiseDestinations", combined, { shouldDirty: true, shouldValidate: true });
   };
 
@@ -129,29 +136,44 @@ const StepDaywisePlan = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
       <div className="flex items-center justify-between pb-2 border-b border-white/5">
         <div>
           <span className={LabelClass}>Day-by-Day Focus</span>
-          <p className="text-[10px] text-zinc-500 mt-0.5">Specify focus or activities. AI will construct detailed schedules around these.</p>
+          <p className="text-[10px] text-zinc-500 mt-0.5">Specify focus or activities (up to 300 characters per day). AI will construct detailed schedules around these.</p>
         </div>
         <span className="text-[10px] bg-primary/10 border border-primary/20 text-primary px-2.5 py-0.5 rounded-full font-bold">{dayCount} Days</span>
       </div>
 
-      <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
+      <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
         {Array.from({ length: dayCount }).map((_, index) => {
           const dayDate = new Date(new Date(startDate).getTime() + index * 24 * 60 * 60 * 1000);
           const formattedDate = format(dayDate, "eee, MMM dd");
+          const currentLength = (localDays[index] || "").length;
 
           return (
-            <div key={index} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 p-2.5 bg-white/5 border border-white/10 rounded-xl hover:border-primary/30 transition-all duration-200">
-              <div className="min-w-[80px] shrink-0">
+            <div key={index} className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-4 p-2.5 bg-white/5 border border-white/10 rounded-xl hover:border-primary/30 transition-all duration-200">
+              <div className="min-w-[80px] shrink-0 sm:pt-1">
                 <span className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 block">DAY {index + 1}</span>
                 <span className="text-[9px] text-zinc-500 font-medium block mt-0.5">{formattedDate}</span>
               </div>
-              <div className="flex-1 w-full min-w-0">
-                <Input
-                  placeholder={`e.g., Delhi arrival, sightseeing at Red Fort`}
+              <div className="flex-1 w-full min-w-0 relative">
+                <Textarea
+                  placeholder={`e.g., Morning arrival, heritage walk through Old Delhi, visit Red Fort & Chandni Chowk, evening sound & light show...`}
                   value={localDays[index] || ""}
+                  maxLength={300}
+                  rows={2}
                   onChange={(e) => handleDayChange(index, e.target.value)}
-                  className="h-9 text-xs border-white/5 focus:border-primary/50 bg-white/5 backdrop-blur rounded-lg w-full"
+                  className="min-h-[64px] text-xs border-white/5 focus:border-primary/50 bg-white/5 backdrop-blur rounded-lg w-full resize-none pb-5 text-slate-900 dark:text-zinc-100 placeholder:text-zinc-500"
                 />
+                <div className="absolute bottom-1.5 right-2 flex items-center pointer-events-none select-none">
+                  <span className={cn(
+                    "text-[10px] font-mono tabular-nums",
+                    currentLength >= 300
+                      ? "text-red-400 font-bold"
+                      : currentLength >= 260
+                        ? "text-amber-400 font-medium"
+                        : "text-zinc-500"
+                  )}>
+                    {currentLength}/300
+                  </span>
+                </div>
               </div>
             </div>
           );

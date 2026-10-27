@@ -222,7 +222,7 @@ export const ClassicTheme = ({
                         <div style={{ flex: 1 }}>
                             <h3 style={{ margin: "0 0 16px 0", fontSize: "14px", color: agent.primaryColor, textTransform: "uppercase", letterSpacing: "1px", fontWeight: 800 }}>About The Destination</h3>
                             <h2 data-field="aboutPlace.title" style={{ margin: "0 0 20px 0", fontSize: "28px", color: "#0f172a", fontFamily: "'Outfit', sans-serif", fontWeight: 800, letterSpacing: "-0.5px" }}>{aboutPlace.title}</h2>
-                            <p data-field="aboutPlace.description" style={{ margin: "0 0 24px 0", color: "#475569", fontSize: "15px", lineHeight: "1.7" }}>{renderFormattedText(aboutPlace.description)}</p>
+                            <div data-field="aboutPlace.description" style={{ margin: "0 0 24px 0", color: "#475569", fontSize: "15px", lineHeight: "1.7" }}>{renderFormattedText(aboutPlace.description)}</div>
                             
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
                                 {(aboutPlace.highlights || []).map((hl: string, i: number) => (
@@ -257,6 +257,12 @@ export const ClassicTheme = ({
                             <div style={{ background: `linear-gradient(135deg, ${agent.primaryColor || "#a855f7"} 0%, #ec4899 100%)`, padding: "20px 30px", color: "white" }}>
                                 <span style={{ fontSize: "12px", opacity: 0.95, textTransform: "uppercase", letterSpacing: "2px", fontWeight: 800 }}>Day {index + 1} • {formatDate(day.date)}</span>
                                 <h3 data-field={`days[${index}].location`} style={{ margin: "5px 0 0 0", fontSize: "24px", fontWeight: 900, letterSpacing: "-0.5px", fontFamily: "'Outfit', sans-serif" }}>{formatTitleCase(day.areaFocus)}</h3>
+                                {((day as any).stayCity || (day as any).meals) && (
+                                    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "10px", fontSize: "11px", fontWeight: 600 }}>
+                                        {(day as any).stayCity && <span style={{ background: "rgba(255,255,255,0.22)", padding: "3px 8px", borderRadius: "5px" }}>🏨 Stay: {(day as any).stayCity}</span>}
+                                        {(day as any).meals && <span style={{ background: "rgba(255,255,255,0.22)", padding: "3px 8px", borderRadius: "5px" }}>🍽️ Meals: {(day as any).meals}</span>}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -317,9 +323,9 @@ export const ClassicTheme = ({
                                             }} />
                                         </div>
                                     )}
-                                    <p data-field={`days[${index}].activities[${si}]`} style={{ margin: 0, paddingTop: showTimestamps !== false ? "4px" : "0", fontSize: "14px", lineHeight: "1.75", color: "#334155", flex: 1, minWidth: 0, wordBreak: "break-word", fontWeight: 500 }}>
+                                    <div data-field={`days[${index}].activities[${si}]`} style={{ margin: 0, paddingTop: showTimestamps !== false ? "4px" : "0", fontSize: "14px", lineHeight: "1.75", color: "#334155", flex: 1, minWidth: 0, wordBreak: "break-word", fontWeight: 500 }}>
                                         {renderFormattedText(step.details)}
-                                    </p>
+                                    </div>
 
                                 </div>
                             ))}

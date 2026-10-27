@@ -16,10 +16,12 @@ const DayInputSchema = z.object({
   day: z.coerce.number().min(1).max(60),
   date: z.string().max(20),
   areaFocus: z.string().max(200),
+  stayCity: z.string().max(100).optional(),
+  meals: z.string().max(200).optional(),
   timeline: z.array(
     z.object({
       time: z.string().max(20),
-      details: z.string().max(500),
+      details: z.string().max(2000),
     })
   ).max(20),
 });

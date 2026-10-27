@@ -173,7 +173,7 @@ export const EditorialTheme = ({
                         <div style={{ flex: 1 }}>
                             <h3 style={{ margin: "0 0 16px 0", fontSize: "11px", color: gold, textTransform: "uppercase", letterSpacing: "3px", fontWeight: 700, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>About The Destination</h3>
                             <h2 data-field="aboutPlace.title" style={{ margin: "0 0 24px 0", fontSize: "32px", color: "#0f172a", fontFamily: "'Playfair Display', serif", fontStyle: "italic", fontWeight: "normal" }}>{aboutPlace.title}</h2>
-                            <p data-field="aboutPlace.description" style={{ margin: "0 0 30px 0", color: "#475569", fontSize: "14.5px", lineHeight: "1.9", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{renderFormattedText(aboutPlace.description)}</p>
+                            <div data-field="aboutPlace.description" style={{ margin: "0 0 30px 0", color: "#475569", fontSize: "14.5px", lineHeight: "1.9", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>{renderFormattedText(aboutPlace.description)}</div>
                             
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
                                 {(aboutPlace.highlights || []).map((hl: string, i: number) => (
@@ -204,12 +204,24 @@ export const EditorialTheme = ({
                             <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "30px 35px" }}>
                                 <p style={{ color: gold, fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase", margin: "0 0 6px 0", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800 }}>Day {String(index + 1).padStart(2, '0')} • {formatDate(day.date)}</p>
                                 <h3 data-field={`days[${index}].location`} style={{ color: "white", fontSize: "28px", fontWeight: "normal", margin: 0, fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>{formatTitleCase(day.areaFocus)}</h3>
+                                {((day as any).stayCity || (day as any).meals) && (
+                                    <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "8px", fontSize: "11px", fontStyle: "normal", fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>
+                                        {(day as any).stayCity && <span style={{ background: "rgba(255,255,255,0.15)", padding: "2px 8px", borderRadius: "4px" }}>🏨 Stay: {(day as any).stayCity}</span>}
+                                        {(day as any).meals && <span style={{ background: "rgba(255,255,255,0.15)", padding: "2px 8px", borderRadius: "4px" }}>🍽️ Meals: {(day as any).meals}</span>}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ) : (
                         <div style={{ marginBottom: "20px", paddingBottom: "12px", borderBottom: `2px solid ${gold}` }}>
                             <p style={{ color: gold, fontSize: "11px", letterSpacing: "3px", textTransform: "uppercase", margin: "0 0 4px 0", fontFamily: "'Plus Jakarta Sans', sans-serif", fontWeight: 800 }}>Day {String(index + 1).padStart(2, '0')} • {formatDate(day.date)}</p>
                             <h3 data-field={`days[${index}].location`} style={{ color: "#0f172a", fontSize: "28px", fontWeight: "normal", margin: 0, fontFamily: "'Playfair Display', serif", fontStyle: "italic" }}>{formatTitleCase(day.areaFocus)}</h3>
+                            {((day as any).stayCity || (day as any).meals) && (
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginTop: "8px", fontSize: "11px", fontStyle: "normal", fontWeight: 600, color: "#475569" }}>
+                                    {(day as any).stayCity && <span>🏨 Stay: {(day as any).stayCity}</span>}
+                                    {(day as any).meals && <span>🍽️ Meals: {(day as any).meals}</span>}
+                                </div>
+                            )}
                         </div>
                     )}
 
@@ -222,7 +234,7 @@ export const EditorialTheme = ({
                                 ) : (
                                     <span style={{ width: "8px", height: "8px", borderRadius: "50%", background: gold, marginTop: "10px", flexShrink: 0 }} />
                                 )}
-                                <p data-field={`days[${index}].activities[${si}]`} style={{ fontSize: "15px", lineHeight: "1.85", color: "#334155", margin: 0, fontWeight: 500, flex: 1 }}>{renderFormattedText(step.details)}</p>
+                                <div data-field={`days[${index}].activities[${si}]`} style={{ fontSize: "15px", lineHeight: "1.85", color: "#334155", margin: 0, fontWeight: 500, flex: 1 }}>{renderFormattedText(step.details)}</div>
                             </div>
                         ))}
                     </div>

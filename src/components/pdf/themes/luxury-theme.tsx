@@ -615,7 +615,7 @@ export const LuxuryTheme = ({
                 }
                 .luxury-wrap .about-hero .rule { margin: 20px auto; }
                 .luxury-wrap .about-hero h2.display { font-size: 42px; }
-                .luxury-wrap .about-hero p.about-text {
+                .luxury-wrap .about-hero p.about-text, .luxury-wrap .about-hero .about-text {
                     margin-top: 20px;
                     font-style: italic;
                     color: var(--cream-soft);
@@ -1301,9 +1301,9 @@ export const LuxuryTheme = ({
                                 <div className="about-copy">
                                     <hr className="rule" />
                                     <h2 className="display">About the place</h2>
-                                    <p className="about-text" data-field="destination.aboutText">
+                                    <div className="about-text" data-field="destination.aboutText">
                                         &ldquo;{renderFormattedText(aboutText)}&rdquo;
-                                    </p>
+                                    </div>
                                     <hr className="rule" />
                                 </div>
                             </div>
@@ -1373,13 +1373,16 @@ export const LuxuryTheme = ({
 
                             // Meals
                             const mealsObj = (day as any).meals || {};
-                            const bMeal = mealsObj.breakfast || ((day as any).mealPlan?.toLowerCase().includes('b') ? 'Included' : null);
-                            const lMeal = mealsObj.lunch || ((day as any).mealPlan?.toLowerCase().includes('l') ? 'Included' : null);
-                            const dMeal = mealsObj.dinner || ((day as any).mealPlan?.toLowerCase().includes('d') ? 'Included' : null);
+                            const mealsStr = typeof (day as any).meals === 'string' ? (day as any).meals : '';
+                            const bMeal = typeof mealsObj === 'object' ? (mealsObj.breakfast || ((day as any).mealPlan?.toLowerCase().includes('b') ? 'Included' : null)) : null;
+                            const lMeal = typeof mealsObj === 'object' ? (mealsObj.lunch || ((day as any).mealPlan?.toLowerCase().includes('l') ? 'Included' : null)) : null;
+                            const dMeal = typeof mealsObj === 'object' ? (mealsObj.dinner || ((day as any).mealPlan?.toLowerCase().includes('d') ? 'Included' : null)) : null;
 
                             // Stay info
                             const matchingHotel = hotels[idx] || hotels[0];
-                            const stayName = (day as any).stay?.name || (day as any).accommodation || matchingHotel?.name || '';
+                            const stayCityStr = (day as any).stayCity || '';
+                            const baseStayName = (day as any).stay?.name || (day as any).accommodation || matchingHotel?.name || '';
+                            const stayName = stayCityStr ? (baseStayName ? `${stayCityStr} (${baseStayName})` : stayCityStr) : baseStayName;
                             const stayNote = (day as any).stay?.note || (day as any).accommodationNotes || (matchingHotel as any)?.roomType || matchingHotel?.address || '';
 
                             return (
@@ -1399,19 +1402,23 @@ export const LuxuryTheme = ({
                                                 {activities.map((actItem: any, aIdx: number) => (
                                                     <div className="activity-row" key={aIdx}>
                                                         <span className="dash">—</span>
-                                                        <span data-field={`days[${idx}].activities[${aIdx}]`}>{renderFormattedText(actItem)}</span>
+                                                        <div data-field={`days[${idx}].activities[${aIdx}]`} style={{ flex: 1 }}>{renderFormattedText(actItem)}</div>
                                                     </div>
                                                 ))}
                                             </div>
                                         )}
 
                                         <div className="day-meta">
-                                            {(bMeal || lMeal || dMeal) && (
+                                            {(mealsStr || bMeal || lMeal || dMeal) && (
                                                 <div className="col">
                                                     <div className="label">Meals</div>
-                                                    {bMeal && <div className="meal-line">B {bMeal}</div>}
-                                                    {lMeal && <div className="meal-line">L {lMeal}</div>}
-                                                    {dMeal && <div className="meal-line">D {dMeal}</div>}
+                                                    {mealsStr ? <div className="meal-line">{mealsStr}</div> : (
+                                                        <>
+                                                            {bMeal && <div className="meal-line">B {bMeal}</div>}
+                                                            {lMeal && <div className="meal-line">L {lMeal}</div>}
+                                                            {dMeal && <div className="meal-line">D {dMeal}</div>}
+                                                        </>
+                                                    )}
                                                 </div>
                                             )}
                                             {stayName && (

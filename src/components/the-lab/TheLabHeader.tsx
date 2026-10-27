@@ -60,7 +60,7 @@ const TheLabHeader = React.memo(function TheLabHeader({
 
   return (
     <div className="bg-transparent py-3 sm:py-4 z-30 mb-0 w-full">
-      <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 mt-3">
         {/* Controls Group */}
         <div className="flex flex-wrap items-center gap-3 sm:gap-4 lg:gap-6">
           <div className={cn("hidden sm:flex items-center gap-3 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
@@ -195,7 +195,7 @@ const TheLabHeader = React.memo(function TheLabHeader({
         </div>
 
         {/* Actions Group */}
-        <div className={cn("flex items-center gap-3 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
+        <div className={cn("flex flex-wrap items-center gap-2 sm:gap-3 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
           <AutosaveIndicator className="inline-flex" />
           <Button
             variant="outline"

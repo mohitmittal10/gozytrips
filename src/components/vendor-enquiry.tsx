@@ -51,7 +51,18 @@ function openGmailCompose(to: string, subject: string, body: string) {
 
 // ── Main Component ───────────────────────────────────────────────────────────
 
-export default function VendorEnquiry() {
+export interface VendorEnquiryProps {
+  initialData?: {
+    destination?: string;
+    travelDates?: string;
+    adults?: string;
+    children?: string;
+    infants?: string;
+    specialRequests?: string;
+  };
+}
+
+export default function VendorEnquiry({ initialData }: VendorEnquiryProps = {}) {
   const { userProfile, agencySettings } = useAuth();
   const { toast } = useToast();
   const { options, loading: optionsLoading } = useReferenceOptions();
@@ -91,12 +102,23 @@ export default function VendorEnquiry() {
   // Form state
   const [enquiryType, setEnquiryType] = useState<EnquiryType>("hotel");
   const [vendorEmail, setVendorEmail] = useState("");
-  const [destination, setDestination] = useState("");
-  const [travelDates, setTravelDates] = useState("");
-  const [adults, setAdults] = useState("2");
-  const [children, setChildren] = useState("0");
-  const [infants, setInfants] = useState("0");
-  const [specialRequests, setSpecialRequests] = useState("");
+  const [destination, setDestination] = useState(initialData?.destination || "");
+  const [travelDates, setTravelDates] = useState(initialData?.travelDates || "");
+  const [adults, setAdults] = useState(initialData?.adults || "2");
+  const [children, setChildren] = useState(initialData?.children || "0");
+  const [infants, setInfants] = useState(initialData?.infants || "0");
+  const [specialRequests, setSpecialRequests] = useState(initialData?.specialRequests || "");
+
+  useEffect(() => {
+    if (initialData) {
+      if (initialData.destination) setDestination(initialData.destination);
+      if (initialData.travelDates) setTravelDates(initialData.travelDates);
+      if (initialData.adults) setAdults(initialData.adults);
+      if (initialData.children) setChildren(initialData.children);
+      if (initialData.infants) setInfants(initialData.infants);
+      if (initialData.specialRequests) setSpecialRequests(initialData.specialRequests);
+    }
+  }, [initialData]);
 
   // Hotel fields
   const [hotelName, setHotelName] = useState("");
