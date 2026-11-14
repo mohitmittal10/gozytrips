@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-
+import { cookies } from 'next/headers';
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { getGoogleOAuth2Client } from '@/lib/google-auth';
 
@@ -15,11 +15,22 @@ export async function GET(request: Request) {
 
   try {
     const oauth2Client = getGoogleOAuth2Client(origin);
+    const state = crypto.randomUUID();
+
+    const cookieStore = await cookies();
+    cookieStore.set('google_oauth_state', state, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 600,
+      path: '/',
+    });
 
     const url = oauth2Client.generateAuthUrl({
       access_type: 'offline', // Required to get a refresh token
       prompt: 'consent', // Forces the consent screen to ensure refresh token is returned
       scope: ['https://www.googleapis.com/auth/drive.file'],
+      state,
     });
 
     return NextResponse.redirect(url);

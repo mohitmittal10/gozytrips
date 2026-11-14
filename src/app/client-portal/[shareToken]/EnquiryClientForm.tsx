@@ -76,14 +76,20 @@ function PaxCounter({
 interface Props {
   formMeta: PublicEnquiryFormMeta;
   shareToken: string;
+  isGuest?: boolean;
   onSubmitted: (responseId?: string) => void;
 }
 
-export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) {
+export function EnquiryClientForm({ formMeta, shareToken, isGuest, onSubmitted }: Props) {
   const supabase = createClient();
   const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Guest / Contact info
+  const [hasAuthUser, setHasAuthUser] = useState(false);
+  const [clientEmail, setClientEmail] = useState("");
+  const [clientName, setClientName] = useState("");
 
   // Form state
   const [startingLocation, setStartingLocation] = useState("");
@@ -104,17 +110,28 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
   const [currency, setCurrency] = useState("INR");
   const [specialRequests, setSpecialRequests] = useState("");
 
+  React.useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
+        setHasAuthUser(true);
+        if (user.email) setClientEmail(user.email);
+        if (user.user_metadata?.full_name) setClientName(user.user_metadata.full_name);
+      }
+    });
+  }, [supabase]);
+
   const toggleMethod = (m: string) =>
     setTravelMethods((prev) =>
       prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m]
     );
 
   // Step validation
+  const contactValid = hasAuthUser || (clientEmail.trim().includes("@") && clientName.trim().length >= 2);
   const stepValid = [
     startingLocation.trim().length >= 2 && destinations.trim().length >= 2,
     startDate && endDate && new Date(endDate) > new Date(startDate),
     true, // style step is always valid (trip type has default)
-    true, // budget is optional
+    contactValid, // contact details required for guest
   ];
 
   const canProceed = stepValid[step];
@@ -124,16 +141,21 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
     setSubmitError(null);
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
+      const finalEmail = user?.email || clientEmail.trim();
+      const finalName = user?.user_metadata?.full_name || clientName.trim() || undefined;
+
+      if (!finalEmail || !finalEmail.includes("@")) {
+        throw new Error("A valid email address is required.");
+      }
 
       // Get the form_id from the share token
       const metaRes = await fetch(`/api/enquiry-forms/public/${shareToken}`);
       const metaData = await metaRes.json();
       if (!metaRes.ok || !metaData.form?.id) throw new Error("Could not load form.");
 
-      const payload: SubmitEnquiryResponsePayload & { client_email: string } = {
-        client_email: user.email!,
-        client_name: user.user_metadata?.full_name || undefined,
+      const payload: SubmitEnquiryResponsePayload & { client_email: string; client_name?: string } = {
+        client_email: finalEmail,
+        client_name: finalName,
         starting_location: startingLocation.trim(),
         destinations: destinations.trim(),
         ending_location: endingLocation.trim() || undefined,
@@ -414,6 +436,39 @@ export function EnquiryClientForm({ formMeta, shareToken, onSubmitted }: Props) 
                 className="w-full px-4 py-3 rounded-xl bg-slate-100 dark:bg-black/40 border border-slate-300 dark:border-white/10 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-gray-600 focus:outline-none focus:border-purple-500/60 text-sm transition-colors resize-none"
               />
             </div>
+
+            {!hasAuthUser && (
+              <div className="space-y-4 pt-4 border-t border-slate-200 dark:border-white/10">
+                <p className="text-xs font-semibold uppercase tracking-widest text-purple-600 dark:text-purple-400">
+                  Your Contact Details
+                </p>
+                <div>
+                  <label className={LabelClass}>Your Name <span className="text-red-400">*</span></label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Rahul Sharma"
+                    value={clientName}
+                    onChange={(e) => setClientName(e.target.value)}
+                    className={InputClass}
+                  />
+                </div>
+                <div>
+                  <label className={LabelClass}>Email Address <span className="text-red-400">*</span></label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="you@example.com"
+                    value={clientEmail}
+                    onChange={(e) => setClientEmail(e.target.value)}
+                    className={InputClass}
+                  />
+                  <p className="text-xs text-slate-600 dark:text-gray-600 mt-1.5 ml-1 font-medium">
+                    Your agent will send your custom itinerary to this email address.
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Summary card */}
             <div className="bg-purple-500/5 dark:bg-purple-500/10 border border-purple-500/20 rounded-xl p-4 space-y-2">

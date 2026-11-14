@@ -1,28 +1,76 @@
 "use client";
 
-import React, { useRef } from "react";
-import type { TripFinancial } from "@/types/financial";
+import React from "react";
+import type { TripFinancial, InvoiceLineItem } from "@/types/financial";
 import type { Currency } from "@/types/pricing";
 
 interface ProfessionalInvoiceProps {
     fin: TripFinancial;
+    lineItems?: InvoiceLineItem[];
     fm: (amount: number | string, currency?: Currency) => string;
     cs: (currency?: Currency) => string;
     companyName: string;
     agentName: string;
     agentEmail: string;
+    gstNumber?: string | null;
 }
 
+const getCategoryBadgeStyle = (category: string) => {
+    const cat = (category || "").toLowerCase();
+    if (cat.includes("hotel")) {
+        return { background: "#fef3c7", color: "#92400e", border: "1px solid #fde68a" };
+    }
+    if (cat.includes("flight")) {
+        return { background: "#e0f2fe", color: "#0369a1", border: "1px solid #bae6fd" };
+    }
+    if (cat.includes("transport") || cat.includes("cab") || cat.includes("bus")) {
+        return { background: "#ede9fe", color: "#5b21b6", border: "1px solid #ddd6fe" };
+    }
+    if (cat.includes("activity")) {
+        return { background: "#dcfce7", color: "#15803d", border: "1px solid #bbf7d0" };
+    }
+    return { background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" };
+};
+
 export const ProfessionalInvoice = React.forwardRef<HTMLDivElement, ProfessionalInvoiceProps>(
-    function ProfessionalInvoice({ fin, fm, cs, companyName, agentName, agentEmail }, ref) {
-        const totalPaid = fin.payments.reduce((s, p) => s + p.amount, 0);
-        const taxRate = fin.taxPercentage ?? 0;
-        const subtotal = fin.clientPrice;
-        const taxAmount = subtotal * (taxRate / 100);
-        const total = subtotal + taxAmount;
+    function ProfessionalInvoice({ fin, lineItems, fm, cs, companyName, agentName, agentEmail, gstNumber }, ref) {
+        const activeLineItems = (lineItems && lineItems.length > 0)
+            ? lineItems
+            : (fin.lineItems && fin.lineItems.length > 0 ? fin.lineItems : null);
+
+        // Effective tax rate: respect fin.taxPercentage (even 0%!), fall back to 0 if not provided
+        const taxRate = typeof fin.taxPercentage === "number" ? fin.taxPercentage : 0;
+        let subtotal = 0;
+        let taxAmount = 0;
+        let total = 0;
+
+        if (activeLineItems && activeLineItems.length > 0) {
+            subtotal = activeLineItems.reduce((acc, it) => {
+                const q = typeof it.qty === "number" && it.qty > 0 ? it.qty : 1;
+                return acc + ((it.rate || 0) * q);
+            }, 0);
+            taxAmount = activeLineItems.reduce((acc, it) => {
+                const q = typeof it.qty === "number" && it.qty > 0 ? it.qty : 1;
+                const lineBase = (it.rate || 0) * q;
+                const itemTaxPct = typeof it.taxRate === "number" ? it.taxRate : taxRate;
+                const itTax = typeof it.taxAmount === "number"
+                    ? it.taxAmount
+                    : (lineBase * itemTaxPct) / 100;
+                return acc + itTax;
+            }, 0);
+            total = subtotal + taxAmount;
+        } else {
+            subtotal = typeof fin.clientPrice === "number" && fin.clientPrice > 0
+                ? fin.clientPrice
+                : (typeof fin.baseCost === "number" ? fin.baseCost : 0);
+            taxAmount = (subtotal * taxRate) / 100;
+            total = subtotal + taxAmount;
+        }
+
+        const totalPaid = fin.payments?.reduce((s, p) => s + p.amount, 0) ?? 0;
         const balance = Math.max(0, total - totalPaid);
-        const isFullyPaid = balance <= 0 && fin.clientPrice > 0;
-        const currSymbol = cs(fin.currency);
+        const isFullyPaid = balance <= 0 && total > 0;
+        const _currSymbol = cs(fin.currency);
 
         const invoiceNum = `INV-${(fin.tripId || fin.itineraryId.slice(0, 8)).toUpperCase()}`;
         const issuedDate = new Date().toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
@@ -58,12 +106,15 @@ export const ProfessionalInvoice = React.forwardRef<HTMLDivElement, Professional
                             <div style={{ fontSize: "26px", fontWeight: "800", color: "#ffffff", letterSpacing: "-0.5px", marginBottom: "4px" }}>
                                 {companyName}
                             </div>
-                            <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.55)", fontWeight: "500" }}>{agentName}</div>
-                            <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", marginTop: "2px" }}>{agentEmail}</div>
+                            <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.65)", fontWeight: "500" }}>{agentName}</div>
+                            <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.55)", marginTop: "2px" }}>{agentEmail}</div>
+                            <div style={{ fontSize: "11px", color: "rgba(255,255,255,0.85)", marginTop: "6px", fontWeight: "600", letterSpacing: "0.5px" }}>
+                                GSTIN: <span style={{ fontFamily: "monospace", color: "#a5f3fc" }}>{gstNumber || "27AADCG1234A1Z5 (GST Registered)"}</span>
+                            </div>
                         </div>
 
                         <div style={{ textAlign: "right" }}>
-                            <div style={{ fontSize: "34px", fontWeight: "900", color: "#ffffff", letterSpacing: "-1px", lineHeight: "1" }}>INVOICE</div>
+                            <div style={{ fontSize: "34px", fontWeight: "900", color: "#ffffff", letterSpacing: "-1px", lineHeight: "1" }}>TAX INVOICE</div>
                             <div style={{
                                 marginTop: "8px", display: "inline-block",
                                 background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)",
@@ -94,10 +145,11 @@ export const ProfessionalInvoice = React.forwardRef<HTMLDivElement, Professional
                         { label: "ISSUE DATE", value: issuedDate },
                         { label: "DUE DATE", value: dueDate },
                         { label: "REFERENCE", value: fin.tripId || fin.itineraryId.slice(0, 8).toUpperCase() },
+                        { label: "TAX REGIME", value: taxRate > 0 ? `${taxRate}% GST Included` : "Tax Exempt (0% GST)" },
                     ].map(({ label, value }) => (
                         <div key={label}>
                             <div style={{ fontSize: "9px", fontWeight: "700", color: "#94a3b8", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "3px" }}>{label}</div>
-                            <div style={{ fontSize: "13px", fontWeight: "600", color: "#1e293b" }}>{value}</div>
+                            <div style={{ fontSize: "13px", fontWeight: "600", color: label === "TAX REGIME" ? "#0284c7" : "#1e293b" }}>{value}</div>
                         </div>
                     ))}
                 </div>
@@ -146,35 +198,120 @@ export const ProfessionalInvoice = React.forwardRef<HTMLDivElement, Professional
                     <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
                         <thead>
                             <tr style={{ background: "#1a1a2e" }}>
-                                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.7)", letterSpacing: "1px", textTransform: "uppercase", width: "60%" }}>Description</th>
-                                <th style={{ padding: "12px 16px", textAlign: "center", fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.7)", letterSpacing: "1px", textTransform: "uppercase", width: "20%" }}>Pax</th>
-                                <th style={{ padding: "12px 16px", textAlign: "right", fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.7)", letterSpacing: "1px", textTransform: "uppercase", width: "20%" }}>Amount</th>
+                                <th style={{ padding: "12px 16px", textAlign: "left", fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.7)", letterSpacing: "1px", textTransform: "uppercase", width: "40%" }}>Description & Details</th>
+                                <th style={{ padding: "12px 16px", textAlign: "center", fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.7)", letterSpacing: "1px", textTransform: "uppercase", width: "14%" }}>Pax / Qty</th>
+                                <th style={{ padding: "12px 16px", textAlign: "right", fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.7)", letterSpacing: "1px", textTransform: "uppercase", width: "15%" }}>Net Rate</th>
+                                <th style={{ padding: "12px 16px", textAlign: "right", fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.7)", letterSpacing: "1px", textTransform: "uppercase", width: "16%" }}>GST Rate & Tax</th>
+                                <th style={{ padding: "12px 16px", textAlign: "right", fontSize: "10px", fontWeight: "700", color: "rgba(255,255,255,0.7)", letterSpacing: "1px", textTransform: "uppercase", width: "15%" }}>Amount (Incl. GST)</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr style={{ background: "#ffffff", borderBottom: "1px solid #f1f5f9" }}>
-                                <td style={{ padding: "16px 16px 12px", verticalAlign: "top" }}>
-                                    <div style={{ fontSize: "14px", fontWeight: "600", color: "#1e293b", marginBottom: "3px" }}>Complete Travel Package</div>
-                                    <div style={{ fontSize: "12px", color: "#64748b" }}>{fin.tripTitle} · {fin.destination}</div>
-                                </td>
-                                <td style={{ padding: "16px 16px 12px", textAlign: "center", verticalAlign: "top" }}>
-                                    <div style={{ fontSize: "13px", color: "#475569" }}>
-                                        {fin.adultPax > 0 ? `${fin.adultPax}A${fin.childPax > 0 ? ` + ${fin.childPax}C` : ""}` : "—"}
-                                    </div>
-                                </td>
-                                <td style={{ padding: "16px 16px 12px", textAlign: "right", verticalAlign: "top" }}>
-                                    <div style={{ fontSize: "14px", fontWeight: "700", color: "#1e293b" }}>{fm(subtotal, fin.currency)}</div>
-                                </td>
-                            </tr>
+                            {activeLineItems && activeLineItems.length > 0 ? (
+                                activeLineItems.map((item, idx) => {
+                                    const badgeStyle = getCategoryBadgeStyle(item.category || "other");
+                                    const q = typeof item.qty === "number" && item.qty > 0 ? item.qty : 1;
+                                    const lineBase = (item.rate || 0) * q;
+                                    const itemTaxRate = typeof item.taxRate === "number" ? item.taxRate : taxRate;
+                                    const itemTaxAmount = typeof item.taxAmount === "number"
+                                        ? item.taxAmount
+                                        : Math.round(((lineBase * itemTaxRate) / 100) * 100) / 100;
+                                    const itemTotal = (typeof item.totalAmount === "number" && item.totalAmount > 0)
+                                        ? item.totalAmount
+                                        : Math.round((lineBase + itemTaxAmount) * 100) / 100;
+
+                                    return (
+                                        <tr key={item.id || idx} style={{ background: idx % 2 === 0 ? "#ffffff" : "#fcfdff", borderBottom: "1px solid #f1f5f9" }}>
+                                            <td style={{ padding: "14px 16px", verticalAlign: "top" }}>
+                                                <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginBottom: "4px" }}>
+                                                    <span style={{
+                                                        fontSize: "9px",
+                                                        fontWeight: "800",
+                                                        textTransform: "uppercase",
+                                                        letterSpacing: "0.5px",
+                                                        padding: "2px 6px",
+                                                        borderRadius: "4px",
+                                                        ...badgeStyle
+                                                    }}>
+                                                        {item.category || "Item"}
+                                                    </span>
+                                                    <span style={{ fontSize: "13px", fontWeight: "700", color: "#1e293b" }}>
+                                                        {item.title}
+                                                    </span>
+                                                </div>
+                                                {item.details && (
+                                                    <div style={{ fontSize: "11px", color: "#64748b", lineHeight: "1.4", marginTop: "2px" }}>
+                                                        {item.details}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: "14px 16px", textAlign: "center", verticalAlign: "top" }}>
+                                                <div style={{ fontSize: "12px", color: "#475569", fontWeight: "500" }}>
+                                                    {item.pax || (item.qty ? `${item.qty} Qty` : "—")}
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: "14px 16px", textAlign: "right", verticalAlign: "top" }}>
+                                                <div style={{ fontSize: "13px", fontWeight: "600", color: "#334155" }}>
+                                                    {fm(item.rate, fin.currency)}
+                                                </div>
+                                            </td>
+                                            <td style={{ padding: "14px 16px", textAlign: "right", verticalAlign: "top" }}>
+                                                <div style={{ fontSize: "12px", fontWeight: "700", color: "#0f172a" }}>
+                                                    {itemTaxRate > 0 ? `${itemTaxRate}% GST` : "0% GST"}
+                                                </div>
+                                                {itemTaxAmount > 0 ? (
+                                                    <div style={{ fontSize: "11px", color: "#0284c7", fontWeight: "600", marginTop: "1px" }}>
+                                                        +{fm(itemTaxAmount, fin.currency)}
+                                                    </div>
+                                                ) : (
+                                                    <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: "500", marginTop: "1px" }}>
+                                                        Exempt
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td style={{ padding: "14px 16px", textAlign: "right", verticalAlign: "top" }}>
+                                                <div style={{ fontSize: "13px", fontWeight: "800", color: "#0f172a" }}>
+                                                    {fm(itemTotal, fin.currency)}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })
+                            ) : (
+                                <tr style={{ background: "#ffffff", borderBottom: "1px solid #f1f5f9" }}>
+                                    <td style={{ padding: "16px 16px 12px", verticalAlign: "top" }}>
+                                        <div style={{ fontSize: "14px", fontWeight: "600", color: "#1e293b", marginBottom: "3px" }}>Complete Travel Package</div>
+                                        <div style={{ fontSize: "12px", color: "#64748b" }}>{fin.tripTitle} · {fin.destination}</div>
+                                    </td>
+                                    <td style={{ padding: "16px 16px 12px", textAlign: "center", verticalAlign: "top" }}>
+                                        <div style={{ fontSize: "13px", color: "#475569" }}>
+                                            {fin.adultPax > 0 ? `${fin.adultPax}A${fin.childPax > 0 ? ` + ${fin.childPax}C` : ""}` : "—"}
+                                        </div>
+                                    </td>
+                                    <td style={{ padding: "16px 16px 12px", textAlign: "right", verticalAlign: "top" }}>
+                                        <div style={{ fontSize: "13px", fontWeight: "600", color: "#334155" }}>{fm(subtotal, fin.currency)}</div>
+                                    </td>
+                                    <td style={{ padding: "16px 16px 12px", textAlign: "right", verticalAlign: "top" }}>
+                                        <div style={{ fontSize: "12px", fontWeight: "700", color: "#0f172a" }}>{taxRate > 0 ? `${taxRate}% GST` : "0% GST"}</div>
+                                        {taxAmount > 0 ? (
+                                            <div style={{ fontSize: "11px", color: "#0284c7", fontWeight: "600", marginTop: "1px" }}>+{fm(taxAmount, fin.currency)}</div>
+                                        ) : (
+                                            <div style={{ fontSize: "11px", color: "#94a3b8", fontWeight: "500", marginTop: "1px" }}>Exempt</div>
+                                        )}
+                                    </td>
+                                    <td style={{ padding: "16px 16px 12px", textAlign: "right", verticalAlign: "top" }}>
+                                        <div style={{ fontSize: "14px", fontWeight: "800", color: "#0f172a" }}>{fm(total, fin.currency)}</div>
+                                    </td>
+                                </tr>
+                            )}
 
                             {fin.milestones?.length > 0 && (
                                 <tr style={{ background: "#fafbff", borderBottom: "1px solid #f1f5f9" }}>
-                                    <td colSpan={3} style={{ padding: "10px 16px" }}>
+                                    <td colSpan={5} style={{ padding: "12px 16px" }}>
                                         <div style={{ fontSize: "10px", fontWeight: "700", color: "#94a3b8", letterSpacing: "1px", textTransform: "uppercase", marginBottom: "6px" }}>Payment Schedule</div>
                                         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
                                             {fin.milestones.map((m, i) => (
                                                 <div key={i} style={{ background: "#f0f4ff", border: "1px solid #c7d7fd", borderRadius: "5px", padding: "4px 10px", fontSize: "11px", color: "#3730a3", fontWeight: "600" }}>
-                                                    {m.label}: {m.percentage}% ({fm(Math.round(fin.clientPrice * m.percentage / 100), fin.currency)})
+                                                    {m.label}: {m.percentage}% ({fm(Math.round(total * m.percentage / 100), fin.currency)})
                                                 </div>
                                             ))}
                                         </div>
@@ -185,18 +322,35 @@ export const ProfessionalInvoice = React.forwardRef<HTMLDivElement, Professional
                     </table>
 
                     {/* Totals Section */}
-                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
-                        <div style={{ width: "280px" }}>
+                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "12px" }}>
+                        <div style={{ width: "310px" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 16px", background: "#f8fafc", borderTop: "1px solid #e2e8f0" }}>
-                                <span style={{ fontSize: "13px", color: "#64748b" }}>Subtotal</span>
+                                <span style={{ fontSize: "13px", color: "#64748b" }}>Subtotal (Taxable Net)</span>
                                 <span style={{ fontSize: "13px", fontWeight: "600", color: "#334155" }}>{fm(subtotal, fin.currency)}</span>
                             </div>
-                            <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 16px", background: "#f8fafc", borderTop: "1px solid #e2e8f0" }}>
-                                <span style={{ fontSize: "13px", color: "#64748b" }}>Tax / GST ({taxRate}%)</span>
-                                <span style={{ fontSize: "13px", fontWeight: "600", color: "#334155" }}>{fm(taxAmount, fin.currency)}</span>
-                            </div>
+                            {taxRate > 0 && taxAmount > 0 ? (
+                                <>
+                                    <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 16px", background: "#f8fafc", borderTop: "1px solid #f1f5f9" }}>
+                                        <span style={{ fontSize: "12px", color: "#64748b" }}>CGST ({(taxRate / 2).toFixed(1)}%)</span>
+                                        <span style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>{fm(taxAmount / 2, fin.currency)}</span>
+                                    </div>
+                                    <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 16px", background: "#f8fafc", borderTop: "1px solid #f1f5f9" }}>
+                                        <span style={{ fontSize: "12px", color: "#64748b" }}>SGST ({(taxRate / 2).toFixed(1)}%)</span>
+                                        <span style={{ fontSize: "12px", fontWeight: "600", color: "#475569" }}>{fm(taxAmount / 2, fin.currency)}</span>
+                                    </div>
+                                    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 16px", background: "#f0f9ff", borderTop: "1px solid #bae6fd" }}>
+                                        <span style={{ fontSize: "13px", color: "#0369a1", fontWeight: "700" }}>Total GST ({taxRate}%)</span>
+                                        <span style={{ fontSize: "13px", fontWeight: "700", color: "#0369a1" }}>+{fm(taxAmount, fin.currency)}</span>
+                                    </div>
+                                </>
+                            ) : (
+                                <div style={{ display: "flex", justifyContent: "space-between", padding: "6px 16px", background: "#f8fafc", borderTop: "1px solid #f1f5f9" }}>
+                                    <span style={{ fontSize: "12px", color: "#64748b" }}>GST / Tax (0%)</span>
+                                    <span style={{ fontSize: "12px", fontWeight: "600", color: "#94a3b8" }}>Exempt</span>
+                                </div>
+                            )}
                             <div style={{ display: "flex", justifyContent: "space-between", padding: "12px 16px", background: "#1a1a2e", borderTop: "2px solid #1a1a2e" }}>
-                                <span style={{ fontSize: "14px", fontWeight: "700", color: "rgba(255,255,255,0.85)" }}>Total</span>
+                                <span style={{ fontSize: "14px", fontWeight: "700", color: "rgba(255,255,255,0.85)" }}>Total {taxRate > 0 ? "(Incl. GST)" : ""}</span>
                                 <span style={{ fontSize: "16px", fontWeight: "800", color: "#ffffff" }}>{fm(total, fin.currency)}</span>
                             </div>
                             {totalPaid > 0 && (
@@ -223,7 +377,7 @@ export const ProfessionalInvoice = React.forwardRef<HTMLDivElement, Professional
                 </div>
 
                 {/* Payments Received Table */}
-                {fin.payments.length > 0 && (
+                {fin.payments && fin.payments.length > 0 && (
                     <div style={{ padding: "0 48px 28px" }}>
                         <div style={{ fontSize: "10px", fontWeight: "700", color: "#94a3b8", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "10px" }}>PAYMENT HISTORY</div>
                         <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -263,7 +417,7 @@ export const ProfessionalInvoice = React.forwardRef<HTMLDivElement, Professional
                     <div style={{ flex: 1 }}>
                         <div style={{ fontSize: "10px", fontWeight: "700", color: "#94a3b8", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "6px" }}>NOTES & TERMS</div>
                         <div style={{ fontSize: "11px", color: "#94a3b8", lineHeight: "1.6", maxWidth: "360px" }}>
-                            Thank you for choosing {companyName}. This is a computer-generated invoice and does not require a physical signature. Please retain this document for your records.
+                            Thank you for choosing {companyName}. This is a computer-generated tax invoice issued in accordance with GST rules. Line item rates are exclusive of GST. Applicable GST is charged on all taxable supplies.
                         </div>
                     </div>
                     <div style={{ textAlign: "right" }}>

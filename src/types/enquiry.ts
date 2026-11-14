@@ -61,6 +61,7 @@ export interface ClientEnquiryResponse {
   leisure_time: boolean;
   leisure_day: number | null;
   travel_time_preference: TravelTimePreference | null;
+  meal_plan?: string | null;
   // Client-only extras
   budget: number | null;
   currency: string;

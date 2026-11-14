@@ -17,12 +17,16 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const pathname = usePathname();
 
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+  const isClientRole = user?.user_metadata?.role === 'client';
 
   useEffect(() => {
     if (!loading && !user && isProtectedRoute) {
       router.push(`/auth/login?redirect=${pathname}`);
+    } else if (!loading && user && isClientRole && isProtectedRoute) {
+      // Clients are restricted from internal agency tools and CRM surfaces
+      router.push('/');
     }
-  }, [user, loading, router, pathname, isProtectedRoute]);
+  }, [user, loading, router, pathname, isProtectedRoute, isClientRole]);
 
   // Only show the loading state if we are trying to access a protected route
   if (loading && isProtectedRoute) {

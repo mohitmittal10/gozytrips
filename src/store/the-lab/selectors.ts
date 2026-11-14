@@ -12,13 +12,16 @@ export function useTimelineSlice() {
       setItinerary: LabState["setItinerary"];
       setIsEditing: LabState["setIsEditing"];
       setShowTimestamps: LabState["setShowTimestamps"];
+      setHasItineraryToolbar: LabState["setHasItineraryToolbar"];
     } => ({
       itinerary: state.itinerary,
       isEditing: state.isEditing,
       showTimestamps: state.showTimestamps,
+      hasItineraryToolbar: state.hasItineraryToolbar,
       setItinerary: state.setItinerary,
       setIsEditing: state.setIsEditing,
       setShowTimestamps: state.setShowTimestamps,
+      setHasItineraryToolbar: state.setHasItineraryToolbar,
     }))
   );
 }

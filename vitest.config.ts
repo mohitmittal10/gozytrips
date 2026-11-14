@@ -6,6 +6,11 @@ export default defineConfig({
     environment: 'node',
     include: ['tests/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['node_modules', '.next', 'src/**/*.test.ts'],
+    server: {
+      deps: {
+        inline: [/@supabase\/.*/, 'tslib'],
+      },
+    },
   },
   resolve: {
     alias: {

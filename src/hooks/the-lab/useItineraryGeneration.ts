@@ -67,6 +67,7 @@ export function useItineraryGeneration() {
         endDate: endDateStr,
         destinations: effectiveValues.destinations,
         tripType: effectiveValues.tripType,
+        mealPlan: effectiveValues.mealPlan || "CP",
         travelMethods: effectiveValues.travelMethods,
         mustInclude: effectiveValues.mustInclude || "",
         avoid: effectiveValues.avoid || "",
@@ -75,7 +76,12 @@ export function useItineraryGeneration() {
         travelTimePreference: effectiveValues.travelTimePreference,
         feedback: typeof feedback === 'string' ? feedback : "",
         daywiseDestinations: effectiveValues.daywiseDestinations || "",
-        hotels: effectiveValues.hotels || [],
+        hotels: (effectiveValues.hotels || []).map((h, i) => ({
+          ...h,
+          id: h.id || `h-${Date.now()}-${i}`,
+          dayIndex: typeof h.dayIndex === 'number' ? h.dayIndex : i,
+          name: h.name || '',
+        })),
       });
 
       const res = await generateTravelItinerary({
@@ -85,6 +91,7 @@ export function useItineraryGeneration() {
         endDate: endDateStr,
         destinations: effectiveValues.destinations,
         tripType: effectiveValues.tripType,
+        mealPlan: effectiveValues.mealPlan || "CP",
         travelMethods: effectiveValues.travelMethods,
         mustInclude: effectiveValues.mustInclude || "",
         avoid: effectiveValues.avoid || "",
@@ -93,7 +100,12 @@ export function useItineraryGeneration() {
         travelTimePreference: effectiveValues.travelTimePreference,
         feedback: typeof feedback === 'string' ? feedback : "",
         daywiseDestinations: effectiveValues.daywiseDestinations || "",
-        hotels: effectiveValues.hotels || [],
+        hotels: (effectiveValues.hotels || []).map((h, i) => ({
+          ...h,
+          id: h.id || `h-${Date.now()}-${i}`,
+          dayIndex: typeof h.dayIndex === 'number' ? h.dayIndex : i,
+          name: h.name || '',
+        })),
         hotelsText: "",
       });
       console.log("[useItineraryGeneration] generateTravelItinerary response received:", res);
@@ -102,9 +114,14 @@ export function useItineraryGeneration() {
         console.error(`[useItineraryGeneration] Generation failed${res.code ? ` [${res.code}]` : ''}:`, res.error);
         toast({
           variant: "destructive",
-          title: "Generation Failed",
+          title: res.code === 'UNAUTHORIZED' ? "Sign In Required" : "Generation Failed",
           description: res.error,
         });
+        if (res.code === 'UNAUTHORIZED' && typeof window !== 'undefined') {
+          setTimeout(() => {
+            window.location.href = `/auth/login?redirect=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+          }, 1500);
+        }
         return null;
       }
 
@@ -120,49 +137,115 @@ export function useItineraryGeneration() {
           ...day,
           imageUrl: dayImageUrls[dIdx] || undefined,
         }));
+
+        // Automatically archive generated photos to the photos database
+        try {
+          const photosToArchive = dayImageUrls
+            .map((url, idx) => ({
+              url,
+              destination: dayAreaNames[idx],
+              searchTerm: daySearchTerms[idx],
+              title: daySearchTerms[idx] || dayAreaNames[idx],
+              source: 'generated',
+            }))
+            .filter((p) => typeof p.url === 'string' && p.url.length > 0);
+
+          if (photosToArchive.length > 0) {
+            fetch('/api/photos', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ photos: photosToArchive }),
+            }).catch(e => console.warn('[useItineraryGeneration] Photo archive sync notice:', e));
+
+            if (typeof window !== 'undefined') {
+              const cached = JSON.parse(localStorage.getItem('gozy_local_photo_archive') || '[]');
+              const existingUrls = new Set(cached.map((c: any) => c.url));
+              const newItems = photosToArchive
+                .filter(p => !existingUrls.has(p.url))
+                .map(p => ({
+                  ...p,
+                  id: 'gen-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+                  created_at: new Date().toISOString(),
+                }));
+              localStorage.setItem('gozy_local_photo_archive', JSON.stringify([...newItems, ...cached].slice(0, 100)));
+            }
+          }
+        } catch (archiveErr) {
+          console.warn('[useItineraryGeneration] Failed to queue photo archive:', archiveErr);
+        }
       } catch (imgError) {
         console.warn('Failed to fetch dynamic day images, continuing with fallbacks:', imgError);
       }
 
-      // Generate AI day summaries ONCE when itinerary is generated
-      try {
-        const dest = result.itinerary[0]?.areaFocus?.split(",")[0] ?? "";
-        const summaryResult = await generateDaySummaries({
-          destination: dest,
-          days: result.itinerary.map((d: any) => ({
-            day: d.day,
-            date: d.date,
-            areaFocus: d.areaFocus,
-            timeline: (d.timeline ?? []).map((t: any) => ({
-              time: t.time,
-              details: t.details,
+      // Set Itinerary at a Glance (daySummaries) and aboutPlace generated by Gemini
+      const aiSummaries =
+        Array.isArray((result as any).daySummaries) && (result as any).daySummaries.length > 0
+          ? (result as any).daySummaries
+          : (result.itinerary || []).map((d: any) => d.summary).filter(Boolean);
+
+      let initialPdfOverrides: any = {
+        daySummaries: aiSummaries,
+        aboutPlace: (result as any).aboutPlace ?? null,
+      };
+
+      // Fallback: If Gemini did not return daySummaries, run generateDaySummaries
+      if (!aiSummaries || aiSummaries.length === 0) {
+        try {
+          const dest = result.itinerary[0]?.areaFocus?.split(",")[0] ?? effectiveValues.destinations?.split(",")[0] ?? "";
+          const summaryResult = await generateDaySummaries({
+            destination: dest,
+            days: result.itinerary.map((d: any) => ({
+              day: d.day,
+              date: d.date,
+              areaFocus: d.areaFocus,
+              timeline: (d.timeline ?? []).map((t: any) => ({
+                time: t.time,
+                details: t.details,
+              })),
             })),
-          })),
-        });
+          });
 
-        const initialPdfOverrides = {
-          daySummaries: summaryResult.summaries,
-          aboutPlace: summaryResult.aboutPlace ?? null,
-        };
-
-        useLabStore.getState().setPdfOverrides(initialPdfOverrides);
-        (result as any).pdfOverrides = initialPdfOverrides;
-      } catch (sumError) {
-        console.warn('[useItineraryGeneration] Failed to generate AI day summaries:', sumError);
+          initialPdfOverrides = {
+            daySummaries: summaryResult.summaries,
+            aboutPlace: summaryResult.aboutPlace ?? null,
+          };
+        } catch (sumError) {
+          console.warn('[useItineraryGeneration] Fallback day summaries generation failed:', sumError);
+        }
       }
 
-      // Compute and attach itinerary title
+      useLabStore.getState().setPdfOverrides(initialPdfOverrides);
+      (result as any).pdfOverrides = initialPdfOverrides;
+      (result as any).daySummaries = initialPdfOverrides.daySummaries;
+      if (initialPdfOverrides.aboutPlace) {
+        (result as any).aboutPlace = initialPdfOverrides.aboutPlace;
+      }
+
+      // Resolve AI-generated title (or fallback if empty)
       const startLoc = effectiveValues.startingLocation;
       const dests = effectiveValues.destinations;
-      let genTitle = dests ? (startLoc ? `${startLoc} to ${dests}` : `Trip to ${dests}`) : "";
-      if (startDate && endDate && endDate > startDate) {
-        const totalDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
-        genTitle += ` ${totalDays}N ${totalDays + 1}D`;
+      let finalTitle = (result as any).title?.trim();
+
+      if (!finalTitle) {
+        let fallbackTitle = dests ? (startLoc ? `${startLoc} to ${dests}` : `Trip to ${dests}`) : "Custom Travel Package";
+        if (startDate && endDate && endDate > startDate) {
+          const totalDays = Math.round((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+          fallbackTitle += ` ${totalDays}N ${totalDays + 1}D`;
+        }
+        finalTitle = fallbackTitle;
       }
-      if (genTitle) {
-        (result as any).title = formatTitleCase(genTitle);
-        (result as any).tripTitle = formatTitleCase(genTitle);
-      }
+
+      const formattedTitle = formatTitleCase(finalTitle);
+      (result as any).title = formattedTitle;
+      (result as any).tripTitle = formattedTitle;
+
+      // Update store's tripMetadata so the title is available across all tabs and persistence
+      const currentMeta = useLabStore.getState().tripMetadata || {};
+      useLabStore.getState().setTripMetadata({
+        ...currentMeta,
+        ...effectiveValues,
+        title: formattedTitle,
+      });
 
       setItinerary(result);
       return result;

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useCallback } from "react";
+import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/dialog";
 import {
     FileText, Search, Printer, CheckCircle2,
-    Clock, Download, Eye, Building2, User, Calendar
+    Clock, Download, Eye, Building2, User, Calendar,
+    RefreshCw
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { TripFinancial } from "@/types/financial";
@@ -23,9 +24,11 @@ interface InvoicesTabProps {
     financials: TripFinancial[];
     cs: (currency?: Currency) => string;
     fm: (amount: number | string, currency?: Currency) => string;
+    onRefresh?: () => Promise<void>;
 }
 
-export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
+export function InvoicesTab({ financials, cs, fm, onRefresh }: InvoicesTabProps) {
+    const [isRefreshing, setIsRefreshing] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedInvoiceFin, setSelectedInvoiceFin] = useState<TripFinancial | null>(null);
     const [showInvoiceModal, setShowInvoiceModal] = useState(false);
@@ -35,6 +38,30 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
     const companyName = agencySettings?.brand_name ?? "GozyTrips";
     const agentName = (agencySettings as any)?.agent_name ?? user?.email?.split("@")[0] ?? "Travel Agent";
     const agentEmail = user?.email ?? "";
+
+    // Keep selected invoice preview synchronized when financials reload
+    useEffect(() => {
+        if (selectedInvoiceFin) {
+            const updated = financials.find(
+                (f) => (f.id && f.id === selectedInvoiceFin.id) || f.itineraryId === selectedInvoiceFin.itineraryId
+            );
+            if (updated) {
+                setSelectedInvoiceFin(updated);
+            }
+        }
+    }, [financials, selectedInvoiceFin?.id, selectedInvoiceFin?.itineraryId]);
+
+    const handleRefreshInvoice = useCallback(async () => {
+        if (isRefreshing) return;
+        setIsRefreshing(true);
+        try {
+            if (onRefresh) {
+                await onRefresh();
+            }
+        } finally {
+            setTimeout(() => setIsRefreshing(false), 500);
+        }
+    }, [isRefreshing, onRefresh]);
 
     const filteredFinancials = useMemo(() => {
         return financials.filter(
@@ -55,11 +82,13 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
         const htmlContent = renderToStaticMarkup(
             <ProfessionalInvoice
                 fin={fin}
+                lineItems={fin.lineItems}
                 fm={fm}
                 cs={cs}
                 companyName={companyName}
                 agentName={agentName}
                 agentEmail={agentEmail}
+                gstNumber={(agencySettings as any)?.gst_number || ""}
             />
         );
 
@@ -286,13 +315,24 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                 {selectedInvoiceFin?.clientName} · {selectedInvoiceFin?.tripTitle}
                             </DialogDescription>
                         </div>
-                        <Button
-                            className="aurora-gradient text-slate-900 dark:text-white text-xs h-9 font-bold rounded-xl border-none hover:brightness-110 cursor-pointer flex items-center gap-2 px-4"
-                            onClick={handlePrintInvoice}
-                        >
-                            <Printer className="w-3.5 h-3.5" />
-                            Print / Save as PDF
-                        </Button>
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="w-9 h-9 rounded-xl border-slate-300 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-zinc-200 cursor-pointer shadow-sm transition-all"
+                                onClick={handleRefreshInvoice}
+                                title="Refresh Invoice"
+                            >
+                                <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin text-primary")} />
+                            </Button>
+                            <Button
+                                className="aurora-gradient text-slate-900 dark:text-white text-xs h-9 font-bold rounded-xl border-none hover:brightness-110 cursor-pointer flex items-center gap-2 px-4"
+                                onClick={handlePrintInvoice}
+                            >
+                                <Printer className="w-3.5 h-3.5" />
+                                Print / Save as PDF
+                            </Button>
+                        </div>
                     </div>
 
                     {/* Invoice Preview */}
@@ -307,11 +347,13 @@ export function InvoicesTab({ financials, cs, fm }: InvoicesTabProps) {
                                 <ProfessionalInvoice
                                     ref={invoiceRef}
                                     fin={selectedInvoiceFin}
+                                    lineItems={selectedInvoiceFin.lineItems}
                                     fm={fm}
                                     cs={cs}
                                     companyName={companyName}
                                     agentName={agentName}
                                     agentEmail={agentEmail}
+                                    gstNumber={(agencySettings as any)?.gst_number || ""}
                                 />
                             )}
                         </div>

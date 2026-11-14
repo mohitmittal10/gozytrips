@@ -35,7 +35,13 @@ export const PLAN_LIMITS = {
  * Validates if the user can perform a specific action based on their subscription tier and usage
  */
 export async function checkSubscriptionAccess(userId: string) {
-  const supabase = await createServerComponentClient();
+  let supabase: any;
+  try {
+    const { createAdminClient } = await import('@/lib/supabase/admin');
+    supabase = createAdminClient();
+  } catch {
+    supabase = await createServerComponentClient();
+  }
   
   // Get user's plan type
   const { data: profile } = await supabase

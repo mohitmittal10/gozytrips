@@ -278,13 +278,7 @@ export const formatPlural = (count: number, singular: string, plural: string) =>
 };
 
 export const getSanitizedTitle = (title: string, itinerary: TravelItineraryOutput): string => {
-    let displayTitle = title || (itinerary as any)?.tripTitle || (itinerary as any)?.title || "";
-    if (displayTitle && displayTitle.toLowerCase().includes("exploration") && itinerary?.itinerary?.length > 0) {
-        const distinctAreas = Array.from(new Set(itinerary.itinerary.map(day => day.areaFocus?.split(',')[0] || ""))).filter(Boolean);
-        if (distinctAreas.length > 1) {
-            displayTitle = `Journey: ${distinctAreas[0]} to ${distinctAreas[distinctAreas.length - 1]}`;
-        }
-    }
+    const displayTitle = title || (itinerary as any)?.tripTitle || (itinerary as any)?.title || "";
     return formatTitleCase(displayTitle);
 };
 
@@ -307,7 +301,7 @@ export const renderFormattedText = (val: any): React.ReactNode => {
         const lines = str.split('\n');
         const hasBullets = lines.some(l => /^\s*[•\-–]\s/.test(l.trim()) || /^\s*•/.test(l));
         if (hasBullets) {
-            return React.createElement('span', { style: { display: 'flex', flexDirection: 'column', gap: '4px' } },
+            return React.createElement('span', { style: { display: 'flex', flexDirection: 'column', gap: '4px', whiteSpace: 'pre-line' } },
                 lines.map((line, i) => {
                     const trimmed = line.trim();
                     if (!trimmed) return null;

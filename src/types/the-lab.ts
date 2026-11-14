@@ -19,8 +19,16 @@ export const formSchema = z.object({
     .max(100, "Ending location is too long (max 100 characters).")
     .optional()
     .refine((v) => !v || LOCATION_REGEX.test(v.trim()), "Location names should only contain letters, spaces, and punctuation."),
-  startDate: z.date({ required_error: "Start date is required." }),
-  endDate: z.date({ required_error: "End date is required." }),
+  startDate: z.preprocess(
+    (val) => (typeof val === "string" && val.trim() ? new Date(val) : val),
+    z.date({ required_error: "Start date is required.", invalid_type_error: "Please enter a valid start date." })
+      .refine((d) => !isNaN(d.getTime()), "Please enter a valid start date.")
+  ),
+  endDate: z.preprocess(
+    (val) => (typeof val === "string" && val.trim() ? new Date(val) : val),
+    z.date({ required_error: "End date is required.", invalid_type_error: "Please enter a valid end date." })
+      .refine((d) => !isNaN(d.getTime()), "Please enter a valid end date.")
+  ),
   destinations: z
     .string()
     .min(2, "At least one destination is required.")
@@ -35,6 +43,10 @@ export const formSchema = z.object({
     "family",
     "foodie"
   ]).default("relaxed"),
+  mealPlan: z
+    .string()
+    .max(100, "Meal plan preference is too long.")
+    .default("CP"),
   travelMethods: z.array(z.string()).default([]),
   mustInclude: z
     .string()
@@ -64,22 +76,26 @@ export const formSchema = z.object({
     .optional()
     .transform((v) => sanitizeText(v, 10000)),
   hotels: z.array(z.object({
-    id: z.string(),
-    dayIndex: z.number(),
-    dayIndices: z.array(z.number()).optional(),
-    name: z.string(),
+    id: z.string().default(() => `h-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`),
+    dayIndex: z.coerce.number().default(0),
+    dayIndices: z.array(z.coerce.number()).optional(),
+    name: z.string().default(''),
     address: z.string().optional(),
     checkIn: z.string().optional(),
     checkOut: z.string().optional(),
     bookingRef: z.string().optional(),
-    starRating: z.number().optional(),
-    nights: z.number().optional(),
-    costAdult: z.number().optional(),
-    costChild: z.number().optional(),
-    costInfant: z.number().optional(),
+    starRating: z.coerce.number().optional(),
+    nights: z.coerce.number().optional(),
+    costAdult: z.coerce.number().optional(),
+    costChild: z.coerce.number().optional(),
+    costInfant: z.coerce.number().optional(),
     imageUrls: z.array(z.string()).optional(),
   })).optional().default([]),
-}).refine((data) => data.endDate > data.startDate, {
+}).refine((data) => {
+  const s = data.startDate instanceof Date ? data.startDate.getTime() : new Date(data.startDate).getTime();
+  const e = data.endDate instanceof Date ? data.endDate.getTime() : new Date(data.endDate).getTime();
+  return !isNaN(s) && !isNaN(e) && e > s;
+}, {
   message: "End date must be after start date.",
   path: ["endDate"],
 });
@@ -90,6 +106,7 @@ export type ActiveLabTab = 'itinerary' | 'flights-hotels' | 'inclusions' | 'pric
 
 export interface TripMetadata extends Partial<TheLabFormValues> {
   // Can carry any parsed metadata
+  title?: string;
   budget?: number | null;
   strictBudget?: boolean;
 }

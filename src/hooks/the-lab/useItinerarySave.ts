@@ -8,6 +8,7 @@ import { buildLineItems } from "@/lib/helpers/trip-line-items";
 import type { SaveItineraryOptions } from "@/types/the-lab";
 import { calcPricingBreakdown } from "@/services/financial";
 import { defaultPricingConfig } from "@/types/pricing";
+import { formatTitleCase } from "@/components/pdf/utils";
 import { useLabStore } from "@/store/the-lab/labStore";
 
 export function useItinerarySave({
@@ -174,7 +175,14 @@ export function useItinerarySave({
 
       // ── Step 5: Build DB payload ─────────────────────────────────────────────
       const totalDays = Math.round((dtEnd.getTime() - dtStart.getTime()) / (1000 * 60 * 60 * 24));
-      const generatedTitle = `${resolvedStartingLocation} to ${resolvedDestinations} ${totalDays}N ${totalDays + 1}D`;
+      const fallbackTitle = formatTitleCase(`${resolvedStartingLocation} to ${resolvedDestinations} ${totalDays}N ${totalDays + 1}D`);
+      const resolvedTitle =
+        itineraryState.itinerary?.title ||
+        itineraryState.itinerary?.tripTitle ||
+        meta.title ||
+        formValues?.title ||
+        dbRecord?.title ||
+        fallbackTitle;
 
       // Merge resolved values back into generation_preferences so future saves
       // always have the correct data even if the form is never opened again.
@@ -182,6 +190,7 @@ export function useItinerarySave({
         ...prefs,
         ...meta,
         ...(formValues || {}),
+        title:            resolvedTitle,
         startingLocation: resolvedStartingLocation,
         endingLocation:   resolvedEndingLocation,
         destinations:     resolvedDestinations,
@@ -192,7 +201,7 @@ export function useItinerarySave({
 
       const tripData = {
         user_id:           session.user.id,
-        title:             generatedTitle,
+        title:             resolvedTitle,
         description:       resolvedMustInclude ? `Must include: ${resolvedMustInclude}` : null,
         starting_location: resolvedStartingLocation,
         ending_location:   resolvedEndingLocation,
@@ -204,8 +213,8 @@ export function useItinerarySave({
         status:            itineraryState.selectedStatus,
         itinerary_data: {
           ...itineraryState.itinerary,
-          title:   generatedTitle,
-          tripTitle: generatedTitle,
+          title:   resolvedTitle,
+          tripTitle: resolvedTitle,
           hotels:  itineraryState.hotels,
           flights: itineraryState.flights,
           cabs:    itineraryState.cabs,

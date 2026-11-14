@@ -549,7 +549,9 @@ export const PdfDaywiseIndex = ({
                     // Priority: AI-generated summary → first timeline detail (truncated) → fallback label
                     const rawSummary = (daySummaries && daySummaries[index] && daySummaries[index].trim())
                         ? daySummaries[index]
-                        : day.timeline?.[0]?.details
+                        : (day as any)?.summary && (day as any).summary.trim()
+                            ? (day as any).summary
+                            : day.timeline?.[0]?.details
                             ? day.timeline[0].details.length > 80
                                 ? `${day.timeline[0].details.substring(0, 77)}…`
                                 : day.timeline[0].details

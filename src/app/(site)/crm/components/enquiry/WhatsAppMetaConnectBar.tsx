@@ -54,7 +54,7 @@ export function WhatsAppMetaConnectBar({
   return (
     <>
       <div className="rounded-2xl border border-slate-200 dark:border-white/10 bg-white/70 dark:bg-zinc-900/50 backdrop-blur-xl p-4 shadow-sm transition-all">
-        {!isConnected || !integration ? (
+        {!integration || integration.status !== "connected" ? (
           /* ── NOT CONNECTED: Dynamic Connection Call-to-Action ────────────────── */
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start sm:items-center gap-3">

@@ -52,7 +52,7 @@ export const defaultPricingConfig: PricingConfig = {
   currency: DEFAULT_CURRENCY,
   markupType: 'percentage',
   markupValue: 15,
-  taxPercentage: 0,
+  taxPercentage: 5,
   adultPax: 2,
   childPax: 0,
   infantPax: 0,

@@ -71,6 +71,17 @@ export async function POST(req: NextRequest) {
         console.error('Error updating subscription in Supabase:', error);
         return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
       }
+
+      // Update user_profiles.plan_type so subscription access immediately reflects the new tier
+      const effectivePlan = (status === 'active' || status === 'authenticated') ? planType : 'starter';
+      const { error: profileError } = await adminClient
+        .from('user_profiles')
+        .update({ plan_type: effectivePlan as any, updated_at: new Date().toISOString() })
+        .eq('id', userId);
+
+      if (profileError) {
+        console.error('Error updating user_profiles plan_type:', profileError);
+      }
     }
 
     return NextResponse.json({ received: true });

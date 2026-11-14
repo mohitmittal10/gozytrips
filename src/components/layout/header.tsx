@@ -24,11 +24,13 @@ const Header = () => {
   const pathname = usePathname();
   const { user, loading, signOut } = useAuth();
   const isEditingInLab = useLabStore((state) => state.isEditing);
+  const hasItineraryToolbar = useLabStore((state) => state.hasItineraryToolbar);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 10);
     };
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -42,6 +44,7 @@ const Header = () => {
 
   const isTheLabPage = pathname === '/the-lab' || (pathname ? pathname.startsWith('/the-lab') : false);
   const shouldBlurNavbar = isTheLabPage && isEditingInLab;
+  const shouldHideNavbar = isTheLabPage && hasItineraryToolbar && scrolled;
 
   return (
     <nav className={cn(
@@ -49,7 +52,8 @@ const Header = () => {
       scrolled 
         ? "bg-[#EFECE5]/95 dark:bg-[#020305]/95 border-b border-slate-200 dark:border-white/10 shadow-sm" 
         : "bg-[#EFECE5]/80 dark:bg-[#020305]/80 border-b border-slate-200/80 dark:border-white/5",
-      shouldBlurNavbar && "blur-[1px] opacity-40 pointer-events-none"
+      shouldBlurNavbar && "blur-[1px] opacity-40 pointer-events-none",
+      shouldHideNavbar && "-translate-y-full opacity-0 pointer-events-none"
     )}>
       <div className="flex justify-between items-center px-4 sm:px-8 py-3 sm:py-4 max-w-7xl mx-auto">
         <Logo />

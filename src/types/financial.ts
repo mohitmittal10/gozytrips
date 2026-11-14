@@ -18,6 +18,20 @@ export interface SuggestedExpense {
     alreadySeeded?: boolean; // true if already exists in trip_expenses
 }
 
+// Detailed itemized line item for professional client invoices (Net base cost + tax, NO markup)
+export interface InvoiceLineItem {
+    id: string;
+    category: 'hotel' | 'flight' | 'transport' | 'activity' | 'service' | 'package' | 'other' | string;
+    title: string;
+    details?: string;
+    pax?: string;
+    qty?: number | string;
+    rate: number;         // net base cost before tax (NO markup)
+    taxRate?: number;     // tax percentage (e.g. 5, 12, 18)
+    taxAmount?: number;   // rate * (taxRate / 100)
+    totalAmount?: number; // rate + taxAmount (NO markup)
+}
+
 // Financial record for a single trip
 export interface TripFinancial {
     id?: string;                 // Database primary key (UUID)
@@ -34,6 +48,7 @@ export interface TripFinancial {
 
     // Revenue
     clientPrice: number;         // What the client pays (budget or quoted price)
+    baseCost?: number;           // Net base cost before markup
     currency: Currency;
 
     // Vendor costs / expenses
@@ -59,6 +74,9 @@ export interface TripFinancial {
 
     // Suggested expenses from itinerary line items (hotels, flights, etc.)
     suggestedExpenses: SuggestedExpense[];
+
+    // Detailed itemized invoice line items
+    lineItems?: InvoiceLineItem[];
 
     // Dates
     createdAt: string;
@@ -108,6 +126,3 @@ export interface InvoiceData {
     agentEmail: string;
     companyName: string;
 }
-
-
-
