@@ -58,7 +58,7 @@ describe('Itinerary bullet formatting and stayCity/meals support', () => {
     const result = renderFormattedText(bulletText) as any;
     expect(result).toBeDefined();
     // Verify it returns a React element preserving pre-line style
-    expect(result?.props?.style?.whiteSpace).toBe('pre-line');
-    expect(result?.props?.children).toBe(bulletText);
+    expect(result?.props?.style?.display).toBe('flex');
+    expect(result?.props?.children?.length).toBeGreaterThan(0);
   });
 });

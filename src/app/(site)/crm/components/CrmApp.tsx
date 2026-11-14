@@ -4,7 +4,7 @@ import React from "react";
 import {
     Users, Calendar, CheckCircle2, Clock, Search, Plus,
     ListFilter, Compass, FileText, Settings, LayoutDashboard, TrendingUp,
-    Archive, Sliders, LayoutGrid, List, DollarSign, Mail, RefreshCw, Info, Filter, Ticket, Save, X, ChevronRight
+    Archive, Sliders, LayoutGrid, List, DollarSign, Mail, RefreshCw, Info, Filter, Ticket, Save, X, ChevronRight, Zap
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -67,7 +67,7 @@ export function CrmApp() {
                                     { id: 'bookings', icon: Ticket, label: 'Bookings' },
                                     { id: 'timeline', icon: Calendar, label: 'Timeline' },
                                     { id: 'finance', icon: DollarSign, label: 'Finances' },
-                                    { id: 'enquiry', icon: Mail, label: 'Enquiry' },
+                                    { id: 'enquiry', icon: Zap, label: 'Lead Generation' },
                                     { id: 'client-forms', icon: FileText, label: 'Client Forms' },
                                     { id: 'archive', icon: Archive, label: 'Archive' }
                                 ].map((tab) => (
@@ -108,7 +108,7 @@ export function CrmApp() {
                                     { id: 'bookings', icon: Ticket, label: 'Book' },
                                     { id: 'timeline', icon: Calendar, label: 'Timeline' },
                                     { id: 'finance', icon: DollarSign, label: 'Fin' },
-                                    { id: 'enquiry', icon: Mail, label: 'Enquiry' },
+                                    { id: 'enquiry', icon: Zap, label: 'Lead Generation' },
                                     { id: 'client-forms', icon: FileText, label: 'Forms' },
                                     { id: 'archive', icon: Archive, label: 'Archive' }
                                 ].map((tab) => (
@@ -142,11 +142,11 @@ export function CrmApp() {
                                     {activeTab === 'bookings' && <Ticket className="w-8 h-8 text-primary" />}
                                     {activeTab === 'archive' && <Archive className="w-8 h-8 text-primary" />}
                                     {activeTab === 'finance' && <DollarSign className="w-8 h-8 text-primary" />}
-                                    {activeTab === 'enquiry' && <Info className="w-8 h-8 text-primary" />}
+                                    {(activeTab === 'enquiry' || activeTab === 'lead-generation') && <Zap className="w-8 h-8 text-emerald-500" />}
                                     {activeTab === 'client-forms' && <FileText className="w-8 h-8 text-primary" />}
                                     {activeTab === 'timeline' && <Calendar className="w-8 h-8 text-primary" />}
                                     {activeTab === 'itineraries' && <Compass className="w-8 h-8 text-primary" />}
-                                    {activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace('-', ' ')}
+                                    {(activeTab === 'enquiry' || activeTab === 'lead-generation') ? 'Lead Generation & Enquiries' : activeTab.charAt(0).toUpperCase() + activeTab.slice(1).replace('-', ' ')}
                                 </h1>
                                 <p className="text-slate-600 dark:text-zinc-400 text-sm mt-1 font-medium">
                                     {activeTab === 'dashboard' ? 'Overview of your workspace performance' :
@@ -154,7 +154,7 @@ export function CrmApp() {
                                             activeTab === 'trips' ? 'Monitor your active trip pipeline' :
                                                 activeTab === 'itineraries' ? 'View, search and edit all itineraries created in The Lab' :
                                                     activeTab === 'client-forms' ? 'Create client enquiry forms and track responses' :
-                                                        activeTab === 'enquiry' ? 'Ingest WhatsApp chats into leads & manage vendor quotations' :
+                                                        (activeTab === 'enquiry' || activeTab === 'lead-generation') ? 'Ingest WhatsApp chats into leads, sync Meta Ads, and manage vendor quotations' :
                                                         'Manage your travel operations efficiency'}
                                 </p>
                             </div>
