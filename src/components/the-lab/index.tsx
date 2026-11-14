@@ -1,4 +1,4 @@
-// Thin orchestrator shell for The Lab wiring hooks and components together (<150 lines)
+﻿﻿// Thin orchestrator shell for The Lab wiring hooks and components together (<150 lines)
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
@@ -1020,11 +1020,11 @@ export default function TheLab() {
 
           <div className={cn(
             "flex-1 min-w-0 flex flex-col",
-            isDesigningNew || !itinerary || ['history'].includes(activeLabTab) ? "items-center justify-center" : "lg:grid lg:grid-cols-12 gap-4"
+            isDesigningNew || !itinerary || ['history'].includes(activeLabTab) ? "items-center justify-center" : "w-full"
           )}>
             <div className={cn(
               ['history'].includes(activeLabTab) ? "w-full" :
-                (isDesigningNew || !itinerary ? "w-full max-w-5xl" : "lg:col-span-8 order-2 lg:order-1")
+                (isDesigningNew || !itinerary ? "w-full max-w-5xl" : "w-full")
             )}>
               {(isGenerating && !itinerary) || (isLoading) ? (
                 <div className="py-24 flex flex-col items-center min-h-[400px] justify-center space-y-12">
@@ -1083,28 +1083,42 @@ export default function TheLab() {
                 </>
               )}
             </div>
-
-            {isViewingItinerary && itinerary && (
-              <div className={cn("lg:col-span-4 order-1 lg:order-2 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
-                <TheLabSummaryPanel
-                  itinerary={itinerary}
-                  selectedStatus={selectedStatus}
-                  clients={clients}
-                  selectedClientId={selectedClientId}
-                  isGenerating={isGenerating}
-                  finalTotal={finalTotal}
-                  currencySymbol={currencySymbol}
-                  tripMetadata={tripMetadata}
-                  title={tripTitle}
-                  onOpenAddClient={() => setIsAddClientOpen(true)}
-                  onRegenerateItinerary={handleRegenerateItinerary}
-                  onUpdateTripMetadata={handleUpdateTripMetadata}
-                />
-              </div>
-            )}
           </div>
+
+          {/* Spacer to maintain layout column width for the fixed right panel */}
+          {isViewingItinerary && itinerary && (
+            <div className="hidden lg:block shrink-0 w-[340px] xl:w-[380px] 2xl:w-[420px] transition-all duration-300 pointer-events-none" />
+          )}
         </div>
       </div>
+
+      {/* Desktop fixed right panel -- behaves exactly like TheLabSidebar */}
+      {isViewingItinerary && itinerary && (
+        <div
+          style={{ right: 'max(16px, calc((100vw - 1500px) / 2 + 32px))' }}
+          className={cn(
+            "hidden lg:flex flex-col shrink-0 fixed top-28 z-30 transition-all duration-300",
+            "w-[340px] xl:w-[380px] 2xl:w-[420px]",
+            "max-h-[calc(100vh-140px)] overflow-y-auto no-scrollbar",
+            isEditing && "blur-[1px] opacity-40 pointer-events-none"
+          )}
+        >
+          <TheLabSummaryPanel
+            itinerary={itinerary}
+            selectedStatus={selectedStatus}
+            clients={clients}
+            selectedClientId={selectedClientId}
+            isGenerating={isGenerating}
+            finalTotal={finalTotal}
+            currencySymbol={currencySymbol}
+            tripMetadata={tripMetadata}
+            title={tripTitle}
+            onOpenAddClient={() => setIsAddClientOpen(true)}
+            onRegenerateItinerary={handleRegenerateItinerary}
+            onUpdateTripMetadata={handleUpdateTripMetadata}
+          />
+        </div>
+      )}
 
       <TheLabPdfPreview
         ref={previewRef}
@@ -1310,5 +1324,4 @@ export default function TheLab() {
     </section>
   );
 }
-
 
