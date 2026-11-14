@@ -17,6 +17,13 @@ export async function fetchItineraryImages(
         return [];
     }
 
+    const { createServerComponentClient } = await import('@/lib/supabase/server');
+    const supabase = await createServerComponentClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        return [];
+    }
+
     return fetchImagesForTerms(searchTerms, areaNames);
 }
 
@@ -30,6 +37,13 @@ export async function searchSiteCandidatePhotos(
     limit: number = 6
 ): Promise<string[]> {
     if (!query || !query.trim()) {
+        return [];
+    }
+
+    const { createServerComponentClient } = await import('@/lib/supabase/server');
+    const supabase = await createServerComponentClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
         return [];
     }
 

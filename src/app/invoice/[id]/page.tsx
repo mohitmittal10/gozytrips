@@ -12,16 +12,28 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
   const { id } = await params;
   const supabaseAdmin = createAdminClient();
 
-  // 1. Fetch itinerary securely via share_token (narrow columns — never select refresh tokens)
+  // 1. Fetch itinerary securely (narrow columns — never select refresh tokens)
   const { data: itinData, error: itinError } = await supabaseAdmin
     .from("itineraries")
-    .select("id, user_id, title, starting_location, ending_location, start_date, end_date, currency, client_price, share_token, share_enabled, itinerary_data")
+    .select("id, user_id, title, starting_location, ending_location, start_date, end_date, currency, client_price, tax_percentage, share_token, share_enabled, itinerary_data")
     .or(`share_token.eq.${id},id.eq.${id}`)
-    .eq("share_enabled", true)
     .single();
 
   if (itinError || !itinData) {
     return notFound();
+  }
+
+  // If accessed via internal UUID instead of share_token, verify caller is the authenticated owner
+  if (itinData.share_token !== id) {
+    if (!itinData.share_enabled) {
+      return notFound();
+    }
+    const { createServerComponentClient } = await import("@/lib/supabase/server");
+    const userClient = await createServerComponentClient();
+    const { data: { user } } = await userClient.auth.getUser();
+    if (!user || user.id !== itinData.user_id) {
+      return notFound();
+    }
   }
   
   const itinerary = itinData as any;
@@ -83,12 +95,17 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
     }];
   }
   
-  const calculatedTotal = items.reduce((sum, item) => {
+  const calculatedSubtotal = items.reduce((sum, item) => {
     return sum + (Number(item.net_cost) * (1 + Number(item.markup_percentage) / 100));
   }, 0);
   
-  const totalGross = itinerary.client_price ? Number(itinerary.client_price) : calculatedTotal;
-  const balanceDue = totalGross - amountPaid;
+  const subtotal = itinerary.client_price ? Number(itinerary.client_price) : calculatedSubtotal;
+  const taxRate = typeof itinerary.tax_percentage === 'number'
+    ? itinerary.tax_percentage
+    : (itinerary.itinerary_data?.pricing?.taxPercentage ?? 0);
+  const taxAmount = (subtotal * taxRate) / 100;
+  const totalGross = subtotal + taxAmount;
+  const balanceDue = Math.max(0, totalGross - amountPaid);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -181,6 +198,24 @@ export default async function InvoicePage({ params }: { params: Promise<{ id: st
                       Subtotal
                     </td>
                     <td className="px-6 py-4 text-right font-medium text-zinc-900 dark:text-zinc-100">
+                      {currency}{subtotal.toFixed(2)}
+                    </td>
+                  </tr>
+                  {taxRate > 0 && (
+                    <tr>
+                      <td className="px-6 py-4 text-right font-medium text-zinc-600 dark:text-zinc-400">
+                        GST / Tax ({taxRate}%)
+                      </td>
+                      <td className="px-6 py-4 text-right font-medium text-zinc-900 dark:text-zinc-100">
+                        +{currency}{taxAmount.toFixed(2)}
+                      </td>
+                    </tr>
+                  )}
+                  <tr className="border-t border-zinc-200 dark:border-zinc-700">
+                    <td className="px-6 py-4 text-right font-semibold text-zinc-900 dark:text-zinc-100">
+                      Total Invoice Amount
+                    </td>
+                    <td className="px-6 py-4 text-right font-bold text-zinc-900 dark:text-zinc-100">
                       {currency}{totalGross.toFixed(2)}
                     </td>
                   </tr>

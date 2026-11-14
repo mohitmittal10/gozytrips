@@ -1,4 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
+
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: vi.fn(),
+}));
+
 import { RateLimitError, RATE_LIMIT_DEFAULTS } from '@/lib/security/rate-limiter';
 
 describe('rate limiter exports', () => {

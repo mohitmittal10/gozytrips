@@ -1,14 +1,25 @@
 import { NextResponse } from 'next/server';
-
+import { cookies } from 'next/headers';
 import { createServerComponentClient } from '@/lib/supabase/server';
 import { getGoogleOAuth2Client } from '@/lib/google-auth';
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
+  const state = searchParams.get('state');
 
   if (!code) {
     return NextResponse.redirect(`${origin}/profile?error=NoCode`);
+  }
+
+  // Validate OAuth CSRF state parameter
+  const cookieStore = await cookies();
+  const savedState = cookieStore.get('google_oauth_state')?.value;
+  cookieStore.delete('google_oauth_state');
+
+  if (!state || !savedState || state !== savedState) {
+    console.error('[Google OAuth] State mismatch / CSRF detected');
+    return NextResponse.redirect(`${origin}/profile?error=StateMismatch`);
   }
 
   const supabase = await createServerComponentClient();

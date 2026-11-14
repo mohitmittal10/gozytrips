@@ -66,7 +66,11 @@ async function ensureLogFile() {
   try {
     await fs.access(TOKEN_LOG_FILE);
   } catch {
-    await fs.writeFile(TOKEN_LOG_FILE, JSON.stringify([], null, 2));
+    try {
+      await fs.writeFile(TOKEN_LOG_FILE, JSON.stringify([], null, 2));
+    } catch {
+      // Non-fatal on read-only serverless runtimes
+    }
   }
 }
 
@@ -75,8 +79,8 @@ async function readTokenLogs(): Promise<TokenUsageRecord[]> {
     await ensureLogFile();
     const data = await fs.readFile(TOKEN_LOG_FILE, 'utf-8');
     return JSON.parse(data);
-  } catch (error) {
-    console.error('Error reading token logs:', error);
+  } catch {
+    // Non-fatal fallback for read-only environments or fresh instances
     return [];
   }
 }
@@ -85,7 +89,8 @@ async function writeTokenLogs(records: TokenUsageRecord[]) {
   try {
     await fs.writeFile(TOKEN_LOG_FILE, JSON.stringify(records, null, 2));
   } catch (error) {
-    console.error('Error writing token logs:', error);
+    // Non-fatal on serverless / read-only filesystem
+    console.warn('Token usage logging skipped (filesystem may be read-only):', error instanceof Error ? error.message : error);
   }
 }
 

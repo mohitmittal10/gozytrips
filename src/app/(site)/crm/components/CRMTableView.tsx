@@ -109,13 +109,13 @@ export const CRMTableView = (props: CRMTableViewProps) => {
             {/* Bulk Actions Bar */}
             {selectedIds.size > 0 && (
                 <div className="flex items-center gap-3 p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl animate-in fade-in slide-in-from-top-2">
-                    <span className="text-sm text-purple-300 font-medium">{selectedIds.size} selected</span>
+                    <span className="text-sm text-purple-700 dark:text-purple-300 font-semibold">{selectedIds.size} selected</span>
                     <div className="h-4 w-px bg-purple-500/30" />
                     <Select onValueChange={(val) => handleBulkStatusChange(val)}>
-                        <SelectTrigger className="h-8 w-[140px] bg-slate-100 dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white text-xs">
+                        <SelectTrigger className="h-8 w-[140px] bg-white dark:bg-white/5 border-slate-300 dark:border-white/10 text-slate-900 dark:text-white text-xs font-medium">
                             <SelectValue placeholder="Set Status..." />
                         </SelectTrigger>
-                        <SelectContent className="bg-[#1a1a2e] border-slate-300 dark:border-white/10 text-slate-900 dark:text-white">
+                        <SelectContent className="bg-white dark:bg-[#1a1a2e] border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                             {itineraryStatuses.length > 0 ? (
                                 itineraryStatuses.map(opt => (
                                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
@@ -130,10 +130,10 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                             )}
                         </SelectContent>
                     </Select>
-                    <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 text-xs" onClick={handleExportCSV}>
+                    <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-white/70 dark:bg-transparent text-slate-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 text-xs font-medium" onClick={handleExportCSV}>
                         <Download className="w-3.5 h-3.5 mr-1.5" /> Export
                     </Button>
-                    <Button variant="ghost" size="sm" className="h-8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs ml-auto" onClick={() => setSelectedIds(new Set())}>
+                    <Button variant="ghost" size="sm" className="h-8 text-slate-600 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white text-xs font-medium ml-auto" onClick={() => setSelectedIds(new Set())}>
                         Clear
                     </Button>
                 </div>
@@ -141,18 +141,18 @@ export const CRMTableView = (props: CRMTableViewProps) => {
 
             {/* Table Toolbar */}
             <div className="flex items-center justify-between">
-                <p className="text-xs text-gray-500">{sortedClients.length} client{sortedClients.length !== 1 ? 's' : ''}</p>
+                <p className="text-xs text-slate-600 dark:text-gray-400 font-medium">{sortedClients.length} client{sortedClients.length !== 1 ? 's' : ''}</p>
                 <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 text-xs" onClick={handleExportCSV}>
-                        <Download className="w-3.5 h-3.5 mr-1.5" /> Export CSV
+                    <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-white/70 dark:bg-transparent text-slate-700 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 text-xs font-semibold cursor-pointer" onClick={handleExportCSV}>
+                        <Download className="w-3.5 h-3.5 mr-1.5 text-primary" /> Export CSV
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-transparent text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white text-xs rounded-xl font-semibold cursor-pointer">
+                            <Button variant="outline" size="sm" className="h-8 border-slate-300 dark:border-white/10 bg-white/70 dark:bg-transparent text-slate-700 dark:text-zinc-300 hover:bg-slate-200 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white text-xs rounded-xl font-semibold cursor-pointer">
                                 <Columns3 className="w-3.5 h-3.5 mr-1.5 text-primary" /> Columns
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-300 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
+                        <DropdownMenuContent align="end" className="bg-white dark:bg-[#0c0c0e]/95 backdrop-blur-2xl border-slate-200 dark:border-white/10 text-slate-900 dark:text-white shadow-xl">
                             <DropdownMenuLabel className="text-xs text-slate-600 dark:text-zinc-400 font-semibold">Toggle Columns</DropdownMenuLabel>
                             <DropdownMenuSeparator className="bg-slate-200 dark:bg-white/10" />
                             <DropdownMenuCheckboxItem checked={visibleColumns.destination} onCheckedChange={() => toggleColumn('destination')} className="text-xs">Destination</DropdownMenuCheckboxItem>
@@ -163,16 +163,16 @@ export const CRMTableView = (props: CRMTableViewProps) => {
             </div>
 
             {/* Table */}
-            <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] shadow-2xl rounded-2xl overflow-hidden">
+            <div className="bg-white/70 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-300/80 dark:border-white/[0.08] shadow-2xl rounded-2xl overflow-hidden">
                 <div className="crm-table-wrapper">
                     <table className="w-full text-left border-collapse min-w-[520px]">
                         <thead>
-                            <tr className="border-b border-slate-300 dark:border-white/10 text-slate-600 dark:text-zinc-400 font-semibold text-xs">
+                            <tr className="border-b border-slate-300 dark:border-white/10 text-slate-700 dark:text-zinc-400 font-semibold text-xs bg-slate-100/60 dark:bg-white/[0.02]">
                                 <th className="p-4 w-10">
                                     <Checkbox
                                         checked={paginatedClients.length > 0 && selectedIds.size === paginatedClients.length}
                                         onCheckedChange={toggleSelectAll}
-                                        className="h-4 w-4 rounded-full border-slate-300 dark:border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary shrink-0 transition-all"
+                                        className="h-4 w-4 rounded-full border-slate-400 dark:border-white/20 data-[state=checked]:bg-primary data-[state=checked]:border-primary shrink-0 transition-all"
                                     />
                                 </th>
                                 <th className="p-4 cursor-pointer select-none hover:text-slate-900 dark:hover:text-white transition-colors" onClick={() => handleSort('name')}>
@@ -189,7 +189,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                 <th className="p-4"></th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-slate-200/80 dark:divide-white/5">
                             {clientsLoading || isComputing ? (
                                 <tr>
                                     <td colSpan={7} className="p-8 text-center text-slate-600 dark:text-zinc-400">
@@ -212,7 +212,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                 paginatedClients.map((client) => (
                                     <tr 
                                         key={client.id} 
-                                        className={cn("hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group cursor-pointer", selectedIds.has(client.id) && "bg-primary/10")}
+                                        className={cn("border-b border-slate-200/80 dark:border-white/5 hover:bg-slate-100/80 dark:hover:bg-white/5 transition-colors group cursor-pointer", selectedIds.has(client.id) && "bg-primary/10")}
                                         onClick={() => setSelectedClient(client)}
                                         role="button"
                                         tabIndex={0}
@@ -222,7 +222,7 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                             <Checkbox
                                                 checked={selectedIds.has(client.id)}
                                                 onCheckedChange={() => toggleSelectOne(client.id)}
-                                                className="h-4 w-4 rounded-full border-slate-300 dark:border-white/20 data-[state=checked]:bg-primary data-[state=checked]:text-slate-900 dark:text-white data-[state=checked]:border-primary shrink-0 transition-all"
+                                                className="h-4 w-4 rounded-full border-slate-400 dark:border-white/20 data-[state=checked]:bg-primary data-[state=checked]:text-white dark:data-[state=checked]:text-slate-900 data-[state=checked]:border-primary shrink-0 transition-all"
                                             />
                                         </td>
                                         <td className="p-4">
@@ -251,12 +251,12 @@ export const CRMTableView = (props: CRMTableViewProps) => {
                                                     {client.bookedDestinations && client.bookedDestinations.length > 0 ? (
                                                         client.bookedDestinations.map((dest: any, idx: number) => (
                                                             <div key={idx} className="flex items-center gap-2 group/dest">
-                                                                <Compass className="w-3.5 h-3.5 text-primary group-hover/dest:text-slate-900 dark:text-white transition-colors shrink-0" />
-                                                                <span className="truncate max-w-[180px] text-xs font-semibold text-zinc-200 group-hover/dest:text-slate-900 dark:text-white transition-colors">{dest.label}</span>
+                                                                <Compass className="w-3.5 h-3.5 text-primary group-hover/dest:text-slate-900 dark:group-hover/dest:text-white transition-colors shrink-0" />
+                                                                <span className="truncate max-w-[180px] text-xs font-semibold text-slate-800 dark:text-zinc-200 group-hover/dest:text-primary dark:group-hover/dest:text-white transition-colors">{dest.label}</span>
                                                             </div>
                                                         ))
                                                     ) : (
-                                                        <span className="text-xs text-zinc-500 italic">N/A</span>
+                                                        <span className="text-xs text-slate-400 dark:text-zinc-500 italic">N/A</span>
                                                     )}
                                                 </div>
                                             </td>

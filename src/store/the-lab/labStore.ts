@@ -6,6 +6,7 @@ const initialData = {
   itinerary: null,
   isEditing: false,
   showTimestamps: true,
+  hasItineraryToolbar: false,
 
   hotels: [],
   flights: [],
@@ -87,6 +88,7 @@ export const useLabStore = create<LabState>((set, get) => {
     setItinerary: (itinerary) => set((state) => updateHashAndDirty({ itinerary })),
     setIsEditing: (isEditing) => set({ isEditing }), // Ephemeral — does not affect hash
     setShowTimestamps: (showTimestamps) => set((state) => updateHashAndDirty({ showTimestamps })),
+    setHasItineraryToolbar: (hasItineraryToolbar) => set({ hasItineraryToolbar }),
 
     // ─── Logistics Actions ──────────────────────────────────────────────────
     setHotels: (hotels) => set((state) => updateHashAndDirty({ hotels })),

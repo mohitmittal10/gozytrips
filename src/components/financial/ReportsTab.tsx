@@ -100,7 +100,7 @@ export function ReportsTab({ financials, stats, monthlyData, cs, fm }: ReportsTa
                 <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-4 shadow-xl">
                     <p className="text-[10px] text-slate-600 dark:text-gray-400 uppercase tracking-wider font-semibold">Total Revenue</p>
                     <p className="text-xl font-black mt-1 text-slate-900 dark:text-white">{fm(stats.totalRevenue)}</p>
-                    <p className="text-[11px] text-slate-500 dark:text-gray-500 mt-0.5">{financials.length} total active itineraries</p>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-500 mt-0.5">{financials.length} total booked trips</p>
                 </div>
 
                 <div className="bg-white/60 dark:bg-white/[0.03] backdrop-blur-xl border border-slate-200 dark:border-white/[0.08] rounded-2xl p-4 shadow-xl">

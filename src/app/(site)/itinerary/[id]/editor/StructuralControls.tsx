@@ -209,7 +209,7 @@ export function StructuralControls({
                                     : Array.isArray(day.activities)
                                         ? day.activities
                                         : [];
-                                const rawSummary = daySummaries[idx] || (day.timeline?.[0]?.details ? (day.timeline[0].details.length > 80 ? `${day.timeline[0].details.substring(0, 77)}…` : day.timeline[0].details) : "");
+                                const rawSummary = daySummaries[idx] || (day as any)?.summary || (day.timeline?.[0]?.details ? (day.timeline[0].details.length > 80 ? `${day.timeline[0].details.substring(0, 77)}…` : day.timeline[0].details) : "");
                                 const currentSummary = rawSummary ? rawSummary.replace(/^\s*(?:\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?\s*[-–—•]?\s*)+/gi, "").replace(/^\s*[-•◆✓✕✦\*\+]\s*/, "").trim() : "";
 
                                 return (

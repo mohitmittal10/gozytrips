@@ -62,7 +62,7 @@ export function useCrmData() {
                 .select("id, client_id, title, status, destinations, start_date, end_date, budget, client_price, currency, commission_rate, markup_value, markup_type, tax_percentage, adult_pax, child_pax, infant_pax, created_at, updated_at, itinerary_data, starting_location, ending_location, share_token, share_enabled, trip_line_items(net_cost, markup_percentage)")
                 .eq("user_id", user.id)
                 .order("updated_at", { ascending: false })
-                .limit(200);
+                .limit(1000);
 
             if (error) throw error;
 
@@ -71,7 +71,7 @@ export function useCrmData() {
                 .select('id, client_id, title, service_type, status, created_at, updated_at, currency, net_cost, markup_percentage, booking_details')
                 .eq('user_id', user.id)
                 .order('created_at', { ascending: false })
-                .limit(200);
+                .limit(1000);
 
             if (!standaloneError) {
                 setBookings(standaloneData || []);
@@ -138,35 +138,64 @@ export function useCrmData() {
         }
     }, [fetchClients, toast]);
 
-    const handleStatusChange = async (clientId: string, tripId: string | undefined, newStatus: string) => {
-        if (!user || !tripId) return;
-        const client = enrichedClients.find(c => c.id === clientId);
-        const tripToUpdate = client?.allTrips.find(t => t.id === tripId);
+    const handleStatusChange = async (
+        clientIdOrTripId: string,
+        tripIdOrNewStatus?: string,
+        maybeNewStatus?: string
+    ) => {
+        if (!user) return;
+
+        let resolvedClientId = clientIdOrTripId;
+        let resolvedTripId = tripIdOrNewStatus;
+        let newStatus = maybeNewStatus;
+
+        // Support both 2-arg signature (tripId, newStatus) from bulk actions/TripsView
+        // and 3-arg signature (clientId, tripId, newStatus)
+        if (!maybeNewStatus && tripIdOrNewStatus) {
+            resolvedTripId = clientIdOrTripId;
+            newStatus = tripIdOrNewStatus;
+            const owner = enrichedClients.find(c => c.allTrips.some(t => t.id === resolvedTripId));
+            if (owner) {
+                resolvedClientId = owner.id;
+            } else {
+                console.error("Owner client not found for trip", resolvedTripId);
+                return;
+            }
+        }
+
+        if (!resolvedTripId || !newStatus) return;
+
+        const client = enrichedClients.find(c => c.id === resolvedClientId);
+        const tripToUpdate = client?.allTrips.find(t => t.id === resolvedTripId);
         const oldStatus = tripToUpdate?.status || "unknown";
         const statusToSave = newStatus.toLowerCase() === 'confirmed' ? 'booked' : newStatus;
 
         setEnrichedClients(prev => prev.map(c => {
-            if (c.id === clientId) {
-                const updatedTrips = c.allTrips.map(t => t.id === tripId ? { ...t, status: statusToSave } : t);
-                return { ...c, latestStatus: statusToSave, allTrips: updatedTrips };
+            if (c.id === resolvedClientId) {
+                const updatedTrips = c.allTrips.map(t => t.id === resolvedTripId ? { ...t, status: statusToSave } : t);
+                const sortedTrips = [...updatedTrips].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+                const latestStatus = sortedTrips[0]?.status || statusToSave;
+                return { ...c, latestStatus, allTrips: updatedTrips };
             }
             return c;
         }));
 
         try {
-            await updateItineraryStatus(tripId as string, statusToSave, supabase, user.id, oldStatus);
+            await updateItineraryStatus(resolvedTripId as string, statusToSave, supabase, user.id, oldStatus);
             if (user) {
                 logAuditEvent(user.id, "STATUS_CHANGE", `Trip status changed to ${statusToSave}`, {
-                    entityType: "itinerary", entityId: tripId as string, metadata: { old_status: oldStatus, new_status: statusToSave },
+                    entityType: "itinerary", entityId: resolvedTripId as string, metadata: { old_status: oldStatus, new_status: statusToSave },
                 });
             }
             toast({ title: "Status Updated", description: "The trip status has been successfully changed." });
         } catch (err: any) {
             console.error("Failed to update status:", err);
             setEnrichedClients(prev => prev.map(c => {
-                if (c.id === clientId) {
-                    const revertedTrips = c.allTrips.map(t => t.id === tripId ? { ...t, status: oldStatus } : t);
-                    return { ...c, latestStatus: oldStatus, allTrips: revertedTrips };
+                if (c.id === resolvedClientId) {
+                    const revertedTrips = c.allTrips.map(t => t.id === resolvedTripId ? { ...t, status: oldStatus } : t);
+                    const sortedTrips = [...revertedTrips].sort((a, b) => new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime());
+                    const latestStatus = sortedTrips[0]?.status || oldStatus;
+                    return { ...c, latestStatus, allTrips: revertedTrips };
                 }
                 return c;
             }));
@@ -195,7 +224,11 @@ export function useCrmData() {
         if (!user || !bookingId) return;
         setDeletingBookingId(bookingId);
         try {
-            const { error } = await supabase.from('standalone_bookings').delete().eq('id', bookingId);
+            const { error } = await supabase
+                .from('standalone_bookings')
+                .delete()
+                .eq('id', bookingId)
+                .eq('user_id', user.id);
             if (error) throw error;
             toast({ title: "Booking Deleted", description: "Standalone booking has been removed." });
             onDeleted();

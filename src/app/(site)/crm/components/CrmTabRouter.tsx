@@ -187,7 +187,7 @@ export function CrmTabRouter() {
         />;
     }
 
-    if (activeTab === 'enquiry') return <EnquiryView />;
+    if (activeTab === 'enquiry' || activeTab === 'lead-generation' || activeTab === 'leads') return <EnquiryView initialSubTab="lead_generation" />;
     if (activeTab === 'client-forms') return <ClientFormsView />;
     
     if (activeTab === 'bookings') return <BookingsView

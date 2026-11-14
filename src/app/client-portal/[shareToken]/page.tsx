@@ -13,9 +13,11 @@ import { Loader2, MapPin, AlertCircle, CheckCircle2 } from "lucide-react";
 function AuthGate({
   formMeta,
   onAuthenticated,
+  onContinueAsGuest,
 }: {
   formMeta: PublicEnquiryFormMeta;
   onAuthenticated: () => void;
+  onContinueAsGuest: () => void;
 }) {
   const [mode, setMode] = useState<"signin" | "signup">("signup");
   const [email, setEmail] = useState("");
@@ -35,7 +37,7 @@ function AuthGate({
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { full_name: name } },
+          options: { data: { full_name: name, role: "client" } },
         });
         if (signUpError) throw signUpError;
       } else {
@@ -163,6 +165,23 @@ function AuthGate({
               : "New here? Create an account"}
           </button>
         </div>
+
+        <div className="relative my-5">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-200 dark:border-white/10" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white dark:bg-[#121212] px-2 text-slate-500 dark:text-gray-400 font-medium">Or</span>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={onContinueAsGuest}
+          className="w-full h-11 rounded-xl border border-slate-300 dark:border-white/10 bg-slate-50 dark:bg-white/[0.04] text-slate-700 dark:text-gray-200 font-semibold text-sm hover:bg-slate-100 dark:hover:bg-white/[0.08] transition-all flex items-center justify-center gap-2"
+        >
+          Fill Form as Guest →
+        </button>
       </div>
 
       <p className="text-xs text-gray-700 mt-6 text-center max-w-xs">
@@ -185,6 +204,8 @@ export default function ClientPortalPage({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
+  const [guestSubmitted, setGuestSubmitted] = useState(false);
   const supabase = createClient();
 
   useEffect(() => {
@@ -228,11 +249,45 @@ export default function ClientPortalPage({
     );
   }
 
-  if (!isAuthenticated) {
+  if (guestSubmitted) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center px-4 text-center">
+        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 flex items-center justify-center mx-auto mb-6 animate-in zoom-in duration-500">
+          <CheckCircle2 className="w-10 h-10 text-green-500 dark:text-green-400" />
+        </div>
+        <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-3">Enquiry Received!</h1>
+        <p className="text-slate-600 dark:text-gray-400 text-base max-w-md mb-6 font-medium">
+          Your travel preferences have been shared with{" "}
+          <span className="text-[#FF5C33] font-semibold">{formMeta.agent_brand_name}</span>.
+          They will craft your personalized itinerary and contact you shortly.
+        </p>
+        <button
+          onClick={() => { setIsGuest(false); setGuestSubmitted(false); }}
+          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#FF5C33] to-[#EC4899] text-white font-semibold text-sm hover:brightness-110 transition-all shadow-md"
+        >
+          Create an Account to Track Live Updates
+        </button>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated && !isGuest) {
     return (
       <AuthGate
         formMeta={formMeta}
         onAuthenticated={() => setIsAuthenticated(true)}
+        onContinueAsGuest={() => setIsGuest(true)}
+      />
+    );
+  }
+
+  if (isGuest && !isAuthenticated) {
+    return (
+      <EnquiryClientForm
+        formMeta={formMeta}
+        shareToken={shareToken}
+        isGuest={true}
+        onSubmitted={() => setGuestSubmitted(true)}
       />
     );
   }

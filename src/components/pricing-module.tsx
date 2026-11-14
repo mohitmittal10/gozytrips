@@ -11,10 +11,12 @@ import { useItinerary } from "@/hooks/use-itinerary";
 import { useItineraryPricing } from "@/hooks/use-itinerary-pricing";
 import { formatMoney } from "@/lib/utils/currency";
 import { getItemBaseCostForPax } from "@/services/financial";
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import { isEntryCompleteForExport } from "@/lib/validation/logistics-validation";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { CostingSummaryCard } from "@/components/the-lab/CostingSummaryCard";
+import { useAuth } from "@/contexts/auth-context";
 
 // Fallback defaults if DB is not populated
 const DEFAULT_CURRENCIES: { value: Currency; label: string }[] = [
@@ -79,6 +81,10 @@ export default function PricingModule({
 }) {
   // Store
   const { state, pricing, validationErrors, updatePricing, flights, hotels, cabs, buses, itinerary } = useItinerary();
+  const { agencySettings } = useAuth();
+  const defaultTaxPercentage = (typeof pricing?.taxPercentage === "number" && pricing.taxPercentage > 0)
+    ? pricing.taxPercentage
+    : ((agencySettings as any)?.default_tax_percentage || 5);
   const supabase = useMemo(() => createClient(), []);
   const [referenceOptions, setReferenceOptions] = useState<any[]>([]);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -97,6 +103,7 @@ export default function PricingModule({
   // Track linked item IDs that the user has intentionally removed or unlinked in this session,
   // so auto-import does not immediately re-add them.
   const dismissedLinkedIdsRef = useRef<Set<string>>(new Set());
+  const newlyAddedIdsRef = useRef<Set<string>>(new Set());
   const lastTripIdRef = useRef<string | null | undefined>(state.tripId);
 
   // Reset dismissed IDs if the trip changes
@@ -104,6 +111,7 @@ export default function PricingModule({
     if (lastTripIdRef.current !== state.tripId) {
       lastTripIdRef.current = state.tripId;
       dismissedLinkedIdsRef.current.clear();
+      newlyAddedIdsRef.current.clear();
     }
   }, [state.tripId]);
 
@@ -162,69 +170,97 @@ export default function PricingModule({
     const currentOptions = pricing?.manualOptions || [];
     let hasChanges = false;
 
-    // 1. Update any existing linked items whose cost or type might have changed
-    const updatedOptions = currentOptions.map((item) => {
-      if (!item.linkedItemId) return item;
+    // 1. Update existing items and prune any incomplete / unnecessary items
+    const updatedOptions: ManualCostItem[] = [];
 
-      let latestCost: number | null = null;
-      let latestType: "per-person" | "total" | null = null;
+    for (const item of currentOptions) {
+      // If user just added this manual item in this session, keep it
+      if (newlyAddedIdsRef.current.has(item.id)) {
+        updatedOptions.push(item);
+        continue;
+      }
 
-      if (item.category === "Flight") {
-        const f = (flights || []).find((fl) => fl.id === item.linkedItemId);
-        if (f) {
-          const isFlat = f.costType === "flat";
-          latestType = isFlat ? "total" : "per-person";
-          const flightCostTotal = (f.costAdult || 0) * adultPax + (f.costChild || 0) * childPax + (f.costInfant || 0) * infantPax;
-          latestCost = isFlat ? (f.flatCost ?? 0) : (totalPax > 0 ? flightCostTotal / totalPax : (f.costAdult ?? 0));
-        }
-      } else if (item.category === "Hotel") {
-        const h = (hotels || []).find((ho) => ho.id === item.linkedItemId);
-        if (h) {
-          const isFlat = h.costType === "flat";
-          latestType = isFlat ? "total" : "per-person";
-          const nights = h.nights || 1;
-          const hotelCostTotal = ((h.costAdult || 0) * adultPax + (h.costChild || 0) * childPax + (h.costInfant || 0) * infantPax) * nights;
-          latestCost = isFlat ? (h.flatCost ?? 0) * nights : (totalPax > 0 ? hotelCostTotal / totalPax : (h.costAdult ?? 0) * nights);
-        }
-      } else if (item.category === "Transport") {
-        const c = (cabs || []).find((ca) => ca.id === item.linkedItemId);
-        if (c) {
-          const isFlat = (c.costType || "flat") === "flat";
-          latestType = isFlat ? "total" : "per-person";
-          const cabCostTotal = (c.costAdult || 0) * adultPax + (c.costChild || 0) * childPax + (c.costInfant || 0) * infantPax;
-          latestCost = isFlat ? (c.totalCost ?? c.flatCost ?? 0) : (totalPax > 0 ? cabCostTotal / totalPax : (c.costAdult ?? 0));
-        } else {
-          const b = (buses || []).find((bu) => bu.id === item.linkedItemId);
-          if (b) {
-            const isFlat = b.costType === "flat";
+      if (item.linkedItemId) {
+        let latestCost: number | null = null;
+        let latestType: "per-person" | "total" | null = null;
+        let isComplete = false;
+
+        if (item.category === "Flight") {
+          const f = (flights || []).find((fl) => fl.id === item.linkedItemId);
+          if (f && isEntryCompleteForExport(f, "flight")) {
+            isComplete = true;
+            const isFlat = f.costType === "flat";
             latestType = isFlat ? "total" : "per-person";
-            const busCostTotal = (b.costAdult || 0) * adultPax + (b.costChild || 0) * childPax + (b.costInfant || 0) * infantPax;
-            latestCost = isFlat ? (b.flatCost ?? 0) : (totalPax > 0 ? busCostTotal / totalPax : (b.costAdult ?? 0));
+            const flightCostTotal = (f.costAdult || 0) * adultPax + (f.costChild || 0) * childPax + (f.costInfant || 0) * infantPax;
+            latestCost = isFlat ? (f.flatCost ?? 0) : (totalPax > 0 ? flightCostTotal / totalPax : (f.costAdult ?? 0));
+          }
+        } else if (item.category === "Hotel") {
+          const h = (hotels || []).find((ho) => ho.id === item.linkedItemId);
+          if (h && isEntryCompleteForExport(h, "hotel")) {
+            isComplete = true;
+            const isFlat = h.costType === "flat";
+            latestType = isFlat ? "total" : "per-person";
+            const nights = h.nights || 1;
+            const hotelCostTotal = ((h.costAdult || 0) * adultPax + (h.costChild || 0) * childPax + (h.costInfant || 0) * infantPax) * nights;
+            latestCost = isFlat ? (h.flatCost ?? 0) * nights : (totalPax > 0 ? hotelCostTotal / totalPax : (h.costAdult ?? 0) * nights);
+          }
+        } else if (item.category === "Transport") {
+          const c = (cabs || []).find((ca) => ca.id === item.linkedItemId);
+          if (c && isEntryCompleteForExport(c, "cab")) {
+            isComplete = true;
+            const isFlat = (c.costType || "flat") === "flat";
+            latestType = isFlat ? "total" : "per-person";
+            const cabCostTotal = (c.costAdult || 0) * adultPax + (c.costChild || 0) * childPax + (c.costInfant || 0) * infantPax;
+            latestCost = isFlat ? (c.totalCost ?? c.flatCost ?? 0) : (totalPax > 0 ? cabCostTotal / totalPax : (c.costAdult ?? 0));
+          } else {
+            const b = (buses || []).find((bu) => bu.id === item.linkedItemId);
+            if (b && isEntryCompleteForExport(b, "bus")) {
+              isComplete = true;
+              const isFlat = b.costType === "flat";
+              latestType = isFlat ? "total" : "per-person";
+              const busCostTotal = (b.costAdult || 0) * adultPax + (b.costChild || 0) * childPax + (b.costInfant || 0) * infantPax;
+              latestCost = isFlat ? (b.flatCost ?? 0) : (totalPax > 0 ? busCostTotal / totalPax : (b.costAdult ?? 0));
+            }
+          }
+        } else if (item.category === "Activity") {
+          const act = availableActivities.find((a) => a.id === item.linkedItemId);
+          if (act && typeof act.cost === "number" && act.cost > 0) {
+            isComplete = true;
+            latestCost = act.cost;
+            latestType = "per-person";
           }
         }
-      } else if (item.category === "Activity") {
-        const act = availableActivities.find((a) => a.id === item.linkedItemId);
-        if (act && typeof act.cost === "number" && act.cost > 0) {
-          latestCost = act.cost;
-          latestType = "per-person";
+
+        if (isComplete) {
+          if (latestCost !== null && (Math.abs(latestCost - item.amount) > 0.001 || (latestType && latestType !== item.type))) {
+            hasChanges = true;
+            updatedOptions.push({ ...item, amount: latestCost, type: latestType || item.type });
+          } else {
+            updatedOptions.push(item);
+          }
+        } else {
+          // Prune incomplete or deleted linked items so they do not clutter itemized costs
+          hasChanges = true;
+        }
+      } else {
+        // Unlinked manual item: keep only if it has a non-empty name and amount > 0
+        const hasValidName = !!(item.name && item.name.trim() !== "");
+        const hasPositiveCost = (Number(item.amount) || 0) > 0;
+        if (hasValidName && hasPositiveCost) {
+          updatedOptions.push(item);
+        } else {
+          hasChanges = true;
         }
       }
+    }
 
-      if (latestCost !== null && (Math.abs(latestCost - item.amount) > 0.001 || (latestType && latestType !== item.type))) {
-        hasChanges = true;
-        return { ...item, amount: latestCost, type: latestType || item.type };
-      }
-
-      return item;
-    });
-
-    // 2. Automatically import unlinked items without requiring button click
-    const existingLinkedIds = new Set(currentOptions.map((o) => o.linkedItemId).filter(Boolean));
+    // 2. Automatically import unlinked items ONLY if they are complete
+    const existingLinkedIds = new Set(updatedOptions.map((o) => o.linkedItemId).filter(Boolean));
     const newItems: ManualCostItem[] = [];
 
-    // Add Flights
+    // Add Flights (ONLY if complete)
     (flights || []).forEach((f) => {
-      if (f.id && !existingLinkedIds.has(f.id) && !dismissedLinkedIdsRef.current.has(f.id)) {
+      if (f.id && !existingLinkedIds.has(f.id) && !dismissedLinkedIdsRef.current.has(f.id) && isEntryCompleteForExport(f, "flight")) {
         const isFlat = f.costType === "flat";
         const flightCostTotal = (f.costAdult || 0) * adultPax + (f.costChild || 0) * childPax + (f.costInfant || 0) * infantPax;
         const amount = isFlat ? (f.flatCost || 0) : (totalPax > 0 ? flightCostTotal / totalPax : (f.costAdult || 0));
@@ -237,14 +273,14 @@ export default function PricingModule({
           linkedItemId: f.id,
           markupType: "percentage",
           markupValue: pricing?.markupValue ?? 15,
-          taxPercentage: 0,
+          taxPercentage: defaultTaxPercentage,
         });
       }
     });
 
-    // Add Hotels
+    // Add Hotels (ONLY if complete)
     (hotels || []).forEach((h) => {
-      if (h.id && !existingLinkedIds.has(h.id) && !dismissedLinkedIdsRef.current.has(h.id)) {
+      if (h.id && !existingLinkedIds.has(h.id) && !dismissedLinkedIdsRef.current.has(h.id) && isEntryCompleteForExport(h, "hotel")) {
         const isFlat = h.costType === "flat";
         const nights = h.nights || 1;
         const hotelCostTotal = ((h.costAdult || 0) * adultPax + (h.costChild || 0) * childPax + (h.costInfant || 0) * infantPax) * nights;
@@ -258,17 +294,17 @@ export default function PricingModule({
           linkedItemId: h.id,
           markupType: "percentage",
           markupValue: pricing?.markupValue ?? 15,
-          taxPercentage: 0,
+          taxPercentage: defaultTaxPercentage,
         });
       }
     });
 
-    // Add Cabs
+    // Add Cabs (ONLY if complete)
     (cabs || []).forEach((c) => {
-      if (c.id && !existingLinkedIds.has(c.id) && !dismissedLinkedIdsRef.current.has(c.id)) {
+      if (c.id && !existingLinkedIds.has(c.id) && !dismissedLinkedIdsRef.current.has(c.id) && isEntryCompleteForExport(c, "cab")) {
         const isFlat = (c.costType || "flat") === "flat";
         const cabCostTotal = (c.costAdult || 0) * adultPax + (c.costChild || 0) * childPax + (c.costInfant || 0) * infantPax;
-        const amount = isFlat ? (c.totalCost ?? c.flatCost ?? 0) : (totalPax > 0 ? cabCostTotal / totalPax : (c.costAdult || 0));
+        const amount = isFlat ? (c.totalCost ?? c.flatCost ?? 0) : (totalPax > 0 ? cabCostTotal / totalPax : (c.costAdult ?? 0));
         newItems.push({
           id: Math.random().toString(36).slice(2),
           name: `Cab: ${c.vehicleType || "Cab"}${c.route ? ` (${c.route})` : ""}`,
@@ -278,14 +314,14 @@ export default function PricingModule({
           linkedItemId: c.id,
           markupType: "percentage",
           markupValue: pricing?.markupValue ?? 15,
-          taxPercentage: 0,
+          taxPercentage: defaultTaxPercentage,
         });
       }
     });
 
-    // Add Buses
+    // Add Buses (ONLY if complete)
     (buses || []).forEach((b) => {
-      if (b.id && !existingLinkedIds.has(b.id) && !dismissedLinkedIdsRef.current.has(b.id)) {
+      if (b.id && !existingLinkedIds.has(b.id) && !dismissedLinkedIdsRef.current.has(b.id) && isEntryCompleteForExport(b, "bus")) {
         const isFlat = b.costType === "flat";
         const busCostTotal = (b.costAdult || 0) * adultPax + (b.costChild || 0) * childPax + (b.costInfant || 0) * infantPax;
         const amount = isFlat ? (b.flatCost || 0) : (totalPax > 0 ? busCostTotal / totalPax : (b.costAdult || 0));
@@ -298,14 +334,14 @@ export default function PricingModule({
           linkedItemId: b.id,
           markupType: "percentage",
           markupValue: pricing?.markupValue ?? 15,
-          taxPercentage: 0,
+          taxPercentage: defaultTaxPercentage,
         });
       }
     });
 
-    // Add Activities
+    // Add Activities (ONLY if valid cost > 0)
     availableActivities.forEach((act) => {
-      if (act.id && !existingLinkedIds.has(act.id) && !dismissedLinkedIdsRef.current.has(act.id) && act.cost > 0) {
+      if (act.id && !existingLinkedIds.has(act.id) && !dismissedLinkedIdsRef.current.has(act.id) && typeof act.cost === 'number' && act.cost > 0 && act.name) {
         newItems.push({
           id: Math.random().toString(36).slice(2),
           name: act.name,
@@ -315,7 +351,7 @@ export default function PricingModule({
           linkedItemId: act.id,
           markupType: "percentage",
           markupValue: pricing?.markupValue ?? 15,
-          taxPercentage: 0,
+          taxPercentage: defaultTaxPercentage,
         });
       }
     });
@@ -339,7 +375,44 @@ export default function PricingModule({
     updatePricing,
   ]);
 
-  // All derived monetary values come from the calculation engine
+  // Determine which itemized options are complete and necessary to show
+  const isOptionComplete = useCallback((item: ManualCostItem) => {
+    if (!item) return false;
+    // Allow user to edit newly added custom item in current session
+    if (newlyAddedIdsRef.current.has(item.id)) return true;
+
+    if (item.linkedItemId) {
+      if (item.category === "Flight") {
+        const f = (flights || []).find((fl) => fl.id === item.linkedItemId);
+        return !!(f && isEntryCompleteForExport(f, "flight"));
+      }
+      if (item.category === "Hotel") {
+        const h = (hotels || []).find((ho) => ho.id === item.linkedItemId);
+        return !!(h && isEntryCompleteForExport(h, "hotel"));
+      }
+      if (item.category === "Transport") {
+        const c = (cabs || []).find((ca) => ca.id === item.linkedItemId);
+        if (c) return isEntryCompleteForExport(c, "cab");
+        const b = (buses || []).find((bu) => bu.id === item.linkedItemId);
+        if (b) return isEntryCompleteForExport(b, "bus");
+        return false;
+      }
+      if (item.category === "Activity") {
+        const act = availableActivities.find((a) => a.id === item.linkedItemId);
+        return !!(act && typeof act.cost === "number" && act.cost > 0);
+      }
+      return false;
+    }
+
+    // Unlinked manual item must have a valid title and positive cost
+    return !!(item.name && item.name.trim().length > 0 && (Number(item.amount) || 0) > 0);
+  }, [flights, hotels, cabs, buses, availableActivities]);
+
+  const visibleOptions = useMemo(() => {
+    return (pricing?.manualOptions || []).filter(isOptionComplete);
+  }, [pricing?.manualOptions, isOptionComplete]);
+
+    // All derived monetary values come from the calculation engine
   const {
     baseCost,
     markupAmount,
@@ -360,7 +433,7 @@ export default function PricingModule({
     let totalChildCost = 0;
     let totalInfantCost = 0;
 
-    for (const item of (pricing?.manualOptions || [])) {
+    for (const item of visibleOptions) {
       let linkedItem: any = null;
       if (item.linkedItemId) {
         if (item.category === "Flight") linkedItem = (flights || []).find((f) => f.id === item.linkedItemId);
@@ -392,7 +465,7 @@ export default function PricingModule({
     }
 
     return { totalAdultCost, totalChildCost, totalInfantCost };
-  }, [pricing?.manualOptions, pricing?.adultPax, pricing?.childPax, pricing?.infantPax, flights, hotels, cabs, buses]);
+  }, [visibleOptions, pricing?.adultPax, pricing?.childPax, pricing?.infantPax, flights, hotels, cabs, buses]);
 
   // ── Milestone helpers ──────────────────────────────────────────────────────
 
@@ -420,18 +493,20 @@ export default function PricingModule({
   // ── Manual Cost helpers ────────────────────────────────────────────────────
 
   const addManualOption = () => {
+    const newId = Math.random().toString(36).slice(2);
+    newlyAddedIdsRef.current.add(newId);
     updatePricing({
       manualOptions: [
         ...pricing.manualOptions,
         {
-          id: Math.random().toString(36).slice(2),
+          id: newId,
           name: "Custom Service",
           amount: 0,
           type: "per-person",
           category: manualCategories[0] || "Flight",
           markupType: "percentage",
           markupValue: pricing.markupValue ?? 15,
-          taxPercentage: 0,
+          taxPercentage: defaultTaxPercentage,
         }
       ]
     });
@@ -627,17 +702,17 @@ export default function PricingModule({
 
         <div className="p-3.5 sm:p-6 lg:p-8">
           {isCollapsed ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-in fade-in duration-200">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 animate-in fade-in duration-200">
               {/* Summary block */}
-              <div className="md:col-span-2 space-y-6">
+              <div className="col-span-12 lg:col-span-7 xl:col-span-7 2xl:col-span-8 space-y-6">
                 <div className="bg-[#EFECE5] dark:bg-white/[0.02] border border-slate-300/60 dark:border-white/[0.05] rounded-xl p-5 space-y-4">
                   <h4 className="text-sm font-bold text-slate-900 dark:text-white uppercase tracking-wider border-b border-slate-300/60 dark:border-white/5 pb-2">Itemized Costs Summary</h4>
                   
-                  {pricing.manualOptions.length === 0 ? (
-                    <p className="text-xs text-gray-500 italic">No manual cost items added.</p>
+                  {visibleOptions.length === 0 ? (
+                    <p className="text-xs text-gray-500 italic">No complete itemized costs found.</p>
                   ) : (
                     <div className="space-y-3">
-                      {pricing.manualOptions.map((opt) => {
+                      {visibleOptions.map((opt) => {
                         const totalPax = (pricing.adultPax || 1) + (pricing.childPax || 0) + (pricing.infantPax || 0);
                         const itemBase = opt.type === "per-person" ? (Number(opt.amount) || 0) * totalPax : (Number(opt.amount) || 0);
                         const mType = opt.markupType || "percentage";
@@ -708,7 +783,7 @@ export default function PricingModule({
               </div>
 
               {/* Total quote block */}
-              <div className="space-y-4">
+              <div className="col-span-12 lg:col-span-5 xl:col-span-5 2xl:col-span-4 space-y-4 lg:sticky lg:top-24 self-start">
                 <CostingSummaryCard
                   tripId={state.tripId}
                   currency={pricing.currency}
@@ -758,7 +833,7 @@ export default function PricingModule({
 
               {/* Costing Items Builder */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <div className="col-span-12 lg:col-span-7 xl:col-span-8 space-y-4">
+                <div className="col-span-12 lg:col-span-7 xl:col-span-7 2xl:col-span-8 space-y-4">
                   <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2 text-primary font-medium text-xs sm:text-sm">
                       <Settings className="w-4 h-4" />
@@ -772,12 +847,13 @@ export default function PricingModule({
                   </div>
                   
                   <div className="space-y-3 sm:space-y-3.5">
-                    {pricing.manualOptions.length === 0 ? (
+                    {visibleOptions.length === 0 ? (
                       <div className="p-8 text-center border border-dashed border-slate-300/60 dark:border-white/10 rounded-xl bg-white dark:bg-white/5 text-gray-500 text-sm space-y-3">
-                        <p>No cost items added yet.</p>
+                        <p>No complete itemized cost items to display.</p>
+                        <p className="text-xs text-slate-400">Complete items in the Flights & Hotels tab or click &ldquo;Add Item&rdquo; above.</p>
                       </div>
                     ) : (
-                      pricing.manualOptions.map((option, idx) => {
+                      visibleOptions.map((option, idx) => {
                         const isLinked = Boolean(option.linkedItemId);
                         const itemTitle = option.name && option.name.trim() 
                           ? option.name 
@@ -977,7 +1053,7 @@ export default function PricingModule({
                                         <SelectItem value="unlinked">
                                           <span className="text-slate-500 dark:text-gray-400 italic">Manual Entry (Unlinked)</span>
                                         </SelectItem>
-                                        {option.category === "Hotel" && (hotels || []).map((h) => (
+                                        {option.category === "Hotel" && (hotels || []).filter((h) => isEntryCompleteForExport(h, "hotel")).map((h) => (
                                           <SelectItem key={h.id} value={h.id}>
                                             <span className="flex items-center gap-1.5">
                                               <Hotel className="w-3.5 h-3.5 text-purple-400 shrink-0" />
@@ -985,7 +1061,7 @@ export default function PricingModule({
                                             </span>
                                           </SelectItem>
                                         ))}
-                                        {option.category === "Flight" && (flights || []).map((f) => (
+                                        {option.category === "Flight" && (flights || []).filter((f) => isEntryCompleteForExport(f, "flight")).map((f) => (
                                           <SelectItem key={f.id} value={f.id}>
                                             <span className="flex items-center gap-1.5">
                                               <Plane className="w-3.5 h-3.5 text-sky-400 shrink-0" />
@@ -995,7 +1071,7 @@ export default function PricingModule({
                                         ))}
                                         {option.category === "Transport" && (
                                           <>
-                                            {(cabs || []).map((c) => (
+                                            {(cabs || []).filter((c) => isEntryCompleteForExport(c, "cab")).map((c) => (
                                               <SelectItem key={c.id} value={c.id}>
                                                 <span className="flex items-center gap-1.5">
                                                   <Car className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
@@ -1003,7 +1079,7 @@ export default function PricingModule({
                                                 </span>
                                               </SelectItem>
                                             ))}
-                                            {(buses || []).map((b) => (
+                                            {(buses || []).filter((b) => isEntryCompleteForExport(b, "bus")).map((b) => (
                                               <SelectItem key={b.id} value={b.id}>
                                                 <span className="flex items-center gap-1.5">
                                                   <Bus className="w-3.5 h-3.5 text-amber-400 shrink-0" />
@@ -1013,7 +1089,7 @@ export default function PricingModule({
                                             ))}
                                           </>
                                         )}
-                                        {option.category === "Activity" && (availableActivities || []).map((act) => (
+                                        {option.category === "Activity" && (availableActivities || []).filter((act) => act.cost > 0).map((act) => (
                                           <SelectItem key={act.id} value={act.id}>
                                             <span className="flex items-center gap-1.5">
                                               <Activity className="w-3.5 h-3.5 text-rose-400 shrink-0" />
@@ -1304,7 +1380,7 @@ export default function PricingModule({
                   </div>
                 </div>
 
-                <div className="col-span-12 lg:col-span-5 xl:col-span-4 space-y-4 lg:sticky lg:top-24 self-start">
+                <div className="col-span-12 lg:col-span-5 xl:col-span-5 2xl:col-span-4 space-y-4 lg:sticky lg:top-24 self-start">
                   <CostingSummaryCard
                     tripId={state.tripId}
                     currency={pricing.currency}

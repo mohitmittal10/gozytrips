@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useCallback } from "react";
-import { Users, Info, Printer, Copy, Check, FileText } from "lucide-react";
+import React, { useState, useMemo, useRef, useCallback, useEffect } from "react";
+import { Users, Info, Printer, Copy, Check, FileText, RefreshCw } from "lucide-react";
 import { type Currency } from "@/types/pricing";
 import { type TripFinancial } from "@/types/financial";
+import { buildInvoiceLineItems } from "@/services/financial";
+import { createClient } from "@/lib/supabase/client";
 import { formatMoney, getCurrencySymbol } from "@/lib/utils/currency";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -67,7 +69,49 @@ export function CostingSummaryCard({
   const { toast } = useToast();
   const { user, agencySettings } = useAuth();
   const labMetadata = useLabStore((s) => s.tripMetadata);
+  const labItinerary = useLabStore((s) => s.itinerary);
   const labStatus = useLabStore((s) => s.selectedStatus);
+  const labHotels = useLabStore((s) => s.hotels);
+  const labFlights = useLabStore((s) => s.flights);
+  const labCabs = useLabStore((s) => s.cabs);
+  const labBuses = useLabStore((s) => s.buses);
+  const labPricing = useLabStore((s) => s.pricing);
+  const selectedClientId = useLabStore((s) => s.selectedClientId);
+
+  const [clientInfo, setClientInfo] = useState<{ name: string; email: string }>({
+    name: "Valued Client",
+    email: "",
+  });
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Auto-fetch real client details when selectedClientId changes or upon refresh
+  const fetchClientDetails = useCallback(async () => {
+    if (!selectedClientId || selectedClientId === "none") {
+      setClientInfo({ name: "Valued Client", email: "" });
+      return;
+    }
+    try {
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from("clients")
+        .select("name, email")
+        .eq("id", selectedClientId)
+        .maybeSingle();
+      if (!error && data) {
+        setClientInfo({
+          name: data.name || "Valued Client",
+          email: data.email || "",
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch client for invoice preview:", err);
+    }
+  }, [selectedClientId]);
+
+  useEffect(() => {
+    fetchClientDetails();
+  }, [fetchClientDetails]);
 
   const companyName = agencySettings?.brand_name ?? "GozyTrips";
   const agentName = (agencySettings as any)?.agent_name ?? user?.email?.split("@")[0] ?? "Travel Agent";
@@ -124,10 +168,61 @@ export function CostingSummaryCard({
     return raw.replace(currencySymbol, "").trim();
   }, [finalTotal, currency, currencySymbol]);
 
+  // Resolve effective GST / tax rate: explicit taxPercentage -> labPricing -> taxAmount ratio -> agencySettings -> 0
+  const resolvedTaxRate = useMemo(() => {
+    if (typeof taxPercentage === "number") return taxPercentage;
+    if (typeof labPricing?.taxPercentage === "number") return labPricing.taxPercentage;
+    const taxableBase = baseCost + markupAmount;
+    if (taxableBase > 0 && taxAmount > 0) {
+      return Math.round((taxAmount / taxableBase) * 100);
+    }
+    if (taxAmount === 0) return 0;
+    if (typeof (agencySettings as any)?.default_tax_percentage === "number") {
+      return (agencySettings as any).default_tax_percentage;
+    }
+    return 0;
+  }, [taxPercentage, labPricing?.taxPercentage, agencySettings, baseCost, markupAmount, taxAmount]);
+
+  // Build live itemized line items with exact net rates (base + markup) + taxes
+  const invoiceLineItems = useMemo(() => {
+    return buildInvoiceLineItems({
+      hotels: labHotels,
+      flights: labFlights,
+      cabs: labCabs,
+      buses: labBuses,
+      itinerary: Array.isArray(labItinerary) ? labItinerary : (labItinerary as any)?.itinerary,
+      pricing: labPricing,
+      manualOptions: labPricing?.manualOptions,
+      adultPax,
+      childPax,
+      infantPax,
+      defaultTaxRate: resolvedTaxRate,
+      fallbackTitle: (labItinerary as any)?.title || (labItinerary as any)?.tripTitle || labMetadata?.destinations || "Travel Package",
+      fallbackDestination: labMetadata?.destinations || labMetadata?.startingLocation || "Custom Destination",
+      fallbackBaseCost: baseCost,
+      fallbackCostWithMarkup: baseCost + markupAmount,
+    });
+  }, [
+    labHotels,
+    labFlights,
+    labCabs,
+    labBuses,
+    labItinerary,
+    labPricing,
+    adultPax,
+    childPax,
+    infantPax,
+    resolvedTaxRate,
+    labMetadata,
+    baseCost,
+    markupAmount,
+    refreshKey,
+  ]);
+
   // Construct TripFinancial object for the actual CRM ProfessionalInvoice
   const invoiceFin: TripFinancial = useMemo(() => {
     const rawDest = labMetadata?.destinations || labMetadata?.startingLocation || "Custom Destination";
-    const rawTitle = labMetadata?.destinations ? `Trip to ${labMetadata.destinations}` : "Custom Travel Package";
+    const rawTitle = (labItinerary as any)?.title || (labItinerary as any)?.tripTitle || (labMetadata as any)?.title || (labMetadata?.destinations ? `Trip to ${labMetadata.destinations}` : "Custom Travel Package");
     const rawStart = labMetadata?.startDate
       ? (labMetadata.startDate instanceof Date ? labMetadata.startDate.toISOString().slice(0, 10) : String(labMetadata.startDate).slice(0, 10))
       : undefined;
@@ -138,15 +233,16 @@ export function CostingSummaryCard({
     return {
       itineraryId: tripId || "draft",
       tripId: tripId ? `GT-${tripId.replace(/[^a-zA-Z0-9]/g, "").slice(-4).toUpperCase()}` : "GT-DRAFT",
-      clientId: "client",
-      clientName: "Valued Client",
-      clientEmail: "",
+      clientId: selectedClientId || "client",
+      clientName: clientInfo.name,
+      clientEmail: clientInfo.email,
       tripTitle: rawTitle,
       destination: rawDest,
       status: labStatus || "draft",
       startDate: rawStart,
       endDate: rawEnd,
-      clientPrice: baseCost + markupAmount,
+      clientPrice: baseCost + markupAmount, // Base cost + markup = Net client rate before tax
+      baseCost: baseCost,
       currency: currency || "INR",
       expenses: [],
       payments: [],
@@ -154,7 +250,7 @@ export function CostingSummaryCard({
       commissionAmount: 0,
       markupValue: markupPercentage || 0,
       markupType: "percentage",
-      taxPercentage: taxPercentage || 0,
+      taxPercentage: resolvedTaxRate, // Always reflect the active GST / tax rate
       adultPax: adultPax || 2,
       childPax: childPax || 0,
       infantPax: infantPax || 0,
@@ -164,10 +260,51 @@ export function CostingSummaryCard({
         dueDate: m.dueDate,
       })),
       suggestedExpenses: [],
+      lineItems: invoiceLineItems,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
-  }, [tripId, labMetadata, labStatus, baseCost, markupAmount, currency, markupPercentage, taxPercentage, adultPax, childPax, infantPax, milestones]);
+  }, [
+    tripId,
+    selectedClientId,
+    clientInfo,
+    labMetadata,
+    labStatus,
+    labItinerary,
+    baseCost,
+    markupAmount,
+    taxAmount,
+    currency,
+    markupPercentage,
+    resolvedTaxRate,
+    adultPax,
+    childPax,
+    infantPax,
+    milestones,
+    invoiceLineItems,
+  ]);
+
+  // Instant refresh trigger on modal open
+  useEffect(() => {
+    if (showInvoiceModal) {
+      setRefreshKey((k) => k + 1);
+      fetchClientDetails();
+    }
+  }, [showInvoiceModal, fetchClientDetails]);
+
+  // User-triggered refresh from header icon button
+  const handleRefreshInvoice = useCallback(async () => {
+    setIsRefreshing(true);
+    setRefreshKey((k) => k + 1);
+    await fetchClientDetails();
+    setTimeout(() => {
+      setIsRefreshing(false);
+      toast({
+        title: "Invoice Refreshed",
+        description: "Latest line items, logistics, and pricing synced.",
+      });
+    }, 400);
+  }, [fetchClientDetails, toast]);
 
   // Direct print implementation identical to InvoicesTab in CRM
   const handlePrintInvoice = useCallback(() => {
@@ -241,9 +378,9 @@ export function CostingSummaryCard({
       >
         {/* ── BEGIN: HeaderSection ── */}
         <header className="p-4 sm:p-5 border-b border-slate-100 dark:border-white/[0.06] bg-gradient-to-b from-white to-slate-50/60 dark:from-white/[0.03] dark:to-transparent">
-          <div className="flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
-            <div>
-              <div className="flex items-baseline gap-2">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="min-w-0">
+              <div className="flex items-baseline gap-2 flex-wrap">
                 <h3 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
                   Costing Summary
                 </h3>
@@ -436,7 +573,7 @@ export function CostingSummaryCard({
             {/* Subtle brand decorative glow matching app schema */}
             <div className="absolute -top-12 -right-12 w-28 h-28 bg-[#ff5c33]/20 rounded-full blur-2xl pointer-events-none" />
 
-            <div className="relative flex items-end justify-between gap-2">
+            <div className="relative flex items-end justify-between gap-2 flex-wrap sm:flex-nowrap">
               <div>
                 <span className="inline-block text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
                   Final Amount
@@ -484,6 +621,16 @@ export function CostingSummaryCard({
 
             <div className="flex items-center gap-2">
               <Button
+                variant="outline"
+                size="icon"
+                className="w-9 h-9 rounded-xl border-slate-300 dark:border-white/10 hover:bg-slate-100 dark:hover:bg-white/10 text-slate-700 dark:text-zinc-200 cursor-pointer shadow-sm transition-all"
+                onClick={handleRefreshInvoice}
+                title="Refresh Invoice"
+              >
+                <RefreshCw className={cn("w-4 h-4", isRefreshing && "animate-spin text-primary")} />
+              </Button>
+
+              <Button
                 className="aurora-gradient text-slate-900 dark:text-white text-xs h-9 font-bold rounded-xl border-none hover:brightness-110 cursor-pointer flex items-center gap-2 px-4 shadow-md"
                 onClick={handlePrintInvoice}
               >
@@ -505,11 +652,13 @@ export function CostingSummaryCard({
               <ProfessionalInvoice
                 ref={invoiceRef}
                 fin={invoiceFin}
+                lineItems={invoiceLineItems}
                 fm={(amount, curr) => formatMoney(amount, curr || currency)}
                 cs={(curr) => getCurrencySymbol(curr || currency)}
                 companyName={companyName}
                 agentName={agentName}
                 agentEmail={agentEmail}
+                gstNumber={(agencySettings as any)?.gst_number || ""}
               />
             </div>
           </div>

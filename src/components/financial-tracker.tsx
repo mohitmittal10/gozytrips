@@ -58,7 +58,7 @@ export default function FinancialTracker({
                     {
                         label: "Total Gross Revenue",
                         value: fin.fm(fin.stats.totalRevenue),
-                        subtext: `${fin.financials.length} itineraries tracked`,
+                        subtext: `${fin.financials.length} booked trips tracked`,
                         color: "text-slate-900 dark:text-white",
                     },
                     {
@@ -159,6 +159,7 @@ export default function FinancialTracker({
                     financials={fin.financials}
                     cs={fin.cs}
                     fm={fin.fm}
+                    onRefresh={fin.fetchFinancials}
                 />
             )}
 

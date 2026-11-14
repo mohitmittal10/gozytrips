@@ -1,4 +1,4 @@
-﻿﻿// Thin orchestrator shell for The Lab wiring hooks and components together (<150 lines)
+﻿// Thin orchestrator shell for The Lab wiring hooks and components together (<150 lines)
 "use client";
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
@@ -28,7 +28,7 @@ import { useItinerarySave } from "@/hooks/the-lab/useItinerarySave";
 import { useBaseCostCalculator } from "@/hooks/the-lab/useBaseCostCalculator";
 import { formatTitleCase } from "@/components/pdf/utils";
 
-import TheLabForm from "./TheLabForm";
+import TheLabForm, { calculateCalendarDays } from "./TheLabForm";
 import TheLabHeader from "./TheLabHeader";
 import TheLabSidebar from "./TheLabSidebar";
 import TheLabMobileTabs from "./TheLabMobileTabs";
@@ -196,6 +196,7 @@ export default function TheLab() {
   // Always-current ref for activeLabTab — lets effects read the current tab
   // without adding it to their dep arrays (keeps dep array size constant).
   const activeLabTabRef = useRef<ActiveLabTab>(activeLabTab);
+  activeLabTabRef.current = activeLabTab;
 
   // ─── Centralized Zustand Store Subscriptions ─────────────────────────────────
   const hotels = useLabStore((state) => state.hotels);
@@ -247,6 +248,13 @@ export default function TheLab() {
   const { baseCost, finalTotal, currencySymbol } = useBaseCostCalculator({ itinerary, flights, hotels, cabs, buses, pricing });
 
   const tripTitle = useMemo(() => {
+    // 1. First priority: AI-generated title on the itinerary or in tripMetadata
+    const explicitTitle = (itinerary as any)?.title || (itinerary as any)?.tripTitle || (tripMetadata as any)?.title;
+    if (explicitTitle && explicitTitle.trim()) {
+      return formatTitleCase(explicitTitle.trim());
+    }
+
+    // 2. Fallback: destination-based default title
     const startLoc = tripMetadata?.startingLocation;
     const dests = tripMetadata?.destinations;
     if (dests) {
@@ -261,9 +269,6 @@ export default function TheLab() {
       }
       return formatTitleCase(title);
     }
-    if ((itinerary as any)?.title) return formatTitleCase((itinerary as any).title);
-    if ((itinerary as any)?.tripTitle) return formatTitleCase((itinerary as any).tripTitle);
-    if ((tripMetadata as any)?.title) return formatTitleCase((tripMetadata as any).title);
     return formatTitleCase(`Trip to ${itinerary?.itinerary?.[0]?.areaFocus?.split(',')[0] || 'Destination'}`);
   }, [tripMetadata, itinerary]);
 
@@ -273,7 +278,7 @@ export default function TheLab() {
 
   const form = useForm<TheLabFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: { startingLocation: "", endingLocation: "", startDate: undefined, endDate: undefined, destinations: "", travelTimePreference: "no_preference", leisureTime: false, daywiseDestinations: "", hotels: [] },
+    defaultValues: { startingLocation: "", endingLocation: "", startDate: undefined, endDate: undefined, destinations: "", travelTimePreference: "no_preference", tripType: "relaxed", mealPlan: (agencySettings as any)?.default_meal_plan || "CP", leisureTime: false, daywiseDestinations: "", hotels: [] },
   });
 
   // Hydrate store from persistence
@@ -356,6 +361,7 @@ export default function TheLab() {
           leisureTime: response.leisure_time ?? false,
           leisureDay: response.leisure_day ?? undefined,
           travelTimePreference: response.travel_time_preference || "no_preference",
+          mealPlan: (response as any).meal_plan || (response as any).raw_payload?.mealPlan || (agencySettings as any)?.default_meal_plan || "CP",
           daywiseDestinations: "",
         };
 
@@ -469,7 +475,7 @@ export default function TheLab() {
 
   const handleCreateNew = useCallback(() => {
     form.reset({
-      startingLocation: "", endingLocation: "", startDate: undefined, endDate: undefined, destinations: "", travelTimePreference: "no_preference", tripType: "relaxed", leisureTime: false, daywiseDestinations: "", hotels: []
+      startingLocation: "", endingLocation: "", startDate: undefined, endDate: undefined, destinations: "", travelTimePreference: "no_preference", tripType: "relaxed", mealPlan: (agencySettings as any)?.default_meal_plan || "CP", leisureTime: false, daywiseDestinations: "", hotels: []
     });
     formSyncedForIdRef.current = null; // allow next history trip to reset the form
     setItinerary(null);
@@ -593,11 +599,11 @@ export default function TheLab() {
         console.log("[TheLab index.tsx] Calling saveNow to insert new itinerary. values.hotels count:", values.hotels?.length || 0);
         const newTripId = await saveNow({
           itinerary: res,
-          hotels: (values.hotels || []).map(h => ({
-            id: h.id,
-            dayIndex: h.dayIndex,
-            dayIndices: h.dayIndices?.length ? h.dayIndices : [h.dayIndex],
-            name: h.name,
+          hotels: (values.hotels || []).map((h, i) => ({
+            id: h.id || `h-${Date.now()}-${i}`,
+            dayIndex: typeof h.dayIndex === 'number' ? h.dayIndex : i,
+            dayIndices: h.dayIndices?.length ? h.dayIndices : [typeof h.dayIndex === 'number' ? h.dayIndex : i],
+            name: h.name || "",
             address: h.address || "",
             checkIn: h.checkIn || "2:00 PM",
             checkOut: h.checkOut || "11:00 AM",
@@ -613,7 +619,7 @@ export default function TheLab() {
           cabs: [],
           buses: [],
           pricing: undefined,
-          tripMetadata: values,
+          tripMetadata: { ...values, title: (res as any)?.title || (res as any)?.tripTitle },
           selectedStatus: 'draft',
           selectedClientId: resolvedClientId,
           share_token: shareToken || null,
@@ -691,6 +697,7 @@ export default function TheLab() {
       leisureTime: !!updatedMetadata.leisureTime,
       leisureDay: updatedMetadata.leisureDay,
       travelTimePreference: (updatedMetadata.travelTimePreference as any) || "no_preference",
+      mealPlan: (updatedMetadata as any).mealPlan || (agencySettings as any)?.default_meal_plan || "CP",
       daywiseDestinations: updatedMetadata.daywiseDestinations || "",
       hotels: (updatedMetadata.hotels || hotels || []) as any,
     };
@@ -782,6 +789,27 @@ export default function TheLab() {
 
   const isDesigningNew = activeLabTab === 'new';
   const isViewingItinerary = ['itinerary', 'flights-hotels', 'pricing', 'inclusions'].includes(activeLabTab);
+  const showItineraryHeader = isViewingItinerary && (itinerary?.itinerary?.length ?? 0) > 0;
+
+  const setHasItineraryToolbar = useLabStore((state) => state.setHasItineraryToolbar);
+
+  useEffect(() => {
+    setHasItineraryToolbar(showItineraryHeader);
+    return () => {
+      setHasItineraryToolbar(false);
+    };
+  }, [showItineraryHeader, setHasItineraryToolbar]);
+
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 10);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   // Stable callback for TheLabTabContent's handleSaveItinerary prop.
   // An inline arrow here would create a new reference on every render and defeat
@@ -868,17 +896,20 @@ export default function TheLab() {
       eDate = new Date(sDate.getTime() + 86400000 * 3);
     }
 
-    // Clean hotels array from stale RHF fields
+    // Clean hotels array from stale RHF fields, capped to exact staySlotsCount
     const rawHotels = currentValues.hotels || [];
     const cleanHotels = rawHotels.filter(
       (h: any) => h && typeof h.id === 'string' && h.id.length > 0 && typeof h.dayIndex === 'number'
     );
+    const dayCount = calculateCalendarDays(sDate, eDate);
+    const staySlotsCount = Math.max(0, dayCount - 1);
+    const finalHotels = staySlotsCount > 0 ? cleanHotels.slice(0, staySlotsCount) : cleanHotels;
 
     form.setValue("startingLocation", startLoc, { shouldValidate: false });
     form.setValue("destinations", dests, { shouldValidate: false });
     form.setValue("startDate", sDate, { shouldValidate: false });
     form.setValue("endDate", eDate, { shouldValidate: false });
-    form.setValue("hotels", cleanHotels, { shouldValidate: false });
+    form.setValue("hotels", finalHotels, { shouldValidate: false });
 
     setIsReviewModalOpen(false);
 
@@ -888,7 +919,7 @@ export default function TheLab() {
       destinations: dests,
       startDate: sDate,
       endDate: eDate,
-      hotels: cleanHotels,
+      hotels: finalHotels,
     };
 
     onSubmit(valuesToSubmit);
@@ -957,8 +988,8 @@ export default function TheLab() {
           </div>
         </div>
       )}
-      {isViewingItinerary && (itinerary?.itinerary?.length ?? 0) > 0 && (
-        <div className="w-full sticky top-[60px] sm:top-[68px] z-40 bg-[#EFECE5]/90 dark:bg-black/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/5">
+      {showItineraryHeader && (
+        <div className={cn("w-full fixed top-0 z-40 bg-[#EFECE5]/90 dark:bg-black/90 backdrop-blur-xl border-b border-slate-200 dark:border-white/5 transition-all duration-300 ease-in-out", scrolled ? "translate-y-0 opacity-100 pointer-events-auto" : "-translate-y-full opacity-0 pointer-events-none")}>
           <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-8">
             <TheLabHeader
               itinerary={itinerary}
@@ -999,7 +1030,8 @@ export default function TheLab() {
           <div
             style={{ left: 'max(16px, calc((100vw - 1500px) / 2 + 32px))' }}
             className={cn(
-              "hidden lg:flex flex-col shrink-0 fixed top-28 z-40 transition-all duration-300",
+              "hidden lg:flex flex-col shrink-0 fixed z-40 transition-all duration-300",
+              showItineraryHeader && scrolled ? "top-20" : "top-28",
               isEditing && "blur-[1px] opacity-40 pointer-events-none",
               isSidebarExpanded ? "w-64" : "w-16"
             )}
@@ -1020,12 +1052,31 @@ export default function TheLab() {
 
           <div className={cn(
             "flex-1 min-w-0 flex flex-col",
-            isDesigningNew || !itinerary || ['history'].includes(activeLabTab) ? "items-center justify-center" : "w-full"
+            isDesigningNew || !itinerary || ['history', 'pricing'].includes(activeLabTab) ? "items-center justify-center" : "w-full"
           )}>
             <div className={cn(
-              ['history'].includes(activeLabTab) ? "w-full" :
+              ['history', 'pricing'].includes(activeLabTab) ? "w-full" :
                 (isDesigningNew || !itinerary ? "w-full max-w-5xl" : "w-full")
             )}>
+              {/* Mobile / tablet: summary panel rendered in normal flow above itinerary */}
+              {isViewingItinerary && itinerary && activeLabTab !== 'pricing' && (
+                <div className={cn("lg:hidden w-full mb-6 transition-all duration-500", isEditing && "blur-[1px] opacity-40 pointer-events-none")}>
+                  <TheLabSummaryPanel
+                    itinerary={itinerary}
+                    selectedStatus={selectedStatus}
+                    clients={clients}
+                    selectedClientId={selectedClientId}
+                    isGenerating={isGenerating}
+                    finalTotal={finalTotal}
+                    currencySymbol={currencySymbol}
+                    tripMetadata={tripMetadata}
+                    title={tripTitle}
+                    onOpenAddClient={() => setIsAddClientOpen(true)}
+                    onRegenerateItinerary={handleRegenerateItinerary}
+                    onUpdateTripMetadata={handleUpdateTripMetadata}
+                  />
+                </div>
+              )}
               {(isGenerating && !itinerary) || (isLoading) ? (
                 <div className="py-24 flex flex-col items-center min-h-[400px] justify-center space-y-12">
                   <UniqueLoading variant="morph" size="lg" />
@@ -1086,18 +1137,19 @@ export default function TheLab() {
           </div>
 
           {/* Spacer to maintain layout column width for the fixed right panel */}
-          {isViewingItinerary && itinerary && (
+          {isViewingItinerary && itinerary && activeLabTab !== 'pricing' && (
             <div className="hidden lg:block shrink-0 w-[340px] xl:w-[380px] 2xl:w-[420px] transition-all duration-300 pointer-events-none" />
           )}
         </div>
       </div>
 
       {/* Desktop fixed right panel -- behaves exactly like TheLabSidebar */}
-      {isViewingItinerary && itinerary && (
+      {isViewingItinerary && itinerary && activeLabTab !== 'pricing' && (
         <div
           style={{ right: 'max(16px, calc((100vw - 1500px) / 2 + 32px))' }}
           className={cn(
-            "hidden lg:flex flex-col shrink-0 fixed top-28 z-30 transition-all duration-300",
+            "hidden lg:flex flex-col shrink-0 fixed z-30 transition-all duration-300",
+            showItineraryHeader && scrolled ? "top-20" : "top-28",
             "w-[340px] xl:w-[380px] 2xl:w-[420px]",
             "max-h-[calc(100vh-140px)] overflow-y-auto no-scrollbar",
             isEditing && "blur-[1px] opacity-40 pointer-events-none"
@@ -1324,4 +1376,5 @@ export default function TheLab() {
     </section>
   );
 }
+
 

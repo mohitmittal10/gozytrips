@@ -15,6 +15,8 @@ import {
 } from "@/types/financial";
 import type { Currency } from "@/types/pricing";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
+import { isBookedTripStatus } from "@/services/crm/CrmService";
+import { buildInvoiceLineItems } from "@/services/financial";
 
 // ── Reference-data fallbacks (used only when the DB has no rows for a scope) ──
 export const DEFAULT_PAYMENT_METHODS = [
@@ -210,7 +212,11 @@ export function useFinancials(
             if (pError) throw pError;
             if (eError) throw eError;
 
-            const mapped: TripFinancial[] = (itineraries ?? []).map((it) => {
+            const bookedItineraries = (itineraries ?? []).filter((it) =>
+                isBookedTripStatus(it.status ?? "")
+            );
+
+            const mapped: TripFinancial[] = bookedItineraries.map((it) => {
                 const itPayments: Payment[] = (payments ?? [])
                     .filter((p) => p.itinerary_id === it.id)
                     .map((p) => ({
@@ -386,6 +392,24 @@ export function useFinancials(
 
                 const allExpenses: Expense[] = [...itExpenses, ...autoExpenses];
 
+                const lineItems = buildInvoiceLineItems({
+                    hotels: itData.hotels,
+                    flights: itData.flights,
+                    cabs: itData.cabs,
+                    buses: itData.buses,
+                    itinerary: itData.itinerary,
+                    pricing: pricingData,
+                    manualOptions: pricingData.manualOptions,
+                    adultPax: it.adult_pax ?? 2,
+                    childPax: it.child_pax ?? 0,
+                    infantPax: it.infant_pax ?? 0,
+                    defaultTaxRate: it.tax_percentage ?? agencySettings?.default_tax_percentage ?? 0,
+                    fallbackTitle: it.title,
+                    fallbackDestination: it.destinations ?? "",
+                    fallbackBaseCost: it.client_price ?? 0,
+                    fallbackCostWithMarkup: it.client_price ?? 0,
+                });
+
                 return {
                     id: it.id,
                     itineraryId: it.id,
@@ -423,6 +447,8 @@ export function useFinancials(
                     infantPax: it.infant_pax ?? 0,
                     milestones,
                     suggestedExpenses: [],
+                    lineItems,
+                    baseCost: it.client_price ?? 0,
                     createdAt: it.created_at ?? new Date().toISOString(),
                     updatedAt: it.updated_at ?? new Date().toISOString(),
                 };

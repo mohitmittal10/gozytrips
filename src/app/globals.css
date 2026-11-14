@@ -635,3 +635,34 @@
 .animate-marquee {
   animation: marquee var(--duration, 40s) linear infinite;
 }
+
+
+/* ─────────────────────────────────────────────────────────────
+   GLOBAL SCROLLBAR & STABLE LAYOUT FIX
+   Prevents root vertical scrollbar from hiding when opening
+   dialogs, dropdowns, popovers, sheets, selects, or menus,
+   completely eliminating horizontal layout shifts across all pages.
+   ───────────────────────────────────────────────────────────── */
+html {
+  overflow-x: hidden;
+  overflow-y: scroll !important;
+  scrollbar-gutter: stable;
+}
+
+/* Neutralize Radix UI / react-remove-scroll locking styles on body */
+html body[data-scroll-locked],
+body[data-scroll-locked] {
+  overflow: visible !important;
+  margin-right: 0px !important;
+  padding-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}
+
+/* Fallback for any manual overflow: hidden or style-based locks */
+html body[style*="overflow: hidden"],
+body[style*="overflow: hidden"] {
+  overflow-y: visible !important;
+  margin-right: 0px !important;
+  padding-right: 0px !important;
+  --removed-body-scroll-bar-size: 0px !important;
+}

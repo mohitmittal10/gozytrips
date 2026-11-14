@@ -33,11 +33,10 @@ export class BackupService {
     }
 
     const [
-      clientsRes, tripsRes, itinerariesRes, auditLogsRes, profileRes,
+      clientsRes, itinerariesRes, auditLogsRes, profileRes,
       settingsRes, tripLineItemsRes, tripPaymentsRes, tripExpensesRes, standaloneBookingsRes
     ] = await Promise.all([
       supabase.from('clients').select('*').eq('user_id', userId),
-      supabase.from('trips').select('*').eq('user_id', userId),
       supabase.from('itineraries').select('*').eq('user_id', userId),
       supabase.from('audit_logs').select('*').eq('user_id', userId),
       supabase.from('user_profiles').select('*').eq('id', userId),
@@ -49,12 +48,11 @@ export class BackupService {
     ]);
 
     const backupData = {
-      version: '1.1',
+      version: '1.2',
       timestamp: new Date().toISOString(),
       user_id: userId,
       data: {
         clients: clientsRes.data || [],
-        trips: tripsRes.data || [],
         itineraries: itinerariesRes.data || [],
         audit_logs: auditLogsRes.data || [],
         user_profiles: profileRes.data || [],
@@ -229,13 +227,12 @@ export class BackupService {
       ...c, id: getTargetId(c.id), user_id: user.id,
     }));
 
-    const mappedTrips = (dataToRestore.trips || []).map((t: any) => {
-      const mapped = { ...t, id: getTargetId(t.id), user_id: user.id };
-      if ('client_id' in t) mapped.client_id = resolveForeignKey(t.client_id);
-      return mapped;
-    });
+    // Support both modern backups (itineraries) and legacy backups (trips)
+    const rawItineraries = (dataToRestore.itineraries && dataToRestore.itineraries.length > 0)
+      ? dataToRestore.itineraries
+      : (dataToRestore.trips || []);
 
-    const mappedItineraries = (dataToRestore.itineraries || []).map((i: any) => {
+    const mappedItineraries = rawItineraries.map((i: any) => {
       const mapped = { ...i, id: getTargetId(i.id), user_id: user.id };
       if ('client_id' in i) mapped.client_id = resolveForeignKey(i.client_id);
       if ('trip_id' in i) mapped.trip_id = resolveForeignKey(i.trip_id);
@@ -281,7 +278,6 @@ export class BackupService {
 
     try {
       await upsertInChunks('clients', mappedClients);
-      await upsertInChunks('trips', mappedTrips);
       await upsertInChunks('itineraries', mappedItineraries);
       await upsertInChunks('trip_line_items', mappedTripLineItems);
       await upsertInChunks('trip_payments', mappedTripPayments);

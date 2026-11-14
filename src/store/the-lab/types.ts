@@ -8,6 +8,7 @@ export interface TimelineSlice {
   itinerary: TravelItineraryOutput | null;
   isEditing: boolean;
   showTimestamps: boolean;
+  hasItineraryToolbar: boolean;
 }
 
 export interface LogisticsSlice {
@@ -77,6 +78,7 @@ export interface LabState extends TimelineSlice, LogisticsSlice, InclusionsSlice
   setItinerary: (itinerary: TravelItineraryOutput | null) => void;
   setIsEditing: (isEditing: boolean) => void;
   setShowTimestamps: (showTimestamps: boolean) => void;
+  setHasItineraryToolbar: (hasItineraryToolbar: boolean) => void;
 
   setHotels: (hotels: HotelInfo[]) => void;
   setFlights: (flights: FlightInfo[]) => void;

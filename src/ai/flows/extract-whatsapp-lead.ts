@@ -129,27 +129,22 @@ const extractWhatsAppLeadFlow = ai.defineFlow(
   },
   async (input) => {
     const startTime = Date.now();
-    const { output, response } = await extractWhatsAppPrompt(input);
+    const promptResult = await extractWhatsAppPrompt(input);
+    const output = promptResult.output;
+    const usage = promptResult.usage;
 
     if (!output) {
       throw new Error('AI was unable to extract lead information from this message.');
     }
 
     // Track token usage
-    const latencyMs = Date.now() - startTime;
-    if (response?.usage) {
-      await logTokenUsage({
-        flow: 'extractWhatsAppLead',
-        model: 'gemini-3.5-flash-lite',
-        promptTokens: response.usage.inputTokens ?? 0,
-        completionTokens: response.usage.outputTokens ?? 0,
-        totalTokens: response.usage.totalTokens ?? 0,
-        latencyMs,
-        metadata: {
-          clientName: output.clientName,
-          destinations: output.destinations,
-        },
-      });
+    if (usage) {
+      await logTokenUsage(
+        'extractWhatsAppLead',
+        'gemini-3.5-flash-lite',
+        usage.inputTokens ?? 0,
+        usage.outputTokens ?? 0
+      );
     }
 
     return output;

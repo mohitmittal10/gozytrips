@@ -729,6 +729,45 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_archive: {
+        Row: {
+          id: string
+          user_id: string | null
+          url: string
+          title: string | null
+          destination: string | null
+          search_term: string | null
+          source: string
+          metadata: Json | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id?: string | null
+          url: string
+          title?: string | null
+          destination?: string | null
+          search_term?: string | null
+          source?: string
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string | null
+          url?: string
+          title?: string | null
+          destination?: string | null
+          search_term?: string | null
+          source?: string
+          metadata?: Json | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      },
       vendor_enquiries: {
         Row: {
           body: string | null

@@ -535,7 +535,13 @@ function ItinerarySubTabs({
                   <p className="text-[10px] font-bold uppercase tracking-widest text-gray-600 mb-2.5">Cost Breakdown</p>
                   <div className="space-y-2">
                     {pricing.manualOptions.map((item: any, ii: number) => {
-                      const { qty, rate, amount: itemTotal } = calcItemClientPrice(item, totalPax, pricing);
+                      const { qty, rate, amount: itemTotal } = calcItemClientPrice(item, totalPax, pricing, {
+                        hotels,
+                        flights,
+                        cabs,
+                        buses,
+                        pax: { adultPax, childPax, infantPax },
+                      });
                       return (
                         <div key={ii} className="flex items-center justify-between gap-2 bg-white/[0.03] border border-white/[0.06] rounded-xl px-3.5 py-2.5">
                           <div className="flex-1 min-w-0">

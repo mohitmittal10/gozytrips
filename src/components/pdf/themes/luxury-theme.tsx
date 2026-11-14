@@ -677,90 +677,239 @@ export const LuxuryTheme = ({
                 .luxury-wrap .day-tile .loc { font-size: 14px; color: var(--muted); margin-top: 2px; }
 
                 /* ---------- ITINERARY DAY CARDS ---------- */
-                .luxury-wrap .itinerary-days { padding: 0 0 40px; }
-                .luxury-wrap .itinerary-heading h2.display { font-size: 40px; margin-top: 8px; }
+                .luxury-wrap .itinerary-days {
+                    padding: 0 74px 60px;
+                }
+                @media (max-width: 900px) {
+                    .luxury-wrap .itinerary-days {
+                        padding: 0 24px 40px;
+                    }
+                }
+                .luxury-wrap .itinerary-heading-wrap {
+                    padding: 50px 0 32px;
+                }
+                .luxury-wrap .itinerary-heading-wrap h2.display {
+                    font-size: 40px;
+                    margin-top: 8px;
+                }
 
                 .luxury-wrap .day-card {
                     display: flex;
-                    border-bottom: 1px solid var(--cream-hair-3);
-                    min-height: 332px;
+                    flex-direction: column;
+                    background: var(--bg-panel);
+                    border: 1px solid var(--cream-hair-2);
+                    border-left: 3px solid var(--gold);
+                    border-radius: 6px;
+                    margin-bottom: 36px;
+                    overflow: hidden;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+                    page-break-inside: avoid;
+                    break-inside: avoid;
                 }
-                @media (max-width: 768px) {
-                    .luxury-wrap .day-card, .luxury-wrap .day-card.reverse { flex-direction: column; }
-                    .luxury-wrap .day-card .photo { flex: none; height: 260px; }
+                .luxury-wrap .day-card.alt-card {
+                    background: #11100e;
+                    border-left-color: rgba(201, 168, 76, 0.75);
                 }
-                .luxury-wrap .day-card.reverse { flex-direction: row-reverse; }
-                .luxury-wrap .day-card .photo {
+
+                /* Photo Header Banner with Fixed Cinematic Ratio */
+                .luxury-wrap .day-card .day-photo-header {
                     position: relative;
-                    flex: 0 0 372px;
-                    background-position: center;
-                    background-size: cover;
-                    background-repeat: no-repeat;
+                    width: 100%;
+                    height: 250px;
+                    min-height: 220px;
+                    max-height: 280px;
                     background-color: #1c1a17;
+                    overflow: hidden;
                 }
-                .luxury-wrap .day-card .photo .day-tag {
+                .luxury-wrap .day-card .day-photo-header .day-photo-img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                    object-position: center;
+                    display: block;
+                }
+                .luxury-wrap .day-card .day-photo-header .day-photo-gradient {
                     position: absolute;
-                    left: 20px; bottom: 20px;
+                    inset: 0;
+                    background: linear-gradient(180deg, rgba(10,10,9,0.3) 0%, rgba(10,10,9,0.05) 40%, rgba(10,10,9,0.5) 80%, rgba(10,10,9,0.85) 100%);
+                    pointer-events: none;
+                }
+                .luxury-wrap .day-card .day-photo-header .day-tag-badge {
+                    position: absolute;
+                    top: 18px;
+                    left: 20px;
                     font-family: var(--font-mono);
-                    font-size: 9px;
-                    letter-spacing: 1.8px;
+                    font-size: 10px;
+                    letter-spacing: 2px;
                     text-transform: uppercase;
                     color: var(--gold);
-                    background: rgba(10,10,9,.85);
-                    padding: 4px 8px;
+                    background: rgba(10, 10, 9, 0.88);
+                    backdrop-filter: blur(8px);
+                    -webkit-backdrop-filter: blur(8px);
+                    border: 1px solid rgba(201, 168, 76, 0.35);
+                    border-radius: 3px;
+                    padding: 6px 12px;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    z-index: 2;
+                    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
                 }
-                .luxury-wrap .day-card .content {
-                    flex: 1;
-                    padding: 33px 41px;
+                .luxury-wrap .day-card .day-photo-header .day-tag-badge .day-date-sep {
+                    color: var(--gold);
+                    opacity: 0.6;
+                }
+
+                /* Fallback header when no photo */
+                .luxury-wrap .day-card .day-no-photo-header {
+                    padding: 24px 36px 0;
+                }
+                .luxury-wrap .day-card .day-no-photo-header .day-tag-badge-inline {
+                    font-family: var(--font-mono);
+                    font-size: 10px;
+                    letter-spacing: 2px;
+                    text-transform: uppercase;
+                    color: var(--gold);
+                    background: rgba(10, 10, 9, 0.88);
+                    border: 1px solid rgba(201, 168, 76, 0.35);
+                    border-radius: 3px;
+                    padding: 6px 12px;
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-bottom: 12px;
+                }
+
+                /* Card Body Content */
+                .luxury-wrap .day-card .day-card-body {
+                    padding: 28px 36px 32px;
                     display: flex;
                     flex-direction: column;
-                    justify-content: center;
                 }
-                .luxury-wrap .day-card:nth-child(even) .content {
-                    background: var(--bg-panel);
+                @media (max-width: 600px) {
+                    .luxury-wrap .day-card .day-card-body {
+                        padding: 20px 20px 24px;
+                    }
+                    .luxury-wrap .day-card .day-photo-header {
+                        height: 200px;
+                    }
                 }
-                .luxury-wrap .day-card:nth-child(odd) .content {
-                    background: var(--bg);
+
+                .luxury-wrap .day-card .day-card-header {
+                    margin-bottom: 20px;
                 }
-                .luxury-wrap .day-card .content .loc-label {
-                    font-size: 10px;
+                .luxury-wrap .day-card .loc-label {
+                    font-family: var(--font-mono);
+                    font-size: 11px;
                     letter-spacing: 2.6px;
                     text-transform: uppercase;
                     color: var(--gold);
+                    font-weight: 500;
                 }
-                .luxury-wrap .day-card .content h3.display {
-                    font-size: 25px;
-                    margin-top: 8px;
+                .luxury-wrap .day-card h3.display {
+                    font-size: 28px;
+                    margin-top: 6px;
+                    line-height: 1.2;
+                    color: var(--cream);
                 }
-                .luxury-wrap .activity-list { margin-top: 12px; }
-                .luxury-wrap .activity-row {
-                    display: flex;
-                    gap: 10px;
-                    font-size: 16px;
-                    color: var(--cream-soft);
-                    padding: 5px 0;
-                }
-                .luxury-wrap .activity-row .dash { color: var(--gold); }
 
-                .luxury-wrap .day-meta {
-                    display: flex;
-                    gap: 40px;
-                    margin-top: 20px;
-                    padding-top: 16px;
-                    border-top: 1px solid var(--cream-hair-2);
-                    flex-wrap: wrap;
+                /* Logistics & Details Strip (Stay & Meals) */
+                .luxury-wrap .day-card .day-meta-strip {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                    gap: 16px;
+                    padding: 16px 20px;
+                    margin-bottom: 24px;
+                    background: rgba(10, 10, 9, 0.65);
+                    border: 1px solid var(--cream-hair-2);
+                    border-left: 2px solid var(--gold);
+                    border-radius: 4px;
                 }
-                .luxury-wrap .day-meta .col { flex: 1; min-width: 140px; max-width: 294px; }
-                .luxury-wrap .day-meta .label {
+                .luxury-wrap .day-card .day-meta-strip .meta-item {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                }
+                .luxury-wrap .day-card .day-meta-strip .meta-label {
                     font-family: var(--font-mono);
-                    font-size: 8px;
-                    letter-spacing: 1px;
+                    font-size: 9px;
+                    letter-spacing: 1.5px;
                     text-transform: uppercase;
                     color: var(--gold);
+                    display: flex;
+                    align-items: center;
+                    gap: 6px;
+                    font-weight: 500;
                 }
-                .luxury-wrap .day-meta .name { font-size: 13px; margin-top: 6px; }
-                .luxury-wrap .day-meta .note { font-size: 11px; font-style: italic; color: var(--muted); margin-top: 6px; }
-                .luxury-wrap .day-meta .meal-line { font-size: 13px; color: var(--cream); margin-top: 4px; }
+                .luxury-wrap .day-card .day-meta-strip .meta-val {
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: var(--cream);
+                    line-height: 1.35;
+                }
+                .luxury-wrap .day-card .day-meta-strip .meta-note {
+                    font-size: 11px;
+                    font-style: italic;
+                    color: var(--muted);
+                    line-height: 1.3;
+                }
+                .luxury-wrap .day-card .day-meta-strip .meal-pills {
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 8px;
+                    margin-top: 2px;
+                }
+                .luxury-wrap .day-card .day-meta-strip .meal-pill {
+                    font-size: 12px;
+                    color: var(--cream);
+                    background: rgba(245, 240, 232, 0.05);
+                    border: 1px solid var(--cream-hair-2);
+                    padding: 2px 8px;
+                    border-radius: 3px;
+                }
+                .luxury-wrap .day-card .day-meta-strip .meal-pill strong {
+                    color: var(--gold);
+                    margin-right: 4px;
+                    font-weight: 700;
+                }
+
+                /* Activity List */
+                .luxury-wrap .activity-list {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 12px;
+                }
+                .luxury-wrap .activity-row {
+                    display: flex;
+                    align-items: flex-start;
+                    gap: 12px;
+                    font-size: 15.5px;
+                    line-height: 1.6;
+                    color: var(--cream-soft);
+                    padding: 4px 0;
+                }
+                .luxury-wrap .activity-row .bullet {
+                    color: var(--gold);
+                    font-size: 10px;
+                    line-height: 2.2;
+                    flex-shrink: 0;
+                }
+                .luxury-wrap .activity-row .activity-time {
+                    font-family: var(--font-mono);
+                    font-size: 11px;
+                    letter-spacing: 1px;
+                    color: var(--gold);
+                    background: rgba(201, 168, 76, 0.1);
+                    border: 1px solid rgba(201, 168, 76, 0.2);
+                    padding: 2px 6px;
+                    border-radius: 2px;
+                    flex-shrink: 0;
+                    margin-top: 2px;
+                    text-transform: uppercase;
+                }
+                .luxury-wrap .activity-row .activity-desc {
+                    flex: 1;
+                }
 
                 /* ---------- LOGISTICS SUMMARY ---------- */
                 .luxury-wrap .logistics-grid {
@@ -1354,22 +1503,33 @@ export const LuxuryTheme = ({
                 {/* THE PROGRAMME -- FULL DAY-BY-DAY CARDS (MAIN BG) */}
                 {days.length > 0 && (
                     <section className="itinerary-days sec-bg-main" data-pdf-section="itinerary">
-                        <div className="section-inner" style={{ paddingBottom: 0 }}>
+                        <div className="section-inner itinerary-heading-wrap">
                             <span className="eyebrow">The Programme</span>
                             <h2 className="display itinerary-heading">The Itinerary</h2>
                         </div>
 
                         {days.map((day, idx) => {
-                            const isReverse = idx % 2 === 1;
+                            const isAlt = idx % 2 === 1;
                             const dayImg = getDayImage(day) || coverImage;
-                            const dayTagStr = `Day ${idx + 1}${day.date ? ` · ${formatDate(day.date)}` : ''}`;
+                            const dayNumStr = `DAY ${String(idx + 1).padStart(2, '0')}`;
+                            const dayDateStr = day.date ? formatDate(day.date) : '';
                             const locStr = day.areaFocus || (day as any).location || `Destination`;
                             const titleStr = (day as any).title || (day as any).themeTitle || `Day ${idx + 1} Program`;
 
                             // Extract activities timeline
-                            const activities = Array.isArray(day.timeline) && day.timeline.length > 0
-                                ? day.timeline.map((act: any) => act.activityTitle || act.title || act.details || act)
-                                : parseList((day as any).activities);
+                            const timelineSteps = Array.isArray(day.timeline) && day.timeline.length > 0
+                                ? day.timeline
+                                : null;
+
+                            const activities = timelineSteps
+                                ? timelineSteps.map((step: any) => ({
+                                    time: step.time || '',
+                                    text: step.activityTitle || step.details || step.title || (typeof step === 'string' ? step : '')
+                                }))
+                                : parseList((day as any).activities).map((actStr: string) => ({
+                                    time: '',
+                                    text: actStr
+                                }));
 
                             // Meals
                             const mealsObj = (day as any).meals || {};
@@ -1377,6 +1537,7 @@ export const LuxuryTheme = ({
                             const bMeal = typeof mealsObj === 'object' ? (mealsObj.breakfast || ((day as any).mealPlan?.toLowerCase().includes('b') ? 'Included' : null)) : null;
                             const lMeal = typeof mealsObj === 'object' ? (mealsObj.lunch || ((day as any).mealPlan?.toLowerCase().includes('l') ? 'Included' : null)) : null;
                             const dMeal = typeof mealsObj === 'object' ? (mealsObj.dinner || ((day as any).mealPlan?.toLowerCase().includes('d') ? 'Included' : null)) : null;
+                            const hasMeals = Boolean(mealsStr || bMeal || lMeal || dMeal);
 
                             // Stay info
                             const matchingHotel = hotels[idx] || hotels[0];
@@ -1384,51 +1545,105 @@ export const LuxuryTheme = ({
                             const baseStayName = (day as any).stay?.name || (day as any).accommodation || matchingHotel?.name || '';
                             const stayName = stayCityStr ? (baseStayName ? `${stayCityStr} (${baseStayName})` : stayCityStr) : baseStayName;
                             const stayNote = (day as any).stay?.note || (day as any).accommodationNotes || (matchingHotel as any)?.roomType || matchingHotel?.address || '';
+                            const hasStay = Boolean(stayName);
 
                             return (
-                                <div className={`day-card ${isReverse ? 'reverse' : ''}`} key={idx}>
-                                    <div
-                                        className="photo"
-                                        style={{ backgroundImage: `url('${dayImg}')` }}
-                                    >
-                                        <span className="day-tag">{dayTagStr}</span>
-                                    </div>
-                                    <div className="content">
-                                        <div className="loc-label" data-field={`days[${idx}].location`}>{locStr}</div>
-                                        <h3 className="display" data-field={`days[${idx}].title`}>{titleStr}</h3>
+                                <div
+                                    className={`day-card ${isAlt ? 'alt-card' : ''}`}
+                                    key={idx}
+                                    data-pdf-section={`day-${idx}`}
+                                >
+                                    {dayImg ? (
+                                        <div className="day-photo-header">
+                                            <img
+                                                src={dayImg}
+                                                alt={titleStr}
+                                                className="day-photo-img"
+                                                crossOrigin="anonymous"
+                                            />
+                                            <div className="day-photo-gradient" />
+                                            <div className="day-tag-badge">
+                                                <span className="day-num">{dayNumStr}</span>
+                                                {dayDateStr && <span className="day-date-sep">·</span>}
+                                                {dayDateStr && <span className="day-date">{dayDateStr}</span>}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="day-no-photo-header">
+                                            <div className="day-tag-badge-inline">
+                                                <span className="day-num">{dayNumStr}</span>
+                                                {dayDateStr && <span className="day-date-sep">·</span>}
+                                                {dayDateStr && <span className="day-date">{dayDateStr}</span>}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div className="day-card-body">
+                                        <div className="day-card-header">
+                                            <div className="loc-label" data-field={`days[${idx}].location`}>{locStr}</div>
+                                            <h3 className="display" data-field={`days[${idx}].title`}>{titleStr}</h3>
+                                        </div>
+
+                                        {(hasStay || hasMeals) && (
+                                            <div className="day-meta-strip">
+                                                {hasStay && (
+                                                    <div className="meta-item">
+                                                        <div className="meta-label">
+                                                            <span>🏨</span> Accommodation
+                                                        </div>
+                                                        <div className="meta-val">{stayName}</div>
+                                                        {stayNote && <div className="meta-note">{stayNote}</div>}
+                                                    </div>
+                                                )}
+                                                {hasMeals && (
+                                                    <div className="meta-item">
+                                                        <div className="meta-label">
+                                                            <span>🍽️</span> Dining &amp; Meals
+                                                        </div>
+                                                        {mealsStr ? (
+                                                            <div className="meta-val">{mealsStr}</div>
+                                                        ) : (
+                                                            <div className="meal-pills">
+                                                                {bMeal && (
+                                                                    <span className="meal-pill">
+                                                                        <strong>B</strong> {bMeal}
+                                                                    </span>
+                                                                )}
+                                                                {lMeal && (
+                                                                    <span className="meal-pill">
+                                                                        <strong>L</strong> {lMeal}
+                                                                    </span>
+                                                                )}
+                                                                {dMeal && (
+                                                                    <span className="meal-pill">
+                                                                        <strong>D</strong> {dMeal}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
 
                                         {activities.length > 0 && (
                                             <div className="activity-list">
-                                                {activities.map((actItem: any, aIdx: number) => (
+                                                {activities.map((actItem, aIdx) => (
                                                     <div className="activity-row" key={aIdx}>
-                                                        <span className="dash">—</span>
-                                                        <div data-field={`days[${idx}].activities[${aIdx}]`} style={{ flex: 1 }}>{renderFormattedText(actItem)}</div>
+                                                        <span className="bullet">◆</span>
+                                                        {showTimestamps !== false && actItem.time ? (
+                                                            <span className="activity-time">{actItem.time}</span>
+                                                        ) : null}
+                                                        <div
+                                                            className="activity-desc"
+                                                            data-field={`days[${idx}].activities[${aIdx}]`}
+                                                        >
+                                                            {renderFormattedText(actItem.text)}
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>
                                         )}
-
-                                        <div className="day-meta">
-                                            {(mealsStr || bMeal || lMeal || dMeal) && (
-                                                <div className="col">
-                                                    <div className="label">Meals</div>
-                                                    {mealsStr ? <div className="meal-line">{mealsStr}</div> : (
-                                                        <>
-                                                            {bMeal && <div className="meal-line">B {bMeal}</div>}
-                                                            {lMeal && <div className="meal-line">L {lMeal}</div>}
-                                                            {dMeal && <div className="meal-line">D {dMeal}</div>}
-                                                        </>
-                                                    )}
-                                                </div>
-                                            )}
-                                            {stayName && (
-                                                <div className="col">
-                                                    <div className="label">Stay</div>
-                                                    <div className="name">{stayName}</div>
-                                                    {stayNote && <div className="note">{stayNote}</div>}
-                                                </div>
-                                            )}
-                                        </div>
                                     </div>
                                 </div>
                             );

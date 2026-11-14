@@ -11,15 +11,14 @@ export async function GET(req: Request) {
     const token = url.searchParams.get("hub.verify_token");
     const challenge = url.searchParams.get("hub.challenge");
 
-    // Standard verification: check if mode is subscribe
-    if (mode === "subscribe") {
-      // Allow if token matches standard pattern or default
-      if (token && (token.startsWith("meta_verify_") || token === "gozytrips_meta_lead_sync" || token.length > 5)) {
-        return new Response(challenge, {
-          status: 200,
-          headers: { "Content-Type": "text/plain" },
-        });
-      }
+    const expectedToken = process.env.META_VERIFY_TOKEN || "gozytrips_meta_lead_sync";
+
+    // Standard verification: check if mode is subscribe and verify token matches
+    if (mode === "subscribe" && token && token === expectedToken) {
+      return new Response(challenge, {
+        status: 200,
+        headers: { "Content-Type": "text/plain" },
+      });
     }
 
     return new Response("Verification token mismatch", { status: 403 });
@@ -47,36 +46,29 @@ export async function POST(req: Request) {
         const senderPhone = contact?.wa_id || message.from;
         const senderName = contact?.profile?.name || "WhatsApp Traveler";
 
-        // Find agent linked to this phoneNumberId or wabaId
+        // Find agent linked to this phoneNumberId
         let userId: string | null = null;
         if (phoneNumberId) {
           const { data: userMatch } = await (admin as any)
             .from("whatsapp_meta_integrations")
             .select("user_id")
             .eq("phone_number_id", phoneNumberId)
+            .eq("status", "connected")
             .maybeSingle();
           userId = userMatch?.user_id || null;
         }
 
-        // Fallback: get first active connected user if only one
         if (!userId) {
-          const { data: fallbackUser } = await (admin as any)
-            .from("whatsapp_meta_integrations")
-            .select("user_id")
-            .eq("status", "connected")
-            .limit(1)
-            .maybeSingle();
-          userId = fallbackUser?.user_id || null;
+          console.warn("[Meta Webhook] Discarding message for unmapped phone_number_id:", phoneNumberId);
+          return NextResponse.json({ received: true, warning: "Unmapped phone_number_id" });
         }
 
-        if (userId) {
-          await processAndSaveLead(admin, userId, {
-            rawChat,
-            senderName,
-            senderPhone,
-            channelSource: "whatsapp_cloud",
-          });
-        }
+        await processAndSaveLead(admin, userId, {
+          rawChat,
+          senderName,
+          senderPhone,
+          channelSource: "whatsapp_cloud",
+        });
       }
     }
 
@@ -88,15 +80,22 @@ export async function POST(req: Request) {
       const pageId = change?.value?.page_id;
 
       if (leadgenId) {
-        // Find agent linked to pageId or ad account
+        // Find agent linked to pageId
         let agentIntegration: any = null;
-        const { data: matched } = await (admin as any)
-          .from("whatsapp_meta_integrations")
-          .select("*")
-          .or(`meta_page_name.ilike.%${pageId}%,status.eq.connected`)
-          .limit(1)
-          .maybeSingle();
-        agentIntegration = matched;
+        if (pageId) {
+          const { data: matched } = await (admin as any)
+            .from("whatsapp_meta_integrations")
+            .select("*")
+            .eq("status", "connected")
+            .ilike("meta_page_name", `%${pageId}%`)
+            .maybeSingle();
+          agentIntegration = matched;
+        }
+
+        if (!agentIntegration) {
+          console.warn("[Meta Webhook] Discarding leadgen event for unmapped page_id:", pageId);
+          return NextResponse.json({ received: true, warning: "Unmapped page_id" });
+        }
 
         if (agentIntegration?.user_id && agentIntegration?.meta_access_token) {
           // Fetch lead details from Graph API
