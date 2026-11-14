@@ -32,6 +32,7 @@ const TravelItineraryInputSchema = z.object({
     "family",
     "foodie"
   ]).default("relaxed").describe('The thematic style or type of trip.'),
+  mealPlan: z.string().max(100).default("CP").describe('Selected meal plan for the trip (e.g. "CP" for Breakfast Only, "MAP" for Breakfast + Dinner, "AP" for All Meals, "EP" for Room Only).'),
   travelMethods: z.array(z.string().max(50)).default([]).describe('Selected modes of transport (e.g. Flight, Train, Bus, Cab).'),
   mustInclude: z.string().max(500).default('').describe('A comma-separated list of must-see attractions or experiences.'),
   avoid: z.string().max(500).default('').describe('A comma-separated list of things to skip or avoid.'),
@@ -67,6 +68,13 @@ const TravelItineraryInputSchema = z.object({
 export type TravelItineraryInput = z.infer<typeof TravelItineraryInputSchema>;
 
 const TravelItineraryOutputSchema = z.object({
+  title: z.string().describe('A simple, clear, normal, and easily understandable travel title for this trip (e.g. "5 Days Trip to Jaipur & Udaipur", "Kerala Tour: Munnar & Alleppey", "Goa Beach Holiday", "Golden Triangle Tour: Delhi, Agra & Jaipur", "Manali & Shimla Road Trip"). Do NOT use fancy, poetic, or pretentious words.'),
+  daySummaries: z.array(z.string()).describe('An ordered array of concise 1-sentence summaries (one per day, maximum 20 words each) capturing the spirit and key highlights of each day for the "Itinerary at a Glance" brief plan.'),
+  aboutPlace: z.object({
+    title: z.string().describe('Destination overview title, e.g. "About Jaipur" or "About Kerala"'),
+    description: z.string().describe('A 2-3 sentence overview of the destination'),
+    highlights: z.array(z.string()).describe('3-5 short bullet-point highlights of key experiences or landmarks'),
+  }).optional().describe('Brief destination overview for the itinerary PDF'),
   itinerary: z.array(
     z.object({
       day: z.number(),
@@ -74,6 +82,7 @@ const TravelItineraryOutputSchema = z.object({
       areaFocus: z.string(),
       stayCity: z.string().describe('The overnight stay city for this day (e.g. "Jaipur", "Agra", "Varanasi", or "Return to Delhi" on the final day).'),
       meals: z.string().describe('Explicit meal plan and inclusions for this day (e.g. "Breakfast included at hotel", "Breakfast & Dinner included", "Breakfast at hotel; Lunch & Dinner at leisure").'),
+      summary: z.string().optional().describe('A brief 1-sentence summary (maximum 20 words) for the Itinerary at a Glance section for this day.'),
       imageUrl: z.string().optional(),
       imageSearchTerm: z.string().describe('A specific site or landmark search term for the day (noun phrase only, no verbs/actions, no hotel/room/accommodation terms, include city/region context), e.g., "Taj Mahal Agra", "Kerala houseboats Alleppey", "Munnar tea plantations".'),
       timeline: z.array(
@@ -116,6 +125,7 @@ export async function generateTravelItinerary(input: TravelItineraryInput): Prom
     assertNoInjection({
       'Destinations': input.destinations,
       'Starting Location': input.startingLocation,
+      'Meal Plan': input.mealPlan,
       'Must Include': input.mustInclude,
       'Avoid': input.avoid,
       'Feedback': input.feedback,
@@ -133,15 +143,26 @@ export async function generateTravelItinerary(input: TravelItineraryInput): Prom
           .join('\n')
       : '';
 
+    const sanitizedHotels = (input.hotels || [])
+      .filter((h: any) => h && typeof h === 'object')
+      .map((h: any, i: number) => ({
+        ...h,
+        id: typeof h.id === 'string' && h.id.length > 0 ? h.id : `h-${i}`,
+        dayIndex: typeof h.dayIndex === 'number' ? h.dayIndex : i,
+        name: typeof h.name === 'string' ? h.name : '',
+      }));
+
     const sanitizedInput: TravelItineraryInput = {
       ...input,
       startingLocation: sanitizeText(input.startingLocation, 100),
       endingLocation: input.endingLocation ? sanitizeText(input.endingLocation, 100) : undefined,
       destinations: sanitizeText(input.destinations, 300),
+      mealPlan: input.mealPlan ? sanitizeText(input.mealPlan, 100) : "CP",
       mustInclude: sanitizeForPrompt(input.mustInclude, 500),
       avoid: sanitizeForPrompt(input.avoid, 500),
       feedback: sanitizeForPrompt(input.feedback, 1000),
       daywiseDestinations: sanitizeForPrompt(input.daywiseDestinations, 10000),
+      hotels: sanitizedHotels,
       hotelsText: formattedHotelsText,
     };
 
@@ -193,6 +214,7 @@ You are an expert travel planner and logistical engineer. Your job is to produce
   Trip end date   : {{endDate}}
   DESTINATIONS    : {{destinations}}
   Trip Type/Style : {{tripType}}
+  Meal Plan       : {{#if mealPlan}}{{mealPlan}}{{else}}CP (Breakfast Included){{/if}}
   {{#if travelMethods}}Selected Transport Modes : {{travelMethods}}{{/if}}
   {{#if travelTimePreference}}Travel Timing Preference: {{travelTimePreference}}{{/if}}
   {{#if mustInclude}}Must include    : <user_must_include>
@@ -201,6 +223,34 @@ You are an expert travel planner and logistical engineer. Your job is to produce
   {{#if avoid}}Avoid           : <user_avoid>
 {{avoid}}
 </user_avoid>{{/if}}
+
+═══════════════════════════════════════════════════════
+  RULE 0A — NORMAL, CLEAR TRIP TITLE (MANDATORY)
+═══════════════════════════════════════════════════════
+- Generate a simple, clear, normal, and easily understandable travel title for the trip in the top-level "title" field.
+- The title must be realistic, direct, and straightforward so any client or traveler instantly understands what the trip is.
+- Good Title Examples:
+  * "5 Days Trip to Jaipur & Udaipur"
+  * "Kerala Tour: Munnar, Thekkady & Alleppey"
+  * "Goa Beach Holiday"
+  * "Golden Triangle Tour: Delhi, Agra & Jaipur"
+  * "Manali & Shimla Road Trip"
+  * "Bali Vacation: Ubud & Seminyak"
+  * "Switzerland Tour: Zurich, Lucerne & Interlaken"
+  * "Varanasi & Ayodhya Spiritual Tour"
+- STRICTLY DO NOT use fancy, flowery, overly dramatic, or poetic words such as "Royal", "Enchanting", "Mystical", "Symphony", "Jewel of", "Bespoke Odyssey", "Tapestry", "Realm", or "Unveiling".
+
+═══════════════════════════════════════════════════════
+  RULE 0B — ITINERARY AT A GLANCE & ABOUT PLACE (MANDATORY)
+═══════════════════════════════════════════════════════
+- Generate the "Itinerary at a Glance" brief plan directly with Gemini:
+  1. In the top-level "daySummaries" array, output an array of strings containing exactly ONE summary per day of the trip (in order, from Day 1 to the final day).
+  2. For EACH day, write exactly ONE punchy, clear, descriptive sentence (maximum 20 words) that captures the primary highlight, route, and activities of that day (e.g. "Arrive in Jaipur, check-in at hotel, evening visit to Birla Temple and Chokhi Dhani village.").
+  3. Also populate the "summary" field on each day object with this same concise 1-sentence highlight.
+  4. Generate the "aboutPlace" object with:
+     - "title": Clean title (e.g. "About Jaipur & Udaipur" or "About Kerala")
+     - "description": 2-3 sentence clear overview of the primary destination
+     - "highlights": 3-5 short bullet-point highlights of iconic landmarks or experiences.
 
 ═══════════════════════════════════════════════════════
   RULE 1 — TRANSPORTATION-FIRST & STRICT MODE ENFORCEMENT (CRITICAL)
@@ -373,19 +423,39 @@ You are an expert travel planner and logistical engineer. Your job is to produce
      - Every day's "areaFocus" must be evocative and location-specific (e.g., "Mughal Splendors, Old Delhi Haveli Walks & Khari Baoli Spice Markets", "Sacred Ganga Ghats, Dawn Boat Pilgrimage & Buddhist Relics of Sarnath", "Clifftop Panoramic Temples & Uluwatu Fire Dance at Sunset"), rather than flat titles like "Delhi Day 1" or "Sightseeing".
 
 ═══════════════════════════════════════════════════════
-  RULE 9 — EXPLICIT STAY CITY & MEALS ON EVERY SINGLE DAY (MANDATORY)
+  RULE 9 — EXPLICIT STAY CITY & MEAL PLAN ADHERENCE ON EVERY SINGLE DAY (MANDATORY)
 ═══════════════════════════════════════════════════════
   For EVERY day of the itinerary, you MUST explicitly provide:
   1. "stayCity" (Top-Level Day Field):
      - The exact city/base where the traveler sleeps tonight (e.g., "Jaipur", "Agra", "Varanasi", "Ubud").
      - On the final day of the trip, state "Return to {{#if endingLocation}}{{endingLocation}}{{else}}{{startingLocation}}{{/if}}" or "Departure / Home".
-  2. "meals" (Top-Level Day Field):
-     - Explicit meal plan and inclusions for the day (e.g., "Breakfast included at hotel", "Breakfast & Dinner included", "Breakfast at hotel; Lunch & Dinner at leisure", "All meals included").
+  2. "meals" (Top-Level Day Field) — STRICTLY FOLLOW THE AUTHORITATIVE MEAL PLAN:
+     - Selected Meal Plan: {{#if mealPlan}}{{mealPlan}}{{else}}CP{{/if}}
+     - Output the exact inclusions in "meals" for each day:
+       * If Meal Plan is "CP" (or contains "CP" / "Breakfast"):
+         Output "meals": "Buffet Breakfast included at hotel (CP); Lunch & Dinner at leisure"
+         Morning Timeline: Explicitly mention buffet/breakfast included at hotel (e.g., "• Meal: Buffet breakfast at hotel (included in stay)").
+         Midday Timeline: Suggest lunch at leisure at a recommended local cuisine eatery/café.
+         Evening Timeline: Suggest dinner at leisure at a recommended local restaurant.
+       * If Meal Plan is "MAP" (or contains "MAP" / "Dinner" / "Half Board"):
+         Output "meals": "Breakfast & Dinner included (MAP); Lunch at leisure"
+         Morning Timeline: Explicitly mention buffet/breakfast included at hotel (e.g., "• Meal: Buffet breakfast at hotel (included in stay)").
+         Midday Timeline: Lunch at leisure at a recommended scenic stop or local eatery.
+         Evening Timeline: Explicitly mention dinner included at hotel/resort (e.g., "• Dinner & Overnight Stay: Dinner included at hotel (included in MAP plan); Overnight stay at hotel in [Stay City] (Night X of Y).").
+       * If Meal Plan is "AP" (or contains "AP" / "All Meals" / "Full Board"):
+         Output "meals": "All meals included — Breakfast, Lunch & Dinner (AP)"
+         Morning Timeline: Explicitly mention buffet/breakfast included at hotel (included in stay).
+         Midday Timeline: Explicitly mention arranged multi-course lunch (e.g., "• Lunch: Arranged multi-cuisine lunch (included in AP plan)").
+         Evening Timeline: Explicitly mention dinner included at hotel or specialty restaurant (e.g., "• Dinner & Overnight Stay: Dinner included at hotel/specialty restaurant (included in AP plan); Overnight stay at hotel in [Stay City] (Night X of Y).").
+       * If Meal Plan is "EP" (or contains "EP" / "Room Only" / "No Meals"):
+         Output "meals": "Room Only — All meals at leisure (EP)"
+         Morning Timeline: Breakfast at leisure (e.g., "• Breakfast: Breakfast at leisure; explore local café/bakery").
+         Midday Timeline: Lunch at leisure at local eatery.
+         Evening Timeline: Dinner at leisure at recommended local restaurant.
+     - On Day 1 (Arrival Day): If arrival is in afternoon or evening, breakfast is not included; dinner is included if MAP or AP.
+     - On Final Day (Departure Day): Breakfast is included for CP, MAP, AP before check-out; subsequent meals depend on departure travel timing.
   3. TIMELINE INTEGRATION:
-     - Morning activity: Explicitly mention breakfast (e.g., "• Meal: Buffet breakfast at hotel (included in stay)").
-     - Midday activity: Explicitly mention lunch with named regional specialty and recommended eatery.
-     - Final evening step: Conclude with dinner and explicit overnight stay confirmation:
-       * E.g., "• Dinner & Overnight Stay: Dinner at local heritage restaurant; Overnight stay at hotel in [Stay City] (Night X of Y)."
+     - Strictly match the timeline activity descriptions for breakfast, lunch, and dinner to the meal plan rules above.
 
 {{#if feedback}}
 ═══════════════════════════════════════════════════════
@@ -401,6 +471,9 @@ You are an expert travel planner and logistical engineer. Your job is to produce
   PRE-RESPONSE SELF-CHECK (INTERNAL COMPLIANCE AUDIT)
 ═══════════════════════════════════════════════════════
   Before emitting your JSON output, verify every check:
+  [ ] Is a normal, clear, and understandable (not fancy) title generated in the top-level "title" field?
+  [ ] Is the "daySummaries" array populated with one clear 1-sentence summary per day for the "Itinerary at a Glance"?
+  [ ] Does each day object contain its "summary" field matching the day's highlights?
   [ ] Does Day 1 explicitly begin with departure from {{startingLocation}} and state the transport mode and door-to-door transit time?
   [ ] Does the final day explicitly conclude with return transit back to {{#if endingLocation}}{{endingLocation}}{{else}}{{startingLocation}}{{/if}}?
   [ ] Are all transport modes strictly compliant with {{#if travelMethods}}{{travelMethods}}{{else}}specified modes{{/if}} without unauthorized flights/trains?
@@ -411,8 +484,8 @@ You are an expert travel planner and logistical engineer. Your job is to produce
   [ ] Are all "cost" fields left null/undefined?
   [ ] Are all activity descriptions structured in clean bullet points (•) and sub-pointers (-) instead of solid paragraph blocks?
   [ ] Is "stayCity" explicitly set for every single day to the correct overnight base?
-  [ ] Is "meals" explicitly set for every single day stating the meal plan?
-  [ ] Does every single day explicitly document breakfast, lunch, and dinner/night stay?
+  [ ] Is "meals" explicitly set for every single day strictly following the selected meal plan ({{#if mealPlan}}{{mealPlan}}{{else}}CP{{/if}})?
+  [ ] Does every single day explicitly document breakfast, lunch, and dinner/night stay according to the meal plan?
   [ ] Has the agent's day-wise plan (if provided) been fully fleshed out with vivid, detailed schedules rather than brief one-liners?
   `,
 });
@@ -420,7 +493,7 @@ You are an expert travel planner and logistical engineer. Your job is to produce
 async function callPromptWithFallback<I, O>(
   promptFn: any,
   input: I,
-  fallbackModelName: string = 'gemini-3.8-flash'
+  fallbackModelName: string = 'gemini-2.5-flash'
 ): Promise<{ output: O; usage: any }> {
   try {
     return await promptFn(input);

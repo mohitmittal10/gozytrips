@@ -91,11 +91,10 @@ export async function POST(
     const { formId } = await params;
     const supabase = await createServerComponentClient();
 
-    // Client must be authenticated (lightweight Supabase account - Option B)
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-    if (authError || !user) {
-      return NextResponse.json({ error: "You must be signed in to submit this form." }, { status: 401 });
-    }
+    // Client authentication is optional: authenticated client gets their response linked;
+    // guests can submit directly with their email.
+    const { data: { user } } = await supabase.auth.getUser();
+    const clientUserId = user?.id || null;
 
     // Verify the form is active and belongs to the right share context
     const admin = createAdminClient();
@@ -115,24 +114,30 @@ export async function POST(
       return NextResponse.json({ error: "This form has expired." }, { status: 410 });
     }
 
-    // Rate limit: 3 submissions per user per 24h
-    const oneDayAgo = new Date(Date.now() - 86_400_000).toISOString();
-    const { count: recentCount } = await (admin as any)
-      .from("client_enquiry_responses")
-      .select("id", { count: "exact", head: true })
-      .eq("form_id", formId)
-      .eq("client_user_id", user.id)
-      .gte("submitted_at", oneDayAgo);
-
-    if ((recentCount ?? 0) >= 3) {
-      return NextResponse.json({ error: "You have already submitted this form. Please contact the agent for help." }, { status: 429 });
-    }
-
     const body: SubmitEnquiryResponsePayload = await request.json();
 
     // Validate required fields
     if (!body.client_email || !body.client_email.includes("@")) {
       return NextResponse.json({ error: "A valid email address is required." }, { status: 400 });
+    }
+
+    // Rate limit: 3 submissions per user/email per 24h
+    const oneDayAgo = new Date(Date.now() - 86_400_000).toISOString();
+    let rateLimitQuery = (admin as any)
+      .from("client_enquiry_responses")
+      .select("id", { count: "exact", head: true })
+      .eq("form_id", formId)
+      .gte("submitted_at", oneDayAgo);
+
+    if (clientUserId) {
+      rateLimitQuery = rateLimitQuery.eq("client_user_id", clientUserId);
+    } else {
+      rateLimitQuery = rateLimitQuery.eq("client_email", body.client_email.trim().toLowerCase());
+    }
+
+    const { count: recentCount } = await rateLimitQuery;
+    if ((recentCount ?? 0) >= 3) {
+      return NextResponse.json({ error: "You have already submitted this form. Please contact the agent for help." }, { status: 429 });
     }
     if (!body.destinations || body.destinations.trim().length < 2) {
       return NextResponse.json({ error: "Please enter at least one destination." }, { status: 400 });
@@ -180,7 +185,7 @@ export async function POST(
 
     // Sanitize & validate all text
     const sanitized = {
-      client_user_id: user.id,
+      client_user_id: clientUserId,
       client_id: resolvedClientId,
       client_email: body.client_email.trim().toLowerCase(),
       client_name: body.client_name ? sanitizeText(body.client_name, 100) : null,

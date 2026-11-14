@@ -32,7 +32,7 @@ export function buildComparisonPayload(data: Partial<LoadedPersistenceData>) {
     }
   }
 
-  let rawTitle = (data.itinerary as any)?.title || (data.itinerary as any)?.tripTitle || "";
+  let rawTitle = (data.itinerary as any)?.title || (data.itinerary as any)?.tripTitle || (data.tripMetadata as any)?.title || (data as any)?.title || "";
   if (!rawTitle && dests) {
     if (startLoc) {
       rawTitle = `${startLoc} to ${dests}${nightsDaysSuffix}`;

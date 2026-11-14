@@ -246,7 +246,7 @@ const TheLabSummaryPanel = React.memo(function TheLabSummaryPanel({
   };
 
   return (
-    <div className="w-full lg:col-span-4 space-y-3 sm:space-y-4 lg:sticky lg:top-24 order-1 lg:order-2 self-start">
+    <div className={"w-full space-y-3 sm:space-y-4"}>
       
       {/* Journey Summary */}
       <div className="liquid-glass relative rounded-xl sm:rounded-2xl p-3 mb-3 sm:mb-4 shadow-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 border border-slate-300/60 dark:border-slate-300/60 dark:border-white/5 overflow-hidden">

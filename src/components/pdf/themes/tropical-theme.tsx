@@ -914,7 +914,7 @@ export const TropicalTheme = ({
                                     <span className="day-pill">Day {i + 1}</span>
                                     <div className="timeline-info">
                                         <h4>{formatTitleCase(day.areaFocus)}</h4>
-                                        <div className="timeline-desc" data-field={`daySummaries[${i}]`}>{renderFormattedText(cleanSummaryText(daySummaries && daySummaries[i] ? daySummaries[i] : (day.timeline?.[0]?.details || `Highlights of ${day.areaFocus}`)))}</div>
+                                        <div className="timeline-desc" data-field={`daySummaries[${i}]`}>{renderFormattedText(cleanSummaryText(daySummaries && daySummaries[i] ? daySummaries[i] : ((day as any)?.summary || day.timeline?.[0]?.details || `Highlights of ${day.areaFocus}`)))}</div>
                                     </div>
                                 </li>
                             ))}

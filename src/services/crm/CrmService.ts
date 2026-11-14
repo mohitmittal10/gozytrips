@@ -26,6 +26,7 @@ export interface EnrichedClient extends Client {
   latestDestination: string;
   latestBudget: string;
   latestRawBudget: number;
+  lifetimeBookedRevenue?: number;
   latestContact: string;
   latestTripId?: string;
   bookedDestinations?: { id: string; label: string }[];
@@ -187,12 +188,13 @@ export function enrichClients({ clients, itineraries, formatBudget }: EnrichClie
         bookedDestinations.length > 0 ? bookedDestinations.map((d) => d.label).join(', ') : 'N/A',
       bookedDestinations,
       latestBudget:
-        totalBookedRevenue > 0
-          ? formatBudget(totalBookedRevenue)
-          : latestCalculatedBudget > 0
-            ? formatBudget(latestCalculatedBudget)
+        latestCalculatedBudget > 0
+          ? formatBudget(latestCalculatedBudget)
+          : totalBookedRevenue > 0
+            ? formatBudget(totalBookedRevenue)
             : 'N/A',
-      latestRawBudget: totalBookedRevenue > 0 ? totalBookedRevenue : latestCalculatedBudget,
+      latestRawBudget: latestCalculatedBudget > 0 ? latestCalculatedBudget : totalBookedRevenue,
+      lifetimeBookedRevenue: totalBookedRevenue,
       latestContact: new Date(client.updated_at).toLocaleDateString(),
       latestTripId: latestTrip?.id,
       allTrips: clientTrips,
@@ -232,12 +234,16 @@ export function computeSeasonalityDepartures(clients: EnrichedClient[]): any[] {
   months.forEach((m) => (counts[m] = 0));
 
   const now = new Date();
+  const currentYear = now.getFullYear();
+
   clients.forEach((c) => {
     if (!c.allTrips) return;
     c.allTrips.forEach((t) => {
       if (isBookedTripStatus(t.status) && t.start_date) {
         const d = new Date(t.start_date);
-        if (d.getFullYear() === now.getFullYear()) {
+        const tripYear = d.getFullYear();
+        // Count departures in the current calendar year or upcoming year
+        if (tripYear === currentYear || tripYear === currentYear + 1) {
           counts[months[d.getMonth()]]++;
         }
       }

@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { searchSiteCandidatePhotos } from "@/ai/flows/fetch-itinerary-images";
 import { uploadItineraryPhoto } from "@/lib/upload-itinerary-photo";
-import { Search, Upload, Link as LinkIcon, Loader2, X, Check } from "lucide-react";
+import { Search, Upload, Link as LinkIcon, Loader2, X, Check, FolderArchive, RefreshCw } from "lucide-react";
 
 interface ImagePickerProps {
     open: boolean;
@@ -13,6 +13,14 @@ interface ImagePickerProps {
     initialQuery?: string;
 }
 
+interface ArchivedPhoto {
+    id: string;
+    url: string;
+    title?: string | null;
+    destination?: string | null;
+    source?: string;
+}
+
 export function ImagePicker({
     open,
     onClose,
@@ -20,7 +28,7 @@ export function ImagePicker({
     title = "Choose Image",
     initialQuery = "travel destination",
 }: ImagePickerProps) {
-    const [tab, setTab] = useState<"search" | "upload" | "url">("search");
+    const [tab, setTab] = useState<"archive" | "search" | "upload" | "url">("archive");
     const [searchQuery, setSearchQuery] = useState(initialQuery);
     const [images, setImages] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
@@ -28,13 +36,50 @@ export function ImagePicker({
     const [customUrl, setCustomUrl] = useState("");
     const [selectedUrl, setSelectedUrl] = useState<string | null>(null);
 
+    // Archive state
+    const [archivePhotos, setArchivePhotos] = useState<ArchivedPhoto[]>([]);
+    const [loadingArchive, setLoadingArchive] = useState(false);
+    const [archiveSearch, setArchiveSearch] = useState("");
+
+    const fetchArchive = useCallback(async () => {
+        setLoadingArchive(true);
+        try {
+            const res = await fetch("/api/photos?limit=60");
+            let serverList: ArchivedPhoto[] = [];
+            if (res.ok) {
+                const data = await res.json();
+                serverList = data.photos || [];
+            }
+            let localList: ArchivedPhoto[] = [];
+            if (typeof window !== "undefined") {
+                try {
+                    localList = JSON.parse(localStorage.getItem("gozy_local_photo_archive") || "[]");
+                } catch {}
+            }
+            const map = new Map<string, ArchivedPhoto>();
+            for (const p of [...localList, ...serverList]) {
+                if (p?.url && !map.has(p.url)) {
+                    map.set(p.url, p);
+                }
+            }
+            setArchivePhotos(Array.from(map.values()));
+        } catch (e) {
+            console.error("Failed to load archive:", e);
+        } finally {
+            setLoadingArchive(false);
+        }
+    }, []);
+
     // Initial search when opened
     useEffect(() => {
-        if (open && initialQuery) {
-            setSearchQuery(initialQuery);
-            handleSearch(initialQuery);
+        if (open) {
+            fetchArchive();
+            if (initialQuery) {
+                setSearchQuery(initialQuery);
+                handleSearch(initialQuery);
+            }
         }
-    }, [open, initialQuery]);
+    }, [open, initialQuery, fetchArchive]);
 
     const handleSearch = async (query: string) => {
         if (!query.trim()) return;
@@ -74,6 +119,15 @@ export function ImagePicker({
 
     if (!open) return null;
 
+    const filteredArchive = archivePhotos.filter((p) => {
+        if (!archiveSearch.trim()) return true;
+        const q = archiveSearch.toLowerCase();
+        return (
+            p.title?.toLowerCase().includes(q) ||
+            p.destination?.toLowerCase().includes(q)
+        );
+    });
+
     return (
         <div
             className="fixed inset-0 z-[10000] bg-black/70 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
@@ -99,8 +153,18 @@ export function ImagePicker({
                 {/* Tabs */}
                 <div className="flex border-b border-slate-200 dark:border-zinc-800 bg-slate-100/50 dark:bg-zinc-900/50 p-1 gap-1">
                     <button
+                        onClick={() => setTab("archive")}
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                            tab === "archive"
+                                ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm"
+                                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-100/50 dark:hover:bg-zinc-800/40"
+                        }`}
+                    >
+                        <FolderArchive size={14} className="text-primary" /> Archive ({archivePhotos.length})
+                    </button>
+                    <button
                         onClick={() => setTab("search")}
-                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                             tab === "search"
                                 ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm"
                                 : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-100/50 dark:hover:bg-zinc-800/40"
@@ -110,28 +174,89 @@ export function ImagePicker({
                     </button>
                     <button
                         onClick={() => setTab("upload")}
-                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                             tab === "upload"
                                 ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm"
                                 : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-100/50 dark:hover:bg-zinc-800/40"
                         }`}
                     >
-                        <Upload size={14} /> Upload File
+                        <Upload size={14} /> Upload Device
                     </button>
                     <button
                         onClick={() => setTab("url")}
-                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                        className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                             tab === "url"
                                 ? "bg-white dark:bg-zinc-800 text-slate-900 dark:text-zinc-100 shadow-sm"
                                 : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-200 hover:bg-slate-100/50 dark:hover:bg-zinc-800/40"
                         }`}
                     >
-                        <LinkIcon size={14} /> Custom URL
+                        <LinkIcon size={14} /> URL
                     </button>
                 </div>
 
                 {/* Tab Body */}
                 <div className="p-5 overflow-y-auto flex-1 space-y-4">
+                    {/* ARCHIVE TAB */}
+                    {tab === "archive" && (
+                        <div className="space-y-3">
+                            <div className="flex gap-2 items-center">
+                                <input
+                                    type="text"
+                                    value={archiveSearch}
+                                    onChange={(e) => setArchiveSearch(e.target.value)}
+                                    placeholder="Filter by destination or sight..."
+                                    className="flex-1 bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-zinc-100 placeholder:text-slate-400 dark:placeholder:text-zinc-500 focus:outline-none focus:border-primary transition-colors"
+                                />
+                                <button
+                                    onClick={fetchArchive}
+                                    className="p-2 border border-slate-300 dark:border-zinc-800 rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-600 dark:text-zinc-400"
+                                    title="Refresh"
+                                >
+                                    <RefreshCw size={14} className={loadingArchive ? "animate-spin" : ""} />
+                                </button>
+                            </div>
+
+                            {loadingArchive ? (
+                                <div className="text-center py-12 text-slate-500 text-xs">
+                                    <Loader2 size={18} className="animate-spin mx-auto mb-2 text-primary" />
+                                    Loading archived photos...
+                                </div>
+                            ) : filteredArchive.length > 0 ? (
+                                <div className="grid grid-cols-3 gap-2.5 max-h-[350px] overflow-y-auto pr-1">
+                                    {filteredArchive.map((item, idx) => (
+                                        <div
+                                            key={item.id || idx}
+                                            onClick={() => setSelectedUrl(item.url)}
+                                            className={`relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer border group transition-all duration-200 ${
+                                                selectedUrl === item.url
+                                                    ? "border-primary ring-2 ring-primary/40 scale-[1.02]"
+                                                    : "border-slate-200 dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700"
+                                            }`}
+                                        >
+                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                            <img
+                                                src={item.url}
+                                                alt={item.title || "Archive item"}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                loading="lazy"
+                                            />
+                                            {selectedUrl === item.url && (
+                                                <div className="absolute top-2 right-2 bg-primary text-primary-foreground rounded-full p-1 shadow-md">
+                                                    <Check size={12} />
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12 text-slate-500 text-xs">
+                                    No photos in your archive yet. Upload one or generate itineraries to build your archive.
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* SEARCH TAB */}
                     {tab === "search" && (
                         <div className="space-y-4">
                             <div className="flex gap-2">
@@ -190,6 +315,7 @@ export function ImagePicker({
                         </div>
                     )}
 
+                    {/* UPLOAD TAB */}
                     {tab === "upload" && (
                         <div className="flex flex-col items-center justify-center py-12 px-4 border-2 border-dashed border-slate-300 dark:border-zinc-800 hover:border-slate-400 dark:hover:border-zinc-700 rounded-2xl gap-3 transition-colors bg-slate-50/50 dark:bg-transparent">
                             <div className="w-12 h-12 rounded-xl bg-white dark:bg-zinc-900 border border-slate-300 dark:border-zinc-800 flex items-center justify-center text-slate-700 dark:text-zinc-300">
@@ -200,7 +326,7 @@ export function ImagePicker({
                                     Upload an image from your device
                                 </p>
                                 <p className="text-[11px] text-slate-500 dark:text-zinc-500 mt-1">
-                                    PNG, JPG, WEBP up to 5MB
+                                    PNG, JPG, WEBP up to 5MB (automatically saved to archive)
                                 </p>
                             </div>
                             <label className="mt-2 bg-white dark:bg-zinc-900 hover:bg-slate-100 dark:hover:bg-zinc-800 text-slate-800 dark:text-zinc-200 border border-slate-300 dark:border-zinc-800 px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer flex items-center gap-2 transition-all active:scale-95">
@@ -216,6 +342,7 @@ export function ImagePicker({
                         </div>
                     )}
 
+                    {/* URL TAB */}
                     {tab === "url" && (
                         <div className="space-y-3">
                             <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
@@ -253,7 +380,7 @@ export function ImagePicker({
                     >
                         Cancel
                     </button>
-                    {tab === "search" && selectedUrl && (
+                    {(tab === "archive" || tab === "search") && selectedUrl && (
                         <button
                             onClick={() => {
                                 onSelectImage(selectedUrl);

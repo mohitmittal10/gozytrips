@@ -347,7 +347,7 @@ export default function LuxuryEditorPage() {
             supabase
                 .from("user_profiles")
                 .select("*")
-                .eq("user_id", user.id)
+                .eq("id", user.id)
                 .maybeSingle(),
             supabase
                 .from("agency_settings")

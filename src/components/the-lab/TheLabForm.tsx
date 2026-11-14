@@ -5,6 +5,7 @@ import { format, addDays } from "date-fns";
 import { Calendar as CalendarIcon, Check, ArrowRight, Star, Eye, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,6 +26,29 @@ import { getCurrencySymbol } from "@/lib/utils/currency";
 import { DEFAULT_CURRENCY } from "@/types/pricing";
 
 const LabelClass = "text-[10px] font-bold uppercase tracking-[0.2em] text-zinc-500 mb-1.5 block";
+
+export function parseCalendarDate(d: Date | string | null | undefined): Date | null {
+  if (!d) return null;
+  if (d instanceof Date) return isNaN(d.getTime()) ? null : d;
+  if (typeof d === "string") {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(d)) {
+      const parsed = new Date(`${d}T00:00:00`);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    }
+    const parsed = new Date(d);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+  return null;
+}
+
+export function calculateCalendarDays(start: Date | string | null | undefined, end: Date | string | null | undefined): number {
+  const s = parseCalendarDate(start);
+  const e = parseCalendarDate(end);
+  if (!s || !e || e < s) return 0;
+  const utcStart = Date.UTC(s.getFullYear(), s.getMonth(), s.getDate());
+  const utcEnd = Date.UTC(e.getFullYear(), e.getMonth(), e.getDate());
+  return Math.round((utcEnd - utcStart) / (1000 * 60 * 60 * 24)) + 1;
+}
 
 interface TheLabFormProps {
   form: UseFormReturn<TheLabFormValues>;
@@ -76,12 +100,10 @@ const StepDaywisePlan = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
   const daywiseDestinations = form.watch("daywiseDestinations") || "";
 
   const dayCount = React.useMemo(() => {
-    if (!startDate || !endDate) return 0;
-    const s = new Date(startDate);
-    const e = new Date(endDate);
-    if (isNaN(s.getTime()) || isNaN(e.getTime()) || e < s) return 0;
-    return Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    return calculateCalendarDays(startDate, endDate);
   }, [startDate, endDate]);
+
+  const parsedStartDate = React.useMemo(() => parseCalendarDate(startDate), [startDate]);
 
   const [localDays, setLocalDays] = React.useState<string[]>([]);
   const lastCombinedRef = React.useRef<string>("");
@@ -143,7 +165,7 @@ const StepDaywisePlan = React.memo(({ form }: { form: UseFormReturn<TheLabFormVa
 
       <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
         {Array.from({ length: dayCount }).map((_, index) => {
-          const dayDate = new Date(new Date(startDate).getTime() + index * 24 * 60 * 60 * 1000);
+          const dayDate = parsedStartDate ? addDays(parsedStartDate, index) : new Date();
           const formattedDate = format(dayDate, "eee, MMM dd");
           const currentLength = (localDays[index] || "").length;
 
@@ -214,49 +236,69 @@ const StepStayOptions = React.memo(({ form, isActive = true }: { form: UseFormRe
   const startDate = form.watch("startDate");
   const endDate = form.watch("endDate");
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, replace } = useFieldArray({
     control: form.control,
     name: "hotels",
   });
 
+  const replaceRef = React.useRef(replace);
+  replaceRef.current = replace;
+
   const dayCount = React.useMemo(() => {
-    if (!startDate || !endDate) return 0;
-    const s = new Date(startDate);
-    const e = new Date(endDate);
-    if (isNaN(s.getTime()) || isNaN(e.getTime()) || e < s) return 0;
-    return Math.round((e.getTime() - s.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    return calculateCalendarDays(startDate, endDate);
   }, [startDate, endDate]);
 
   const staySlotsCount = Math.max(0, dayCount - 1);
 
   React.useEffect(() => {
     if (!isActive) return;
-    if (staySlotsCount > 0 && fields.length !== staySlotsCount) {
-      if (fields.length < staySlotsCount) {
-        const toAdd = [];
-        for (let i = fields.length; i < staySlotsCount; i++) {
-          toAdd.push({
-            id: `h-wiz-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
-            dayIndex: i,
-            name: "",
-            address: "",
-            starRating: 3,
-            nights: 1,
-            checkIn: "2:00 PM",
-            checkOut: "11:00 AM",
-            bookingRef: "",
-          });
-        }
-        append(toAdd);
-      } else if (fields.length > staySlotsCount) {
-        const indicesToRemove = Array.from(
-          { length: fields.length - staySlotsCount },
-          (_, k) => staySlotsCount + k
-        );
-        remove(indicesToRemove);
+
+    if (staySlotsCount <= 0) {
+      if (fields.length > 0) {
+        replaceRef.current([]);
       }
+      return;
     }
-  }, [staySlotsCount, fields.length, append, remove, isActive]);
+
+    const currentHotels = (form.getValues("hotels") || []).filter(
+      (h: any) => h && typeof h === "object"
+    );
+
+    // Reconcile when fields length doesn't match staySlotsCount OR form raw hotels length doesn't match staySlotsCount
+    if (fields.length !== staySlotsCount || currentHotels.length !== staySlotsCount) {
+      const reconciled = Array.from({ length: staySlotsCount }, (_, i) => {
+        const existing = currentHotels[i];
+        if (existing && existing.id) {
+          return {
+            id: existing.id,
+            dayIndex: i,
+            name: existing.name || "",
+            address: existing.address || "",
+            starRating: existing.starRating || 3,
+            nights: 1,
+            checkIn: existing.checkIn || "2:00 PM",
+            checkOut: existing.checkOut || "11:00 AM",
+            bookingRef: existing.bookingRef || "",
+          };
+        }
+        return {
+          id: `h-wiz-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
+          dayIndex: i,
+          name: "",
+          address: "",
+          starRating: 3,
+          nights: 1,
+          checkIn: "2:00 PM",
+          checkOut: "11:00 AM",
+          bookingRef: "",
+        };
+      });
+
+      replaceRef.current(reconciled);
+    }
+  }, [staySlotsCount, fields.length, isActive, form]);
+
+  const parsedStartDate = React.useMemo(() => parseCalendarDate(startDate), [startDate]);
 
   if (dayCount <= 1) {
     return (
@@ -278,7 +320,7 @@ const StepStayOptions = React.memo(({ form, isActive = true }: { form: UseFormRe
 
       <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
         {fields.map((field, index) => {
-          const dayDate = new Date(new Date(startDate).getTime() + index * 24 * 60 * 60 * 1000);
+          const dayDate = parsedStartDate ? addDays(parsedStartDate, index) : new Date();
           const formattedDate = format(dayDate, "eee, MMM dd");
           const hotelRating = form.watch(`hotels.${index}.starRating`) || 3;
 
@@ -412,7 +454,7 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-700">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         <FormField control={form.control} name="tripType" render={({ field }) => (
           <FormItem className="space-y-1">
             <FormLabel className={LabelClass}>Trip Type</FormLabel>
@@ -430,6 +472,25 @@ const StepPreferences = React.memo(({ form, sidebarMode }: { form: UseFormReturn
                 <SelectItem value="romantic">Romantic</SelectItem>
                 <SelectItem value="family">Family</SelectItem>
                 <SelectItem value="foodie">Foodie</SelectItem>
+              </SelectContent>
+            </Select>
+            <FormMessage className="text-[10px]" />
+          </FormItem>
+        )} />
+        <FormField control={form.control} name="mealPlan" render={({ field }) => (
+          <FormItem className="space-y-1">
+            <FormLabel className={LabelClass}>Meal Plan</FormLabel>
+            <Select onValueChange={field.onChange} value={field.value || "CP"} defaultValue={field.value || "CP"}>
+              <FormControl>
+                <SelectTrigger className="h-10 sm:h-11 text-sm border-slate-300 dark:border-white/10 bg-white dark:bg-white/5 backdrop-blur rounded-xl text-slate-900 dark:text-white">
+                  <SelectValue placeholder="Select Meal Plan" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent className="bg-white dark:bg-zinc-900 border-slate-200 dark:border-white/10 text-slate-900 dark:text-white">
+                <SelectItem value="CP">Breakfast Included (CP)</SelectItem>
+                <SelectItem value="MAP">Breakfast & Dinner (MAP)</SelectItem>
+                <SelectItem value="AP">All Meals Included (AP)</SelectItem>
+                <SelectItem value="EP">Room Only / No Meals (EP)</SelectItem>
               </SelectContent>
             </Select>
             <FormMessage className="text-[10px]" />
@@ -565,6 +626,15 @@ const WizardInputSummary = ({ form, currentStep }: { form: UseFormReturn<TheLabF
   if (currentStep > 3) {
     const prefList = [];
     if (values.tripType) prefList.push(`Style: ${values.tripType}`);
+    if (values.mealPlan) {
+      const mealLabels: Record<string, string> = {
+        CP: "Breakfast Included (CP)",
+        MAP: "Breakfast & Dinner (MAP)",
+        AP: "All Meals Included (AP)",
+        EP: "Room Only (EP)",
+      };
+      prefList.push(`Meals: ${mealLabels[values.mealPlan] || values.mealPlan}`);
+    }
     if (values.travelTimePreference && values.travelTimePreference !== "no_preference") prefList.push(`Timing: ${values.travelTimePreference.replace(/_/g, ' ')}`);
     if (values.mustInclude) prefList.push(`Must Include: ${values.mustInclude}`);
     if (values.avoid) prefList.push(`Avoid: ${values.avoid}`);
@@ -614,6 +684,7 @@ const WizardInputSummary = ({ form, currentStep }: { form: UseFormReturn<TheLabF
 const TheLabForm = React.memo(function TheLabForm({
   form, currentStep, setCurrentStep, onNext, onSubmit, isGenerating, sidebarMode, isActive = true
 }: TheLabFormProps) {
+  const { toast } = useToast();
   return (
     <Form {...form}>
       <form
@@ -703,13 +774,16 @@ const TheLabForm = React.memo(function TheLabForm({
                 // RHF's shouldUnregister:false default keeps registrations from
                 // previously-rendered hotel inputs alive, causing getValues() to
                 // reconstruct partial objects (with only name/address) at old indices.
-                // Filter to only keep entries that have both id and dayIndex.
+                // Filter to only keep entries that have both id and dayIndex, capped at staySlotsCount.
                 const rawHotels = form.getValues("hotels") || [];
                 const cleanHotels = rawHotels.filter(
                   (h: any) => h && typeof h.id === 'string' && h.id.length > 0 && typeof h.dayIndex === 'number'
                 );
-                if (cleanHotels.length !== rawHotels.length) {
-                  form.setValue("hotels", cleanHotels, { shouldValidate: false });
+                const dayCount = calculateCalendarDays(form.getValues("startDate"), form.getValues("endDate"));
+                const maxStaySlots = Math.max(0, dayCount - 1);
+                const finalHotels = maxStaySlots > 0 ? cleanHotels.slice(0, maxStaySlots) : cleanHotels;
+                if (finalHotels.length !== rawHotels.length) {
+                  form.setValue("hotels", finalHotels, { shouldValidate: false });
                 }
                 // Validate ALL fields explicitly before submitting
                 const isValid = await form.trigger();
@@ -717,6 +791,26 @@ const TheLabForm = React.memo(function TheLabForm({
                   onSubmit(form.getValues());
                 } else {
                   console.error("[TheLabForm] Validation failed. Errors:", JSON.stringify(form.formState.errors, null, 2));
+                  const errors = form.formState.errors;
+                  const errorKeys = Object.keys(errors);
+                  const firstErrorKey = errorKeys[0] as keyof TheLabFormValues;
+                  const firstError = errors[firstErrorKey];
+                  const errorMessage = (firstError as any)?.message || "Please complete all required fields before generating.";
+
+                  toast({
+                    variant: "destructive",
+                    title: "Incomplete Trip Details",
+                    description: errorMessage,
+                  });
+
+                  // Automatically navigate user to the step that has the invalid field
+                  for (let sIdx = 0; sIdx < theLabSteps.length; sIdx++) {
+                    const stepFields = theLabSteps[sIdx].fields as readonly string[];
+                    if (stepFields.some(f => errorKeys.includes(f))) {
+                      setCurrentStep(sIdx);
+                      break;
+                    }
+                  }
                 }
               }}
               className="w-full h-10 hover:shadow-lg bg-primary text-white rounded-xl"

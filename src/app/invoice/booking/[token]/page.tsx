@@ -80,8 +80,13 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
     const currencySymbol = getCurrencySymbol(currencyCode as any);
     const netCost = Number(booking.net_cost) || 0;
     const markup = Number(booking.markup_percentage) || 0;
-    const grossTotal = netCost * (1 + markup / 100);
-    const markupAmount = grossTotal - netCost;
+    const subtotal = netCost * (1 + markup / 100);
+    const markupAmount = subtotal - netCost;
+    const taxPercentage = Number(booking.booking_details?.tax_percentage) || 0;
+    const taxAmount = subtotal * (taxPercentage / 100);
+    const grossTotal = subtotal + taxAmount;
+    const paidAmount = Number(booking.booking_details?.paid_amount) || 0;
+    const balanceDue = Math.max(0, grossTotal - paidAmount);
 
     const formatDate = (dateStr: string) => {
         if (!dateStr) return "—";
@@ -218,13 +223,45 @@ export default async function BookingInvoicePage({ params }: { params: Promise<{
                                             </td>
                                         </tr>
                                     </tbody>
-                                    <tfoot className="border-t-2 border-zinc-200 dark:border-zinc-700">
+                                    <tfoot className="border-t-2 border-zinc-200 dark:border-zinc-700 divide-y divide-zinc-100 dark:divide-zinc-800">
+                                        {taxPercentage > 0 && (
+                                            <>
+                                                <tr>
+                                                    <td className="px-5 py-2.5 text-right text-xs text-zinc-500 uppercase tracking-wider">Subtotal</td>
+                                                    <td className="px-5 py-2.5 text-right font-semibold text-zinc-900 dark:text-zinc-100">
+                                                        {currencySymbol}{subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="px-5 py-2.5 text-right text-xs text-zinc-500 uppercase tracking-wider">GST / Tax ({taxPercentage}%)</td>
+                                                    <td className="px-5 py-2.5 text-right font-semibold text-zinc-900 dark:text-zinc-100">
+                                                        {currencySymbol}{taxAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </td>
+                                                </tr>
+                                            </>
+                                        )}
                                         <tr>
-                                            <td className="px-5 py-3 text-right text-sm text-zinc-500">Total</td>
+                                            <td className="px-5 py-3 text-right text-sm font-semibold text-zinc-700 dark:text-zinc-300">Total</td>
                                             <td className="px-5 py-3 text-right font-bold text-xl text-zinc-900 dark:text-zinc-100">
                                                 {currencySymbol}{grossTotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                             </td>
                                         </tr>
+                                        {paidAmount > 0 && (
+                                            <>
+                                                <tr>
+                                                    <td className="px-5 py-2.5 text-right text-xs text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">Amount Paid</td>
+                                                    <td className="px-5 py-2.5 text-right font-semibold text-emerald-600 dark:text-emerald-400">
+                                                        -{currencySymbol}{paidAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </td>
+                                                </tr>
+                                                <tr className="bg-zinc-100/50 dark:bg-zinc-800/50 font-bold">
+                                                    <td className="px-5 py-3 text-right text-sm text-zinc-900 dark:text-zinc-100">Balance Due</td>
+                                                    <td className="px-5 py-3 text-right text-xl text-zinc-900 dark:text-zinc-100">
+                                                        {currencySymbol}{balanceDue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </td>
+                                                </tr>
+                                            </>
+                                        )}
                                     </tfoot>
                                 </table>
                             </div>

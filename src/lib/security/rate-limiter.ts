@@ -6,7 +6,7 @@
  * available; falls back to a conditional update. Fail-closed for paid AI.
  */
 
-import { createClient } from '@supabase/supabase-js';
+// Dynamic import inside checkRateLimit to avoid ESM module resolution issues during tests and SSR
 
 export class RateLimitError extends Error {
   public retryAfterSeconds: number;
@@ -52,6 +52,7 @@ export async function checkRateLimit(
     throw new RateLimitError(action, 60);
   }
 
+  const { createClient } = await import('@supabase/supabase-js');
   const supabase = createClient(supabaseUrl, serviceKey);
 
   const now = new Date();

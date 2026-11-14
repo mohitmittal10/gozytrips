@@ -41,6 +41,7 @@ import { useReferenceOptions } from "@/hooks/use-reference-options";
 import { DEFAULT_FALLBACK_PHOTOS, getActivityFallbackUrl } from "@/lib/constants";
 import { cleanHtmlToBulletText } from "@/lib/sanitize-itinerary-html";
 
+import { PhotoSelectDialog } from "@/components/itinerary/PhotoSelectDialog";
 import { fetchItineraryImages } from "@/ai/flows/fetch-itinerary-images";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -106,7 +107,7 @@ function TimelineStepDetails({ details }: { details: string }) {
 
         if (isBullet) {
           return (
-            <div key={i} className="flex items-center gap-2">
+            <div key={i} className="flex items-baseline gap-2">
               <span className="flex-shrink-0 w-1.5 h-1.5 rounded-full bg-primary/70" />
               <span className="text-slate-800 dark:text-zinc-200 text-xs leading-relaxed font-medium flex-1">{text}</span>
             </div>
@@ -114,7 +115,7 @@ function TimelineStepDetails({ details }: { details: string }) {
         }
         if (isSub) {
           return (
-            <div key={i} className="flex items-center gap-2 pl-4">
+            <div key={i} className="flex items-baseline gap-2 pl-4">
               <span className="flex-shrink-0 text-[8px] text-slate-400 dark:text-zinc-500">▸</span>
               <span className="text-slate-600 dark:text-zinc-400 text-xs leading-relaxed font-normal flex-1">{text}</span>
             </div>
@@ -353,6 +354,7 @@ const ItineraryTimeline = ({
 
   // ── Mutation helpers (all call onItineraryChange) ──
 
+  const [photoPickerDayIndex, setPhotoPickerDayIndex] = useState<number | null>(null);
   const [uploadingDayIndex, setUploadingDayIndex] = useState<number | null>(null);
   const dayFileInputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({});
 
@@ -864,7 +866,7 @@ const ItineraryTimeline = ({
                                 />
                                 <button
                                   type="button"
-                                  onClick={(e) => { e.stopPropagation(); dayFileInputRefs.current[dayIndex]?.click(); }}
+                                  onClick={(e) => { e.stopPropagation(); setPhotoPickerDayIndex(dayIndex); }}
                                   disabled={uploadingDayIndex === dayIndex}
                                   title="Upload custom photo for this day"
                                   className={cn(
@@ -1122,6 +1124,32 @@ const ItineraryTimeline = ({
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {photoPickerDayIndex !== null && (
+        <PhotoSelectDialog
+          open={photoPickerDayIndex !== null}
+          onClose={() => setPhotoPickerDayIndex(null)}
+          dayNumber={itinerary[photoPickerDayIndex]?.day}
+          dayTitle={itinerary[photoPickerDayIndex]?.areaFocus}
+          destination={destinations || itinerary[photoPickerDayIndex]?.areaFocus}
+          currentPhotoUrl={itinerary[photoPickerDayIndex]?.imageUrl}
+          onSelectPhoto={(url) => {
+            if (photoPickerDayIndex === null) return;
+            const dayIdx = photoPickerDayIndex;
+            if (onEditingChange) onEditingChange(true);
+            updateItinerary((days) => {
+              days[dayIdx] = {
+                ...days[dayIdx],
+                imageUrl: url,
+              };
+              return days;
+            });
+            toast({
+              title: "Photo updated",
+              description: `Photo for Day ${itinerary[dayIdx]?.day} updated successfully.`,
+            });
+          }}
+        />
+      )}
     </div>
   );
 };

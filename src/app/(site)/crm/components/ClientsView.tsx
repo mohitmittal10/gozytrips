@@ -258,7 +258,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                 <div className="crm-table-wrapper">
                     <table className="w-full text-left border-collapse min-w-[640px]">
                         <thead>
-                            <tr className="border-b border-slate-300 dark:border-white/10 text-[11px] uppercase tracking-wider text-gray-500 font-semibold bg-white/[0.02]">
+                            <tr className="border-b border-slate-300 dark:border-white/10 text-[11px] uppercase tracking-wider text-slate-600 dark:text-gray-400 font-semibold bg-slate-100/60 dark:bg-white/[0.02]">
                                 <th className="p-4 w-10">
                                     <Checkbox
                                         checked={paginatedClients.length > 0 && selectedIds.size === paginatedClients.length}
@@ -280,7 +280,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                                 <th className="p-4"></th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y divide-slate-200/80 dark:divide-white/5">
                             {clientsLoading || isComputing ? (
                                 <SkeletonRows />
                             ) : paginatedClients.length === 0 ? (
@@ -297,7 +297,7 @@ export const ClientsView = (props: ClientsViewProps) => {
                                     <tr 
                                         key={client.id} 
                                         className={cn(
-                                            "border-b border-white/5 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors cursor-pointer group",
+                                            "border-b border-slate-200/80 dark:border-white/5 hover:bg-slate-100/80 dark:hover:bg-white/5 transition-colors cursor-pointer group",
                                             selectedIds.has(client.id) && "bg-slate-100 dark:bg-white/5"
                                         )}
                                         onClick={() => setSelectedClient(client)}
@@ -332,17 +332,17 @@ export const ClientsView = (props: ClientsViewProps) => {
                                             </div>
                                         </td>
                                         {visibleColumns.destination && (
-                                            <td className="p-4 text-slate-600 dark:text-gray-300">
+                                            <td className="p-4 text-slate-700 dark:text-gray-300">
                                                 <div className="flex flex-col gap-1.5 py-1">
                                                     {client.bookedDestinations && client.bookedDestinations.length > 0 ? (
                                                         client.bookedDestinations.map((dest: any, idx: number) => (
                                                             <div key={idx} className="flex items-center gap-2 group/dest">
-                                                                <Compass className="w-3.5 h-3.5 text-slate-600 dark:text-zinc-400 group-hover/dest:text-slate-900 dark:text-white transition-colors shrink-0" />
-                                                                <span className="truncate max-w-[180px] text-xs font-medium text-zinc-200 group-hover/dest:text-slate-900 dark:text-white transition-colors">{dest.label}</span>
+                                                                <Compass className="w-3.5 h-3.5 text-slate-500 dark:text-zinc-400 group-hover/dest:text-slate-900 dark:group-hover/dest:text-white transition-colors shrink-0" />
+                                                                <span className="truncate max-w-[180px] text-xs font-medium text-slate-800 dark:text-zinc-200 group-hover/dest:text-slate-900 dark:group-hover/dest:text-white transition-colors">{dest.label}</span>
                                                             </div>
                                                         ))
                                                     ) : (
-                                                        <span className="text-xs text-gray-600">—</span>
+                                                        <span className="text-xs text-slate-400 dark:text-gray-600">—</span>
                                                     )}
                                                 </div>
                                             </td>

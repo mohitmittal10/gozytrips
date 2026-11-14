@@ -36,16 +36,6 @@ export function PdfRenderOverlay({
     setMounted(true);
   }, []);
 
-  React.useEffect(() => {
-    if (visible) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [visible]);
-
   // Continuous smooth ticker loop
   React.useEffect(() => {
     if (!visible) {

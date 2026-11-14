@@ -56,7 +56,28 @@ export async function POST(request: Request) {
       .from(BUCKET)
       .getPublicUrl(filePath);
 
-    return NextResponse.json({ url: urlData.publicUrl });
+    const publicUrl = urlData.publicUrl;
+
+    // 6. Automatically archive the uploaded photo in the user's photos database
+    try {
+      const cleanTitle = file.name ? file.name.replace(/\.[^/.]+$/, "") : "Uploaded Photo";
+      await (supabaseAdmin as any).from("photo_archive").upsert({
+        user_id: user.id,
+        url: publicUrl,
+        title: cleanTitle,
+        source: "uploaded",
+        metadata: {
+          size: file.size,
+          type: file.type,
+          originalName: file.name,
+        },
+      }, { onConflict: "user_id,url", ignoreDuplicates: true });
+    } catch (archiveErr) {
+      // Non-fatal if table not created yet or fails
+      console.warn("[upload-photo] Notice: Could not record to photo_archive:", archiveErr);
+    }
+
+    return NextResponse.json({ url: publicUrl });
   } catch (err: any) {
     console.error("[upload-photo] Unexpected error:", err);
     return NextResponse.json({ error: err.message || "Upload failed" }, { status: 500 });
